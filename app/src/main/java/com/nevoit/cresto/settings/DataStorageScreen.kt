@@ -52,6 +52,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.times
+import com.kyant.backdrop.backdrops.layerBackdrop
 import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import com.kyant.capsule.ContinuousCapsule
 import com.kyant.capsule.ContinuousRoundedRectangle
@@ -172,7 +173,7 @@ fun DataStorageScreen() {
     val dp = with(density) {
         1.dp.toPx()
     }
-    // TODO: Why it didn't work?
+
     val backdrop = rememberLayerBackdrop {
         drawRect(surfaceColor)
         drawContent()
@@ -233,6 +234,7 @@ fun DataStorageScreen() {
         modifier = Modifier
             .fillMaxSize()
             .background(surfaceColor)
+            .layerBackdrop(backdrop)
     ) {
         // A vertically scrolling list that only composes and lays out the currently visible items
         LazyColumn(
