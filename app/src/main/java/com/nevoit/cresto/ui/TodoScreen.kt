@@ -303,6 +303,7 @@ fun TodoScreen() {
                     })
             }
         }
+
         if (dialogState.isVisible) {
             GlasenseDialog(
                 density = density,

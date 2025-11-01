@@ -1,5 +1,8 @@
 package com.nevoit.cresto.ui.components.glasense
 
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
@@ -18,8 +21,15 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.dropShadow
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Brush.Companion.verticalGradient
@@ -32,7 +42,9 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.shadow.Shadow
-import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.DpOffset
@@ -46,6 +58,8 @@ import com.kyant.capsule.ContinuousRoundedRectangle
 import com.nevoit.cresto.ui.theme.glasense.AppButtonColors
 import com.nevoit.cresto.ui.theme.glasense.Red500
 import com.nevoit.cresto.util.g2
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
 
 data class DialogItemData(
     val text: String,
@@ -64,20 +78,40 @@ data class DialogState(
 
 @Composable
 fun GlasenseDialogButton(
+    modifier: Modifier = Modifier,
     text: String,
     icon: Painter? = null,
-    modifier: Modifier = Modifier,
     isDestructive: Boolean = false,
     isPrimary: Boolean = true,
     onDismiss: () -> Unit
 ) {
+    val density = LocalDensity.current
     GlasenseButtonAlt(
         enabled = true,
         shape = ContinuousRoundedRectangle(12.dp, g2),
         onClick = { onDismiss() },
         modifier = Modifier
             .height(48.dp)
-            .then(modifier),
+            .then(modifier)
+            .then(if (isPrimary) Modifier.drawBehind() {
+                val outline = ContinuousRoundedRectangle(12.dp, g2).createOutline(
+                    size,
+                    LayoutDirection.Ltr,
+                    density
+                )
+                val gradientBrush = verticalGradient(
+                    colorStops = arrayOf(
+                        0.0f to Color.White.copy(alpha = 0.2f),
+                        1.0f to Color.White.copy(alpha = 0.02f)
+                    )
+                )
+                drawOutline(
+                    outline = outline,
+                    brush = gradientBrush,
+                    style = Stroke(width = 3.dp.toPx()),
+                    blendMode = BlendMode.Plus
+                )
+            } else Modifier),
         colors = if (isPrimary && !isDestructive) AppButtonColors.primary()
         else if (isPrimary) AppButtonColors.primary().copy(containerColor = Red500)
         else if (isDestructive) AppButtonColors.secondary().copy(contentColor = Red500)
@@ -107,17 +141,39 @@ fun GlasenseDialog(
     modifier: Modifier
 ) {
     val isSystemInDarkTheme = isSystemInDarkTheme()
-    val screenWidth = LocalConfiguration.current.screenWidthDp.dp
+    val screenWidth =
+        with(LocalDensity.current) { LocalWindowInfo.current.containerSize.width.toDp() }
+
+    var isVisible by remember { mutableStateOf(false) }
+
+    val scaleAni = remember { Animatable(1.3f) }
+    val alphaAni = remember { Animatable(0f) }
+    val alphaAni2 = remember { Animatable(0f) }
+
+    val scope = rememberCoroutineScope()
+
+    LaunchedEffect(isVisible) {
+        coroutineScope {
+            launch { scaleAni.animateTo(1f, spring(1.3f, 1000f, .0001f)) }
+            launch { alphaAni.animateTo(1f, tween(300, 0)) }
+            launch { alphaAni2.animateTo(1f, tween(200, 0)) }
+        }
+    }
     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+
+
         Box(
             modifier = Modifier
                 .fillMaxSize()
+                .graphicsLayer { alpha = alphaAni2.value }
                 .background(Color.Black.copy(.4f)),
             contentAlignment = Alignment.Center,
         ) {}
+
+
         Box(
             modifier = Modifier
-                .width(width = screenWidth - 56.dp * 2)
+                .width(width = screenWidth - 48.dp * 2)
                 .dropShadow(
                     RoundedCornerShape(24.dp),
                     shadow = Shadow(
@@ -126,6 +182,7 @@ fun GlasenseDialog(
                             alpha = 0.1f
                         ),
                         offset = DpOffset(0.dp, 16.dp),
+                        alpha = alphaAni.value
                     )
                 )
                 .drawPlainBackdrop(
@@ -205,7 +262,13 @@ fun GlasenseDialog(
                                 alpha = 0.08f
                             )
                         }
+                    },
+                    layerBlock = {
+                        scaleX = scaleAni.value
+                        scaleY = scaleAni.value
+                        alpha = alphaAni.value
                     })
+                .onGloballyPositioned { isVisible = true }
         ) {
             Column(
                 modifier = Modifier
@@ -248,8 +311,12 @@ fun GlasenseDialog(
                             isDestructive = item.isDestructive,
                             isPrimary = item.isPrimary,
                             onDismiss = {
-                                onDismiss()
-                                item.onClick()
+                                scope.launch {
+                                    launch { alphaAni2.animateTo(0f, tween(200, 0)) }
+                                    alphaAni.animateTo(0f, tween(200, 0))
+                                    onDismiss()
+                                    item.onClick()
+                                }
                             },
                         )
                     }

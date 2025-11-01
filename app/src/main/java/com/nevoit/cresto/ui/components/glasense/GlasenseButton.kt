@@ -166,16 +166,16 @@ fun GlasenseButtonAlt(
     Box(
         modifier = Modifier
             // Handle click events.
+            .clip(shape)
             .clickable(
                 interactionSource = interactionSource,
                 onClick = { onClick() },
                 indication = null,
                 role = Role.Button
             )
-            .then(modifier)
             .defaultMinSize(minHeight = 48.dp)
-            .clip(shape)
-            .background(color = backgroundColor, shape = shape),
+            .background(color = backgroundColor, shape = shape)
+            .then(modifier),
         contentAlignment = Alignment.Center
     ) {
         CompositionLocalProvider(LocalContentColor provides contentColor) {

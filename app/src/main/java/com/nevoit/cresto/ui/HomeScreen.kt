@@ -129,16 +129,17 @@ fun HomeScreen(
 
     val dialogItems = listOf(
         DialogItemData(
-            "Delete",
-            onClick = {},
-            isPrimary = false,
-            isDestructive = true
-        ),
-        DialogItemData(
             "Cancel",
             onClick = {},
             isPrimary = false
         ),
+        DialogItemData(
+            "Delete",
+            icon = painterResource(R.drawable.ic_trash),
+            onClick = { viewModel.deleteSelectedItems() },
+            isPrimary = true,
+            isDestructive = true
+        )
     )
 
     val menuItemsFilter = listOf(
@@ -357,18 +358,13 @@ fun HomeScreen(
                                 }
                                 .pointerInput(Unit) {
                                     detectTapGestures(
-                                        onTap = { localOffset ->
+                                        onTap = {
                                             coordinatesCaptured?.let {
                                                 val position = Offset(
                                                     x = it.positionOnScreen().x,
                                                     y = it.positionOnScreen().y + it.size.height + 8 * dpPx
                                                 )
                                                 showMenu(position, menuItemsFilter)
-                                                showDialog(
-                                                    dialogItems,
-                                                    "Delete these todos?",
-                                                    "Selected todos will be removed permanently. This action can't be recalled."
-                                                )
                                             }
                                         }
                                     )
@@ -420,7 +416,13 @@ fun HomeScreen(
                 tint = Red500,
                 enabled = true,
                 shape = ContinuousCapsule,
-                onClick = { viewModel.deleteSelectedItems() },
+                onClick = {
+                    showDialog(
+                        dialogItems,
+                        "Delete $selectedItemCount ${if (selectedItemCount == 1) "todo" else ("todos")}?",
+                        "Selected ${if (selectedItemCount == 1) "todo" else ("todos")} will be permanently deleted. This action can't be undone."
+                    )
+                },
                 modifier = Modifier
                     .blur(topBarBlurAnimation.value.dp, BlurredEdgeTreatment.Unbounded)
                     .graphicsLayer {
