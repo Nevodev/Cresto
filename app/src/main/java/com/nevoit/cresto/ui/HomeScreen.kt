@@ -420,7 +420,7 @@ fun HomeScreen(
                     showDialog(
                         dialogItems,
                         "Delete $selectedItemCount ${if (selectedItemCount == 1) "todo" else ("todos")}?",
-                        "Selected ${if (selectedItemCount == 1) "todo" else ("todos")} will be permanently deleted. This action can't be undone."
+                        "This will delete selected ${if (selectedItemCount == 1) "todo" else ("todos")} permanently. This action cannot be undone."
                     )
                 },
                 modifier = Modifier

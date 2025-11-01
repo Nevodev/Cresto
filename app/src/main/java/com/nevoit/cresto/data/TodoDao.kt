@@ -27,6 +27,10 @@ interface TodoDao {
     @Delete
     suspend fun deleteTodo(item: TodoItem)
 
+    // Deletes all todo items from the table.
+    @Query("DELETE FROM todo_items")
+    suspend fun deleteAllTodos()
+
     // Fetches all todo items from the table, ordered by ID in descending order.
     @Query("SELECT * FROM todo_items ORDER BY id DESC")
     fun getAllTodos(): Flow<List<TodoItem>>
