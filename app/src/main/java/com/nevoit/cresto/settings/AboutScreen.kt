@@ -7,6 +7,7 @@ import android.content.pm.PackageManager
 import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -59,8 +60,8 @@ import com.kyant.capsule.ContinuousRoundedRectangle
 import com.nevoit.cresto.R
 import com.nevoit.cresto.ui.components.ConfigItemContainer
 import com.nevoit.cresto.ui.components.DynamicSmallTitle
-import com.nevoit.cresto.ui.components.GlasenseButton
 import com.nevoit.cresto.ui.components.ZeroHeightDivider
+import com.nevoit.cresto.ui.components.glasense.GlasenseButton
 import com.nevoit.cresto.ui.theme.glasense.CalculatedColor
 import com.nevoit.cresto.util.g2
 import dev.chrisbanes.haze.ExperimentalHazeApi
@@ -119,6 +120,8 @@ fun AboutScreen() {
             null
         }
     }
+    val darkMode = isSystemInDarkTheme()
+
     // Root container for the screen, filling the entire available space
     Box(
         modifier = Modifier
@@ -152,7 +155,9 @@ fun AboutScreen() {
                         .fillMaxWidth()
                         .clip(ContinuousRoundedRectangle(12.dp, g2))
                         .paint(
-                            painter = painterResource(R.drawable.about_background),
+                            painter = if (darkMode) painterResource(R.drawable.about_background) else painterResource(
+                                R.drawable.about_background_light
+                            ),
                             contentScale = ContentScale.Crop
                         )
                         .drawBehind {
@@ -165,8 +170,10 @@ fun AboutScreen() {
                             drawOutline(
                                 outline = outline,
                                 style = Stroke(4.dp.toPx()),
-                                color = Color.White.copy(.2f),
-                                blendMode = BlendMode.Plus
+                                color = if (darkMode) Color.White.copy(.2f) else Color.Black.copy(
+                                    .05f
+                                ),
+                                blendMode = BlendMode.Luminosity
                             )
                         },
                     horizontalAlignment = Alignment.CenterHorizontally

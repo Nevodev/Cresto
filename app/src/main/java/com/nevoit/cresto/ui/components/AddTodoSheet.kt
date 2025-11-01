@@ -3,7 +3,9 @@ package com.nevoit.cresto.ui.components
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.LocalOverscrollFactory
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -24,11 +26,13 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -50,6 +54,9 @@ import androidx.compose.ui.unit.dp
 import com.kyant.capsule.ContinuousCapsule
 import com.kyant.capsule.ContinuousRoundedRectangle
 import com.nevoit.cresto.R
+import com.nevoit.cresto.ui.components.glasense.GlasenseButton
+import com.nevoit.cresto.ui.components.glasense.GlasenseButtonAlt
+import com.nevoit.cresto.ui.overscroll.OffsetOverscrollFactory
 import com.nevoit.cresto.ui.theme.glasense.AppButtonColors
 import com.nevoit.cresto.ui.theme.glasense.getFlagColor
 import com.nevoit.cresto.util.g2
@@ -91,6 +98,15 @@ fun AddTodoSheet(
             keyboardController?.hide()
             onAddClick(text, selectedIndex, finalDate)
         }
+    }
+
+    val animationScope = rememberCoroutineScope()
+    // Create a custom overscroll factory.
+    val overscrollFactory = remember {
+        OffsetOverscrollFactory(
+            orientation = Orientation.Horizontal,
+            animationScope = animationScope,
+        )
     }
 
     // Main layout
@@ -207,229 +223,234 @@ fun AddTodoSheet(
             }
         }
         Spacer(modifier = Modifier.height(12.dp))
-        // Buttons for due date, flag, and hashtag.
-        BoxWithConstraints(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(48.dp)
+        // Provide the custom overscroll factory to the composable tree.
+        CompositionLocalProvider(
+            LocalOverscrollFactory provides overscrollFactory
         ) {
-            val totalWidth = this.maxWidth
-
-            // Calculate the width of the buttons based on the selected state.
-            val collapsedSize = 48.dp
-            val spacerSize = 12.dp
-            val expandedWidth = totalWidth - (collapsedSize * 1) - (spacerSize * 1)
-            val defaultWidth = (totalWidth - (spacerSize * 1)) / 2
-
-            // Animate the width of the due date button.
-            val dueDateWidth by animateDpAsState(
-                targetValue = when (selectedButton) {
-                    SelectedButton.DUE_DATE -> expandedWidth
-                    SelectedButton.NONE -> defaultWidth
-                    else -> collapsedSize
-                },
-                animationSpec = spring(
-                    dampingRatio = 0.7f,
-                    stiffness = 300f
-                )
-            )
-            // Animate the width of the flag button.
-            val flagWidth by animateDpAsState(
-                targetValue = when (selectedButton) {
-                    SelectedButton.FLAG -> expandedWidth
-                    SelectedButton.NONE -> defaultWidth
-                    else -> collapsedSize
-                },
-                animationSpec = spring(
-                    dampingRatio = 0.7f,
-                    stiffness = 300f
-                )
-            )
-            // Animate the width of the hashtag button.
-            val hashtagWidth by animateDpAsState(
-                targetValue = when (selectedButton) {
-                    SelectedButton.HASHTAG -> expandedWidth
-                    SelectedButton.NONE -> defaultWidth
-                    else -> collapsedSize
-                },
-                animationSpec = spring(
-                    dampingRatio = 0.7f,
-                    stiffness = 300f
-                )
-            )
-            Row(
+            // Buttons for due date, flag, and hashtag.
+            BoxWithConstraints(
                 modifier = Modifier
-                    .width(totalWidth)
-                    .height(48.dp),
-                horizontalArrangement = Arrangement.SpaceBetween
+                    .fillMaxWidth()
+                    .height(48.dp)
             ) {
-                // Due date button.
-                GlasenseButtonAlt(
-                    enabled = true,
-                    shape = ContinuousCapsule(g2),
-                    onClick = {
-                        selectedButton = if (selectedButton == SelectedButton.DUE_DATE) {
-                            SelectedButton.NONE
-                        } else {
-                            SelectedButton.DUE_DATE
-                        }
+                val totalWidth = this.maxWidth
+
+                // Calculate the width of the buttons based on the selected state.
+                val collapsedSize = 48.dp
+                val spacerSize = 12.dp
+                val expandedWidth = totalWidth - (collapsedSize * 1) - (spacerSize * 1)
+                val defaultWidth = (totalWidth - (spacerSize * 1)) / 2
+
+                // Animate the width of the due date button.
+                val dueDateWidth by animateDpAsState(
+                    targetValue = when (selectedButton) {
+                        SelectedButton.DUE_DATE -> expandedWidth
+                        SelectedButton.NONE -> defaultWidth
+                        else -> collapsedSize
                     },
-                    modifier = Modifier
-                        .height(48.dp)
-                        .width(dueDateWidth),
-                    colors = AppButtonColors.secondary(),
-                    indication = true
-                ) {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        // Animated visibility for the due date icon.
-                        CustomAnimatedVisibility(
-                            visible = selectedButton != SelectedButton.DUE_DATE,
-                            enter = myFadeIn(animationSpec = tween(delayMillis = 100)) + myScaleIn(
-                                animationSpec = tween(delayMillis = 100),
-                                initialScale = 0.9f
-                            ),
-                            exit = myFadeOut(animationSpec = tween(durationMillis = 100)) + myScaleOut(
-                                animationSpec = tween(delayMillis = 100),
-                                targetScale = 0.9f
-                            )
-                        ) {
-                            Icon(
-                                painter = painterResource(id = R.drawable.ic_calendar),
-                                contentDescription = "Due Date",
-                                modifier = Modifier.width(28.dp)
-                            )
-                        }
-                        // Animated visibility for the date picker.
-                        CustomAnimatedVisibility(
-                            visible = selectedButton == SelectedButton.DUE_DATE,
-                            enter = myFadeIn(animationSpec = tween(delayMillis = 100)) + myScaleIn(
-                                animationSpec = tween(delayMillis = 100),
-                                initialScale = 0.9f
-                            ),
-                            exit = myFadeOut(animationSpec = tween(durationMillis = 100)) + myScaleOut(
-                                animationSpec = tween(delayMillis = 100),
-                                targetScale = 0.9f
-                            )
-                        ) {
-                            HorizontalPresetDatePicker(
-                                initialDate = finalDate,
-                                onDateSelected = {
-                                    finalDate = it
-                                    selectedButton = SelectedButton.NONE
-                                }
-                            )
-
-                        }
-                    }
-
-                }
-                Spacer(modifier = Modifier.width(12.dp))
-                // Flag button.
-                GlasenseButtonAlt(
-                    enabled = true,
-                    shape = ContinuousCapsule(g2),
-                    onClick = {
-                        selectedButton = if (selectedButton == SelectedButton.FLAG) {
-                            SelectedButton.NONE
-                        } else {
-                            SelectedButton.FLAG
-                        }
-                    },
-                    modifier = Modifier
-                        .height(48.dp)
-                        .width(flagWidth),
-                    colors = AppButtonColors.secondary(),
-                ) {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        // Animated visibility for the flag icon.
-                        CustomAnimatedVisibility(
-                            visible = selectedButton != SelectedButton.FLAG,
-                            enter = myFadeIn(animationSpec = tween(delayMillis = 100)) + myScaleIn(
-                                animationSpec = tween(delayMillis = 100),
-                                initialScale = 0.9f
-                            ),
-                            exit = myFadeOut(animationSpec = tween(durationMillis = 100)) + myScaleOut(
-                                animationSpec = tween(delayMillis = 100),
-                                targetScale = 0.9f
-                            )
-                        ) {
-                            val displayColor = getFlagColor(selectedIndex)
-                            Icon(
-                                painter = if (displayColor == Color.Transparent) {
-                                    painterResource(id = R.drawable.ic_flag)
-                                } else {
-                                    painterResource(id = R.drawable.ic_flag_fill)
-                                },
-                                contentDescription = "Flag",
-                                modifier = Modifier.width(28.dp),
-                                tint = if (displayColor == Color.Transparent) {
-                                    MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5F)
-                                } else {
-                                    displayColor
-                                }
-                            )
-                        }
-                        // Animated visibility for the flag picker.
-                        CustomAnimatedVisibility(
-                            visible = selectedButton == SelectedButton.FLAG,
-                            enter = myFadeIn(animationSpec = tween(delayMillis = 100)) + myScaleIn(
-                                animationSpec = tween(delayMillis = 100),
-                                initialScale = 0.9f
-                            ),
-                            exit = myFadeOut(animationSpec = tween(durationMillis = 100)) + myScaleOut(
-                                animationSpec = tween(delayMillis = 100),
-                                targetScale = 0.9f
-                            )
-                        ) {
-
-                            HorizontalFlagPicker(
-                                selectedIndex = selectedIndex,
-                                onIndexSelected = { newIndex ->
-                                    selectedIndex = newIndex
-                                    selectedButton = SelectedButton.NONE
-                                }
-                            )
-
-                        }
-                    }
-                }
-
-                /*pacer(modifier = Modifier.width(12.dp))
-                Button(
-                    enabled = true,
-                    shape = ContinuousCapsule(g2),
-                    onClick = {
-                        selectedButton = if (selectedButton == SelectedButton.HASHTAG) {
-                            SelectedButton.NONE
-                        } else {
-                            SelectedButton.HASHTAG
-                        }
-                    },
-                    modifier = Modifier
-                        .height(48.dp)
-                        .width(hashtagWidth),
-                    colors = AppButtonColors.secondary(),
-                    contentPadding = PaddingValues(0.dp)
-                ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_hashtag),
-                        contentDescription = "Tag",
-                        modifier = Modifier.width(28.dp)
+                    animationSpec = spring(
+                        dampingRatio = 0.7f,
+                        stiffness = 300f
                     )
-                }*/
+                )
+                // Animate the width of the flag button.
+                val flagWidth by animateDpAsState(
+                    targetValue = when (selectedButton) {
+                        SelectedButton.FLAG -> expandedWidth
+                        SelectedButton.NONE -> defaultWidth
+                        else -> collapsedSize
+                    },
+                    animationSpec = spring(
+                        dampingRatio = 0.7f,
+                        stiffness = 300f
+                    )
+                )
+                // Animate the width of the hashtag button.
+                val hashtagWidth by animateDpAsState(
+                    targetValue = when (selectedButton) {
+                        SelectedButton.HASHTAG -> expandedWidth
+                        SelectedButton.NONE -> defaultWidth
+                        else -> collapsedSize
+                    },
+                    animationSpec = spring(
+                        dampingRatio = 0.7f,
+                        stiffness = 300f
+                    )
+                )
+                Row(
+                    modifier = Modifier
+                        .width(totalWidth)
+                        .height(48.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    // Due date button.
+                    GlasenseButtonAlt(
+                        enabled = true,
+                        shape = ContinuousCapsule(g2),
+                        onClick = {
+                            selectedButton = if (selectedButton == SelectedButton.DUE_DATE) {
+                                SelectedButton.NONE
+                            } else {
+                                SelectedButton.DUE_DATE
+                            }
+                        },
+                        modifier = Modifier
+                            .height(48.dp)
+                            .width(dueDateWidth),
+                        colors = AppButtonColors.secondary(),
+                        indication = true
+                    ) {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            // Animated visibility for the due date icon.
+                            CustomAnimatedVisibility(
+                                visible = selectedButton != SelectedButton.DUE_DATE,
+                                enter = myFadeIn(animationSpec = tween(delayMillis = 100)) + myScaleIn(
+                                    animationSpec = tween(delayMillis = 100),
+                                    initialScale = 0.9f
+                                ),
+                                exit = myFadeOut(animationSpec = tween(durationMillis = 100)) + myScaleOut(
+                                    animationSpec = tween(delayMillis = 100),
+                                    targetScale = 0.9f
+                                )
+                            ) {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.ic_calendar),
+                                    contentDescription = "Due Date",
+                                    modifier = Modifier.width(28.dp)
+                                )
+                            }
+                            // Animated visibility for the date picker.
+                            CustomAnimatedVisibility(
+                                visible = selectedButton == SelectedButton.DUE_DATE,
+                                enter = myFadeIn(animationSpec = tween(delayMillis = 100)) + myScaleIn(
+                                    animationSpec = tween(delayMillis = 100),
+                                    initialScale = 0.9f
+                                ),
+                                exit = myFadeOut(animationSpec = tween(durationMillis = 100)) + myScaleOut(
+                                    animationSpec = tween(delayMillis = 100),
+                                    targetScale = 0.9f
+                                )
+                            ) {
+                                HorizontalPresetDatePicker(
+                                    initialDate = finalDate,
+                                    onDateSelected = {
+                                        finalDate = it
+                                        selectedButton = SelectedButton.NONE
+                                    }
+                                )
+
+                            }
+                        }
+
+                    }
+                    Spacer(modifier = Modifier.width(12.dp))
+                    // Flag button.
+                    GlasenseButtonAlt(
+                        enabled = true,
+                        shape = ContinuousCapsule(g2),
+                        onClick = {
+                            selectedButton = if (selectedButton == SelectedButton.FLAG) {
+                                SelectedButton.NONE
+                            } else {
+                                SelectedButton.FLAG
+                            }
+                        },
+                        modifier = Modifier
+                            .height(48.dp)
+                            .width(flagWidth),
+                        colors = AppButtonColors.secondary(),
+                    ) {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            // Animated visibility for the flag icon.
+                            CustomAnimatedVisibility(
+                                visible = selectedButton != SelectedButton.FLAG,
+                                enter = myFadeIn(animationSpec = tween(delayMillis = 100)) + myScaleIn(
+                                    animationSpec = tween(delayMillis = 100),
+                                    initialScale = 0.9f
+                                ),
+                                exit = myFadeOut(animationSpec = tween(durationMillis = 100)) + myScaleOut(
+                                    animationSpec = tween(delayMillis = 100),
+                                    targetScale = 0.9f
+                                )
+                            ) {
+                                val displayColor = getFlagColor(selectedIndex)
+                                Icon(
+                                    painter = if (displayColor == Color.Transparent) {
+                                        painterResource(id = R.drawable.ic_flag)
+                                    } else {
+                                        painterResource(id = R.drawable.ic_flag_fill)
+                                    },
+                                    contentDescription = "Flag",
+                                    modifier = Modifier.width(28.dp),
+                                    tint = if (displayColor == Color.Transparent) {
+                                        MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5F)
+                                    } else {
+                                        displayColor
+                                    }
+                                )
+                            }
+                            // Animated visibility for the flag picker.
+                            CustomAnimatedVisibility(
+                                visible = selectedButton == SelectedButton.FLAG,
+                                enter = myFadeIn(animationSpec = tween(delayMillis = 100)) + myScaleIn(
+                                    animationSpec = tween(delayMillis = 100),
+                                    initialScale = 0.9f
+                                ),
+                                exit = myFadeOut(animationSpec = tween(durationMillis = 100)) + myScaleOut(
+                                    animationSpec = tween(delayMillis = 100),
+                                    targetScale = 0.9f
+                                )
+                            ) {
+
+                                HorizontalFlagPicker(
+                                    selectedIndex = selectedIndex,
+                                    onIndexSelected = { newIndex ->
+                                        selectedIndex = newIndex
+                                        selectedButton = SelectedButton.NONE
+                                    }
+                                )
+
+                            }
+                        }
+                    }
+
+                    /*pacer(modifier = Modifier.width(12.dp))
+                    Button(
+                        enabled = true,
+                        shape = ContinuousCapsule(g2),
+                        onClick = {
+                            selectedButton = if (selectedButton == SelectedButton.HASHTAG) {
+                                SelectedButton.NONE
+                            } else {
+                                SelectedButton.HASHTAG
+                            }
+                        },
+                        modifier = Modifier
+                            .height(48.dp)
+                            .width(hashtagWidth),
+                        colors = AppButtonColors.secondary(),
+                        contentPadding = PaddingValues(0.dp)
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_hashtag),
+                            contentDescription = "Tag",
+                            modifier = Modifier.width(28.dp)
+                        )
+                    }*/
+
+                }
 
             }
-
         }
-    }
-    // Request focus for the text field when the sheet is launched.
-    LaunchedEffect(Unit) {
-        focusRequester.requestFocus()
+        // Request focus for the text field when the sheet is launched.
+        LaunchedEffect(Unit) {
+            focusRequester.requestFocus()
+        }
     }
 }

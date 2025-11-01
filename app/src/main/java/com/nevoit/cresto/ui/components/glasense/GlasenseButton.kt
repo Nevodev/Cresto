@@ -1,13 +1,18 @@
-package com.nevoit.cresto.ui.components
+package com.nevoit.cresto.ui.components.glasense
 
+import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.defaultMinSize
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
@@ -15,6 +20,7 @@ import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -136,6 +142,27 @@ fun GlasenseButtonAlt(
     val backgroundColor = if (enabled) colors.containerColor else colors.disabledContainerColor
     val interactionSource = remember { MutableInteractionSource() }
 
+    // Animatable for the press feedback effect's alpha.
+    val alphaAni = remember { Animatable(0f) }
+    // Observe interactions to animate the press feedback.
+    LaunchedEffect(interactionSource) {
+        interactionSource.interactions.collect { interaction ->
+            when (interaction) {
+                is PressInteraction.Press -> {
+                    alphaAni.animateTo(1f, tween(100))
+                }
+
+                is PressInteraction.Release -> {
+                    alphaAni.animateTo(0f, tween(200))
+                }
+
+                is PressInteraction.Cancel -> {
+                    alphaAni.animateTo(0f, tween(200))
+                }
+            }
+        }
+    }
+
     Box(
         modifier = Modifier
             // Handle click events.
@@ -146,12 +173,21 @@ fun GlasenseButtonAlt(
                 role = Role.Button
             )
             .then(modifier)
-            .height(48.dp)
+            .defaultMinSize(minHeight = 48.dp)
+            .clip(shape)
             .background(color = backgroundColor, shape = shape),
         contentAlignment = Alignment.Center
     ) {
         CompositionLocalProvider(LocalContentColor provides contentColor) {
             content()
+        }
+        if (indication) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .graphicsLayer { alpha = alphaAni.value }
+                    .background(Color.Black.copy(.1f))
+            )
         }
     }
 }

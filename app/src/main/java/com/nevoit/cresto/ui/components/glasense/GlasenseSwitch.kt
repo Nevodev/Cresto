@@ -1,4 +1,4 @@
-package com.nevoit.cresto.ui.components
+package com.nevoit.cresto.ui.components.glasense
 
 import android.graphics.Paint
 import androidx.compose.animation.animateColorAsState

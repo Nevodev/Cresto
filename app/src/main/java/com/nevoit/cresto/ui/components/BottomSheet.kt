@@ -1,5 +1,6 @@
 package com.nevoit.cresto.ui.components
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.CubicBezierEasing
 import androidx.compose.animation.core.FastOutSlowInEasing
@@ -30,11 +31,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.input.key.Key
-import androidx.compose.ui.input.key.KeyEventType
-import androidx.compose.ui.input.key.key
-import androidx.compose.ui.input.key.onKeyEvent
-import androidx.compose.ui.input.key.type
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import com.nevoit.cresto.util.deviceCornerShape
@@ -90,6 +86,20 @@ fun BottomSheet(
             )
         }
     }
+    BackHandler() {
+        scope.launch {
+            isVisible = false
+            // Animate the sheet out of view.
+            offset.animateTo(
+                targetValue = (columnHeightPx + navigationBarHeight).toFloat(),
+                animationSpec = tween(
+                    durationMillis = 200,
+                    easing = FastOutSlowInEasing
+                )
+            )
+            onDismiss()
+        }
+    }
     // Main container for the bottom sheet and scrim.
     Box(modifier = Modifier.fillMaxSize()) {
         // Scrim with animated visibility.
@@ -140,26 +150,6 @@ fun BottomSheet(
                     enabled = true,
                     onClick = {}
                 )
-                // Handle back press to dismiss the sheet.
-                .onKeyEvent { keyEvent ->
-                    if (keyEvent.type == KeyEventType.KeyUp && (keyEvent.key == Key.Back || keyEvent.nativeKeyEvent.keyCode == android.view.KeyEvent.KEYCODE_BACK)) {
-                        scope.launch {
-                            isVisible = false
-                            // Animate the sheet out of view.
-                            offset.animateTo(
-                                targetValue = (columnHeightPx + navigationBarHeight).toFloat(),
-                                animationSpec = tween(
-                                    durationMillis = 200,
-                                    easing = FastOutSlowInEasing
-                                )
-                            )
-                            onDismiss()
-                        }
-                        true
-                    } else {
-                        false
-                    }
-                }
                 .align(alignment = Alignment.BottomCenter)
                 // Apply the vertical offset animation.
                 .graphicsLayer {

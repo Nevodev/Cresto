@@ -61,11 +61,12 @@ import com.kyant.capsule.ContinuousCapsule
 import com.kyant.capsule.ContinuousRoundedRectangle
 import com.nevoit.cresto.R
 import com.nevoit.cresto.ui.components.DynamicSmallTitle
-import com.nevoit.cresto.ui.components.GlasenseButton
-import com.nevoit.cresto.ui.components.GlasenseButtonAdaptable
 import com.nevoit.cresto.ui.components.PageHeader
 import com.nevoit.cresto.ui.components.SwipeableTodoItem
-import com.nevoit.cresto.ui.menu.MenuItemData
+import com.nevoit.cresto.ui.components.glasense.DialogItemData
+import com.nevoit.cresto.ui.components.glasense.GlasenseButton
+import com.nevoit.cresto.ui.components.glasense.GlasenseButtonAdaptable
+import com.nevoit.cresto.ui.components.glasense.MenuItemData
 import com.nevoit.cresto.ui.theme.glasense.Blue500
 import com.nevoit.cresto.ui.theme.glasense.CalculatedColor
 import com.nevoit.cresto.ui.theme.glasense.Red500
@@ -79,6 +80,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun HomeScreen(
     showMenu: (anchorPosition: androidx.compose.ui.geometry.Offset, items: List<MenuItemData>) -> Unit,
+    showDialog: (items: List<DialogItemData>, title: String, message: String?) -> Unit,
     viewModel: TodoViewModel
 ) {
     val scope = rememberCoroutineScope()
@@ -123,6 +125,20 @@ fun HomeScreen(
             painterResource(R.drawable.ic_trash),
             isDestructive = true,
             onClick = {})
+    )
+
+    val dialogItems = listOf(
+        DialogItemData(
+            "Delete",
+            onClick = {},
+            isPrimary = false,
+            isDestructive = true
+        ),
+        DialogItemData(
+            "Cancel",
+            onClick = {},
+            isPrimary = false
+        ),
     )
 
     val menuItemsFilter = listOf(
@@ -348,6 +364,11 @@ fun HomeScreen(
                                                     y = it.positionOnScreen().y + it.size.height + 8 * dpPx
                                                 )
                                                 showMenu(position, menuItemsFilter)
+                                                showDialog(
+                                                    dialogItems,
+                                                    "Delete these todos?",
+                                                    "Selected todos will be removed permanently. This action can't be recalled."
+                                                )
                                             }
                                         }
                                     )

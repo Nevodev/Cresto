@@ -7,12 +7,14 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.nevoit.cresto.ui.menu.MenuItemData
+import com.nevoit.cresto.ui.components.glasense.DialogItemData
+import com.nevoit.cresto.ui.components.glasense.MenuItemData
 
 @Composable
 fun AppNavHost(
     navController: NavHostController,
     showMenu: (anchorPosition: androidx.compose.ui.geometry.Offset, items: List<MenuItemData>) -> Unit,
+    showDialog: (items: List<DialogItemData>, title: String, message: String?) -> Unit,
     viewModel: TodoViewModel
 ) {
     val fadeDuration = 0
@@ -29,7 +31,7 @@ fun AppNavHost(
                 fadeOut(animationSpec = tween(fadeDuration))
             }
         ) {
-            HomeScreen(showMenu = showMenu, viewModel = viewModel)
+            HomeScreen(showMenu = showMenu, viewModel = viewModel, showDialog = showDialog)
         }
 
         composable(

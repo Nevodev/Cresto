@@ -42,11 +42,14 @@ import com.nevoit.cresto.R
 import com.nevoit.cresto.data.TodoItem
 import com.nevoit.cresto.ui.components.BottomSheet
 import com.nevoit.cresto.ui.components.CustomNavigationButton
+import com.nevoit.cresto.ui.components.glasense.DialogItemData
+import com.nevoit.cresto.ui.components.glasense.DialogState
+import com.nevoit.cresto.ui.components.glasense.GlasenseDialog
+import com.nevoit.cresto.ui.components.glasense.GlasenseMenu
+import com.nevoit.cresto.ui.components.glasense.MenuItemData
+import com.nevoit.cresto.ui.components.glasense.MenuState
 import com.nevoit.cresto.ui.gaussiangradient.smoothGradientMask
 import com.nevoit.cresto.ui.gaussiangradient.smoothGradientMaskFallback
-import com.nevoit.cresto.ui.menu.GlasenseMenu
-import com.nevoit.cresto.ui.menu.MenuItemData
-import com.nevoit.cresto.ui.menu.MenuState
 import com.nevoit.cresto.ui.theme.glasense.CalculatedColor
 import com.nevoit.cresto.ui.theme.glasense.linearGradientMaskB2T70
 import com.nevoit.cresto.ui.theme.glasense.linearGradientMaskB2T90
@@ -88,6 +91,19 @@ fun TodoScreen() {
         menuState = menuState.copy(isVisible = false)
     }
 
+    var dialogState by remember { mutableStateOf(DialogState()) }
+
+    val showDialog: (items: List<DialogItemData>, title: String, message: String?) -> Unit =
+        { items, title, message ->
+            dialogState =
+                DialogState(isVisible = true, items = items, title = title, message = message)
+        }
+
+    val dismissDialog = {
+        dialogState = dialogState.copy(isVisible = false)
+    }
+
+
     val density = LocalDensity.current
     val interactionSource = remember { MutableInteractionSource() }
 
@@ -113,7 +129,8 @@ fun TodoScreen() {
             AppNavHost(
                 navController = navController,
                 showMenu = showMenu,
-                viewModel = viewModel
+                viewModel = viewModel,
+                showDialog = showDialog
             )
         }
 
@@ -285,6 +302,15 @@ fun TodoScreen() {
                         )
                     })
             }
+        }
+        if (dialogState.isVisible) {
+            GlasenseDialog(
+                density = density,
+                dialogState = dialogState,
+                backdrop = backdrop,
+                onDismiss = { dismissDialog() },
+                modifier = Modifier
+            )
         }
     }
 }

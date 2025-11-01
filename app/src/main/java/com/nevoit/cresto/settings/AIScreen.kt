@@ -41,8 +41,8 @@ import com.nevoit.cresto.ui.components.ConfigInfoHeader
 import com.nevoit.cresto.ui.components.ConfigItem
 import com.nevoit.cresto.ui.components.ConfigItemContainer
 import com.nevoit.cresto.ui.components.DynamicSmallTitle
-import com.nevoit.cresto.ui.components.GlasenseButton
-import com.nevoit.cresto.ui.components.GlasenseSwitch
+import com.nevoit.cresto.ui.components.glasense.GlasenseButton
+import com.nevoit.cresto.ui.components.glasense.GlasenseSwitch
 import com.nevoit.cresto.ui.theme.glasense.Blue500
 import com.nevoit.cresto.ui.theme.glasense.CalculatedColor
 import com.nevoit.cresto.ui.theme.glasense.Pink400

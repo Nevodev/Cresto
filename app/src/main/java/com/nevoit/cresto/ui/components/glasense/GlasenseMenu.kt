@@ -1,4 +1,4 @@
-package com.nevoit.cresto.ui.menu
+package com.nevoit.cresto.ui.components.glasense
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.foundation.clickable
@@ -25,6 +25,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.dropShadow
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Brush.Companion.verticalGradient
 import androidx.compose.ui.graphics.Color
@@ -48,6 +49,19 @@ import com.kyant.capsule.ContinuousRoundedRectangle
 import com.nevoit.cresto.ui.components.ZeroHeightDivider
 import com.nevoit.cresto.ui.theme.glasense.Red500
 import com.nevoit.cresto.util.g2
+
+data class MenuItemData(
+    val text: String,
+    val icon: Painter,
+    val isDestructive: Boolean = false,
+    val onClick: () -> Unit
+)
+
+data class MenuState(
+    val isVisible: Boolean = false,
+    val anchorPosition: Offset = Offset.Zero,
+    val items: List<MenuItemData> = emptyList()
+)
 
 /**
  * Composable that arranges a list of menu items vertically.
