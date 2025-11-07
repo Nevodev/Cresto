@@ -1,6 +1,7 @@
 package com.nevoit.cresto.ui.theme.glasense
 
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.colorspace.ColorSpaces
 
 // Slate
 val Slate50 = Color(0xFFF8FAFC)
@@ -300,4 +301,25 @@ fun getFlagColor(flag: Int): Color {
         7 -> Gray500
         else -> Gray500
     }
+}
+
+fun Color.adjustSaturationInOklab(factor: Float): Color {
+    val oklabColor = this.convert(ColorSpaces.Oklab)
+
+    val l = oklabColor.red
+    val a = oklabColor.green
+    val b = oklabColor.blue
+
+    val newA = a * factor
+    val newB = b * factor
+
+    val newOklabColor = Color(
+        red = l,
+        green = newA,
+        blue = newB,
+        alpha = this.alpha,
+        colorSpace = ColorSpaces.Oklab
+    )
+
+    return newOklabColor.convert(ColorSpaces.Srgb)
 }

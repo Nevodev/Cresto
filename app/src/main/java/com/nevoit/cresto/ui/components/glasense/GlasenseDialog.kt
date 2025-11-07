@@ -4,6 +4,8 @@ import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -159,6 +161,7 @@ fun GlasenseDialog(
             launch { alphaAni2.animateTo(1f, tween(200, 0)) }
         }
     }
+    val interactionSource = remember { MutableInteractionSource() }
     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
 
 
@@ -166,7 +169,12 @@ fun GlasenseDialog(
             modifier = Modifier
                 .fillMaxSize()
                 .graphicsLayer { alpha = alphaAni2.value }
-                .background(Color.Black.copy(.4f)),
+                .background(Color.Black.copy(.4f))
+                .clickable(
+                    interactionSource = interactionSource,
+                    indication = null,
+                    enabled = true,
+                    onClick = {}),
             contentAlignment = Alignment.Center,
         ) {}
 
@@ -189,7 +197,7 @@ fun GlasenseDialog(
                     backdrop = backdrop,
                     shape = { ContinuousRoundedRectangle(24.dp, g2) },
                     effects = {
-                        blur(64f.dp.toPx(), TileMode.Decal)
+                        blur(64f.dp.toPx(), TileMode.Mirror)
                     },
                     // Custom drawing on top of the blurred background to create stunning colors.
                     onDrawSurface = {
