@@ -300,7 +300,8 @@ fun TodoScreen() {
                                 dueDate = finalDate
                             )
                         )
-                    })
+                    }, showDialog = showDialog
+                )
             }
         }
 

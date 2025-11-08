@@ -1,14 +1,10 @@
 package com.nevoit.cresto.ui.components
 
-import android.graphics.Matrix
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.CubicBezierEasing
 import androidx.compose.animation.core.FastOutSlowInEasing
-import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -17,6 +13,7 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -25,11 +22,20 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.isImeVisible
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.input.rememberTextFieldState
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -38,46 +44,50 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.BlurredEdgeTreatment
-import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Brush.Companion.verticalGradient
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Outline
-import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.RectangleShape
-import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.TileMode
-import androidx.compose.ui.graphics.asAndroidPath
-import androidx.compose.ui.graphics.colorspace.ColorSpaces
 import androidx.compose.ui.graphics.drawOutline
 import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.graphics.nativeCanvas
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
-import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
-import com.kyant.backdrop.backdrops.LayerBackdrop
-import com.kyant.backdrop.backdrops.layerBackdrop
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import com.kyant.backdrop.drawPlainBackdrop
 import com.kyant.backdrop.effects.blur
 import com.kyant.backdrop.effects.colorControls
 import com.kyant.capsule.ContinuousCapsule
-import com.nevoit.cresto.ui.theme.glasense.Blue500
-import com.nevoit.cresto.ui.theme.glasense.Violet500
-import com.nevoit.cresto.ui.theme.glasense.adjustSaturationInOklab
+import com.nevoit.cresto.CrestoApplication
+import com.nevoit.cresto.R
+import com.nevoit.cresto.ui.TodoViewModel
+import com.nevoit.cresto.ui.TodoViewModelFactory
+import com.nevoit.cresto.ui.components.glasense.DialogItemData
+import com.nevoit.cresto.ui.components.glasense.GlasenseButton
+import com.nevoit.cresto.ui.components.glasense.RotatingGlow
+import com.nevoit.cresto.ui.components.glasense.RotatingGlowBorder
+import com.nevoit.cresto.ui.theme.glasense.AppButtonColors
+import com.nevoit.cresto.ui.theme.glasense.gradientColorsDark
+import com.nevoit.cresto.ui.theme.glasense.gradientColorsLight
+import com.nevoit.cresto.ui.theme.glasense.highlightColorsDark
+import com.nevoit.cresto.ui.theme.glasense.highlightColorsLight
+import com.nevoit.cresto.ui.viewmodel.AiSideEffect
+import com.nevoit.cresto.ui.viewmodel.AiViewModel
+import com.nevoit.cresto.ui.viewmodel.UiState
 import com.nevoit.cresto.util.deviceCornerShape
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 
@@ -91,13 +101,19 @@ import java.time.LocalDate
 @Composable
 fun BottomSheet(
     onDismiss: () -> Unit,
-    onAddClick: (String, Int, LocalDate?) -> Unit
+    onAddClick: (String, Int, LocalDate?) -> Unit,
+    aiViewModel: AiViewModel = viewModel(),
+    showDialog: (items: List<DialogItemData>, title: String, message: String?) -> Unit,
 ) {
+    val uiState by aiViewModel.uiState.collectAsState()
+
     var columnHeightPx by remember { mutableIntStateOf(0) }
     // State to control the visibility of the bottom sheet and its scrim.
     var isVisible by remember { mutableStateOf(false) }
     // Animatable for the vertical offset of the bottom sheet.
     val offset = remember { Animatable(Float.MAX_VALUE) }
+
+    val scaleAnimation = remember { Animatable(0f) }
 
     // Coroutine scope for launching animations.
     val scope = rememberCoroutineScope()
@@ -108,21 +124,59 @@ fun BottomSheet(
 
     val isImeVisible = WindowInsets.isImeVisible
 
-    val gradientColors = listOf(
-        Blue500.adjustSaturationInOklab(1.1f).convert(ColorSpaces.Oklab)
-            .copy(red = 0.7f, blue = -0.3f),
-        Violet500.adjustSaturationInOklab(1.5f).convert(ColorSpaces.Oklab).copy(red = 0.8f),
-        Color(0xFF6FB0FF).adjustSaturationInOklab(1.1f).convert(ColorSpaces.Oklab)
-            .copy(red = 0.9f, blue = -0.5f),
-        Blue500.adjustSaturationInOklab(1.1f).convert(ColorSpaces.Oklab).copy(red = 0.7f),
-    )
+    val isSystemInDarkTheme = isSystemInDarkTheme()
+
+    val gradientColors = if (isSystemInDarkTheme) {
+        gradientColorsDark
+    } else {
+        gradientColorsLight
+    }
+
+    val highlightColors = if (isSystemInDarkTheme) {
+        highlightColorsDark
+    } else {
+        highlightColorsLight
+    }
 
     val backdrop = rememberLayerBackdrop {
         drawContent()
     }
     val density = LocalDensity.current
-    val isSystemInDarkTheme = isSystemInDarkTheme()
+    val state = rememberTextFieldState()
     // Trigger the enter animation when the composable is first composed.
+    val application = LocalContext.current.applicationContext as CrestoApplication
+    val viewModel: TodoViewModel = viewModel(
+        factory = TodoViewModelFactory(application.repository)
+    )
+
+    val errorDialogItems = listOf(
+        DialogItemData(
+            "OK",
+            onClick = {},
+            isPrimary = true,
+            isDestructive = true
+        )
+    )
+    val isLoading = uiState is UiState.Loading
+
+    LaunchedEffect(true) {
+        aiViewModel.sideEffect.collect { effect ->
+            when (effect) {
+                is AiSideEffect.ProcessSuccess -> {
+                    viewModel.insertAiGeneratedTodos(effect.response.items)
+                }
+
+                is AiSideEffect.ShowError -> {
+                    showDialog(
+                        errorDialogItems,
+                        "Error",
+                        effect.message
+                    )
+                }
+            }
+        }
+    }
+
     LaunchedEffect(Unit) {
         isVisible = true
     }
@@ -130,23 +184,39 @@ fun BottomSheet(
     LaunchedEffect(columnHeightPx) {
         if (columnHeightPx > 0) {
             isVisible = true
-            // Snap to the initial off-screen position.
-            offset.snapTo(targetValue = (columnHeightPx + navigationBarHeight).toFloat())
-            // Animate to the on-screen position.
-            offset.animateTo(
-                targetValue = 0f,
-                animationSpec = tween(
-                    durationMillis = 200,
-                    delayMillis = 100,
-                    easing = CubicBezierEasing(.2f, .2f, 0f, 1f)
+            scope.launch {
+                // Snap to the initial off-screen position.
+                offset.snapTo(targetValue = (columnHeightPx + navigationBarHeight).toFloat())
+                // Animate to the on-screen position.
+                offset.animateTo(
+                    targetValue = 0f,
+                    animationSpec = tween(
+                        durationMillis = 200,
+                        delayMillis = 100,
+                        easing = CubicBezierEasing(.2f, .2f, 0f, 1f)
+                    )
                 )
-            )
+            }
+            scope.launch {
+                delay(300)
+                scaleAnimation.animateTo(
+                    targetValue = 1f,
+                    animationSpec = spring(0.8f, 300f, 0.001f)
+                )
+            }
+
         }
     }
     BackHandler() {
         scope.launch {
             isVisible = false
             // Animate the sheet out of view.
+            scope.launch {
+                scaleAnimation.animateTo(
+                    targetValue = 0f,
+                    animationSpec = tween(200)
+                )
+            }
             offset.animateTo(
                 targetValue = (columnHeightPx + navigationBarHeight).toFloat(),
                 animationSpec = tween(
@@ -180,6 +250,14 @@ fun BottomSheet(
                                 scope.launch {
                                     isVisible = false
                                     // Animate the sheet out of view.
+                                    scope.launch {
+                                        scaleAnimation.animateTo(
+                                            targetValue = 0f,
+                                            animationSpec = tween(200)
+                                        )
+                                        aiViewModel.cancelRequest()
+                                        aiViewModel.clearState()
+                                    }
                                     offset.animateTo(
                                         targetValue = (columnHeightPx + navigationBarHeight).toFloat(),
                                         animationSpec = tween(
@@ -217,7 +295,11 @@ fun BottomSheet(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(bottom = 12.dp),
+                    .padding(bottom = 12.dp)
+                    .graphicsLayer {
+                        scaleX = scaleAnimation.value
+                        scaleY = scaleAnimation.value
+                    },
                 contentAlignment = Alignment.Center
             ) {
                 RotatingGlow(
@@ -311,6 +393,184 @@ fun BottomSheet(
                             })
                         .clip(ContinuousCapsule)
                 ) {
+                    RotatingGlowBorder(
+                        modifier = Modifier.fillMaxSize(),
+                        strokeWidth = 4.dp,
+                        blurRadius = 4.dp,
+                        shape = ContinuousCapsule,
+                        colors = highlightColors,
+                        timeMillis = 3000
+                    )
+                    if (!isLoading) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxSize()
+                        ) {
+                            Box(modifier = Modifier.weight(1f)) {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .padding(start = 16.dp)
+                                ) {
+                                    BasicTextField(
+                                        state = state,
+                                        modifier = Modifier
+                                            .align(Alignment.CenterStart)
+                                            .fillMaxWidth(),
+                                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                                        onKeyboardAction = {
+                                            aiViewModel.generateContent(
+                                                state.text.toString(),
+                                                "AIzaSyBaJWyB648-Vaoe6436FbX3f5OtEslnW_M"
+                                            )
+                                        },
+                                        textStyle = MaterialTheme.typography.bodyLarge.copy(
+                                            color = MaterialTheme.colorScheme.onSurface
+                                        ),
+                                        cursorBrush = SolidColor(MaterialTheme.colorScheme.primary)
+                                    )
+                                    if (state.text.isBlank()) {
+                                        Text(
+                                            "Extract from text...",
+                                            modifier = Modifier
+                                                .align(Alignment.CenterStart)
+                                                .fillMaxWidth()
+                                                .graphicsLayer {
+                                                    alpha = 0.5f
+                                                    blendMode =
+                                                        if (isSystemInDarkTheme) BlendMode.Plus else BlendMode.Luminosity
+                                                },
+                                            style = MaterialTheme.typography.bodyLarge,
+                                            color = if (!isSystemInDarkTheme) Color(0xFF545454) else MaterialTheme.typography.bodyLarge.color
+                                        )
+                                    }
+                                }
+                            }
+                            Box(
+                                modifier = Modifier.size(56.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                CustomAnimatedVisibility(
+                                    visible = !state.text.isBlank(),
+                                    enter = myFadeIn(animationSpec = tween(delayMillis = 100)) + myScaleIn(
+                                        animationSpec = tween(delayMillis = 100),
+                                        initialScale = 0.9f
+                                    ),
+                                    exit = myFadeOut(animationSpec = tween(durationMillis = 100)) + myScaleOut(
+                                        animationSpec = tween(delayMillis = 100),
+                                        targetScale = 0.9f
+                                    )
+                                ) {
+                                    GlasenseButton(
+                                        enabled = true,
+                                        shape = CircleShape,
+                                        onClick = {
+                                            aiViewModel.generateContent(
+                                                state.text.toString(),
+                                                "AIzaSyBaJWyB648-Vaoe6436FbX3f5OtEslnW_M"
+                                            )
+                                        },
+                                        modifier = Modifier
+                                            .width(40.dp)
+                                            .height(40.dp)
+                                            .align(Alignment.Center),
+                                        colors = AppButtonColors.primary()
+                                    ) {
+                                        Box(
+                                            modifier = Modifier
+                                                .fillMaxSize()
+                                                .drawBehind {
+                                                    val outline = CircleShape.createOutline(
+                                                        size = this.size,
+                                                        layoutDirection = this.layoutDirection,
+                                                        density = this,
+                                                    )
+                                                    val gradientBrush = verticalGradient(
+                                                        colorStops = arrayOf(
+                                                            0.0f to Color.White.copy(alpha = 0.2f),
+                                                            1.0f to Color.White.copy(alpha = 0.02f)
+                                                        )
+                                                    )
+                                                    drawOutline(
+                                                        outline = outline,
+                                                        brush = gradientBrush,
+                                                        style = Stroke(width = 3.dp.toPx()),
+                                                        blendMode = BlendMode.Plus
+                                                    )
+                                                }, contentAlignment = Alignment.Center
+                                        ) {
+                                            Icon(
+                                                painter = painterResource(id = R.drawable.ic_arrow_up),
+                                                contentDescription = "Extract",
+                                                modifier = Modifier.width(28.dp)
+                                            )
+                                        }
+                                    }
+                                }
+                                CustomAnimatedVisibility(
+                                    visible = state.text.isBlank(),
+                                    enter = myFadeIn(animationSpec = tween(delayMillis = 100)) + myScaleIn(
+                                        animationSpec = tween(delayMillis = 100),
+                                        initialScale = 0.9f
+                                    ),
+                                    exit = myFadeOut(animationSpec = tween(durationMillis = 100)) + myScaleOut(
+                                        animationSpec = tween(delayMillis = 100),
+                                        targetScale = 0.9f
+                                    )
+                                ) {
+                                    GlasenseButton(
+                                        enabled = true,
+                                        shape = CircleShape,
+                                        onClick = { },
+                                        modifier = Modifier
+                                            .width(40.dp)
+                                            .height(40.dp)
+                                            .align(Alignment.Center),
+                                        colors = AppButtonColors.primary().copy(
+                                            containerColor = Color.Transparent,
+                                            contentColor = MaterialTheme.colorScheme.onBackground
+                                        )
+                                    ) {
+                                        Icon(
+                                            painter = painterResource(R.drawable.ic_photo),
+                                            contentDescription = "Extract from image",
+                                            modifier = Modifier
+                                                .size(32.dp)
+                                                .graphicsLayer {
+                                                    alpha = 0.5f
+                                                }
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    } else {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            RotatingGlowBorder(
+                                modifier = Modifier.fillMaxSize(),
+                                strokeWidth = 8.dp,
+                                blurRadius = 8.dp,
+                                shape = ContinuousCapsule,
+                                colors = highlightColors,
+                                timeMillis = 3000
+                            )
+                            Text(
+                                "Extracting...",
+                                modifier = Modifier
+                                    .align(Alignment.Center)
+                                    .graphicsLayer {
+                                        alpha = 0.5f
+                                        blendMode =
+                                            if (isSystemInDarkTheme) BlendMode.Plus else BlendMode.Luminosity
+                                    },
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = if (!isSystemInDarkTheme) Color(0xFF545454) else MaterialTheme.typography.bodyLarge.color
+                            )
+                        }
+                    }
                 }
             }
             // Container for the AddTodoSheet content.
@@ -334,6 +594,14 @@ fun BottomSheet(
                     scope.launch {
                         isVisible = false
                         // Animate the sheet out of view.
+                        scope.launch {
+                            scaleAnimation.animateTo(
+                                targetValue = 0f,
+                                animationSpec = tween(200)
+                            )
+                            aiViewModel.cancelRequest()
+                            aiViewModel.clearState()
+                        }
                         offset.animateTo(
                             targetValue = (columnHeightPx + navigationBarHeight).toFloat(),
                             animationSpec = tween(
@@ -350,6 +618,14 @@ fun BottomSheet(
                     scope.launch {
                         isVisible = false
                         // Animate the sheet out of view.
+                        scope.launch {
+                            scaleAnimation.animateTo(
+                                targetValue = 0f,
+                                animationSpec = tween(200)
+                            )
+                            aiViewModel.cancelRequest()
+                            aiViewModel.clearState()
+                        }
                         offset.animateTo(
                             targetValue = (columnHeightPx + navigationBarHeight).toFloat(),
                             animationSpec = tween(
@@ -376,131 +652,4 @@ fun BottomSheet(
             )
         }
     }
-}
-
-@Composable
-fun RotatingGlow(
-    modifier: Modifier,
-    blurRadius: Dp,
-    shape: Shape,
-    colors: List<Color>,
-    timeMillis: Int = 1000,
-    backdrop: LayerBackdrop
-) {
-    val infiniteTransition = rememberInfiniteTransition(label = "shadow_rotation")
-    val rotation by infiniteTransition.animateFloat(
-        initialValue = 0f,
-        targetValue = 360f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = timeMillis, easing = LinearEasing),
-        ),
-        label = "rotation_angle"
-    )
-
-    val paint = remember {
-        android.graphics.Paint().apply { isAntiAlias = true }
-    }
-    val gradientMatrix = remember { Matrix() }
-
-    Box(
-        modifier = Modifier
-            .blur(blurRadius, edgeTreatment = BlurredEdgeTreatment.Unbounded)
-            .then(modifier)
-            .layerBackdrop(backdrop)
-            .drawBehind {
-                val centerX = size.width / 2
-                val centerY = size.height / 2
-
-                gradientMatrix.setRotate(rotation, centerX, centerY)
-
-                val sweepGradient = android.graphics.SweepGradient(
-                    centerX,
-                    centerY,
-                    colors.map { it.toArgb() }.toIntArray(),
-                    null
-                )
-                sweepGradient.setLocalMatrix(gradientMatrix)
-                paint.shader = sweepGradient
-
-                drawIntoCanvas { canvas ->
-                    val outline =
-                        shape.createOutline(
-                            Size(
-                                size.width,
-                                size.height
-                            ), layoutDirection, this
-                        )
-
-                    val path = when (outline) {
-                        is Outline.Rectangle -> Path().apply { addRect(outline.rect) }
-                        is Outline.Rounded -> Path().apply { addRoundRect(outline.roundRect) }
-                        is Outline.Generic -> outline.path
-                    }
-                    canvas.nativeCanvas.drawPath(path.asAndroidPath(), paint)
-                }
-            }
-    )
-}
-
-@Composable
-fun RotatingGlowBorder(
-    modifier: Modifier = Modifier,
-    strokeWidth: Dp,
-    blurRadius: Dp,
-    shape: Shape,
-    colors: List<Color>,
-    timeMillis: Int = 2000
-) {
-    val infiniteTransition = rememberInfiniteTransition(label = "border_glow_rotation")
-    val rotation by infiniteTransition.animateFloat(
-        initialValue = 0f,
-        targetValue = 360f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = timeMillis, easing = LinearEasing),
-        ),
-        label = "rotation_angle"
-    )
-
-    val strokeWidthPx = with(LocalDensity.current) { strokeWidth.toPx() }
-
-    val paint = remember(strokeWidthPx) {
-        android.graphics.Paint().apply {
-            isAntiAlias = true
-            style = android.graphics.Paint.Style.STROKE
-            this.strokeWidth = strokeWidthPx
-        }
-    }
-
-    val gradientMatrix = remember { Matrix() }
-
-    Box(
-        modifier = Modifier
-            .graphicsLayer { blendMode = BlendMode.Plus }
-            .blur(radius = blurRadius, edgeTreatment = BlurredEdgeTreatment.Unbounded)
-            .then(modifier)
-            .drawBehind {
-                val centerX = size.width / 2
-                val centerY = size.height / 2
-
-                gradientMatrix.setRotate(rotation, centerX, centerY)
-                val sweepGradient = android.graphics.SweepGradient(
-                    centerX,
-                    centerY,
-                    colors.map { it.toArgb() }.toIntArray(),
-                    null
-                )
-                sweepGradient.setLocalMatrix(gradientMatrix)
-                paint.shader = sweepGradient
-                drawIntoCanvas { canvas ->
-                    val outline = shape.createOutline(size, layoutDirection, this)
-
-                    val path = when (outline) {
-                        is Outline.Rectangle -> Path().apply { addRect(outline.rect) }
-                        is Outline.Rounded -> Path().apply { addRoundRect(outline.roundRect) }
-                        is Outline.Generic -> outline.path
-                    }
-                    canvas.nativeCanvas.drawPath(path.asAndroidPath(), paint)
-                }
-            }
-    )
 }

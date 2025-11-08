@@ -16,7 +16,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.BasicTextField
@@ -36,7 +35,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
@@ -206,21 +204,6 @@ fun AddTodoSheet(
                 textStyle = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onSurface),
                 cursorBrush = SolidColor(MaterialTheme.colorScheme.primary)
             )
-            // AI functions icon.
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .clip(ContinuousRoundedRectangle(12.dp))
-
-            ) {
-                Icon(
-                    painter = painterResource(R.drawable.ic_twotone_sparkles),
-                    contentDescription = "AI Functions",
-                    modifier = Modifier
-                        .size(40.dp)
-                        .align(Alignment.CenterEnd)
-                )
-            }
         }
         Spacer(modifier = Modifier.height(12.dp))
         // Provide the custom overscroll factory to the composable tree.
@@ -407,7 +390,6 @@ fun AddTodoSheet(
                                     targetScale = 0.9f
                                 )
                             ) {
-
                                 HorizontalFlagPicker(
                                     selectedIndex = selectedIndex,
                                     onIndexSelected = { newIndex ->
@@ -415,7 +397,6 @@ fun AddTodoSheet(
                                         selectedButton = SelectedButton.NONE
                                     }
                                 )
-
                             }
                         }
                     }

@@ -5,7 +5,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
@@ -13,17 +12,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material3.Button
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
@@ -40,8 +32,6 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.kyant.capsule.ContinuousCapsule
-import com.kyant.capsule.ContinuousRoundedRectangle
 import com.nevoit.cresto.CrestoApplication
 import com.nevoit.cresto.R
 import com.nevoit.cresto.settings.AIActivity
@@ -53,15 +43,12 @@ import com.nevoit.cresto.ui.components.ConfigContainer
 import com.nevoit.cresto.ui.components.ConfigEntryItem
 import com.nevoit.cresto.ui.components.DynamicSmallTitle
 import com.nevoit.cresto.ui.components.PageHeader
-import com.nevoit.cresto.ui.theme.glasense.AppButtonColors
 import com.nevoit.cresto.ui.theme.glasense.Blue500
 import com.nevoit.cresto.ui.theme.glasense.CalculatedColor
 import com.nevoit.cresto.ui.theme.glasense.Pink400
 import com.nevoit.cresto.ui.theme.glasense.Purple500
 import com.nevoit.cresto.ui.theme.glasense.Slate500
 import com.nevoit.cresto.ui.viewmodel.AiViewModel
-import com.nevoit.cresto.ui.viewmodel.UiState
-import com.nevoit.cresto.util.g2
 import dev.chrisbanes.haze.ExperimentalHazeApi
 import dev.chrisbanes.haze.hazeSource
 import dev.chrisbanes.haze.rememberHazeState
@@ -203,68 +190,6 @@ fun SettingsScreen(aiViewModel: AiViewModel = viewModel()) {
                     )
                 }
                 Spacer(modifier = Modifier.height(12.dp))
-            }
-            item {
-                ConfigContainer(title = "Test Only", backgroundColor = hierarchicalSurfaceColor) {
-                    Column {
-                        OutlinedTextField(
-                            value = apiKey,
-                            onValueChange = { apiKey = it },
-                            modifier = Modifier.fillMaxWidth(),
-                            shape = ContinuousRoundedRectangle(12.dp, g2)
-                        )
-                        Spacer(modifier = Modifier.height(12.dp))
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            OutlinedTextField(
-                                value = promptText,
-                                onValueChange = { promptText = it },
-                                modifier = Modifier.weight(1f),
-                                shape = ContinuousRoundedRectangle(12.dp, g2)
-                            )
-                            Spacer(modifier = Modifier.width(12.dp))
-                            Button(
-                                onClick = {
-                                    aiViewModel.generateContent(promptText, apiKey)
-                                },
-                                shape = ContinuousCapsule,
-                                modifier = Modifier.size(48.dp),
-                                contentPadding = PaddingValues(0.dp),
-                                colors = AppButtonColors.primary()
-
-                            ) {
-                                Text("Go")
-                            }
-                        }
-                        when (val state = uiState) {
-                            is UiState.Initial -> {
-                                Text("Input text")
-                            }
-
-                            is UiState.Loading -> {
-                                CircularProgressIndicator()
-                            }
-
-                            is UiState.Success -> {
-                                Column {
-                                    Text(
-                                        "${state.response.quantity} tasks in total",
-                                        style = MaterialTheme.typography.titleMedium
-                                    )
-                                    viewModel.insertAiGeneratedTodos(state.response.items)
-                                    aiViewModel.clearState()
-                                }
-                            }
-
-                            is UiState.Error -> {
-                                Text(
-                                    text = "Error: ${state.message}",
-                                    color = MaterialTheme.colorScheme.error
-                                )
-                            }
-                        }
-                    }
-
-                }
             }
             item {
                 Spacer(Modifier.height(200.dp))

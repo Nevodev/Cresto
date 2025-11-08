@@ -5,22 +5,53 @@ import androidx.lifecycle.viewModelScope
 import com.google.ai.client.generativeai.GenerativeModel
 import com.google.ai.client.generativeai.type.content
 import com.nevoit.cresto.data.EventResponse
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 import java.time.LocalDateTime
+import kotlin.coroutines.cancellation.CancellationException
+
+/**
+ * UI状态 (State)
+ * 只描述UI的持久外观，不携带一次性数据。
+ * UI根据这个状态来决定是显示加载圈还是显示主内容。
+ */
+sealed interface UiState {
+    object Initial : UiState
+    object Loading : UiState
+}
+
+/**
+ * 一次性事件 (Side Effect / Event)
+ * 用于从ViewModel向UI发送需要被处理一次的命令。
+ */
+sealed interface AiSideEffect {
+    data class ShowError(val message: String) : AiSideEffect
+    data class ProcessSuccess(val response: EventResponse) : AiSideEffect
+}
+
 
 class AiViewModel : ViewModel() {
 
+    // StateFlow用于管理持久的UI状态
     private val _uiState = MutableStateFlow<UiState>(UiState.Initial)
-    val uiState: StateFlow<UiState> = _uiState.asStateFlow()
-    val date = LocalDateTime.now().toString()
-    private val systemInstruction = content(role = "system") {
-        text(
-            """
-            现在时间是${date}你是一个信息提取AI助手。你的任务是分析我发送给你的文本或图片内容，并严格按照以下要求提取待办事项信息，最后以指定的JSON格式返回。
+    val uiState = _uiState.asStateFlow()
+
+    // 【核心改动】SharedFlow用于发送一次性的事件
+    private val _sideEffect = MutableSharedFlow<AiSideEffect>()
+    val sideEffect = _sideEffect.asSharedFlow()
+
+    private var generationJob: Job? = null
+
+    // --- 省略了 getSystemInstruction 和 cleanJsonString 方法，它们保持不变 ---
+    private fun getSystemInstruction(): String {
+        val date = LocalDateTime.now().toString()
+        return """
+            现在时间是${date}。你是一个信息提取AI助手。你的任务是分析我发送给你的文本或图片内容，并严格按照以下要求提取待办事项信息，最后以指定的JSON格式返回。
 
 提取规则:
 
@@ -60,11 +91,8 @@ class AiViewModel : ViewModel() {
 }
 
 从现在开始处理我发送给你的信息，并仅返回符合上述要求的JSON对象，不要包含任何额外的解释或文字。
-        """.trimIndent()
-        )
+         """.trimIndent()
     }
-
-    // 2. 在初始化 GenerativeModel 时传入这个设定
 
     private fun cleanJsonString(rawText: String): String {
         val trimmedText = rawText.trim()
@@ -85,20 +113,23 @@ class AiViewModel : ViewModel() {
 
         return trimmedText
     }
+    // -------------------------------------------------------------------------
+
 
     fun generateContent(prompt: String, apiKey: String) {
-        viewModelScope.launch {
+        generationJob?.cancel()
+
+        generationJob = viewModelScope.launch {
             val generativeModel = GenerativeModel(
-                // 推荐使用支持多模态（图片和文字）的模型
-                modelName = "gemini-2.5-flash",
+                modelName = "gemini-2.0-flash", // 建议使用最新的稳定模型
                 apiKey = apiKey,
-                systemInstruction = systemInstruction
+                systemInstruction = content(role = "system") { text(getSystemInstruction()) }
             )
+            // 1. 设置加载状态
             _uiState.value = UiState.Loading
             try {
                 val response = generativeModel.generateContent(prompt)
                 val rawResponseText = response.text ?: ""
-
                 val cleanedJsonText = cleanJsonString(rawResponseText)
 
                 if (cleanedJsonText.isEmpty()) {
@@ -106,24 +137,31 @@ class AiViewModel : ViewModel() {
                 }
 
                 val eventResponse = Json.decodeFromString<EventResponse>(cleanedJsonText)
-                _uiState.value = UiState.Success(eventResponse)
+
+                // 【核心改动】成功时，发送ProcessSuccess事件
+                _sideEffect.emit(AiSideEffect.ProcessSuccess(eventResponse))
 
             } catch (e: Exception) {
-                _uiState.value =
-                    UiState.Error(e.localizedMessage ?: "发生未知错误，可能是JSON格式不正确")
+                // 如果不是主动取消协程导致的异常
+                if (e !is CancellationException) {
+                    // 【核心改动】失败时，发送ShowError事件
+                    val errorMessage = e.localizedMessage ?: "发生未知错误，可能是JSON格式不正确"
+                    _sideEffect.emit(AiSideEffect.ShowError(errorMessage))
+                }
+                // 如果是CancellationException，则静默处理，不发送错误事件
+            } finally {
+                // 【核心改动】无论成功、失败还是取消，最后都将状态重置为Initial
+                _uiState.value = UiState.Initial
+                generationJob = null
             }
         }
+    }
+
+    fun cancelRequest() {
+        generationJob?.cancel()
     }
 
     fun clearState() {
         _uiState.value = UiState.Initial
     }
-
-}
-
-sealed interface UiState {
-    object Initial : UiState
-    object Loading : UiState
-    data class Success(val response: EventResponse) : UiState
-    data class Error(val message: String) : UiState
 }
