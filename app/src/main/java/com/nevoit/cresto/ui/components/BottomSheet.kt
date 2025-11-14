@@ -158,6 +158,7 @@ fun BottomSheet(
         )
     )
     val isLoading = uiState is UiState.Loading
+    val apikey = "AIzaSyAj2y_TMVC6TkyKhgfwjpSv2_l4_qidByo"
 
     LaunchedEffect(true) {
         aiViewModel.sideEffect.collect { effect ->
@@ -421,7 +422,7 @@ fun BottomSheet(
                                         onKeyboardAction = {
                                             aiViewModel.generateContent(
                                                 state.text.toString(),
-                                                "AIzaSyBaJWyB648-Vaoe6436FbX3f5OtEslnW_M"
+                                                apikey
                                             )
                                         },
                                         textStyle = MaterialTheme.typography.bodyLarge.copy(
@@ -467,7 +468,7 @@ fun BottomSheet(
                                         onClick = {
                                             aiViewModel.generateContent(
                                                 state.text.toString(),
-                                                "AIzaSyBaJWyB648-Vaoe6436FbX3f5OtEslnW_M"
+                                                apikey
                                             )
                                         },
                                         modifier = Modifier

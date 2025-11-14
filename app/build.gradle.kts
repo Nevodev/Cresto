@@ -1,3 +1,4 @@
+import com.android.build.gradle.internal.api.BaseVariantOutputImpl
 import java.io.FileInputStream
 import java.util.Locale
 import java.util.Properties
@@ -40,6 +41,20 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         ndk {
             abiFilters.add("arm64-v8a")
+        }
+
+        setProperty("archivesBaseName", "cresto-alpha${versionCode}")
+    }
+
+    applicationVariants.all {
+        outputs.map { it as BaseVariantOutputImpl }.forEach { output ->
+            val originalFileName = output.outputFileName
+            val newName = originalFileName.replace(
+                ".apk",
+                ".APK"
+            )
+
+            output.outputFileName = newName
         }
     }
 
