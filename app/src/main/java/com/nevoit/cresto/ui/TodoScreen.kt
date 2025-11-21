@@ -53,6 +53,8 @@ import com.nevoit.cresto.ui.gaussiangradient.smoothGradientMaskFallback
 import com.nevoit.cresto.ui.theme.glasense.CalculatedColor
 import com.nevoit.cresto.ui.theme.glasense.linearGradientMaskB2T70
 import com.nevoit.cresto.ui.theme.glasense.linearGradientMaskB2T90
+import com.nevoit.cresto.ui.viewmodel.TodoViewModel
+import com.nevoit.cresto.ui.viewmodel.TodoViewModelFactory
 import dev.chrisbanes.haze.ExperimentalHazeApi
 import dev.chrisbanes.haze.HazeInputScale
 import dev.chrisbanes.haze.HazeProgressive

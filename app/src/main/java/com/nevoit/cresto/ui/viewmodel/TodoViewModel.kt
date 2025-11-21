@@ -1,10 +1,12 @@
-package com.nevoit.cresto.ui
+package com.nevoit.cresto.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.nevoit.cresto.data.EventItem
+import com.nevoit.cresto.data.SubTodoItem
 import com.nevoit.cresto.data.TodoItem
+import com.nevoit.cresto.data.TodoItemWithSubTodos
 import com.nevoit.cresto.repository.TodoRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -22,7 +24,7 @@ data class BottomSheetUiState(
 )
 
 class TodoViewModel(private val repository: TodoRepository) : ViewModel() {
-    val allTodos: StateFlow<List<TodoItem>> = repository.allTodos.stateIn(
+    val allTodos: StateFlow<List<TodoItemWithSubTodos>> = repository.allTodos.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
         initialValue = emptyList()
@@ -58,11 +60,11 @@ class TodoViewModel(private val repository: TodoRepository) : ViewModel() {
 
     fun deleteSelectedItems() {
         val selectedIds = _selectedItemIds.value
-        val itemsToDelete = allTodos.value.filter { it.id in selectedIds }
+        val itemsToDelete = allTodos.value.filter { it.todoItem.id in selectedIds }
 
         viewModelScope.launch {
             itemsToDelete.forEach { item ->
-                delete(item)
+                delete(item.todoItem)
             }
             clearSelections()
         }
@@ -89,6 +91,19 @@ class TodoViewModel(private val repository: TodoRepository) : ViewModel() {
         _revealedItemId.value = null
     }
 
+    // --- SubTodo Operations ---
+
+    fun insertSubTodo(item: SubTodoItem) = viewModelScope.launch {
+        repository.insertSubTodo(item)
+    }
+
+    fun updateSubTodo(item: SubTodoItem) = viewModelScope.launch {
+        repository.updateSubTodo(item)
+    }
+
+    fun deleteSubTodo(item: SubTodoItem) = viewModelScope.launch {
+        repository.deleteSubTodo(item)
+    }
 
     // Swipe to delete
     private val _revealedItemId = MutableStateFlow<Int?>(null)

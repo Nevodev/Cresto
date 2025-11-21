@@ -30,6 +30,8 @@ import com.nevoit.cresto.ui.components.DynamicSmallTitle
 import com.nevoit.cresto.ui.components.PageHeader
 import com.nevoit.cresto.ui.theme.glasense.CalculatedColor
 import com.nevoit.cresto.ui.viewmodel.AiViewModel
+import com.nevoit.cresto.ui.viewmodel.TodoViewModel
+import com.nevoit.cresto.ui.viewmodel.TodoViewModelFactory
 import dev.chrisbanes.haze.ExperimentalHazeApi
 import dev.chrisbanes.haze.hazeSource
 import dev.chrisbanes.haze.rememberHazeState

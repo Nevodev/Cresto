@@ -49,6 +49,8 @@ import com.nevoit.cresto.ui.theme.glasense.Pink400
 import com.nevoit.cresto.ui.theme.glasense.Purple500
 import com.nevoit.cresto.ui.theme.glasense.Slate500
 import com.nevoit.cresto.ui.viewmodel.AiViewModel
+import com.nevoit.cresto.ui.viewmodel.TodoViewModel
+import com.nevoit.cresto.ui.viewmodel.TodoViewModelFactory
 import dev.chrisbanes.haze.ExperimentalHazeApi
 import dev.chrisbanes.haze.hazeSource
 import dev.chrisbanes.haze.rememberHazeState

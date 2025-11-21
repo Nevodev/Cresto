@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -25,9 +26,11 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -60,6 +63,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.kyant.capsule.ContinuousCapsule
 import com.kyant.capsule.ContinuousRoundedRectangle
 import com.nevoit.cresto.R
+import com.nevoit.cresto.data.SubTodoItem
 import com.nevoit.cresto.ui.components.DynamicSmallTitle
 import com.nevoit.cresto.ui.components.PageHeader
 import com.nevoit.cresto.ui.components.SwipeableTodoItem
@@ -70,6 +74,7 @@ import com.nevoit.cresto.ui.components.glasense.MenuItemData
 import com.nevoit.cresto.ui.theme.glasense.Blue500
 import com.nevoit.cresto.ui.theme.glasense.CalculatedColor
 import com.nevoit.cresto.ui.theme.glasense.Red500
+import com.nevoit.cresto.ui.viewmodel.TodoViewModel
 import com.nevoit.cresto.util.g2
 import dev.chrisbanes.haze.ExperimentalHazeApi
 import dev.chrisbanes.haze.hazeSource
@@ -217,9 +222,9 @@ fun HomeScreen(
             }
             items(
                 items = todoList,
-                key = { it.id },
+                key = { it.todoItem.id },
             ) { item ->
-                val isSelected = item.id in selectedItemIds
+                val isSelected = item.todoItem.id in selectedItemIds
                 val alpha = remember { Animatable(if (isSelected) 1f else 0f) }
                 LaunchedEffect(isSelected) {
                     if (isSelected) {
@@ -238,16 +243,16 @@ fun HomeScreen(
                             onLongClick = {
                                 if (!isSelectionModeActive) {
                                     scope.launch {
-                                        viewModel.enterSelectionMode(item.id)
+                                        viewModel.enterSelectionMode(item.todoItem.id)
                                     }
                                 } else {
-                                    viewModel.toggleSelection(item.id)
+                                    viewModel.toggleSelection(item.todoItem.id)
                                 }
                             },
                             onClick = {
                                 if (isSelectionModeActive) {
                                     scope.launch {
-                                        viewModel.toggleSelection(item.id)
+                                        viewModel.toggleSelection(item.todoItem.id)
                                     }
                                 }
                             }
@@ -255,14 +260,14 @@ fun HomeScreen(
                 ) {
                     Box {
                         SwipeableTodoItem(
-                            item = item,
-                            isRevealed = (item.id == revealedItemId),
-                            onExpand = { viewModel.onItemExpanded(item.id) },
-                            onCollapse = { viewModel.onItemCollapsed(item.id) },
+                            item = item.todoItem,
+                            isRevealed = (item.todoItem.id == revealedItemId),
+                            onExpand = { viewModel.onItemExpanded(item.todoItem.id) },
+                            onCollapse = { viewModel.onItemCollapsed(item.todoItem.id) },
                             onCheckedChange = { isChecked ->
-                                viewModel.update(item.copy(isCompleted = isChecked))
+                                viewModel.update(item.todoItem.copy(isCompleted = isChecked))
                             },
-                            onDeleteClick = { viewModel.delete(item) },
+                            onDeleteClick = { viewModel.delete(item.todoItem) },
                             modifier = Modifier
                                 .then(if (isComposed) Modifier.drawBehind {
                                     val outline =
@@ -293,12 +298,28 @@ fun HomeScreen(
                                         indication = null,
                                         onClick = {
                                             scope.launch {
-                                                viewModel.toggleSelection(item.id)
+                                                viewModel.toggleSelection(item.todoItem.id)
                                             }
                                         }
                                     )) {}
                         }
                     }
+                    // ADDED: Display sub-todos if they exist
+                    if (item.subTodos.isNotEmpty()) {
+                        Column(
+                            modifier = Modifier.padding(start = 32.dp, top = 4.dp, end = 16.dp)
+                        ) {
+                            item.subTodos.forEach { subTodo ->
+                                SubTodoRow(
+                                    subTodo = subTodo,
+                                    onCheckedChange = { isChecked ->
+                                        viewModel.updateSubTodo(subTodo.copy(isCompleted = isChecked))
+                                    }
+                                )
+                            }
+                        }
+                    }
+
                     Spacer(modifier = Modifier.height(12.dp))
                 }
             }
@@ -468,5 +489,31 @@ fun HomeScreen(
                 )
             }
         }
+    }
+}
+
+
+// ADDED: Composable for displaying a single sub-todo item
+@Composable
+fun SubTodoRow(
+    subTodo: SubTodoItem,
+    onCheckedChange: (Boolean) -> Unit
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(40.dp)
+    ) {
+        Checkbox(
+            checked = subTodo.isCompleted,
+            onCheckedChange = onCheckedChange
+        )
+        Spacer(modifier = Modifier.width(8.dp))
+        Text(
+            text = subTodo.description,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
     }
 }

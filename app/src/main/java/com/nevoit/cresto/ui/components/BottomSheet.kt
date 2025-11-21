@@ -72,8 +72,6 @@ import com.kyant.backdrop.effects.colorControls
 import com.kyant.capsule.ContinuousCapsule
 import com.nevoit.cresto.CrestoApplication
 import com.nevoit.cresto.R
-import com.nevoit.cresto.ui.TodoViewModel
-import com.nevoit.cresto.ui.TodoViewModelFactory
 import com.nevoit.cresto.ui.components.glasense.DialogItemData
 import com.nevoit.cresto.ui.components.glasense.GlasenseButton
 import com.nevoit.cresto.ui.components.glasense.RotatingGlow
@@ -85,6 +83,8 @@ import com.nevoit.cresto.ui.theme.glasense.highlightColorsDark
 import com.nevoit.cresto.ui.theme.glasense.highlightColorsLight
 import com.nevoit.cresto.ui.viewmodel.AiSideEffect
 import com.nevoit.cresto.ui.viewmodel.AiViewModel
+import com.nevoit.cresto.ui.viewmodel.TodoViewModel
+import com.nevoit.cresto.ui.viewmodel.TodoViewModelFactory
 import com.nevoit.cresto.ui.viewmodel.UiState
 import com.nevoit.cresto.util.deviceCornerShape
 import kotlinx.coroutines.delay
@@ -158,7 +158,7 @@ fun BottomSheet(
         )
     )
     val isLoading = uiState is UiState.Loading
-    val apikey = "AIzaSyAj2y_TMVC6TkyKhgfwjpSv2_l4_qidByo"
+    val apikey = "placeholder"
 
     LaunchedEffect(true) {
         aiViewModel.sideEffect.collect { effect ->
