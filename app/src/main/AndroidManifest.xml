@@ -45,6 +45,11 @@
             android:exported="false"
             android:parentActivityName=".MainActivity"
             android:theme="@style/Theme.Cresto" />
+        <activity
+            android:name=".ui.detailscreen.DetailActivity"
+            android:exported="false"
+            android:parentActivityName=".MainActivity"
+            android:theme="@style/Theme.Cresto" />
     </application>
 
 </manifest>

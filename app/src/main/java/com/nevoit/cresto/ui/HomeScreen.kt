@@ -1,5 +1,6 @@
 package com.nevoit.cresto.ui
 
+import android.content.Intent
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
@@ -55,6 +56,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionOnScreen
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.LayoutDirection
@@ -71,6 +73,7 @@ import com.nevoit.cresto.ui.components.glasense.DialogItemData
 import com.nevoit.cresto.ui.components.glasense.GlasenseButton
 import com.nevoit.cresto.ui.components.glasense.GlasenseButtonAdaptable
 import com.nevoit.cresto.ui.components.glasense.MenuItemData
+import com.nevoit.cresto.ui.detailscreen.DetailActivity
 import com.nevoit.cresto.ui.theme.glasense.Blue500
 import com.nevoit.cresto.ui.theme.glasense.CalculatedColor
 import com.nevoit.cresto.ui.theme.glasense.Red500
@@ -84,11 +87,12 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalHazeApi::class)
 @Composable
 fun HomeScreen(
-    showMenu: (anchorPosition: androidx.compose.ui.geometry.Offset, items: List<MenuItemData>) -> Unit,
+    showMenu: (anchorPosition: Offset, items: List<MenuItemData>) -> Unit,
     showDialog: (items: List<DialogItemData>, title: String, message: String?) -> Unit,
     viewModel: TodoViewModel
 ) {
     val scope = rememberCoroutineScope()
+    val context = LocalContext.current
 
 
     val todoList by viewModel.allTodos.collectAsStateWithLifecycle()
@@ -254,6 +258,12 @@ fun HomeScreen(
                                     scope.launch {
                                         viewModel.toggleSelection(item.todoItem.id)
                                     }
+                                } else {
+                                    val intent =
+                                        Intent(context, DetailActivity::class.java).apply {
+                                            putExtra("todo_id", item.todoItem.id)
+                                        }
+                                    context.startActivity(intent)
                                 }
                             }
                         )
