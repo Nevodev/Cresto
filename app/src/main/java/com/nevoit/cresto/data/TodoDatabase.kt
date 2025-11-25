@@ -30,9 +30,6 @@ abstract class TodoDatabase : RoomDatabase() {
                     TodoDatabase::class.java,
                     "todo_database"
                 )
-                    // This will clear the database on a version upgrade. 
-                    // For a real app, you'd want to implement a proper migration.
-                    .fallbackToDestructiveMigration()
                     // Build the database instance.
                     .build()
                 // Assign the newly created instance to the INSTANCE variable.
