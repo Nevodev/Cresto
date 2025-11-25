@@ -195,6 +195,8 @@ fun HomeScreen(
     }
     val dpPx = with(density) { 1.dp.toPx() }
 
+    val (incompleteTodos, completeTodos) = todoList.partition { !it.todoItem.isCompleted }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -225,7 +227,7 @@ fun HomeScreen(
                 PageHeader(title = "All Todos", statusBarHeight = statusBarHeight)
             }
             items(
-                items = todoList,
+                items = incompleteTodos,
                 key = { it.todoItem.id },
             ) { item ->
                 val isSelected = item.todoItem.id in selectedItemIds
@@ -299,6 +301,7 @@ fun HomeScreen(
                                     }
                                 } else Modifier)
                         )
+                        // Selection mode selector box
                         if (isSelectionModeActive) {
                             Box(
                                 modifier = Modifier
@@ -314,7 +317,7 @@ fun HomeScreen(
                                     )) {}
                         }
                     }
-                    // ADDED: Display sub-todos if they exist
+                    // Display sub-todos if they exist
                     if (item.subTodos.isNotEmpty()) {
                         Column(
                             modifier = Modifier.padding(start = 32.dp, top = 4.dp, end = 16.dp)
@@ -331,6 +334,127 @@ fun HomeScreen(
                     }
 
                     Spacer(modifier = Modifier.height(12.dp))
+                }
+            }
+
+            if (completeTodos.isNotEmpty()) {
+                item {
+                    Text(
+                        text = "Completed",
+                        style = MaterialTheme.typography.titleMedium,
+                        modifier = Modifier
+                            .padding(top = 16.dp, bottom = 8.dp, start = 12.dp)
+                            .animateItem()
+                    )
+                }
+                items(
+                    items = completeTodos,
+                    key = { it.todoItem.id },
+                ) { item ->
+                    val isSelected = item.todoItem.id in selectedItemIds
+                    val alpha = remember { Animatable(if (isSelected) 1f else 0f) }
+                    LaunchedEffect(isSelected) {
+                        if (isSelected) {
+                            alpha.animateTo(1f, tween(100))
+                        } else {
+                            alpha.animateTo(0f, tween(100))
+                        }
+                    }
+
+                    Column(
+                        modifier = Modifier
+                            .animateItem(placementSpec = spring(0.9f, 400f))
+                            .combinedClickable(
+                                interactionSource = interactionSource,
+                                indication = null,
+                                onLongClick = {
+                                    if (!isSelectionModeActive) {
+                                        scope.launch {
+                                            viewModel.enterSelectionMode(item.todoItem.id)
+                                        }
+                                    } else {
+                                        viewModel.toggleSelection(item.todoItem.id)
+                                    }
+                                },
+                                onClick = {
+                                    if (isSelectionModeActive) {
+                                        scope.launch {
+                                            viewModel.toggleSelection(item.todoItem.id)
+                                        }
+                                    } else {
+                                        val intent =
+                                            Intent(context, DetailActivity::class.java).apply {
+                                                putExtra("todo_id", item.todoItem.id)
+                                            }
+                                        context.startActivity(intent)
+                                    }
+                                }
+                            )
+                    ) {
+                        Box {
+                            SwipeableTodoItem(
+                                item = item.todoItem,
+                                isRevealed = (item.todoItem.id == revealedItemId),
+                                onExpand = { viewModel.onItemExpanded(item.todoItem.id) },
+                                onCollapse = { viewModel.onItemCollapsed(item.todoItem.id) },
+                                onCheckedChange = { isChecked ->
+                                    viewModel.update(item.todoItem.copy(isCompleted = isChecked))
+                                },
+                                onDeleteClick = { viewModel.delete(item.todoItem) },
+                                modifier = Modifier
+                                    .then(if (isComposed) Modifier.drawBehind {
+                                        val outline =
+                                            ContinuousRoundedRectangle(10.5.dp, g2).createOutline(
+                                                size = Size(
+                                                    this.size.width - 3.dp.toPx(),
+                                                    this.size.height - 3.dp.toPx()
+                                                ),
+                                                layoutDirection = LayoutDirection.Ltr,
+                                                density = density
+                                            )
+                                        translate(1.5.dp.toPx(), 1.5.dp.toPx()) {
+                                            drawOutline(
+                                                outline = outline,
+                                                color = Blue500,
+                                                alpha = alpha.value,
+                                                style = Stroke(width = 3.dp.toPx()),
+                                            )
+                                        }
+                                    } else Modifier)
+                            )
+                            if (isSelectionModeActive) {
+                                Box(
+                                    modifier = Modifier
+                                        .matchParentSize()
+                                        .combinedClickable(
+                                            interactionSource = interactionSource,
+                                            indication = null,
+                                            onClick = {
+                                                scope.launch {
+                                                    viewModel.toggleSelection(item.todoItem.id)
+                                                }
+                                            }
+                                        )) {}
+                            }
+                        }
+                        // ADDED: Display sub-todos if they exist
+                        if (item.subTodos.isNotEmpty()) {
+                            Column(
+                                modifier = Modifier.padding(start = 32.dp, top = 4.dp, end = 16.dp)
+                            ) {
+                                item.subTodos.forEach { subTodo ->
+                                    SubTodoRow(
+                                        subTodo = subTodo,
+                                        onCheckedChange = { isChecked ->
+                                            viewModel.updateSubTodo(subTodo.copy(isCompleted = isChecked))
+                                        }
+                                    )
+                                }
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(12.dp))
+                    }
                 }
             }
         }
