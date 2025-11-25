@@ -14,22 +14,29 @@ import androidx.compose.foundation.gestures.draggable
 import androidx.compose.foundation.gestures.rememberDraggableState
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.isImeVisible
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -40,17 +47,25 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Brush.Companion.verticalGradient
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.kyant.capsule.ContinuousRoundedRectangle
 import com.nevoit.cresto.R
 import com.nevoit.cresto.data.TodoItem
@@ -403,5 +418,84 @@ fun SwipeableTodoItem(
         ) {
             TodoItemRow(item, onCheckedChange, modifier)
         }
+    }
+}
+
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+fun TodoItemRowEditable(
+    item: TodoItem,
+    onCheckedChange: (Boolean) -> Unit,
+    modifier: Modifier,
+    onEditEnd: (String) -> Unit,
+) {
+
+    val state = rememberTextFieldState(initialText = item.title)
+    val focusRequester = remember { FocusRequester() }
+
+    val scope = rememberCoroutineScope()
+
+    val isKeyboardVisible = WindowInsets.isImeVisible
+
+    val focusManager = LocalFocusManager.current
+
+    LaunchedEffect(isKeyboardVisible) {
+        if (!isKeyboardVisible) {
+            onEditEnd(state.text.toString())
+        }
+    }
+    val lifecycleOwner = LocalLifecycleOwner.current
+
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_PAUSE) {
+                onEditEnd(state.text.toString())
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
+    }
+
+    Row(
+        modifier = Modifier
+            .defaultMinSize(minHeight = 68.dp)
+            .fillMaxWidth()
+            .background(
+                color = CalculatedColor.hierarchicalSurfaceColor,
+                shape = ContinuousRoundedRectangle(12.dp, g2),
+            )
+            .then(modifier),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Spacer(modifier = Modifier.width(12.dp))
+        CustomCheckbox(
+            checked = item.isCompleted,
+            onCheckedChange = onCheckedChange
+        )
+        Spacer(modifier = Modifier.width(12.dp))
+
+        BasicTextField(
+            state = state,
+            modifier = Modifier
+                .weight(1f)
+                .padding(vertical = 12.dp)
+                .fillMaxWidth()
+                .focusRequester(focusRequester),
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+            onKeyboardAction = {
+                scope.launch { focusManager.clearFocus() }
+                scope.launch { onEditEnd(state.text.toString()) }
+            },
+            textStyle = MaterialTheme.typography.bodyMedium.copy(
+                color = MaterialTheme.colorScheme.onSurface,
+                textDecoration = if (item.isCompleted) TextDecoration.LineThrough else TextDecoration.None,
+            ),
+            cursorBrush = SolidColor(MaterialTheme.colorScheme.primary)
+        )
+
+        Spacer(modifier = Modifier.width(12.dp))
     }
 }

@@ -348,9 +348,9 @@ fun HomeScreen(
                     val degree = remember { Animatable(if (completedVisible) 90f else 270f) }
                     LaunchedEffect(completedVisible) {
                         if (completedVisible) {
-                            degree.animateTo(90f, tween(300))
+                            degree.animateTo(90f, tween(200))
                         } else {
-                            degree.animateTo(270f, tween(300))
+                            degree.animateTo(270f, tween(200))
                         }
                     }
                     Row(
@@ -364,13 +364,13 @@ fun HomeScreen(
                                 onClick = { completedVisible = !completedVisible }
                             )
                             .padding(top = 8.dp, bottom = 8.dp, start = 12.dp)
-                            .animateItem()
+                            .animateItem(fadeInSpec = tween(100), fadeOutSpec = tween(100))
                     ) {
                         Text(
                             text = "Completed",
-                            fontSize = 16.sp,
-                            lineHeight = 16.sp,
-                            fontWeight = FontWeight.Medium,
+                            fontSize = 14.sp,
+                            lineHeight = 14.sp,
+                            fontWeight = FontWeight.Normal,
                             color = MaterialTheme.colorScheme.onBackground.copy(.5f)
                         )
                         Icon(
