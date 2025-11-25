@@ -5,9 +5,11 @@ import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -44,6 +46,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.BlurredEdgeTreatment
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
@@ -59,8 +62,10 @@ import androidx.compose.ui.layout.positionOnScreen
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.kyant.capsule.ContinuousCapsule
 import com.kyant.capsule.ContinuousRoundedRectangle
@@ -196,6 +201,7 @@ fun HomeScreen(
     val dpPx = with(density) { 1.dp.toPx() }
 
     val (incompleteTodos, completeTodos) = todoList.partition { !it.todoItem.isCompleted }
+    var completedVisible by remember { mutableStateOf(true) }
 
     Box(
         modifier = Modifier
@@ -339,121 +345,162 @@ fun HomeScreen(
 
             if (completeTodos.isNotEmpty()) {
                 item {
-                    Text(
-                        text = "Completed",
-                        style = MaterialTheme.typography.titleMedium,
-                        modifier = Modifier
-                            .padding(top = 16.dp, bottom = 8.dp, start = 12.dp)
-                            .animateItem()
-                    )
-                }
-                items(
-                    items = completeTodos,
-                    key = { it.todoItem.id },
-                ) { item ->
-                    val isSelected = item.todoItem.id in selectedItemIds
-                    val alpha = remember { Animatable(if (isSelected) 1f else 0f) }
-                    LaunchedEffect(isSelected) {
-                        if (isSelected) {
-                            alpha.animateTo(1f, tween(100))
+                    val degree = remember { Animatable(if (completedVisible) 90f else 270f) }
+                    LaunchedEffect(completedVisible) {
+                        if (completedVisible) {
+                            degree.animateTo(90f, tween(300))
                         } else {
-                            alpha.animateTo(0f, tween(100))
+                            degree.animateTo(270f, tween(300))
                         }
                     }
-
-                    Column(
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween,
                         modifier = Modifier
-                            .animateItem(placementSpec = spring(0.9f, 400f))
-                            .combinedClickable(
+                            .fillMaxWidth()
+                            .clickable(
                                 interactionSource = interactionSource,
                                 indication = null,
-                                onLongClick = {
-                                    if (!isSelectionModeActive) {
-                                        scope.launch {
-                                            viewModel.enterSelectionMode(item.todoItem.id)
-                                        }
-                                    } else {
-                                        viewModel.toggleSelection(item.todoItem.id)
-                                    }
-                                },
-                                onClick = {
-                                    if (isSelectionModeActive) {
-                                        scope.launch {
-                                            viewModel.toggleSelection(item.todoItem.id)
-                                        }
-                                    } else {
-                                        val intent =
-                                            Intent(context, DetailActivity::class.java).apply {
-                                                putExtra("todo_id", item.todoItem.id)
-                                            }
-                                        context.startActivity(intent)
-                                    }
-                                }
+                                onClick = { completedVisible = !completedVisible }
                             )
+                            .padding(top = 8.dp, bottom = 8.dp, start = 12.dp)
+                            .animateItem()
                     ) {
-                        Box {
-                            SwipeableTodoItem(
-                                item = item.todoItem,
-                                isRevealed = (item.todoItem.id == revealedItemId),
-                                onExpand = { viewModel.onItemExpanded(item.todoItem.id) },
-                                onCollapse = { viewModel.onItemCollapsed(item.todoItem.id) },
-                                onCheckedChange = { isChecked ->
-                                    viewModel.update(item.todoItem.copy(isCompleted = isChecked))
-                                },
-                                onDeleteClick = { viewModel.delete(item.todoItem) },
-                                modifier = Modifier
-                                    .then(if (isComposed) Modifier.drawBehind {
-                                        val outline =
-                                            ContinuousRoundedRectangle(10.5.dp, g2).createOutline(
-                                                size = Size(
-                                                    this.size.width - 3.dp.toPx(),
-                                                    this.size.height - 3.dp.toPx()
-                                                ),
-                                                layoutDirection = LayoutDirection.Ltr,
-                                                density = density
-                                            )
-                                        translate(1.5.dp.toPx(), 1.5.dp.toPx()) {
-                                            drawOutline(
-                                                outline = outline,
-                                                color = Blue500,
-                                                alpha = alpha.value,
-                                                style = Stroke(width = 3.dp.toPx()),
-                                            )
-                                        }
-                                    } else Modifier)
-                            )
-                            if (isSelectionModeActive) {
-                                Box(
-                                    modifier = Modifier
-                                        .matchParentSize()
-                                        .combinedClickable(
-                                            interactionSource = interactionSource,
-                                            indication = null,
-                                            onClick = {
-                                                scope.launch {
-                                                    viewModel.toggleSelection(item.todoItem.id)
-                                                }
-                                            }
-                                        )) {}
-                            }
-                        }
-                        // ADDED: Display sub-todos if they exist
-                        if (item.subTodos.isNotEmpty()) {
-                            Column(
-                                modifier = Modifier.padding(start = 32.dp, top = 4.dp, end = 16.dp)
-                            ) {
-                                item.subTodos.forEach { subTodo ->
-                                    SubTodoRow(
-                                        subTodo = subTodo,
-                                        onCheckedChange = { isChecked ->
-                                            viewModel.updateSubTodo(subTodo.copy(isCompleted = isChecked))
-                                        }
-                                    )
+                        Text(
+                            text = "Completed",
+                            fontSize = 16.sp,
+                            lineHeight = 16.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = MaterialTheme.colorScheme.onBackground.copy(.5f)
+                        )
+                        Icon(
+                            painter = painterResource(R.drawable.ic_forward_nav),
+                            contentDescription = "Expand",
+                            modifier = Modifier
+                                .padding(end = 8.dp)
+                                .size(20.dp)
+                                .alpha(.5f)
+                                .graphicsLayer {
+                                    rotationZ = degree.value
                                 }
+                        )
+                    }
+                }
+                if (completedVisible) {
+                    items(
+                        items = completeTodos,
+                        key = { it.todoItem.id },
+                    ) { item ->
+                        val isSelected = item.todoItem.id in selectedItemIds
+                        val alpha = remember { Animatable(if (isSelected) 1f else 0f) }
+                        LaunchedEffect(isSelected) {
+                            if (isSelected) {
+                                alpha.animateTo(1f, tween(100))
+                            } else {
+                                alpha.animateTo(0f, tween(100))
                             }
                         }
 
-                        Spacer(modifier = Modifier.height(12.dp))
+                        Column(
+                            modifier = Modifier
+                                .animateItem(placementSpec = spring(0.9f, 400f))
+                                .combinedClickable(
+                                    interactionSource = interactionSource,
+                                    indication = null,
+                                    onLongClick = {
+                                        if (!isSelectionModeActive) {
+                                            scope.launch {
+                                                viewModel.enterSelectionMode(item.todoItem.id)
+                                            }
+                                        } else {
+                                            viewModel.toggleSelection(item.todoItem.id)
+                                        }
+                                    },
+                                    onClick = {
+                                        if (isSelectionModeActive) {
+                                            scope.launch {
+                                                viewModel.toggleSelection(item.todoItem.id)
+                                            }
+                                        } else {
+                                            val intent =
+                                                Intent(context, DetailActivity::class.java).apply {
+                                                    putExtra("todo_id", item.todoItem.id)
+                                                }
+                                            context.startActivity(intent)
+                                        }
+                                    }
+                                )
+                        ) {
+                            Box {
+                                SwipeableTodoItem(
+                                    item = item.todoItem,
+                                    isRevealed = (item.todoItem.id == revealedItemId),
+                                    onExpand = { viewModel.onItemExpanded(item.todoItem.id) },
+                                    onCollapse = { viewModel.onItemCollapsed(item.todoItem.id) },
+                                    onCheckedChange = { isChecked ->
+                                        viewModel.update(item.todoItem.copy(isCompleted = isChecked))
+                                    },
+                                    onDeleteClick = { viewModel.delete(item.todoItem) },
+                                    modifier = Modifier
+                                        .then(if (isComposed) Modifier.drawBehind {
+                                            val outline =
+                                                ContinuousRoundedRectangle(
+                                                    10.5.dp,
+                                                    g2
+                                                ).createOutline(
+                                                    size = Size(
+                                                        this.size.width - 3.dp.toPx(),
+                                                        this.size.height - 3.dp.toPx()
+                                                    ),
+                                                    layoutDirection = LayoutDirection.Ltr,
+                                                    density = density
+                                                )
+                                            translate(1.5.dp.toPx(), 1.5.dp.toPx()) {
+                                                drawOutline(
+                                                    outline = outline,
+                                                    color = Blue500,
+                                                    alpha = alpha.value,
+                                                    style = Stroke(width = 3.dp.toPx()),
+                                                )
+                                            }
+                                        } else Modifier)
+                                )
+                                if (isSelectionModeActive) {
+                                    Box(
+                                        modifier = Modifier
+                                            .matchParentSize()
+                                            .combinedClickable(
+                                                interactionSource = interactionSource,
+                                                indication = null,
+                                                onClick = {
+                                                    scope.launch {
+                                                        viewModel.toggleSelection(item.todoItem.id)
+                                                    }
+                                                }
+                                            )) {}
+                                }
+                            }
+                            // ADDED: Display sub-todos if they exist
+                            if (item.subTodos.isNotEmpty()) {
+                                Column(
+                                    modifier = Modifier.padding(
+                                        start = 32.dp,
+                                        top = 4.dp,
+                                        end = 16.dp
+                                    )
+                                ) {
+                                    item.subTodos.forEach { subTodo ->
+                                        SubTodoRow(
+                                            subTodo = subTodo,
+                                            onCheckedChange = { isChecked ->
+                                                viewModel.updateSubTodo(subTodo.copy(isCompleted = isChecked))
+                                            }
+                                        )
+                                    }
+                                }
+                            }
+                            Spacer(modifier = Modifier.height(12.dp))
+                        }
                     }
                 }
             }
