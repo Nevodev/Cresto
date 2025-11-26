@@ -23,6 +23,5 @@ data class TodoItem(
     val dueDate: LocalDate? = null,
     val isCompleted: Boolean = false,
     val hashtag: String? = null,
-    val flag: Int = 0,
-    val isPinned: Boolean = false
+    val flag: Int = 0
 )
