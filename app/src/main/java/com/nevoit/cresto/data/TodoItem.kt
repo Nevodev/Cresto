@@ -13,6 +13,7 @@ import java.time.LocalDate
  * @property isCompleted A boolean flag indicating whether the to-do item has been completed.
  * @property hashtag An optional string for tagging or categorizing the to-do item.
  * @property flag An optional integer flag, can be used for priority or other categorizations.
+ * @property isPinned A boolean flag indicating whether the to-do item is pinned.
  */
 @Entity(tableName = "todo_items")
 data class TodoItem(
@@ -22,5 +23,6 @@ data class TodoItem(
     val dueDate: LocalDate? = null,
     val isCompleted: Boolean = false,
     val hashtag: String? = null,
-    val flag: Int = 0
+    val flag: Int = 0,
+    val isPinned: Boolean = false
 )
