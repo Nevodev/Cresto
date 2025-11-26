@@ -53,6 +53,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -80,10 +81,12 @@ import com.nevoit.cresto.ui.theme.glasense.CalculatedColor
 import com.nevoit.cresto.ui.theme.glasense.Red500
 import com.nevoit.cresto.ui.theme.glasense.getFlagColor
 import com.nevoit.cresto.ui.viewmodel.TodoViewModel
+import com.nevoit.cresto.util.formatRelativeTime
 import com.nevoit.cresto.util.g2
 import dev.chrisbanes.haze.ExperimentalHazeApi
 import dev.chrisbanes.haze.hazeSource
 import dev.chrisbanes.haze.rememberHazeState
+import kotlinx.coroutines.delay
 import java.time.LocalDate
 
 @OptIn(ExperimentalHazeApi::class)
@@ -126,6 +129,15 @@ fun DetailScreen(
     var finalDate by remember { mutableStateOf<LocalDate?>(null) }
     var selectedIndex by remember { mutableIntStateOf(0) }
     var title by remember { mutableStateOf("") }
+
+    var ticker by remember { mutableStateOf(0) }
+
+    LaunchedEffect(Unit) {
+        while (true) {
+            delay(60000L) // 1 minute
+            ticker++
+        }
+    }
 
     LaunchedEffect(itemWithSubTodos) {
         if (itemWithSubTodos != null) {
@@ -509,10 +521,20 @@ fun DetailScreen(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
+                val creationTime = remember(itemWithSubTodos, ticker) {
+                    itemWithSubTodos?.todoItem?.creationDate?.let {
+                        formatRelativeTime(it)
+                    } ?: ""
+                }
                 Text(
-                    text = "Created", modifier = Modifier
+                    text = "Created $creationTime",
+                    modifier = Modifier
                         .padding(start = 12.dp)
                         .weight(1f),
+                    fontSize = 14.sp,
+                    lineHeight = 14.sp,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
                     style = MaterialTheme.typography.bodyMedium.copy(
                         shadow = Shadow(
                             color = surfaceColor.copy(alpha = 1f),

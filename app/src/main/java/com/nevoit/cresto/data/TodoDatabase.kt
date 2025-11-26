@@ -7,8 +7,8 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 
 // Annotates the class as a Room Database with tables for TodoItem and SubTodoItem.
-@Database(entities = [TodoItem::class, SubTodoItem::class], version = 6, exportSchema = false)
-@TypeConverters(LocalDateConverter::class)
+@Database(entities = [TodoItem::class, SubTodoItem::class], version = 9, exportSchema = false)
+@TypeConverters(Converters::class)
 // Abstract class that represents the Room database for the application.
 abstract class TodoDatabase : RoomDatabase() {
     // Abstract method to get the Data Access Object (DAO) for the TodoItem entity.
