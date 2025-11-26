@@ -50,7 +50,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shadow
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -58,6 +57,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.kyant.backdrop.backdrops.layerBackdrop
+import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import com.kyant.capsule.ContinuousCapsule
 import com.nevoit.cresto.R
 import com.nevoit.cresto.data.SubTodoItem
@@ -67,11 +68,14 @@ import com.nevoit.cresto.ui.components.HorizontalFlagPicker
 import com.nevoit.cresto.ui.components.HorizontalPresetDatePicker
 import com.nevoit.cresto.ui.components.SelectedButton
 import com.nevoit.cresto.ui.components.SubTodoItemRowAdd
-import com.nevoit.cresto.ui.components.SubTodoItemRowEditable
+import com.nevoit.cresto.ui.components.SwipeableSubTodoItemRowEditable
 import com.nevoit.cresto.ui.components.TodoItemRowEditable
+import com.nevoit.cresto.ui.components.glasense.DialogItemData
+import com.nevoit.cresto.ui.components.glasense.DialogState
 import com.nevoit.cresto.ui.components.glasense.GlasenseBottomBar
 import com.nevoit.cresto.ui.components.glasense.GlasenseButton
 import com.nevoit.cresto.ui.components.glasense.GlasenseButtonAlt
+import com.nevoit.cresto.ui.components.glasense.GlasenseDialog
 import com.nevoit.cresto.ui.components.myFadeIn
 import com.nevoit.cresto.ui.components.myFadeOut
 import com.nevoit.cresto.ui.components.myScaleIn
@@ -112,18 +116,16 @@ fun DetailScreen(
     val hazeState = rememberHazeState()
 
     val onSurfaceContainer = CalculatedColor.onSurfaceContainer
-    val onBackground = MaterialTheme.colorScheme.onBackground
     val surfaceColor = CalculatedColor.hierarchicalBackgroundColor
-    val hierarchicalSurfaceColor = CalculatedColor.hierarchicalSurfaceColor
+
+    val backdrop = rememberLayerBackdrop {
+        drawRect(surfaceColor)
+        drawContent()
+    }
 
     val lazyListState = rememberLazyListState()
 
     val isSmallTitleVisible by remember(thresholdPx) { derivedStateOf { ((lazyListState.firstVisibleItemIndex == 0) && (lazyListState.firstVisibleItemScrollOffset > thresholdPx)) || lazyListState.firstVisibleItemIndex > 0 } }
-
-    val dp = with(density) {
-        1.dp.toPx()
-    }
-    val context = LocalContext.current
 
     val darkMode = isSystemInDarkTheme()
 
@@ -131,7 +133,39 @@ fun DetailScreen(
     var selectedIndex by remember { mutableIntStateOf(0) }
     var title by remember { mutableStateOf("") }
 
-    var ticker by remember { mutableStateOf(0) }
+    var ticker by remember { mutableIntStateOf(0) }
+
+    val deleteDialogItems = listOf(
+        DialogItemData(
+            "Cancel",
+            onClick = {},
+            isPrimary = false
+        ),
+        DialogItemData(
+            "Delete",
+            icon = painterResource(R.drawable.ic_trash),
+            onClick = {
+                activity?.finish()
+                itemWithSubTodos?.todoItem?.let {
+                    viewModel.delete(itemWithSubTodos!!.todoItem)
+                }
+            },
+            isPrimary = true,
+            isDestructive = true
+        )
+    )
+
+    var dialogState by remember { mutableStateOf(DialogState()) }
+
+    val showDialog: (items: List<DialogItemData>, title: String, message: String?) -> Unit =
+        { items, title, message ->
+            dialogState =
+                DialogState(isVisible = true, items = items, title = title, message = message)
+        }
+
+    val dismissDialog = {
+        dialogState = dialogState.copy(isVisible = false)
+    }
 
     LaunchedEffect(Unit) {
         while (true) {
@@ -176,6 +210,7 @@ fun DetailScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(surfaceColor)
+            .layerBackdrop(backdrop)
     ) {
         LazyColumn(
             state = lazyListState,
@@ -444,7 +479,7 @@ fun DetailScreen(
             }
             itemWithSubTodos?.subTodos?.let { subTodos ->
                 items(subTodos) { subTodo ->
-                    SubTodoItemRowEditable(
+                    SwipeableSubTodoItemRowEditable(
                         subTodo = subTodo,
                         modifier = Modifier.animateItem(placementSpec = spring(0.9f, 400f)),
                         onEditEnd = { string, checked ->
@@ -454,7 +489,9 @@ fun DetailScreen(
                                     isCompleted = checked
                                 )
                             )
-                        }
+                        },
+                        onDelete = {},
+                        onPromote = {},
                     )
                     Spacer(modifier = Modifier.height(12.dp))
                 }
@@ -548,7 +585,13 @@ fun DetailScreen(
                 GlasenseButton(
                     enabled = true,
                     shape = CircleShape,
-                    onClick = { },
+                    onClick = {
+                        showDialog(
+                            deleteDialogItems,
+                            "Delete current todo?",
+                            "This will delete current todo${if (itemWithSubTodos?.subTodos?.isEmpty() == true) "" else " and its task${if (itemWithSubTodos?.subTodos?.size == 1) "" else ("s")}"} permanently. This action cannot be undone."
+                        )
+                    },
                     modifier = Modifier
                         .size(48.dp),
                     colors = ButtonDefaults.buttonColors(
@@ -566,5 +609,15 @@ fun DetailScreen(
             }
 
         }
+    }
+
+    if (dialogState.isVisible) {
+        GlasenseDialog(
+            density = density,
+            dialogState = dialogState,
+            backdrop = backdrop,
+            onDismiss = { dismissDialog() },
+            modifier = Modifier
+        )
     }
 }

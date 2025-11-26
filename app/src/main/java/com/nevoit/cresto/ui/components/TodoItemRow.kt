@@ -15,9 +15,11 @@ import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.draggable
 import androidx.compose.foundation.gestures.rememberDraggableState
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
@@ -79,6 +81,7 @@ import com.nevoit.cresto.data.SubTodoItem
 import com.nevoit.cresto.data.TodoItem
 import com.nevoit.cresto.data.TodoItemWithSubTodos
 import com.nevoit.cresto.ui.components.glasense.GlasenseButton
+import com.nevoit.cresto.ui.theme.glasense.Amber500
 import com.nevoit.cresto.ui.theme.glasense.CalculatedColor
 import com.nevoit.cresto.ui.theme.glasense.Red500
 import com.nevoit.cresto.ui.theme.glasense.getFlagColor
@@ -86,6 +89,7 @@ import com.nevoit.cresto.util.g2
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 import java.time.format.DateTimeFormatter
+import kotlin.math.abs
 
 /**
  * A composable function that displays a single to-do item with a checkbox, title, due date, flag, and hashtag.
@@ -102,7 +106,7 @@ fun TodoItemRow(
 ) {
     val completedTask = item.subTodos.filter { it.isCompleted }
     val totalTaskCount = item.subTodos.size
-    val hasTasks by remember { mutableStateOf(!item.subTodos.isEmpty()) }
+    val hasTasks = !item.subTodos.isEmpty()
 
     val item = item.todoItem
 
@@ -813,13 +817,282 @@ fun SubTodoItemRowAdd(
 fun SwipeableContainer(
     actions: List<SwipeableActionButton>,
     onAction: (Int) -> Unit,
+    modifier: Modifier = Modifier,
     content: @Composable () -> Unit
 ) {
-    content()
+    var swipeState by remember { mutableStateOf(SwipeState.IDLE) }
+    var initialSwipeState by remember { mutableStateOf(SwipeState.IDLE) }
+    val coroutineScope = rememberCoroutineScope()
+
+    val density = LocalDensity.current
+
+    val actionButtonWidth = 66.dp
+    val actionButtonWidthPx = with(density) { actionButtonWidth.toPx() }
+
+    val gapPx = with(density) { 12.dp.toPx() }
+
+    val totalActionsWidthPx = actionButtonWidthPx * actions.size
+    val snapThresholdPx = -totalActionsWidthPx / 2
+
+    val deepSwipeThresholdPx = totalActionsWidthPx + actionButtonWidthPx
+
+    val velocityThreshold = with(density) { 500.dp.toPx() }
+
+    val screenWidthPx = LocalWindowInfo.current.containerSize.width
+
+    val flingOffset = remember { Animatable(0f) }
+    val deleteFlingOffset = remember { Animatable(0f) }
+
+    val animatedOffset by animateFloatAsState(
+        targetValue = flingOffset.value,
+        animationSpec = spring(
+            dampingRatio = 0.8f,
+            stiffness = 500f
+        )
+    )
+
+    val scale = remember { Animatable(1f) }
+    val alphaAni = remember { Animatable(1f) }
+
+    fun reset() {
+        coroutineScope.launch {
+            swipeState = SwipeState.IDLE
+            flingOffset.snapTo(0f)
+            deleteFlingOffset.snapTo(0f)
+            scale.snapTo(1f)
+            alphaAni.snapTo(1f)
+        }
+    }
+
+
+    fun executeAction(action: SwipeableActionButton) {
+        if (action.isDestructive) {
+            coroutineScope.launch {
+                val jobs = listOf(
+                    launch { scale.animateTo(0.8f, tween(100)) },
+                    launch { alphaAni.animateTo(0f, tween(100)) },
+                    launch {
+                        deleteFlingOffset.animateTo(
+                            targetValue = -screenWidthPx - flingOffset.value,
+                            animationSpec = tween(
+                                100,
+                                easing = CubicBezierEasing(
+                                    0.2f,
+                                    0f,
+                                    0.56f,
+                                    0.48f
+                                )
+                            )
+                        )
+                    }
+                )
+                jobs.joinAll()
+                swipeState = SwipeState.IDLE
+                onAction(action.index)
+            }
+        } else {
+            onAction(action.index)
+            coroutineScope.launch {
+                swipeState = SwipeState.IDLE
+                flingOffset.animateTo(0f)
+            }
+        }
+    }
+
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(IntrinsicSize.Min)
+    ) {
+        Row(
+            modifier = Modifier
+                .align(Alignment.CenterEnd)
+                .padding(end = 6.dp)
+                .width(with(density) { totalActionsWidthPx.toDp() })
+                .fillMaxHeight(),
+            horizontalArrangement = Arrangement.End,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            actions.forEachIndexed { index, action ->
+                Box(
+                    modifier = Modifier
+                        .width(actionButtonWidth - 6.dp)
+                        .fillMaxHeight(),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    val trueIndex = actions.size - index - 1
+                    val revealThreshold =
+                        (trueIndex * actionButtonWidthPx) + (actionButtonWidthPx / 2)
+
+                    val isVisible = abs(flingOffset.value) >= revealThreshold
+
+                    CustomAnimatedVisibility(
+                        visible = isVisible,
+                        modifier = Modifier
+                            .width(48.dp)
+                            .height(48.dp),
+                        enter = myScaleIn(
+                            tween(200, 0, LinearOutSlowInEasing),
+                            0.6f
+                        ) + myFadeIn(tween(100)),
+                        exit = myScaleOut(
+                            tween(200, 0, LinearOutSlowInEasing),
+                            0.6f
+                        ) + myFadeOut(tween(100))
+                    ) {
+                        GlasenseButton(
+                            enabled = true,
+                            shape = CircleShape,
+                            onClick = {
+                                coroutineScope.launch {
+                                    executeAction(action)
+                                }
+                            },
+                            modifier = Modifier
+                                .graphicsLayer {
+                                    scaleX = scale.value
+                                    scaleY = scale.value
+                                    alpha = alphaAni.value
+                                }
+                                .size(48.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = action.color,
+                                contentColor = Color.White
+                            ),
+                            animated = true
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .drawBehind() {
+                                        // Draw a gradient border around the delete button.
+                                        val gradientBrush = verticalGradient(
+                                            colorStops = arrayOf(
+                                                0.0f to Color.White.copy(alpha = 0.2f),
+                                                1.0f to Color.White.copy(alpha = 0.02f)
+                                            )
+                                        )
+                                        drawCircle(
+                                            brush = gradientBrush,
+                                            style = Stroke(width = 3.dp.toPx()),
+                                            blendMode = BlendMode.Plus
+                                        )
+                                    }
+                                    .fillMaxSize(), contentAlignment = Alignment.Center) {
+                                Icon(
+                                    painter = action.icon,
+                                    contentDescription = action.contentDescription,
+                                    modifier = Modifier
+                                        .width(28.dp)
+                                        .height(28.dp)
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .graphicsLayer {
+                    translationX = animatedOffset + deleteFlingOffset.value
+                }
+                .draggable(
+                    orientation = Orientation.Horizontal,
+                    state = rememberDraggableState { delta ->
+                        coroutineScope.launch {
+                            val newOffset = (flingOffset.value + delta).coerceAtMost(0f)
+                            flingOffset.snapTo(newOffset)
+                            swipeState =
+                                if (newOffset < snapThresholdPx) SwipeState.REVEALED else SwipeState.IDLE
+                        }
+                    },
+                    onDragStarted = {
+                        initialSwipeState = swipeState
+                    },
+                    onDragStopped = { velocity ->
+                        coroutineScope.launch {
+                            val currentOffset = flingOffset.value
+                            val isDeepSwipe = currentOffset < -deepSwipeThresholdPx
+                            val isFastSwipe = velocity < -velocityThreshold
+
+                            if (actions.isNotEmpty() && ((isDeepSwipe && initialSwipeState == SwipeState.REVEALED) || (isFastSwipe && initialSwipeState == SwipeState.REVEALED))) {
+                                executeAction(actions.last())
+                            } else if (currentOffset < snapThresholdPx || (isFastSwipe && currentOffset < 0)) {
+                                swipeState = SwipeState.REVEALED
+                                flingOffset.animateTo(
+                                    targetValue = -totalActionsWidthPx,
+                                    animationSpec = SpringSpec(
+                                        dampingRatio = 0.8f,
+                                        stiffness = 1000f
+                                    ),
+                                    initialVelocity = velocity
+                                )
+                            } else {
+                                swipeState = SwipeState.IDLE
+                                flingOffset.animateTo(
+                                    targetValue = 0f,
+                                    animationSpec = SpringSpec(
+                                        dampingRatio = 0.8f,
+                                        stiffness = 1000f
+                                    ),
+                                    initialVelocity = velocity
+                                )
+                            }
+                        }
+                    }
+                )
+        ) {
+            content()
+        }
+    }
 }
 
-class SwipeableActionButton(
-    index: Int,
-    color: Color,
-    icon: Painter
+data class SwipeableActionButton(
+    val index: Int,
+    val color: Color,
+    val icon: Painter,
+    val contentDescription: String? = null,
+    val isDestructive: Boolean = false
 )
+
+@Composable
+fun SwipeableSubTodoItemRowEditable(
+    subTodo: SubTodoItem,
+    onDelete: () -> Unit,
+    onPromote: () -> Unit,
+    modifier: Modifier,
+    onEditEnd: (String, Boolean) -> Unit,
+) {
+
+    val actions = listOf(
+        SwipeableActionButton(
+            index = 0,
+            color = Amber500,
+            icon = painterResource(id = R.drawable.ic_pin),
+            isDestructive = false
+        ),
+        SwipeableActionButton(
+            index = 1,
+            color = Red500,
+            icon = painterResource(id = R.drawable.ic_trash),
+            isDestructive = true
+        )
+    )
+
+    SwipeableContainer(
+        actions = actions,
+        onAction = { index ->
+            when (index) {
+                0 -> onPromote()
+                1 -> onDelete()
+            }
+        }
+    ) {
+        SubTodoItemRowEditable(
+            subTodo = subTodo,
+            modifier = modifier,
+            onEditEnd = { string, boolean -> onEditEnd(string, boolean) })
+    }
+}
