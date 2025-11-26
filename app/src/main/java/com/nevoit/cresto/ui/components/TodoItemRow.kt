@@ -61,6 +61,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalWindowInfo
@@ -99,7 +100,12 @@ fun TodoItemRow(
     onCheckedChange: (Boolean) -> Unit,
     modifier: Modifier
 ) {
+    val completedTask = item.subTodos.filter { it.isCompleted }
+    val totalTaskCount = item.subTodos.size
+    val hasTasks by remember { mutableStateOf(!item.subTodos.isEmpty()) }
+
     val item = item.todoItem
+
     Row(
         modifier = Modifier
             .defaultMinSize(minHeight = 68.dp)
@@ -119,14 +125,42 @@ fun TodoItemRow(
         Spacer(modifier = Modifier.width(12.dp))
         // If the to-do item has no due date, display only the title.
         if (item.dueDate == null) {
-            Text(
-                text = item.title,
-                textDecoration = if (item.isCompleted) TextDecoration.LineThrough else TextDecoration.None,
-                style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(vertical = 12.dp)
-            )
+            if (hasTasks) {
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(vertical = 12.dp)
+                ) {
+                    Text(
+                        text = item.title,
+                        textDecoration = if (item.isCompleted) TextDecoration.LineThrough else TextDecoration.None,
+                        style = MaterialTheme.typography.bodyMedium,
+                    )
+                    Row() {
+                        Text(
+                            text = "Completed ",
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontSize = 14.sp,
+                            modifier = Modifier.alpha(0.4f)
+                        )
+                        Text(
+                            text = "${completedTask.size}/$totalTaskCount",
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontSize = 14.sp,
+                            modifier = Modifier.alpha(0.4f)
+                        )
+                    }
+                }
+            } else {
+                Text(
+                    text = item.title,
+                    textDecoration = if (item.isCompleted) TextDecoration.LineThrough else TextDecoration.None,
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(vertical = 12.dp)
+                )
+            }
         } else {
             // If the to-do item has a due date, display both the title and the due date.
             Column(
@@ -139,12 +173,35 @@ fun TodoItemRow(
                     textDecoration = if (item.isCompleted) TextDecoration.LineThrough else TextDecoration.None,
                     style = MaterialTheme.typography.bodyMedium
                 )
-                Text(
-                    text = item.dueDate.format(DateTimeFormatter.ofPattern("yyyy/MM/dd")),
-                    style = MaterialTheme.typography.bodyMedium,
-                    fontSize = 14.sp,
-                    modifier = Modifier.alpha(0.4f)
-                )
+                if (hasTasks) {
+                    Row() {
+                        Text(
+                            text = item.dueDate.format(DateTimeFormatter.ofPattern("yyyy/MM/dd")),
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontSize = 14.sp,
+                            modifier = Modifier.alpha(0.4f)
+                        )
+                        Text(
+                            text = " · Completed ",
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontSize = 14.sp,
+                            modifier = Modifier.alpha(0.4f)
+                        )
+                        Text(
+                            text = "${completedTask.size}/$totalTaskCount",
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontSize = 14.sp,
+                            modifier = Modifier.alpha(0.4f)
+                        )
+                    }
+                } else {
+                    Text(
+                        text = item.dueDate.format(DateTimeFormatter.ofPattern("yyyy/MM/dd")),
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontSize = 14.sp,
+                        modifier = Modifier.alpha(0.4f)
+                    )
+                }
             }
         }
 
@@ -536,7 +593,6 @@ fun SubTodoItemRowEditable(
     modifier: Modifier,
     onEditEnd: (String, Boolean) -> Unit,
 ) {
-
     val state = rememberTextFieldState(initialText = subTodo.description)
 
     val focusManager = LocalFocusManager.current
@@ -752,3 +808,18 @@ fun SubTodoItemRowAdd(
         Spacer(modifier = Modifier.width(12.dp))
     }
 }
+
+@Composable
+fun SwipeableContainer(
+    actions: List<SwipeableActionButton>,
+    onAction: (Int) -> Unit,
+    content: @Composable () -> Unit
+) {
+    content()
+}
+
+class SwipeableActionButton(
+    index: Int,
+    color: Color,
+    icon: Painter
+)

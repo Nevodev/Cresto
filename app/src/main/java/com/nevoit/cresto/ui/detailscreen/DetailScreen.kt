@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -182,12 +183,13 @@ fun DetailScreen(
                 .hazeSource(hazeState, 0f)
                 .fillMaxSize()
                 .padding(0.dp)
-                .background(surfaceColor),
+                .background(surfaceColor)
+                .imePadding(),
             contentPadding = PaddingValues(
                 start = 12.dp,
                 top = 0.dp,
                 end = 12.dp,
-                bottom = 136.dp
+                bottom = 64.dp + navigationBarHeight * 2
             )
         ) {
             item {

@@ -63,7 +63,7 @@ fun GlasenseBottomBar(
                     .fillMaxWidth()
                     .align(Alignment.TopCenter)
                     .hazeEffect(hazeState) {
-                        blurRadius = 2.dp
+                        blurRadius = 4.dp
                         noiseFactor = 0f
                         inputScale = HazeInputScale.Fixed(0.5f)
                         mask = linearGradientMaskB2T70
