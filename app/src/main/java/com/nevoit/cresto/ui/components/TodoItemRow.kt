@@ -1,5 +1,6 @@
 package com.nevoit.cresto.ui.components
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.CubicBezierEasing
 import androidx.compose.animation.core.LinearOutSlowInEasing
@@ -9,9 +10,11 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.draggable
 import androidx.compose.foundation.gestures.rememberDraggableState
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -30,6 +33,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.input.TextFieldLineLimits
+import androidx.compose.foundation.text.input.delete
 import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
@@ -49,6 +54,7 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Brush.Companion.verticalGradient
 import androidx.compose.ui.graphics.Color
@@ -68,7 +74,9 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.kyant.capsule.ContinuousRoundedRectangle
 import com.nevoit.cresto.R
+import com.nevoit.cresto.data.SubTodoItem
 import com.nevoit.cresto.data.TodoItem
+import com.nevoit.cresto.data.TodoItemWithSubTodos
 import com.nevoit.cresto.ui.components.glasense.GlasenseButton
 import com.nevoit.cresto.ui.theme.glasense.CalculatedColor
 import com.nevoit.cresto.ui.theme.glasense.Red500
@@ -87,11 +95,11 @@ import java.time.format.DateTimeFormatter
  */
 @Composable
 fun TodoItemRow(
-    item: TodoItem,
+    item: TodoItemWithSubTodos,
     onCheckedChange: (Boolean) -> Unit,
     modifier: Modifier
 ) {
-
+    val item = item.todoItem
     Row(
         modifier = Modifier
             .defaultMinSize(minHeight = 68.dp)
@@ -196,7 +204,7 @@ enum class SwipeState {
  */
 @Composable
 fun SwipeableTodoItem(
-    item: TodoItem,
+    item: TodoItemWithSubTodos,
     isRevealed: Boolean,
     onExpand: () -> Unit,
     onCollapse: () -> Unit,
@@ -432,17 +440,16 @@ fun TodoItemRowEditable(
 ) {
 
     val state = rememberTextFieldState(initialText = item.title)
-    val focusRequester = remember { FocusRequester() }
-
-    val scope = rememberCoroutineScope()
-
-    val isKeyboardVisible = WindowInsets.isImeVisible
 
     val focusManager = LocalFocusManager.current
+    var isFocused by remember { mutableStateOf(false) }
+
+    val isKeyboardVisible = WindowInsets.isImeVisible
+    val focusRequester = remember { FocusRequester() }
 
     LaunchedEffect(isKeyboardVisible) {
-        if (!isKeyboardVisible) {
-            onEditEnd(state.text.toString())
+        if (!isKeyboardVisible && isFocused) {
+            focusManager.clearFocus()
         }
     }
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -476,26 +483,272 @@ fun TodoItemRowEditable(
             onCheckedChange = onCheckedChange
         )
         Spacer(modifier = Modifier.width(12.dp))
-
-        BasicTextField(
-            state = state,
+        Box(
             modifier = Modifier
                 .weight(1f)
                 .padding(vertical = 12.dp)
-                .fillMaxWidth()
-                .focusRequester(focusRequester),
-            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-            onKeyboardAction = {
-                scope.launch { focusManager.clearFocus() }
-                scope.launch { onEditEnd(state.text.toString()) }
-            },
-            textStyle = MaterialTheme.typography.bodyMedium.copy(
-                color = MaterialTheme.colorScheme.onSurface,
-                textDecoration = if (item.isCompleted) TextDecoration.LineThrough else TextDecoration.None,
-            ),
-            cursorBrush = SolidColor(MaterialTheme.colorScheme.primary)
-        )
+        ) {
+            BasicTextField(
+                state = state,
+                modifier = Modifier
+                    .focusRequester(focusRequester)
+                    .fillMaxWidth()
+                    .onFocusChanged { focusState ->
+                        if (isFocused && !focusState.isFocused) {
+                            if (state.text.toString() != item.title) {
+                                onEditEnd(state.text.toString())
+                            }
+                        }
+                        isFocused = focusState.isFocused
+                    },
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                onKeyboardAction = {
+                    focusManager.clearFocus()
+                },
+                textStyle = MaterialTheme.typography.bodyMedium.copy(
+                    color = MaterialTheme.colorScheme.onSurface,
+                    textDecoration = if (item.isCompleted) TextDecoration.LineThrough else TextDecoration.None,
+                ),
+                cursorBrush = SolidColor(MaterialTheme.colorScheme.primary)
+            )
+            if (!isFocused) {
+                Box(
+                    modifier = Modifier
+                        .matchParentSize()
+                        .clickable(
+                            interactionSource = remember { MutableInteractionSource() },
+                            indication = null
+                        ) {
+                            focusRequester.requestFocus()
+                        }
+                )
+            }
+        }
 
+        Spacer(modifier = Modifier.width(12.dp))
+    }
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+fun SubTodoItemRowEditable(
+    subTodo: SubTodoItem,
+    modifier: Modifier,
+    onEditEnd: (String, Boolean) -> Unit,
+) {
+
+    val state = rememberTextFieldState(initialText = subTodo.description)
+
+    val focusManager = LocalFocusManager.current
+    var isFocused by remember { mutableStateOf(false) }
+
+    val isKeyboardVisible = WindowInsets.isImeVisible
+    val focusRequester = remember { FocusRequester() }
+    var checked by remember { mutableStateOf(subTodo.isCompleted) }
+
+    LaunchedEffect(isKeyboardVisible) {
+        if (!isKeyboardVisible && isFocused) {
+            focusManager.clearFocus()
+        }
+    }
+
+    val lifecycleOwner = LocalLifecycleOwner.current
+
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_PAUSE) {
+                onEditEnd(state.text.toString(), checked)
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
+    }
+
+    Row(
+        modifier = Modifier
+            .defaultMinSize(minHeight = 68.dp)
+            .fillMaxWidth()
+            .background(
+                color = CalculatedColor.hierarchicalSurfaceColor,
+                shape = ContinuousRoundedRectangle(12.dp, g2),
+            )
+            .then(modifier),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Spacer(modifier = Modifier.width(12.dp))
+        CustomCheckbox(
+            checked = checked,
+            onCheckedChange = { checked = !checked }
+        )
+        Spacer(modifier = Modifier.width(12.dp))
+        Box(
+            modifier = Modifier
+                .weight(1f)
+                .padding(vertical = 12.dp)
+        ) {
+            BasicTextField(
+                state = state,
+                modifier = Modifier
+                    .focusRequester(focusRequester)
+                    .fillMaxWidth()
+                    .onFocusChanged { focusState ->
+                        if (isFocused && !focusState.isFocused) {
+                            if (state.text.toString() != subTodo.description) {
+                                onEditEnd(state.text.toString(), checked)
+                            }
+                        }
+                        isFocused = focusState.isFocused
+                    },
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                onKeyboardAction = {
+                    focusManager.clearFocus()
+                },
+                textStyle = MaterialTheme.typography.bodyMedium.copy(
+                    color = MaterialTheme.colorScheme.onSurface,
+                    textDecoration = if (subTodo.isCompleted) TextDecoration.LineThrough else TextDecoration.None,
+                ),
+                cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
+                lineLimits = TextFieldLineLimits.MultiLine(
+                    minHeightInLines = 1,
+                    maxHeightInLines = Int.MAX_VALUE
+                )
+            )
+            if (!isFocused) {
+                Box(
+                    modifier = Modifier
+                        .matchParentSize()
+                        .clickable(
+                            interactionSource = remember { MutableInteractionSource() },
+                            indication = null
+                        ) {
+                            focusRequester.requestFocus()
+                        }
+                )
+            }
+        }
+        Spacer(modifier = Modifier.width(12.dp))
+    }
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+fun SubTodoItemRowAdd(
+    modifier: Modifier = Modifier,
+    onEditEnd: (String, Boolean) -> Unit,
+) {
+    val state = rememberTextFieldState(initialText = "")
+    var checked by remember { mutableStateOf(false) }
+
+    val focusManager = LocalFocusManager.current
+
+    var isFocused by remember { mutableStateOf(false) }
+
+    val focusRequester = remember { FocusRequester() }
+    fun submit() {
+        val text = state.text.toString()
+        if (text.isNotBlank()) {
+            onEditEnd(text, checked)
+            state.edit { delete(0, length) }
+            checked = false
+        }
+    }
+
+    val lifecycleOwner = LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_PAUSE) {
+                submit()
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
+    }
+
+
+    BackHandler(isFocused, { focusManager.clearFocus() })
+
+
+    Row(
+        modifier = Modifier
+            .defaultMinSize(minHeight = 68.dp)
+            .fillMaxWidth()
+            .background(
+                color = CalculatedColor.hierarchicalSurfaceColor,
+                shape = ContinuousRoundedRectangle(12.dp, g2),
+            )
+            .then(modifier),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Spacer(modifier = Modifier.width(12.dp))
+        CustomCheckbox(
+            checked = checked,
+            onCheckedChange = { checked = !checked }
+        )
+        Spacer(modifier = Modifier.width(12.dp))
+
+        Box(
+            modifier = Modifier
+                .weight(1f)
+                .padding(vertical = 12.dp)
+        ) {
+            BasicTextField(
+                state = state,
+                modifier = Modifier
+                    .focusRequester(focusRequester)
+                    .fillMaxWidth()
+                    .onFocusChanged { focusState ->
+                        if (isFocused && !focusState.isFocused) {
+                            submit()
+                        }
+                        isFocused = focusState.isFocused
+                    },
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                onKeyboardAction = {
+                    focusManager.clearFocus()
+                },
+                textStyle = MaterialTheme.typography.bodyMedium.copy(
+                    color = MaterialTheme.colorScheme.onSurface,
+                    textDecoration = if (checked) TextDecoration.LineThrough else TextDecoration.None,
+                ),
+                cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
+                decorator = { innerTextField ->
+                    if (state.text.isEmpty() && !isFocused) {
+                        Text(
+                            text = "Add task",
+                            style = MaterialTheme.typography.bodyMedium.copy(
+                                color = MaterialTheme.colorScheme.onSurface,
+                                textDecoration = if (checked) TextDecoration.LineThrough else TextDecoration.None,
+                            ),
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .align(Alignment.Center)
+                        )
+                    }
+                    innerTextField()
+                },
+                lineLimits = TextFieldLineLimits.MultiLine(
+                    minHeightInLines = 1,
+                    maxHeightInLines = Int.MAX_VALUE
+                )
+            )
+            if (!isFocused) {
+                Box(
+                    modifier = Modifier
+                        .matchParentSize()
+                        .clickable(
+                            interactionSource = remember { MutableInteractionSource() },
+                            indication = null
+                        ) {
+                            focusRequester.requestFocus()
+                        }
+                )
+            }
+        }
         Spacer(modifier = Modifier.width(12.dp))
     }
 }

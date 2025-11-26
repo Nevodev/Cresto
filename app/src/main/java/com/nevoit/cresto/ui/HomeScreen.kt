@@ -29,7 +29,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -61,6 +60,7 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionOnScreen
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.LayoutDirection
@@ -70,7 +70,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.kyant.capsule.ContinuousCapsule
 import com.kyant.capsule.ContinuousRoundedRectangle
 import com.nevoit.cresto.R
-import com.nevoit.cresto.data.SubTodoItem
 import com.nevoit.cresto.ui.components.DynamicSmallTitle
 import com.nevoit.cresto.ui.components.PageHeader
 import com.nevoit.cresto.ui.components.SwipeableTodoItem
@@ -98,7 +97,7 @@ fun HomeScreen(
 ) {
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
-
+    val view = LocalView.current
 
     val todoList by viewModel.allTodos.collectAsStateWithLifecycle()
     val revealedItemId by viewModel.revealedItemId.collectAsState()
@@ -278,7 +277,7 @@ fun HomeScreen(
                 ) {
                     Box {
                         SwipeableTodoItem(
-                            item = item.todoItem,
+                            item = item,
                             isRevealed = (item.todoItem.id == revealedItemId),
                             onExpand = { viewModel.onItemExpanded(item.todoItem.id) },
                             onCollapse = { viewModel.onItemCollapsed(item.todoItem.id) },
@@ -321,21 +320,6 @@ fun HomeScreen(
                                             }
                                         }
                                     )) {}
-                        }
-                    }
-                    // Display sub-todos if they exist
-                    if (item.subTodos.isNotEmpty()) {
-                        Column(
-                            modifier = Modifier.padding(start = 32.dp, top = 4.dp, end = 16.dp)
-                        ) {
-                            item.subTodos.forEach { subTodo ->
-                                SubTodoRow(
-                                    subTodo = subTodo,
-                                    onCheckedChange = { isChecked ->
-                                        viewModel.updateSubTodo(subTodo.copy(isCompleted = isChecked))
-                                    }
-                                )
-                            }
                         }
                     }
 
@@ -423,7 +407,10 @@ fun HomeScreen(
                                             }
                                         } else {
                                             val intent =
-                                                Intent(context, DetailActivity::class.java).apply {
+                                                Intent(
+                                                    context,
+                                                    DetailActivity::class.java
+                                                ).apply {
                                                     putExtra("todo_id", item.todoItem.id)
                                                 }
                                             context.startActivity(intent)
@@ -433,7 +420,7 @@ fun HomeScreen(
                         ) {
                             Box {
                                 SwipeableTodoItem(
-                                    item = item.todoItem,
+                                    item = item,
                                     isRevealed = (item.todoItem.id == revealedItemId),
                                     onExpand = { viewModel.onItemExpanded(item.todoItem.id) },
                                     onCollapse = { viewModel.onItemCollapsed(item.todoItem.id) },
@@ -478,25 +465,6 @@ fun HomeScreen(
                                                     }
                                                 }
                                             )) {}
-                                }
-                            }
-                            // ADDED: Display sub-todos if they exist
-                            if (item.subTodos.isNotEmpty()) {
-                                Column(
-                                    modifier = Modifier.padding(
-                                        start = 32.dp,
-                                        top = 4.dp,
-                                        end = 16.dp
-                                    )
-                                ) {
-                                    item.subTodos.forEach { subTodo ->
-                                        SubTodoRow(
-                                            subTodo = subTodo,
-                                            onCheckedChange = { isChecked ->
-                                                viewModel.updateSubTodo(subTodo.copy(isCompleted = isChecked))
-                                            }
-                                        )
-                                    }
                                 }
                             }
                             Spacer(modifier = Modifier.height(12.dp))
@@ -670,31 +638,5 @@ fun HomeScreen(
                 )
             }
         }
-    }
-}
-
-
-// ADDED: Composable for displaying a single sub-todo item
-@Composable
-fun SubTodoRow(
-    subTodo: SubTodoItem,
-    onCheckedChange: (Boolean) -> Unit
-) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(40.dp)
-    ) {
-        Checkbox(
-            checked = subTodo.isCompleted,
-            onCheckedChange = onCheckedChange
-        )
-        Spacer(modifier = Modifier.width(8.dp))
-        Text(
-            text = subTodo.description,
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
     }
 }

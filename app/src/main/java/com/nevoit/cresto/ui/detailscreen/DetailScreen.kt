@@ -19,17 +19,20 @@ import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
@@ -43,20 +46,28 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.kyant.capsule.ContinuousCapsule
 import com.nevoit.cresto.R
+import com.nevoit.cresto.data.SubTodoItem
 import com.nevoit.cresto.ui.components.CustomAnimatedVisibility
 import com.nevoit.cresto.ui.components.DynamicSmallTitle
 import com.nevoit.cresto.ui.components.HorizontalFlagPicker
 import com.nevoit.cresto.ui.components.HorizontalPresetDatePicker
 import com.nevoit.cresto.ui.components.SelectedButton
+import com.nevoit.cresto.ui.components.SubTodoItemRowAdd
+import com.nevoit.cresto.ui.components.SubTodoItemRowEditable
 import com.nevoit.cresto.ui.components.TodoItemRowEditable
+import com.nevoit.cresto.ui.components.glasense.GlasenseBottomBar
 import com.nevoit.cresto.ui.components.glasense.GlasenseButton
 import com.nevoit.cresto.ui.components.glasense.GlasenseButtonAlt
 import com.nevoit.cresto.ui.components.myFadeIn
@@ -66,6 +77,7 @@ import com.nevoit.cresto.ui.components.myScaleOut
 import com.nevoit.cresto.ui.overscroll.OffsetOverscrollFactory
 import com.nevoit.cresto.ui.theme.glasense.AppButtonColors
 import com.nevoit.cresto.ui.theme.glasense.CalculatedColor
+import com.nevoit.cresto.ui.theme.glasense.Red500
 import com.nevoit.cresto.ui.theme.glasense.getFlagColor
 import com.nevoit.cresto.ui.viewmodel.TodoViewModel
 import com.nevoit.cresto.util.g2
@@ -84,6 +96,8 @@ fun DetailScreen(
     val itemWithSubTodos by viewModel.getTodoWithSubTodos(todoId).collectAsState(initial = null)
 
     val statusBarHeight = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
+    val navigationBarHeight = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+
     val density = LocalDensity.current
     val thresholdPx = if (statusBarHeight > 0.dp) {
         with(density) {
@@ -268,7 +282,11 @@ fun DetailScreen(
                                 modifier = Modifier
                                     .height(48.dp)
                                     .width(dueDateWidth),
-                                colors = AppButtonColors.secondary(),
+                                colors = if (darkMode) AppButtonColors.secondary().copy(
+                                    containerColor = AppButtonColors.secondary().containerColor.copy(
+                                        .1f
+                                    )
+                                ) else AppButtonColors.secondary(),
                                 indication = true
                             ) {
                                 Box(
@@ -332,7 +350,11 @@ fun DetailScreen(
                                 modifier = Modifier
                                     .height(48.dp)
                                     .width(flagWidth),
-                                colors = AppButtonColors.secondary(),
+                                colors = if (darkMode) AppButtonColors.secondary().copy(
+                                    containerColor = AppButtonColors.secondary().containerColor.copy(
+                                        .1f
+                                    )
+                                ) else AppButtonColors.secondary(),
                             ) {
                                 Box(
                                     modifier = Modifier.fillMaxSize(),
@@ -393,11 +415,58 @@ fun DetailScreen(
                     }
                 }
             }
+            item {
+                Spacer(modifier = Modifier.height(12.dp))
+                Text(
+                    text = "Task",
+                    fontSize = 14.sp,
+                    lineHeight = 14.sp,
+                    fontWeight = FontWeight.Normal,
+                    color = MaterialTheme.colorScheme.onBackground.copy(.5f),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 8.dp, bottom = 8.dp, start = 12.dp)
+                )
+            }
+            itemWithSubTodos?.subTodos?.let { subTodos ->
+                items(subTodos) { subTodo ->
+                    SubTodoItemRowEditable(
+                        subTodo = subTodo,
+                        modifier = Modifier.animateItem(placementSpec = spring(0.9f, 400f)),
+                        onEditEnd = { string, checked ->
+                            viewModel.updateSubTodo(
+                                subTodo.copy(
+                                    description = string,
+                                    isCompleted = checked
+                                )
+                            )
+                        }
+                    )
+                    Spacer(modifier = Modifier.height(12.dp))
+                }
+            }
+            item {
+                itemWithSubTodos?.todoItem?.let { parentTodo ->
+                    SubTodoItemRowAdd(
+                        modifier = Modifier.animateItem(placementSpec = spring(0.9f, 400f)),
+                        onEditEnd = { description, checked ->
+                            viewModel.insertSubTodo(
+                                SubTodoItem(
+                                    parentId = parentTodo.id,
+                                    description = description,
+                                    isCompleted = checked
+                                )
+                            )
+                        }
+                    )
+                }
+            }
+
         }
         // A small title that dynamically appears at the top when the user scrolls down
         DynamicSmallTitle(
             modifier = Modifier.align(Alignment.TopCenter),
-            title = "Detail",
+            title = itemWithSubTodos?.todoItem?.title ?: "Detail",
             statusBarHeight = statusBarHeight,
             isVisible = isSmallTitleVisible,
             hazeState = hazeState,
@@ -424,6 +493,54 @@ fun DetailScreen(
                 contentDescription = "Back",
                 modifier = Modifier.width(32.dp)
             )
+        }
+        GlasenseBottomBar(
+            modifier = Modifier.align(Alignment.BottomCenter),
+            navigationBarHeight = navigationBarHeight,
+            isVisible = true,
+            hazeState = hazeState,
+            surfaceColor = surfaceColor,
+            height = 64.dp
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 12.dp, end = 12.dp, bottom = navigationBarHeight + 16.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "Created", modifier = Modifier
+                        .padding(start = 12.dp)
+                        .weight(1f),
+                    style = MaterialTheme.typography.bodyMedium.copy(
+                        shadow = Shadow(
+                            color = surfaceColor.copy(alpha = 1f),
+                            offset = Offset(x = 0f, y = 0f),
+                            blurRadius = 8f
+                        )
+                    )
+                )
+                GlasenseButton(
+                    enabled = true,
+                    shape = CircleShape,
+                    onClick = { },
+                    modifier = Modifier
+                        .size(48.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = onSurfaceContainer,
+                        contentColor = MaterialTheme.colorScheme.primary
+                    )
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_trash),
+                        contentDescription = "Delete Current Todo",
+                        modifier = Modifier.width(32.dp),
+                        tint = Red500
+                    )
+                }
+            }
+
         }
     }
 }

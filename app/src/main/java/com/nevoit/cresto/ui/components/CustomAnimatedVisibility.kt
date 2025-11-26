@@ -189,7 +189,7 @@ fun CustomAnimatedVisibility(
     exit: MyExitTransition,
     content: @Composable () -> Unit
 ) {
-    val visibleState = remember { MutableTransitionState(initialState = false) }
+    val visibleState = remember { MutableTransitionState(initialState = visible) }
 
     LaunchedEffect(visible) {
         visibleState.targetState = visible

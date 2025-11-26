@@ -19,6 +19,7 @@ foundationLayout = "1.9.3"
 foundationLayoutVersion = "1.9.4"
 uiVersion = "1.9.4"
 foundationVersion = "1.9.4"
+androidxUi = "1.9.5"
 
 
 [libraries]
@@ -47,6 +48,7 @@ androidx-compose-foundation-layout = { group = "androidx.compose.foundation", na
 androidx-foundation-layout = { group = "androidx.compose.foundation", name = "foundation-layout", version.ref = "foundationLayoutVersion" }
 ui = { group = "androidx.compose.ui", name = "ui", version.ref = "uiVersion" }
 androidx-foundation = { group = "androidx.compose.foundation", name = "foundation", version.ref = "foundationVersion" }
+androidx-compose-ui-ui = { group = "androidx.compose.ui", name = "ui", version.ref = "androidxUi" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
