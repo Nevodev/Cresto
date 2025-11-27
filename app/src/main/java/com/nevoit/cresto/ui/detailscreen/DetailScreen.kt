@@ -227,10 +227,14 @@ fun DetailScreen(
                 bottom = 64.dp + navigationBarHeight * 2
             )
         ) {
-            item {
-                Box(modifier = Modifier.padding(top = 48.dp + statusBarHeight + 12.dp))
+            item(key = "status") {
+                Box(
+                    modifier = Modifier
+                        .animateItem(placementSpec = spring(0.9f, 400f))
+                        .padding(top = 48.dp + statusBarHeight + 12.dp)
+                )
             }
-            item {
+            item(key = "edit") {
                 if (itemWithSubTodos != null) {
                     itemWithSubTodos?.let {
                         TodoItemRowEditable(
@@ -238,7 +242,7 @@ fun DetailScreen(
                             onCheckedChange = { isChecked ->
                                 viewModel.update(it.todoItem.copy(isCompleted = isChecked))
                             },
-                            modifier = Modifier,
+                            modifier = Modifier.animateItem(placementSpec = spring(0.9f, 400f)),
                             onEditEnd = { string ->
                                 // if update here will cause conflict
                                 title = string
@@ -255,12 +259,13 @@ fun DetailScreen(
                 }
                 Spacer(modifier = Modifier.height(12.dp))
             }
-            item {
+            item(key = "controls") {
                 CompositionLocalProvider(
                     LocalOverscrollFactory provides overscrollFactory
                 ) {
                     BoxWithConstraints(
                         modifier = Modifier
+                            .animateItem(placementSpec = spring(0.9f, 400f))
                             .fillMaxWidth()
                             .height(48.dp)
                     ) {
@@ -464,7 +469,7 @@ fun DetailScreen(
                     }
                 }
             }
-            item {
+            item(key = "small_title") {
                 Spacer(modifier = Modifier.height(12.dp))
                 Text(
                     text = "Task",
@@ -473,12 +478,13 @@ fun DetailScreen(
                     fontWeight = FontWeight.Normal,
                     color = MaterialTheme.colorScheme.onBackground.copy(.5f),
                     modifier = Modifier
+                        .animateItem(placementSpec = spring(0.9f, 400f))
                         .fillMaxWidth()
                         .padding(top = 8.dp, bottom = 8.dp, start = 12.dp)
                 )
             }
             itemWithSubTodos?.subTodos?.let { subTodos ->
-                items(subTodos) { subTodo ->
+                items(items = subTodos, key = { it.id }) { subTodo ->
                     SwipeableSubTodoItemRowEditable(
                         subTodo = subTodo,
                         modifier = Modifier.animateItem(placementSpec = spring(0.9f, 400f)),
@@ -490,13 +496,15 @@ fun DetailScreen(
                                 )
                             )
                         },
-                        onDelete = {},
+                        onDelete = {
+                            viewModel.deleteSubTodo(subTodo)
+                        },
                         onPromote = {},
                     )
                     Spacer(modifier = Modifier.height(12.dp))
                 }
             }
-            item {
+            item(key = "add") {
                 itemWithSubTodos?.todoItem?.let { parentTodo ->
                     SubTodoItemRowAdd(
                         modifier = Modifier.animateItem(placementSpec = spring(0.9f, 400f)),

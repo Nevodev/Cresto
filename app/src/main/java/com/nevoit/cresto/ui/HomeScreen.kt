@@ -66,6 +66,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.zIndex
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.kyant.capsule.ContinuousCapsule
 import com.kyant.capsule.ContinuousRoundedRectangle
@@ -328,7 +329,7 @@ fun HomeScreen(
             }
 
             if (completeTodos.isNotEmpty()) {
-                item {
+                item(key = "small_title") {
                     val degree = remember { Animatable(if (completedVisible) 90f else 270f) }
                     LaunchedEffect(completedVisible) {
                         if (completedVisible) {
@@ -341,6 +342,8 @@ fun HomeScreen(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceBetween,
                         modifier = Modifier
+                            .zIndex(-1f)
+                            .animateItem(placementSpec = spring(0.9f, 400f))
                             .fillMaxWidth()
                             .clickable(
                                 interactionSource = interactionSource,
@@ -348,7 +351,6 @@ fun HomeScreen(
                                 onClick = { completedVisible = !completedVisible }
                             )
                             .padding(top = 8.dp, bottom = 8.dp, start = 12.dp)
-                            .animateItem(fadeInSpec = tween(100), fadeOutSpec = tween(100))
                     ) {
                         Text(
                             text = "Completed",

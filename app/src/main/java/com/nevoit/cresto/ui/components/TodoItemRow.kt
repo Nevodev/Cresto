@@ -528,7 +528,7 @@ fun TodoItemRowEditable(
     }
 
     Row(
-        modifier = Modifier
+        modifier = modifier
             .defaultMinSize(minHeight = 68.dp)
             .fillMaxWidth()
             .background(
@@ -640,7 +640,10 @@ fun SubTodoItemRowEditable(
         Spacer(modifier = Modifier.width(12.dp))
         CustomCheckbox(
             checked = checked,
-            onCheckedChange = { checked = !checked }
+            onCheckedChange = {
+                checked = !checked
+                onEditEnd(state.text.toString(), checked)
+            }
         )
         Spacer(modifier = Modifier.width(12.dp))
         Box(
@@ -733,7 +736,7 @@ fun SubTodoItemRowAdd(
 
 
     Row(
-        modifier = Modifier
+        modifier = modifier
             .defaultMinSize(minHeight = 68.dp)
             .fillMaxWidth()
             .background(
@@ -829,7 +832,7 @@ fun SwipeableContainer(
     val actionButtonWidth = 66.dp
     val actionButtonWidthPx = with(density) { actionButtonWidth.toPx() }
 
-    val gapPx = with(density) { 12.dp.toPx() }
+    val gapPx = with(density) { 6.dp.toPx() }
 
     val totalActionsWidthPx = actionButtonWidthPx * actions.size
     val snapThresholdPx = -totalActionsWidthPx / 2
@@ -907,8 +910,8 @@ fun SwipeableContainer(
         Row(
             modifier = Modifier
                 .align(Alignment.CenterEnd)
-                .padding(end = 6.dp)
                 .width(with(density) { totalActionsWidthPx.toDp() })
+                .padding(end = 6.dp)
                 .fillMaxHeight(),
             horizontalArrangement = Arrangement.End,
             verticalAlignment = Alignment.CenterVertically
@@ -922,7 +925,7 @@ fun SwipeableContainer(
                 ) {
                     val trueIndex = actions.size - index - 1
                     val revealThreshold =
-                        (trueIndex * actionButtonWidthPx) + (actionButtonWidthPx / 2)
+                        gapPx + (actionButtonWidthPx - gapPx) * trueIndex + (actionButtonWidthPx - gapPx) / 2
 
                     val isVisible = abs(flingOffset.value) >= revealThreshold
 
@@ -932,9 +935,9 @@ fun SwipeableContainer(
                             .width(48.dp)
                             .height(48.dp),
                         enter = myScaleIn(
-                            tween(200, 0, LinearOutSlowInEasing),
+                            tween(300, 0, LinearOutSlowInEasing),
                             0.6f
-                        ) + myFadeIn(tween(100)),
+                        ) + myFadeIn(tween(200)),
                         exit = myScaleOut(
                             tween(200, 0, LinearOutSlowInEasing),
                             0.6f
@@ -1017,9 +1020,10 @@ fun SwipeableContainer(
                             val isDeepSwipe = currentOffset < -deepSwipeThresholdPx
                             val isFastSwipe = velocity < -velocityThreshold
 
-                            if (actions.isNotEmpty() && ((isDeepSwipe && initialSwipeState == SwipeState.REVEALED) || (isFastSwipe && initialSwipeState == SwipeState.REVEALED))) {
+                            if (velocity >= 0 && initialSwipeState == SwipeState.IDLE) {
+                            } else if (actions.isNotEmpty() && ((isDeepSwipe && initialSwipeState == SwipeState.REVEALED) || (isFastSwipe && initialSwipeState == SwipeState.REVEALED))) {
                                 executeAction(actions.last())
-                            } else if (currentOffset < snapThresholdPx || (isFastSwipe && currentOffset < 0)) {
+                            } else if ((currentOffset < snapThresholdPx || (isFastSwipe && currentOffset < 0)) && velocity <= 0) {
                                 swipeState = SwipeState.REVEALED
                                 flingOffset.animateTo(
                                     targetValue = -totalActionsWidthPx,
@@ -1082,6 +1086,7 @@ fun SwipeableSubTodoItemRowEditable(
     )
 
     SwipeableContainer(
+        modifier = modifier,
         actions = actions,
         onAction = { index ->
             when (index) {
