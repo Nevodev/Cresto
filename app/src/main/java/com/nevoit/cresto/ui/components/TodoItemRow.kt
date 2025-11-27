@@ -1020,6 +1020,7 @@ fun SwipeableContainer(
                             val isFastSwipe = velocity < -velocityThreshold
 
                             if (velocity >= 0 && initialSwipeState == SwipeState.IDLE) {
+                                velocity
                             } else if (actions.isNotEmpty() && ((isDeepSwipe && initialSwipeState == SwipeState.REVEALED) || (isFastSwipe && initialSwipeState == SwipeState.REVEALED))) {
                                 executeAction(actions.last())
                             } else if ((currentOffset < snapThresholdPx || (isFastSwipe && currentOffset < 0)) && velocity <= 0) {
