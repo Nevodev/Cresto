@@ -81,7 +81,6 @@ import com.nevoit.cresto.data.SubTodoItem
 import com.nevoit.cresto.data.TodoItem
 import com.nevoit.cresto.data.TodoItemWithSubTodos
 import com.nevoit.cresto.ui.components.glasense.GlasenseButton
-import com.nevoit.cresto.ui.theme.glasense.Amber500
 import com.nevoit.cresto.ui.theme.glasense.CalculatedColor
 import com.nevoit.cresto.ui.theme.glasense.Red500
 import com.nevoit.cresto.ui.theme.glasense.getFlagColor
@@ -1073,8 +1072,8 @@ fun SwipeableSubTodoItemRowEditable(
     val actions = listOf(
         SwipeableActionButton(
             index = 0,
-            color = Amber500,
-            icon = painterResource(id = R.drawable.ic_pin),
+            color = MaterialTheme.colorScheme.primary,
+            icon = painterResource(id = R.drawable.ic_duplicate),
             isDestructive = false
         ),
         SwipeableActionButton(

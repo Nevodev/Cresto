@@ -62,6 +62,7 @@ import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import com.kyant.capsule.ContinuousCapsule
 import com.nevoit.cresto.R
 import com.nevoit.cresto.data.SubTodoItem
+import com.nevoit.cresto.data.TodoItem
 import com.nevoit.cresto.ui.components.CustomAnimatedVisibility
 import com.nevoit.cresto.ui.components.DynamicSmallTitle
 import com.nevoit.cresto.ui.components.HorizontalFlagPicker
@@ -92,6 +93,7 @@ import dev.chrisbanes.haze.ExperimentalHazeApi
 import dev.chrisbanes.haze.hazeSource
 import dev.chrisbanes.haze.rememberHazeState
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import java.time.LocalDate
 
 @OptIn(ExperimentalHazeApi::class)
@@ -206,6 +208,9 @@ fun DetailScreen(
             animationScope = animationScope,
         )
     }
+
+    val scope = rememberCoroutineScope()
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -227,7 +232,7 @@ fun DetailScreen(
                 bottom = 64.dp + navigationBarHeight * 2
             )
         ) {
-            item(key = "status") {
+            item(key = "status_bar") {
                 Box(
                     modifier = Modifier
                         .animateItem(placementSpec = spring(0.9f, 400f))
@@ -499,7 +504,17 @@ fun DetailScreen(
                         onDelete = {
                             viewModel.deleteSubTodo(subTodo)
                         },
-                        onPromote = {},
+                        onPromote = {
+                            scope.launch {
+                                viewModel.insert(
+                                    TodoItem(
+                                        title = subTodo.description,
+                                        isCompleted = subTodo.isCompleted
+                                    )
+                                )
+                                viewModel.deleteSubTodo(subTodo)
+                            }
+                        },
                     )
                     Spacer(modifier = Modifier.height(12.dp))
                 }
