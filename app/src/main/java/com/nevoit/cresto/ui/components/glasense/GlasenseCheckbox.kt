@@ -16,10 +16,12 @@ import androidx.compose.foundation.selection.toggleable
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.Saver
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -45,7 +47,8 @@ private val SizeEasing = CubicBezierEasing(0.2f, 0.81f, 0.34f, 1.0f)
 fun GlasenseCheckbox(
     checked: Boolean,
     onCheckedChange: (Boolean) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    role: Role = Role.Checkbox
 ) {
     val density = LocalDensity.current
     val dimensions = remember(density) {
@@ -70,31 +73,40 @@ fun GlasenseCheckbox(
                 sizeAnim.animateTo(
                     targetValue = dimensions.checkedRadius,
                     animationSpec = tween(
-                        durationMillis = ANIMATION_DURATION_SIZE,
-                        easing = SizeEasing
+                        durationMillis = 200,
+                        easing = CubicBezierEasing(0.2f, 0.81f, 0.34f, 1.0f)
                     )
                 )
             }
             launch {
-                alphaAnim.animateTo(
-                    targetValue = 1f,
-                    animationSpec = tween(durationMillis = ANIMATION_DURATION_ALPHA_IN)
-                )
+                alphaAnim.animateTo(targetValue = 1f, animationSpec = tween(durationMillis = 100))
             }
         } else {
             launch {
-                alphaAnim.animateTo(
-                    targetValue = 0f,
-                    animationSpec = tween(durationMillis = ANIMATION_DURATION_ALPHA_OUT)
-                )
+                alphaAnim.animateTo(targetValue = 0f, animationSpec = tween(durationMillis = 150))
             }
             sizeAnim.snapTo(dimensions.checkedRadius)
-            delay(ANIMATION_DURATION_ALPHA_OUT.toLong())
+            delay(150)
             sizeAnim.snapTo(dimensions.uncheckedRadius)
         }
     }
 
+    val previousChecked = remember { mutableStateOf(checked) }
+
+    val isTransitioning = previousChecked.value != checked
+
     var currentIconRes by remember { mutableStateOf<Int?>(null) }
+
+    LaunchedEffect(checked) {
+        if (previousChecked.value != checked) {
+            currentIconRes = if (checked) {
+                R.drawable.avd_checkmark_check
+            } else {
+                R.drawable.avd_checkmark_uncheck
+            }
+            previousChecked.value = checked
+        }
+    }
 
     Box(
         modifier = modifier
@@ -108,14 +120,7 @@ fun GlasenseCheckbox(
             )
             .toggleable(
                 value = checked,
-                onValueChange = { newChecked ->
-                    currentIconRes = if (newChecked) {
-                        R.drawable.avd_checkmark_check
-                    } else {
-                        R.drawable.avd_checkmark_uncheck
-                    }
-                    onCheckedChange(newChecked)
-                },
+                onValueChange = onCheckedChange,
                 role = Role.Checkbox,
                 interactionSource = remember { MutableInteractionSource() },
                 indication = null
@@ -124,7 +129,8 @@ fun GlasenseCheckbox(
     ) {
         CheckmarkContent(
             iconRes = currentIconRes,
-            isChecked = checked
+            isChecked = checked,
+            isTransitioning = isTransitioning
         )
     }
 }
@@ -133,29 +139,27 @@ fun GlasenseCheckbox(
 @Composable
 private fun CheckmarkContent(
     @DrawableRes iconRes: Int?,
-    isChecked: Boolean
+    isChecked: Boolean,
+    isTransitioning: Boolean
 ) {
     if (iconRes != null) {
-        key(iconRes) {
+        androidx.compose.runtime.key(iconRes) {
             val avd = AnimatedImageVector.animatedVectorResource(id = iconRes)
             var atEnd by remember { mutableStateOf(false) }
             val painter = rememberAnimatedVectorPainter(animatedImageVector = avd, atEnd = atEnd)
 
-            LaunchedEffect(Unit) {
-                atEnd = true
-            }
+            LaunchedEffect(Unit) { atEnd = true }
 
+            Image(painter = painter, contentDescription = null)
+        }
+    } else {
+        if (isChecked && !isTransitioning) {
             Image(
-                painter = painter,
+                modifier = Modifier.scale(1.1f),
+                painter = painterResource(id = R.drawable.ic_checkbox_checkmark_animation_ready),
                 contentDescription = null
             )
         }
-    } else if (isChecked) {
-        Image(
-            modifier = Modifier.scale(1.1f),
-            painter = painterResource(id = R.drawable.ic_checkbox_checkmark_animation_ready),
-            contentDescription = null
-        )
     }
 }
 
@@ -194,3 +198,53 @@ private data class CheckboxDimensions(
     val checkedRadius: Float,
     val uncheckedRadius: Float
 )
+
+@Stable
+class CheckBoxState<T>(initialSelection: T? = null) {
+    var selectedValue by mutableStateOf(initialSelection)
+        private set
+
+    fun onSelectionChange(value: T) {
+        if (selectedValue != value) {
+            selectedValue = value
+        }
+    }
+
+    fun select(value: T) {
+        selectedValue = value
+    }
+
+    companion object {
+        fun <T : Any> getSaver(): Saver<CheckBoxState<T>, T> {
+            return Saver(
+                save = { it.selectedValue },
+                restore = { CheckBoxState(it) }
+            )
+        }
+    }
+}
+
+@Composable
+fun <T : Any> rememberCheckBoxState(initialSelection: T? = null): CheckBoxState<T> {
+    return rememberSaveable(saver = CheckBoxState.getSaver()) {
+        CheckBoxState(initialSelection)
+    }
+}
+
+@Composable
+fun <T> GlasenseCheckbox(
+    state: CheckBoxState<T>,
+    value: T,
+    modifier: Modifier = Modifier
+) {
+    val isChecked = state.selectedValue == value
+
+    GlasenseCheckbox(
+        checked = isChecked,
+        onCheckedChange = {
+            state.onSelectionChange(value)
+        },
+        modifier = modifier,
+        role = Role.RadioButton
+    )
+}
