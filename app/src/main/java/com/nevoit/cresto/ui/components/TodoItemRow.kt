@@ -54,6 +54,7 @@ import com.nevoit.cresto.R
 import com.nevoit.cresto.data.SubTodoItem
 import com.nevoit.cresto.data.TodoItem
 import com.nevoit.cresto.data.TodoItemWithSubTodos
+import com.nevoit.cresto.ui.components.glasense.GlasenseCheckbox
 import com.nevoit.cresto.ui.components.glasense.SwipeableActionButton
 import com.nevoit.cresto.ui.components.glasense.SwipeableContainer
 import com.nevoit.cresto.ui.components.glasense.SwipeableListState
@@ -94,7 +95,7 @@ fun TodoItemRow(
         verticalAlignment = Alignment.CenterVertically
     ) {
         Spacer(modifier = Modifier.width(12.dp))
-        CustomCheckbox(
+        GlasenseCheckbox(
             checked = item.isCompleted,
             onCheckedChange = onCheckedChange
         )
@@ -306,7 +307,7 @@ fun TodoItemRowEditable(
         verticalAlignment = Alignment.CenterVertically
     ) {
         Spacer(modifier = Modifier.width(12.dp))
-        CustomCheckbox(
+        GlasenseCheckbox(
             checked = item.isCompleted,
             onCheckedChange = onCheckedChange
         )
@@ -405,7 +406,7 @@ fun SubTodoItemRowEditable(
         verticalAlignment = Alignment.CenterVertically
     ) {
         Spacer(modifier = Modifier.width(12.dp))
-        CustomCheckbox(
+        GlasenseCheckbox(
             checked = checked,
             onCheckedChange = {
                 checked = !checked
@@ -514,7 +515,7 @@ fun SubTodoItemRowAdd(
         verticalAlignment = Alignment.CenterVertically
     ) {
         Spacer(modifier = Modifier.width(12.dp))
-        CustomCheckbox(
+        GlasenseCheckbox(
             checked = checked,
             onCheckedChange = { checked = !checked }
         )
