@@ -1,6 +1,9 @@
 package com.nevoit.cresto.ui
 
+import android.app.Activity
 import android.content.Intent
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
@@ -71,6 +74,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.kyant.capsule.ContinuousCapsule
 import com.kyant.capsule.ContinuousRoundedRectangle
 import com.nevoit.cresto.R
+import com.nevoit.cresto.data.EXTRA_TODO_ID
 import com.nevoit.cresto.ui.components.DynamicSmallTitle
 import com.nevoit.cresto.ui.components.PageHeader
 import com.nevoit.cresto.ui.components.SwipeableTodoItem
@@ -88,6 +92,7 @@ import com.nevoit.cresto.util.g2
 import dev.chrisbanes.haze.ExperimentalHazeApi
 import dev.chrisbanes.haze.hazeSource
 import dev.chrisbanes.haze.rememberHazeState
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalHazeApi::class)
@@ -205,6 +210,19 @@ fun HomeScreen(
     val (incompleteTodos, completeTodos) = todoList.partition { !it.todoItem.isCompleted }
     var completedVisible by remember { mutableStateOf(true) }
 
+    val launcher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            val deleteId = result.data?.getIntExtra("extra_delete_id", -1) ?: -1
+            if (deleteId != -1) {
+                scope.launch {
+                    delay(300)
+                    viewModel.deleteById(deleteId)
+                }
+            }
+        }
+    }
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -266,7 +284,7 @@ fun HomeScreen(
                                         Intent(context, DetailActivity::class.java).apply {
                                             putExtra("todo_id", item.todoItem.id)
                                         }
-                                    context.startActivity(intent)
+                                    launcher.launch(intent)
                                 }
                             }
                         )
@@ -406,9 +424,9 @@ fun HomeScreen(
                                                     context,
                                                     DetailActivity::class.java
                                                 ).apply {
-                                                    putExtra("todo_id", item.todoItem.id)
+                                                    putExtra(EXTRA_TODO_ID, item.todoItem.id)
                                                 }
-                                            context.startActivity(intent)
+                                            launcher.launch(intent)
                                         }
                                     }
                                 )

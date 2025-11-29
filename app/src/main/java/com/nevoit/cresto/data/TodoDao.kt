@@ -61,9 +61,12 @@ interface TodoDao {
     @Transaction
     @Query("SELECT * FROM todo_items ORDER BY dueDate IS NULL, dueDate ASC")
     fun getAllTodosWithSubTodosSortedByDueDate(): Flow<List<TodoItemWithSubTodos>>
-    
+
     // Fetches a single todo item with its sub-todos by ID.
     @Transaction
     @Query("SELECT * FROM todo_items WHERE id = :id")
     fun getTodoWithSubTodosById(id: Int): Flow<TodoItemWithSubTodos?>
+
+    @Query("DELETE FROM todo_items WHERE id = :id")
+    suspend fun deleteById(id: Int)
 }

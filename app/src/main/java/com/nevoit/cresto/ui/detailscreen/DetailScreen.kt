@@ -30,7 +30,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -61,6 +60,7 @@ import com.kyant.backdrop.backdrops.layerBackdrop
 import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import com.kyant.capsule.ContinuousCapsule
 import com.nevoit.cresto.R
+import com.nevoit.cresto.data.EXTRA_DELETE_ID
 import com.nevoit.cresto.data.SubTodoItem
 import com.nevoit.cresto.data.TodoItem
 import com.nevoit.cresto.ui.components.CustomAnimatedVisibility
@@ -103,8 +103,11 @@ fun DetailScreen(
     todoId: Int,
     viewModel: TodoViewModel = viewModel()
 ) {
+    val scope = rememberCoroutineScope()
+
     val activity = LocalActivity.current
     val itemWithSubTodos by viewModel.getTodoWithSubTodos(todoId).collectAsState(initial = null)
+    val currentItem = itemWithSubTodos
 
     val statusBarHeight = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
     val navigationBarHeight = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
@@ -149,10 +152,11 @@ fun DetailScreen(
             "Delete",
             icon = painterResource(R.drawable.ic_trash),
             onClick = {
-                activity?.finish()
-                itemWithSubTodos?.todoItem?.let {
-                    viewModel.delete(itemWithSubTodos!!.todoItem)
+                val resultIntent = android.content.Intent().apply {
+                    putExtra(EXTRA_DELETE_ID, todoId)
                 }
+                activity?.setResult(android.app.Activity.RESULT_OK, resultIntent)
+                activity?.finish()
             },
             isPrimary = true,
             isDestructive = true
@@ -211,7 +215,7 @@ fun DetailScreen(
         )
     }
 
-    val scope = rememberCoroutineScope()
+
 
     Box(
         modifier = Modifier
@@ -219,279 +223,276 @@ fun DetailScreen(
             .background(surfaceColor)
             .layerBackdrop(backdrop)
     ) {
-        LazyColumn(
-            state = lazyListState,
-            modifier = Modifier
-                .hazeSource(hazeState, 0f)
-                .fillMaxSize()
-                .padding(0.dp)
-                .background(surfaceColor)
-                .imePadding(),
-            contentPadding = PaddingValues(
-                start = 12.dp,
-                top = 0.dp,
-                end = 12.dp,
-                bottom = 64.dp + navigationBarHeight * 2
-            )
-        ) {
-            item(key = "status_bar") {
-                Box(
-                    modifier = Modifier
-                        .animateItem(placementSpec = spring(0.9f, 400f))
-                        .padding(top = 48.dp + statusBarHeight + 12.dp)
-                )
+        if (currentItem == null) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+
             }
-            item(key = "edit") {
-                if (itemWithSubTodos != null) {
-                    itemWithSubTodos?.let {
-                        TodoItemRowEditable(
-                            item = it.todoItem,
-                            onCheckedChange = { isChecked ->
-                                viewModel.update(it.todoItem.copy(isCompleted = isChecked))
-                            },
-                            modifier = Modifier.animateItem(placementSpec = spring(0.9f, 400f)),
-                            onEditEnd = { string ->
-                                // if update here will cause conflict
-                                title = string
-                            }
-                        )
-                    }
-                } else {
+        } else {
+            LazyColumn(
+                state = lazyListState,
+                modifier = Modifier
+                    .hazeSource(hazeState, 0f)
+                    .fillMaxSize()
+                    .padding(0.dp)
+                    .background(surfaceColor)
+                    .imePadding(),
+                contentPadding = PaddingValues(
+                    start = 12.dp,
+                    top = 0.dp,
+                    end = 12.dp,
+                    bottom = 64.dp + navigationBarHeight * 2
+                )
+            ) {
+                item(key = "status_bar") {
                     Box(
-                        modifier = Modifier.fillParentMaxSize(),
-                        contentAlignment = Alignment.Center
+                        modifier = Modifier
+                            .animateItem(placementSpec = spring(0.9f, 400f))
+                            .padding(top = 48.dp + statusBarHeight + 12.dp)
+                    )
+                }
+                item(key = "edit") {
+                    TodoItemRowEditable(
+                        item = currentItem.todoItem,
+                        onCheckedChange = { isChecked ->
+                            viewModel.update(currentItem.todoItem.copy(isCompleted = isChecked))
+                        },
+                        modifier = Modifier.animateItem(placementSpec = spring(0.9f, 400f)),
+                        onEditEnd = { string ->
+                            // if update here will cause conflict
+                            title = string
+                        }
+                    )
+                    Spacer(modifier = Modifier.height(12.dp))
+                }
+                item(key = "controls") {
+                    CompositionLocalProvider(
+                        LocalOverscrollFactory provides overscrollFactory
                     ) {
-                        CircularProgressIndicator()
+                        BoxWithConstraints(
+                            modifier = Modifier
+                                .animateItem(placementSpec = spring(0.9f, 400f))
+                                .fillMaxWidth()
+                                .height(48.dp)
+                        ) {
+                            var selectedButton by remember { mutableStateOf(SelectedButton.NONE) }
+
+                            val totalWidth = this.maxWidth
+
+                            // Calculate the width of the buttons based on the selected state.
+                            val collapsedSize = 48.dp
+                            val spacerSize = 12.dp
+                            val expandedWidth = totalWidth - (collapsedSize * 1) - (spacerSize * 1)
+                            val defaultWidth = (totalWidth - (spacerSize * 1)) / 2
+
+                            // Animate the width of the due date button.
+                            val dueDateWidth by animateDpAsState(
+                                targetValue = when (selectedButton) {
+                                    SelectedButton.DUE_DATE -> expandedWidth
+                                    SelectedButton.NONE -> defaultWidth
+                                    else -> collapsedSize
+                                },
+                                animationSpec = spring(
+                                    dampingRatio = 0.7f,
+                                    stiffness = 300f
+                                )
+                            )
+                            // Animate the width of the flag button.
+                            val flagWidth by animateDpAsState(
+                                targetValue = when (selectedButton) {
+                                    SelectedButton.FLAG -> expandedWidth
+                                    SelectedButton.NONE -> defaultWidth
+                                    else -> collapsedSize
+                                },
+                                animationSpec = spring(
+                                    dampingRatio = 0.7f,
+                                    stiffness = 300f
+                                )
+                            )
+                            // Animate the width of the hashtag button.
+                            val hashtagWidth by animateDpAsState(
+                                targetValue = when (selectedButton) {
+                                    SelectedButton.HASHTAG -> expandedWidth
+                                    SelectedButton.NONE -> defaultWidth
+                                    else -> collapsedSize
+                                },
+                                animationSpec = spring(
+                                    dampingRatio = 0.7f,
+                                    stiffness = 300f
+                                )
+                            )
+                            Row(
+                                modifier = Modifier
+                                    .width(totalWidth)
+                                    .height(48.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                // Due date button.
+                                GlasenseButtonAlt(
+                                    enabled = true,
+                                    shape = ContinuousCapsule(g2),
+                                    onClick = {
+                                        selectedButton =
+                                            if (selectedButton == SelectedButton.DUE_DATE) {
+                                                SelectedButton.NONE
+                                            } else {
+                                                SelectedButton.DUE_DATE
+                                            }
+                                    },
+                                    modifier = Modifier
+                                        .height(48.dp)
+                                        .width(dueDateWidth),
+                                    colors = if (darkMode) AppButtonColors.secondary().copy(
+                                        containerColor = AppButtonColors.secondary().containerColor.copy(
+                                            .1f
+                                        )
+                                    ) else AppButtonColors.secondary(),
+                                    indication = true
+                                ) {
+                                    Box(
+                                        modifier = Modifier.fillMaxSize(),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        // Animated visibility for the due date icon.
+                                        CustomAnimatedVisibility(
+                                            visible = selectedButton != SelectedButton.DUE_DATE,
+                                            enter = myFadeIn(animationSpec = tween(delayMillis = 100)) + myScaleIn(
+                                                animationSpec = tween(delayMillis = 100),
+                                                initialScale = 0.9f
+                                            ),
+                                            exit = myFadeOut(animationSpec = tween(durationMillis = 100)) + myScaleOut(
+                                                animationSpec = tween(delayMillis = 100),
+                                                targetScale = 0.9f
+                                            )
+                                        ) {
+                                            Icon(
+                                                painter = painterResource(id = R.drawable.ic_calendar),
+                                                contentDescription = "Due Date",
+                                                modifier = Modifier.width(28.dp)
+                                            )
+                                        }
+                                        // Animated visibility for the date picker.
+                                        CustomAnimatedVisibility(
+                                            visible = selectedButton == SelectedButton.DUE_DATE,
+                                            enter = myFadeIn(animationSpec = tween(delayMillis = 100)) + myScaleIn(
+                                                animationSpec = tween(delayMillis = 100),
+                                                initialScale = 0.9f
+                                            ),
+                                            exit = myFadeOut(animationSpec = tween(durationMillis = 100)) + myScaleOut(
+                                                animationSpec = tween(delayMillis = 100),
+                                                targetScale = 0.9f
+                                            )
+                                        ) {
+                                            HorizontalPresetDatePicker(
+                                                initialDate = finalDate,
+                                                onDateSelected = {
+                                                    finalDate = it
+                                                    selectedButton = SelectedButton.NONE
+                                                }
+                                            )
+
+                                        }
+                                    }
+
+                                }
+                                Spacer(modifier = Modifier.width(12.dp))
+                                // Flag button.
+                                GlasenseButtonAlt(
+                                    enabled = true,
+                                    shape = ContinuousCapsule(g2),
+                                    onClick = {
+                                        selectedButton =
+                                            if (selectedButton == SelectedButton.FLAG) {
+                                                SelectedButton.NONE
+                                            } else {
+                                                SelectedButton.FLAG
+                                            }
+                                    },
+                                    modifier = Modifier
+                                        .height(48.dp)
+                                        .width(flagWidth),
+                                    colors = if (darkMode) AppButtonColors.secondary().copy(
+                                        containerColor = AppButtonColors.secondary().containerColor.copy(
+                                            .1f
+                                        )
+                                    ) else AppButtonColors.secondary(),
+                                ) {
+                                    Box(
+                                        modifier = Modifier.fillMaxSize(),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        // Animated visibility for the flag icon.
+                                        CustomAnimatedVisibility(
+                                            visible = selectedButton != SelectedButton.FLAG,
+                                            enter = myFadeIn(animationSpec = tween(delayMillis = 100)) + myScaleIn(
+                                                animationSpec = tween(delayMillis = 100),
+                                                initialScale = 0.9f
+                                            ),
+                                            exit = myFadeOut(animationSpec = tween(durationMillis = 100)) + myScaleOut(
+                                                animationSpec = tween(delayMillis = 100),
+                                                targetScale = 0.9f
+                                            )
+                                        ) {
+                                            val displayColor = getFlagColor(selectedIndex)
+                                            Icon(
+                                                painter = if (displayColor == Color.Transparent) {
+                                                    painterResource(id = R.drawable.ic_flag)
+                                                } else {
+                                                    painterResource(id = R.drawable.ic_flag_fill)
+                                                },
+                                                contentDescription = "Flag",
+                                                modifier = Modifier.width(28.dp),
+                                                tint = if (displayColor == Color.Transparent) {
+                                                    MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5F)
+                                                } else {
+                                                    displayColor
+                                                }
+                                            )
+                                        }
+                                        // Animated visibility for the flag picker.
+                                        CustomAnimatedVisibility(
+                                            visible = selectedButton == SelectedButton.FLAG,
+                                            enter = myFadeIn(animationSpec = tween(delayMillis = 100)) + myScaleIn(
+                                                animationSpec = tween(delayMillis = 100),
+                                                initialScale = 0.9f
+                                            ),
+                                            exit = myFadeOut(animationSpec = tween(durationMillis = 100)) + myScaleOut(
+                                                animationSpec = tween(delayMillis = 100),
+                                                targetScale = 0.9f
+                                            )
+                                        ) {
+                                            HorizontalFlagPicker(
+                                                selectedIndex = selectedIndex,
+                                                onIndexSelected = { newIndex ->
+                                                    selectedIndex = newIndex
+                                                    selectedButton = SelectedButton.NONE
+                                                }
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+
+                        }
                     }
                 }
-                Spacer(modifier = Modifier.height(12.dp))
-            }
-            item(key = "controls") {
-                CompositionLocalProvider(
-                    LocalOverscrollFactory provides overscrollFactory
-                ) {
-                    BoxWithConstraints(
+                item(key = "small_title") {
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Text(
+                        text = "Task",
+                        fontSize = 14.sp,
+                        lineHeight = 14.sp,
+                        fontWeight = FontWeight.Normal,
+                        color = MaterialTheme.colorScheme.onBackground.copy(.5f),
                         modifier = Modifier
                             .animateItem(placementSpec = spring(0.9f, 400f))
                             .fillMaxWidth()
-                            .height(48.dp)
-                    ) {
-                        var selectedButton by remember { mutableStateOf(SelectedButton.NONE) }
-
-                        val totalWidth = this.maxWidth
-
-                        // Calculate the width of the buttons based on the selected state.
-                        val collapsedSize = 48.dp
-                        val spacerSize = 12.dp
-                        val expandedWidth = totalWidth - (collapsedSize * 1) - (spacerSize * 1)
-                        val defaultWidth = (totalWidth - (spacerSize * 1)) / 2
-
-                        // Animate the width of the due date button.
-                        val dueDateWidth by animateDpAsState(
-                            targetValue = when (selectedButton) {
-                                SelectedButton.DUE_DATE -> expandedWidth
-                                SelectedButton.NONE -> defaultWidth
-                                else -> collapsedSize
-                            },
-                            animationSpec = spring(
-                                dampingRatio = 0.7f,
-                                stiffness = 300f
-                            )
-                        )
-                        // Animate the width of the flag button.
-                        val flagWidth by animateDpAsState(
-                            targetValue = when (selectedButton) {
-                                SelectedButton.FLAG -> expandedWidth
-                                SelectedButton.NONE -> defaultWidth
-                                else -> collapsedSize
-                            },
-                            animationSpec = spring(
-                                dampingRatio = 0.7f,
-                                stiffness = 300f
-                            )
-                        )
-                        // Animate the width of the hashtag button.
-                        val hashtagWidth by animateDpAsState(
-                            targetValue = when (selectedButton) {
-                                SelectedButton.HASHTAG -> expandedWidth
-                                SelectedButton.NONE -> defaultWidth
-                                else -> collapsedSize
-                            },
-                            animationSpec = spring(
-                                dampingRatio = 0.7f,
-                                stiffness = 300f
-                            )
-                        )
-                        Row(
-                            modifier = Modifier
-                                .width(totalWidth)
-                                .height(48.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            // Due date button.
-                            GlasenseButtonAlt(
-                                enabled = true,
-                                shape = ContinuousCapsule(g2),
-                                onClick = {
-                                    selectedButton =
-                                        if (selectedButton == SelectedButton.DUE_DATE) {
-                                            SelectedButton.NONE
-                                        } else {
-                                            SelectedButton.DUE_DATE
-                                        }
-                                },
-                                modifier = Modifier
-                                    .height(48.dp)
-                                    .width(dueDateWidth),
-                                colors = if (darkMode) AppButtonColors.secondary().copy(
-                                    containerColor = AppButtonColors.secondary().containerColor.copy(
-                                        .1f
-                                    )
-                                ) else AppButtonColors.secondary(),
-                                indication = true
-                            ) {
-                                Box(
-                                    modifier = Modifier.fillMaxSize(),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    // Animated visibility for the due date icon.
-                                    CustomAnimatedVisibility(
-                                        visible = selectedButton != SelectedButton.DUE_DATE,
-                                        enter = myFadeIn(animationSpec = tween(delayMillis = 100)) + myScaleIn(
-                                            animationSpec = tween(delayMillis = 100),
-                                            initialScale = 0.9f
-                                        ),
-                                        exit = myFadeOut(animationSpec = tween(durationMillis = 100)) + myScaleOut(
-                                            animationSpec = tween(delayMillis = 100),
-                                            targetScale = 0.9f
-                                        )
-                                    ) {
-                                        Icon(
-                                            painter = painterResource(id = R.drawable.ic_calendar),
-                                            contentDescription = "Due Date",
-                                            modifier = Modifier.width(28.dp)
-                                        )
-                                    }
-                                    // Animated visibility for the date picker.
-                                    CustomAnimatedVisibility(
-                                        visible = selectedButton == SelectedButton.DUE_DATE,
-                                        enter = myFadeIn(animationSpec = tween(delayMillis = 100)) + myScaleIn(
-                                            animationSpec = tween(delayMillis = 100),
-                                            initialScale = 0.9f
-                                        ),
-                                        exit = myFadeOut(animationSpec = tween(durationMillis = 100)) + myScaleOut(
-                                            animationSpec = tween(delayMillis = 100),
-                                            targetScale = 0.9f
-                                        )
-                                    ) {
-                                        HorizontalPresetDatePicker(
-                                            initialDate = finalDate,
-                                            onDateSelected = {
-                                                finalDate = it
-                                                selectedButton = SelectedButton.NONE
-                                            }
-                                        )
-
-                                    }
-                                }
-
-                            }
-                            Spacer(modifier = Modifier.width(12.dp))
-                            // Flag button.
-                            GlasenseButtonAlt(
-                                enabled = true,
-                                shape = ContinuousCapsule(g2),
-                                onClick = {
-                                    selectedButton = if (selectedButton == SelectedButton.FLAG) {
-                                        SelectedButton.NONE
-                                    } else {
-                                        SelectedButton.FLAG
-                                    }
-                                },
-                                modifier = Modifier
-                                    .height(48.dp)
-                                    .width(flagWidth),
-                                colors = if (darkMode) AppButtonColors.secondary().copy(
-                                    containerColor = AppButtonColors.secondary().containerColor.copy(
-                                        .1f
-                                    )
-                                ) else AppButtonColors.secondary(),
-                            ) {
-                                Box(
-                                    modifier = Modifier.fillMaxSize(),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    // Animated visibility for the flag icon.
-                                    CustomAnimatedVisibility(
-                                        visible = selectedButton != SelectedButton.FLAG,
-                                        enter = myFadeIn(animationSpec = tween(delayMillis = 100)) + myScaleIn(
-                                            animationSpec = tween(delayMillis = 100),
-                                            initialScale = 0.9f
-                                        ),
-                                        exit = myFadeOut(animationSpec = tween(durationMillis = 100)) + myScaleOut(
-                                            animationSpec = tween(delayMillis = 100),
-                                            targetScale = 0.9f
-                                        )
-                                    ) {
-                                        val displayColor = getFlagColor(selectedIndex)
-                                        Icon(
-                                            painter = if (displayColor == Color.Transparent) {
-                                                painterResource(id = R.drawable.ic_flag)
-                                            } else {
-                                                painterResource(id = R.drawable.ic_flag_fill)
-                                            },
-                                            contentDescription = "Flag",
-                                            modifier = Modifier.width(28.dp),
-                                            tint = if (displayColor == Color.Transparent) {
-                                                MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5F)
-                                            } else {
-                                                displayColor
-                                            }
-                                        )
-                                    }
-                                    // Animated visibility for the flag picker.
-                                    CustomAnimatedVisibility(
-                                        visible = selectedButton == SelectedButton.FLAG,
-                                        enter = myFadeIn(animationSpec = tween(delayMillis = 100)) + myScaleIn(
-                                            animationSpec = tween(delayMillis = 100),
-                                            initialScale = 0.9f
-                                        ),
-                                        exit = myFadeOut(animationSpec = tween(durationMillis = 100)) + myScaleOut(
-                                            animationSpec = tween(delayMillis = 100),
-                                            targetScale = 0.9f
-                                        )
-                                    ) {
-                                        HorizontalFlagPicker(
-                                            selectedIndex = selectedIndex,
-                                            onIndexSelected = { newIndex ->
-                                                selectedIndex = newIndex
-                                                selectedButton = SelectedButton.NONE
-                                            }
-                                        )
-                                    }
-                                }
-                            }
-                        }
-
-                    }
+                            .padding(top = 8.dp, bottom = 8.dp, start = 12.dp)
+                    )
                 }
-            }
-            item(key = "small_title") {
-                Spacer(modifier = Modifier.height(12.dp))
-                Text(
-                    text = "Task",
-                    fontSize = 14.sp,
-                    lineHeight = 14.sp,
-                    fontWeight = FontWeight.Normal,
-                    color = MaterialTheme.colorScheme.onBackground.copy(.5f),
-                    modifier = Modifier
-                        .animateItem(placementSpec = spring(0.9f, 400f))
-                        .fillMaxWidth()
-                        .padding(top = 8.dp, bottom = 8.dp, start = 12.dp)
-                )
-            }
-            itemWithSubTodos?.subTodos?.let { subTodos ->
-                items(items = subTodos, key = { it.id }) { subTodo ->
+                items(items = currentItem.subTodos, key = { it.id }) { subTodo ->
                     SwipeableSubTodoItemRowEditable(
                         listState = swipeListState,
                         subTodo = subTodo,
@@ -521,15 +522,13 @@ fun DetailScreen(
                     )
                     Spacer(modifier = Modifier.height(12.dp))
                 }
-            }
-            item(key = "add") {
-                itemWithSubTodos?.todoItem?.let { parentTodo ->
+                item(key = "add") {
                     SubTodoItemRowAdd(
                         modifier = Modifier.animateItem(placementSpec = spring(0.9f, 400f)),
                         onEditEnd = { description, checked ->
                             viewModel.insertSubTodo(
                                 SubTodoItem(
-                                    parentId = parentTodo.id,
+                                    parentId = currentItem.todoItem.id,
                                     description = description,
                                     isCompleted = checked
                                 )
@@ -538,7 +537,6 @@ fun DetailScreen(
                     )
                 }
             }
-
         }
         // A small title that dynamically appears at the top when the user scrolls down
         DynamicSmallTitle(

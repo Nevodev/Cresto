@@ -94,6 +94,11 @@ class TodoViewModel(private val repository: TodoRepository) : ViewModel() {
         _revealedItemId.value = null
     }
 
+    fun deleteById(id: Int) {
+        viewModelScope.launch {
+            repository.deleteById(id)
+        }
+    }
     // --- SubTodo Operations ---
 
     fun insertSubTodo(item: SubTodoItem) = viewModelScope.launch {

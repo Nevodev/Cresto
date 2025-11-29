@@ -27,3 +27,7 @@ data class TodoItem(
     val hashtag: String? = null,
     val flag: Int = 0
 )
+
+const val EXTRA_DELETE_ID = "extra_delete_id"
+
+const val EXTRA_TODO_ID = "todo_id"

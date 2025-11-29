@@ -621,7 +621,7 @@ fun SwipeableSubTodoItemRowEditable(
     ) {
         SubTodoItemRowEditable(
             subTodo = subTodo,
-            modifier = modifier,
+            modifier = Modifier,
             onEditEnd = { string, boolean -> onEditEnd(string, boolean) })
     }
 }

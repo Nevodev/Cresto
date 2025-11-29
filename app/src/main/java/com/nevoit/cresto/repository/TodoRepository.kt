@@ -18,11 +18,12 @@ class TodoRepository(private val todoDao: TodoDao) {
      * A flow that emits a list of all to-do items with their sub-todos from the database.
      */
     val allTodos: Flow<List<TodoItemWithSubTodos>> = todoDao.getAllTodosWithSubTodos()
-    
+
     /**
      * A flow that emits a list of all to-do items with their sub-todos, sorted by due date.
      */
-    val allTodosSortedByDueDate: Flow<List<TodoItemWithSubTodos>> = todoDao.getAllTodosWithSubTodosSortedByDueDate()
+    val allTodosSortedByDueDate: Flow<List<TodoItemWithSubTodos>> =
+        todoDao.getAllTodosWithSubTodosSortedByDueDate()
 
     /**
      * Retrieves a single to-do item with its sub-todos by its ID.
@@ -68,7 +69,7 @@ class TodoRepository(private val todoDao: TodoDao) {
     suspend fun delete(item: TodoItem) {
         todoDao.deleteTodo(item)
     }
-    
+
     // --- SubTodo Operations ---
 
     /**
@@ -98,4 +99,7 @@ class TodoRepository(private val todoDao: TodoDao) {
         todoDao.deleteSubTodo(item)
     }
 
+    suspend fun deleteById(id: Int) {
+        todoDao.deleteById(id)
+    }
 }
