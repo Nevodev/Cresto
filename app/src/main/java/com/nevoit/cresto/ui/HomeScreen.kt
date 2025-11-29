@@ -78,6 +78,7 @@ import com.nevoit.cresto.ui.components.glasense.DialogItemData
 import com.nevoit.cresto.ui.components.glasense.GlasenseButton
 import com.nevoit.cresto.ui.components.glasense.GlasenseButtonAdaptable
 import com.nevoit.cresto.ui.components.glasense.MenuItemData
+import com.nevoit.cresto.ui.components.glasense.rememberSwipeableListState
 import com.nevoit.cresto.ui.detailscreen.DetailActivity
 import com.nevoit.cresto.ui.theme.glasense.Blue500
 import com.nevoit.cresto.ui.theme.glasense.CalculatedColor
@@ -128,6 +129,7 @@ fun HomeScreen(
             viewModel.collapseRevealedItem()
         }
     }
+    val swipeListState = rememberSwipeableListState()
 
     val isSmallTitleVisible by remember(thresholdPx) { derivedStateOf { ((lazyListState.firstVisibleItemIndex == 0) && (lazyListState.firstVisibleItemScrollOffset > thresholdPx)) || lazyListState.firstVisibleItemIndex > 0 } }
     val interactionSource = remember { MutableInteractionSource() }
@@ -207,13 +209,6 @@ fun HomeScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(CalculatedColor.hierarchicalBackgroundColor)
-            .pointerInput(Unit) {
-                detectTapGestures(
-                    onTap = {
-                        viewModel.collapseRevealedItem()
-                    }
-                )
-            }
     ) {
         LazyColumn(
             state = lazyListState,
@@ -279,13 +274,10 @@ fun HomeScreen(
                     Box {
                         SwipeableTodoItem(
                             item = item,
-                            isRevealed = (item.todoItem.id == revealedItemId),
-                            onExpand = { viewModel.onItemExpanded(item.todoItem.id) },
-                            onCollapse = { viewModel.onItemCollapsed(item.todoItem.id) },
                             onCheckedChange = { isChecked ->
                                 viewModel.update(item.todoItem.copy(isCompleted = isChecked))
                             },
-                            onDeleteClick = { viewModel.delete(item.todoItem) },
+                            onDelete = { viewModel.delete(item.todoItem) },
                             modifier = Modifier
                                 .then(if (isComposed) Modifier.drawBehind {
                                     val outline =
@@ -305,7 +297,8 @@ fun HomeScreen(
                                             style = Stroke(width = 3.dp.toPx()),
                                         )
                                     }
-                                } else Modifier)
+                                } else Modifier),
+                            listState = swipeListState
                         )
                         // Selection mode selector box
                         if (isSelectionModeActive) {
@@ -423,13 +416,10 @@ fun HomeScreen(
                             Box {
                                 SwipeableTodoItem(
                                     item = item,
-                                    isRevealed = (item.todoItem.id == revealedItemId),
-                                    onExpand = { viewModel.onItemExpanded(item.todoItem.id) },
-                                    onCollapse = { viewModel.onItemCollapsed(item.todoItem.id) },
                                     onCheckedChange = { isChecked ->
                                         viewModel.update(item.todoItem.copy(isCompleted = isChecked))
                                     },
-                                    onDeleteClick = { viewModel.delete(item.todoItem) },
+                                    onDelete = { viewModel.delete(item.todoItem) },
                                     modifier = Modifier
                                         .then(if (isComposed) Modifier.drawBehind {
                                             val outline =
@@ -452,7 +442,8 @@ fun HomeScreen(
                                                     style = Stroke(width = 3.dp.toPx()),
                                                 )
                                             }
-                                        } else Modifier)
+                                        } else Modifier),
+                                    listState = swipeListState
                                 )
                                 if (isSelectionModeActive) {
                                     Box(

@@ -77,6 +77,7 @@ import com.nevoit.cresto.ui.components.glasense.GlasenseBottomBar
 import com.nevoit.cresto.ui.components.glasense.GlasenseButton
 import com.nevoit.cresto.ui.components.glasense.GlasenseButtonAlt
 import com.nevoit.cresto.ui.components.glasense.GlasenseDialog
+import com.nevoit.cresto.ui.components.glasense.rememberSwipeableListState
 import com.nevoit.cresto.ui.components.myFadeIn
 import com.nevoit.cresto.ui.components.myFadeOut
 import com.nevoit.cresto.ui.components.myScaleIn
@@ -126,6 +127,7 @@ fun DetailScreen(
     }
 
     val lazyListState = rememberLazyListState()
+    val swipeListState = rememberSwipeableListState()
 
     val isSmallTitleVisible by remember(thresholdPx) { derivedStateOf { ((lazyListState.firstVisibleItemIndex == 0) && (lazyListState.firstVisibleItemScrollOffset > thresholdPx)) || lazyListState.firstVisibleItemIndex > 0 } }
 
@@ -491,6 +493,7 @@ fun DetailScreen(
             itemWithSubTodos?.subTodos?.let { subTodos ->
                 items(items = subTodos, key = { it.id }) { subTodo ->
                     SwipeableSubTodoItemRowEditable(
+                        listState = swipeListState,
                         subTodo = subTodo,
                         modifier = Modifier.animateItem(placementSpec = spring(0.9f, 400f)),
                         onEditEnd = { string, checked ->
