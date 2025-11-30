@@ -4,6 +4,7 @@ package com.nevoit.cresto.settings
 // Import necessary libraries and components
 import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -33,20 +34,19 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.nevoit.cresto.R
 import com.nevoit.cresto.settings.util.SettingsViewModel
-import com.nevoit.cresto.ui.components.ColorModeSelector
 import com.nevoit.cresto.ui.components.ConfigInfoHeader
 import com.nevoit.cresto.ui.components.ConfigItem
 import com.nevoit.cresto.ui.components.ConfigItemContainer
-import com.nevoit.cresto.ui.components.DynamicSmallTitle
 import com.nevoit.cresto.ui.components.glasense.GlasenseButton
+import com.nevoit.cresto.ui.components.glasense.GlasenseDynamicSmallTitle
 import com.nevoit.cresto.ui.components.glasense.GlasenseSwitch
+import com.nevoit.cresto.ui.components.packed.ColorModeSelector
 import com.nevoit.cresto.ui.theme.glasense.Blue500
 import com.nevoit.cresto.ui.theme.glasense.CalculatedColor
 import dev.chrisbanes.haze.ExperimentalHazeApi
@@ -94,8 +94,7 @@ fun AppearanceScreen(settingsViewModel: SettingsViewModel = viewModel()) {
         1.dp.toPx()
     }
 
-    // Determine the current color mode (dark or light) based on the background color
-    val colorMode = if (MaterialTheme.colorScheme.onBackground == Color.Black) 0 else 1
+    val colorMode = isSystemInDarkTheme()
 
     // State variables for the various appearance settings, managed by the ViewModel
     var isCustomPrimaryColor by settingsViewModel.isCustomPrimaryColorEnabled
@@ -145,7 +144,7 @@ fun AppearanceScreen(settingsViewModel: SettingsViewModel = viewModel()) {
                 ColorModeSelector(
                     backgroundColor = hierarchicalSurfaceColor,
                     onChange = { settingsViewModel.colorMode(it) },
-                    colorMode = colorMode,
+                    systemColorMode = colorMode,
                     currentMode = currentMode
                 )
                 Spacer(modifier = Modifier.height(12.dp))
@@ -224,7 +223,7 @@ fun AppearanceScreen(settingsViewModel: SettingsViewModel = viewModel()) {
             }
         }
         // A small title that dynamically appears at the top when the user scrolls down
-        DynamicSmallTitle(
+        GlasenseDynamicSmallTitle(
             modifier = Modifier.align(Alignment.TopCenter),
             title = "Appearance",
             statusBarHeight = statusBarHeight,

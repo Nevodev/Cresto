@@ -41,8 +41,8 @@ import com.nevoit.cresto.settings.DataStorageActivity
 import com.nevoit.cresto.ui.components.AboutEntryItem
 import com.nevoit.cresto.ui.components.ConfigContainer
 import com.nevoit.cresto.ui.components.ConfigEntryItem
-import com.nevoit.cresto.ui.components.DynamicSmallTitle
-import com.nevoit.cresto.ui.components.PageHeader
+import com.nevoit.cresto.ui.components.glasense.GlasenseDynamicSmallTitle
+import com.nevoit.cresto.ui.components.glasense.GlasensePageHeader
 import com.nevoit.cresto.ui.theme.glasense.Blue500
 import com.nevoit.cresto.ui.theme.glasense.CalculatedColor
 import com.nevoit.cresto.ui.theme.glasense.Pink400
@@ -111,7 +111,7 @@ fun SettingsScreen(aiViewModel: AiViewModel = viewModel()) {
             )
         ) {
             item {
-                PageHeader(title = "Settings", statusBarHeight = statusBarHeight)
+                GlasensePageHeader(title = "Settings", statusBarHeight = statusBarHeight)
             }
             item {
                 ConfigContainer(backgroundColor = hierarchicalSurfaceColor) {
@@ -197,7 +197,7 @@ fun SettingsScreen(aiViewModel: AiViewModel = viewModel()) {
                 Spacer(Modifier.height(200.dp))
             }
         }
-        DynamicSmallTitle(
+        GlasenseDynamicSmallTitle(
             modifier = Modifier.align(Alignment.TopCenter),
             title = "Settings",
             statusBarHeight = statusBarHeight,

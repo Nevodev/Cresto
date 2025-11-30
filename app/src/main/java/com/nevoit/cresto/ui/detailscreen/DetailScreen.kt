@@ -64,24 +64,24 @@ import com.nevoit.cresto.data.EXTRA_DELETE_ID
 import com.nevoit.cresto.data.SubTodoItem
 import com.nevoit.cresto.data.TodoItem
 import com.nevoit.cresto.ui.components.CustomAnimatedVisibility
-import com.nevoit.cresto.ui.components.DynamicSmallTitle
 import com.nevoit.cresto.ui.components.HorizontalFlagPicker
 import com.nevoit.cresto.ui.components.HorizontalPresetDatePicker
 import com.nevoit.cresto.ui.components.SelectedButton
-import com.nevoit.cresto.ui.components.SubTodoItemRowAdd
-import com.nevoit.cresto.ui.components.SwipeableSubTodoItemRowEditable
-import com.nevoit.cresto.ui.components.TodoItemRowEditable
 import com.nevoit.cresto.ui.components.glasense.DialogItemData
 import com.nevoit.cresto.ui.components.glasense.DialogState
 import com.nevoit.cresto.ui.components.glasense.GlasenseBottomBar
 import com.nevoit.cresto.ui.components.glasense.GlasenseButton
 import com.nevoit.cresto.ui.components.glasense.GlasenseButtonAlt
 import com.nevoit.cresto.ui.components.glasense.GlasenseDialog
+import com.nevoit.cresto.ui.components.glasense.GlasenseDynamicSmallTitle
 import com.nevoit.cresto.ui.components.glasense.rememberSwipeableListState
 import com.nevoit.cresto.ui.components.myFadeIn
 import com.nevoit.cresto.ui.components.myFadeOut
 import com.nevoit.cresto.ui.components.myScaleIn
 import com.nevoit.cresto.ui.components.myScaleOut
+import com.nevoit.cresto.ui.components.packed.SubTodoItemRowAdd
+import com.nevoit.cresto.ui.components.packed.SwipeableSubTodoItemRowEditable
+import com.nevoit.cresto.ui.components.packed.TodoItemRowEditable
 import com.nevoit.cresto.ui.overscroll.OffsetOverscrollFactory
 import com.nevoit.cresto.ui.theme.glasense.AppButtonColors
 import com.nevoit.cresto.ui.theme.glasense.CalculatedColor
@@ -539,7 +539,7 @@ fun DetailScreen(
             }
         }
         // A small title that dynamically appears at the top when the user scrolls down
-        DynamicSmallTitle(
+        GlasenseDynamicSmallTitle(
             modifier = Modifier.align(Alignment.TopCenter),
             title = itemWithSubTodos?.todoItem?.title ?: "Detail",
             statusBarHeight = statusBarHeight,

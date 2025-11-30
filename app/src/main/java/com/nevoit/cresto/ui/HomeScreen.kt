@@ -75,14 +75,14 @@ import com.kyant.capsule.ContinuousCapsule
 import com.kyant.capsule.ContinuousRoundedRectangle
 import com.nevoit.cresto.R
 import com.nevoit.cresto.data.EXTRA_TODO_ID
-import com.nevoit.cresto.ui.components.DynamicSmallTitle
-import com.nevoit.cresto.ui.components.PageHeader
-import com.nevoit.cresto.ui.components.SwipeableTodoItem
 import com.nevoit.cresto.ui.components.glasense.DialogItemData
 import com.nevoit.cresto.ui.components.glasense.GlasenseButton
 import com.nevoit.cresto.ui.components.glasense.GlasenseButtonAdaptable
+import com.nevoit.cresto.ui.components.glasense.GlasenseDynamicSmallTitle
+import com.nevoit.cresto.ui.components.glasense.GlasensePageHeader
 import com.nevoit.cresto.ui.components.glasense.MenuItemData
 import com.nevoit.cresto.ui.components.glasense.rememberSwipeableListState
+import com.nevoit.cresto.ui.components.packed.SwipeableTodoItem
 import com.nevoit.cresto.ui.detailscreen.DetailActivity
 import com.nevoit.cresto.ui.theme.glasense.Blue500
 import com.nevoit.cresto.ui.theme.glasense.CalculatedColor
@@ -223,6 +223,7 @@ fun HomeScreen(
             }
         }
     }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -243,7 +244,7 @@ fun HomeScreen(
             )
         ) {
             item {
-                PageHeader(title = "All Todos", statusBarHeight = statusBarHeight)
+                GlasensePageHeader(title = "All Todos", statusBarHeight = statusBarHeight)
             }
             items(
                 items = incompleteTodos,
@@ -484,7 +485,7 @@ fun HomeScreen(
                 }
             }
         }
-        DynamicSmallTitle(
+        GlasenseDynamicSmallTitle(
             modifier = Modifier.align(Alignment.TopCenter),
             title = if (isComposed) "$selectedItemCount Selected" else "All Todos",
             statusBarHeight = statusBarHeight,

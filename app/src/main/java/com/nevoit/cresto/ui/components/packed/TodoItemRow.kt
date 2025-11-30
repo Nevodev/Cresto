@@ -1,4 +1,4 @@
-package com.nevoit.cresto.ui.components
+package com.nevoit.cresto.ui.components.packed
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background

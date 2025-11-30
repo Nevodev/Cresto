@@ -26,8 +26,8 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.nevoit.cresto.CrestoApplication
-import com.nevoit.cresto.ui.components.DynamicSmallTitle
-import com.nevoit.cresto.ui.components.PageHeader
+import com.nevoit.cresto.ui.components.glasense.GlasenseDynamicSmallTitle
+import com.nevoit.cresto.ui.components.glasense.GlasensePageHeader
 import com.nevoit.cresto.ui.theme.glasense.CalculatedColor
 import com.nevoit.cresto.ui.viewmodel.AiViewModel
 import com.nevoit.cresto.ui.viewmodel.TodoViewModel
@@ -92,10 +92,10 @@ fun StarScreen(aiViewModel: AiViewModel = viewModel()) {
             )
         ) {
             item {
-                PageHeader(title = "Mind Flow", statusBarHeight = statusBarHeight)
+                GlasensePageHeader(title = "Mind Flow", statusBarHeight = statusBarHeight)
             }
         }
-        DynamicSmallTitle(
+        GlasenseDynamicSmallTitle(
             modifier = Modifier.align(Alignment.TopCenter),
             title = "Mind Flow",
             statusBarHeight = statusBarHeight,

@@ -1,4 +1,4 @@
-package com.nevoit.cresto.ui.components
+package com.nevoit.cresto.ui.components.glasense
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -19,7 +19,7 @@ import androidx.compose.ui.unit.dp
  * @param statusBarHeight The height of the system status bar, used for padding.
  */
 @Composable
-fun PageHeader(
+fun GlasensePageHeader(
     title: String,
     statusBarHeight: Dp
 ) {
