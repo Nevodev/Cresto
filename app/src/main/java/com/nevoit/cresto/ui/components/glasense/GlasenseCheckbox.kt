@@ -30,7 +30,9 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
@@ -51,6 +53,8 @@ fun GlasenseCheckbox(
     modifier: Modifier = Modifier,
     role: Role = Role.Checkbox
 ) {
+    val haptic = LocalHapticFeedback.current
+
     val density = LocalDensity.current
     val dimensions = remember(density) {
         CheckboxDimensions(
@@ -124,7 +128,10 @@ fun GlasenseCheckbox(
             )
             .toggleable(
                 value = checked,
-                onValueChange = onCheckedChange,
+                onValueChange = { value ->
+                    haptic.performHapticFeedback(HapticFeedbackType.ContextClick)
+                    onCheckedChange(value)
+                },
                 role = role,
                 interactionSource = remember { MutableInteractionSource() },
                 indication = null
