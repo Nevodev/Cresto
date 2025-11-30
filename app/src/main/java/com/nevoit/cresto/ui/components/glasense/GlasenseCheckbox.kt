@@ -18,6 +18,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.Saver
@@ -73,17 +74,23 @@ fun GlasenseCheckbox(
                 sizeAnim.animateTo(
                     targetValue = dimensions.checkedRadius,
                     animationSpec = tween(
-                        durationMillis = 200,
-                        easing = CubicBezierEasing(0.2f, 0.81f, 0.34f, 1.0f)
+                        durationMillis = ANIMATION_DURATION_SIZE,
+                        easing = SizeEasing
                     )
                 )
             }
             launch {
-                alphaAnim.animateTo(targetValue = 1f, animationSpec = tween(durationMillis = 100))
+                alphaAnim.animateTo(
+                    targetValue = 1f,
+                    animationSpec = tween(durationMillis = ANIMATION_DURATION_ALPHA_IN)
+                )
             }
         } else {
             launch {
-                alphaAnim.animateTo(targetValue = 0f, animationSpec = tween(durationMillis = 150))
+                alphaAnim.animateTo(
+                    targetValue = 0f,
+                    animationSpec = tween(durationMillis = ANIMATION_DURATION_ALPHA_OUT)
+                )
             }
             sizeAnim.snapTo(dimensions.checkedRadius)
             delay(150)
@@ -92,9 +99,6 @@ fun GlasenseCheckbox(
     }
 
     val previousChecked = remember { mutableStateOf(checked) }
-
-    val isTransitioning = previousChecked.value != checked
-
     var currentIconRes by remember { mutableStateOf<Int?>(null) }
 
     LaunchedEffect(checked) {
@@ -121,7 +125,7 @@ fun GlasenseCheckbox(
             .toggleable(
                 value = checked,
                 onValueChange = onCheckedChange,
-                role = Role.Checkbox,
+                role = role,
                 interactionSource = remember { MutableInteractionSource() },
                 indication = null
             ),
@@ -129,8 +133,7 @@ fun GlasenseCheckbox(
     ) {
         CheckmarkContent(
             iconRes = currentIconRes,
-            isChecked = checked,
-            isTransitioning = isTransitioning
+            shouldShowStatic = previousChecked.value
         )
     }
 }
@@ -139,21 +142,18 @@ fun GlasenseCheckbox(
 @Composable
 private fun CheckmarkContent(
     @DrawableRes iconRes: Int?,
-    isChecked: Boolean,
-    isTransitioning: Boolean
+    shouldShowStatic: Boolean
 ) {
     if (iconRes != null) {
-        androidx.compose.runtime.key(iconRes) {
+        key(iconRes) {
             val avd = AnimatedImageVector.animatedVectorResource(id = iconRes)
             var atEnd by remember { mutableStateOf(false) }
             val painter = rememberAnimatedVectorPainter(animatedImageVector = avd, atEnd = atEnd)
-
             LaunchedEffect(Unit) { atEnd = true }
-
             Image(painter = painter, contentDescription = null)
         }
     } else {
-        if (isChecked && !isTransitioning) {
+        if (shouldShowStatic) {
             Image(
                 modifier = Modifier.scale(1.1f),
                 painter = painterResource(id = R.drawable.ic_checkbox_checkmark_animation_ready),
