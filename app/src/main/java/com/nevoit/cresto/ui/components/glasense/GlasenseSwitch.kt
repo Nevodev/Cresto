@@ -22,7 +22,9 @@ import androidx.compose.ui.graphics.drawOutline
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
@@ -54,6 +56,8 @@ fun GlasenseSwitch(
         animationSpec = spring(.7f, 500f)
     )
 
+    val haptic = LocalHapticFeedback.current
+
     // Animate the track color based on checked and enabled states.
     val trackColorAnimation by animateColorAsState(
         targetValue = when {
@@ -75,6 +79,7 @@ fun GlasenseSwitch(
                 indication = null,
                 interactionSource = remember { MutableInteractionSource() }
             ) {
+                haptic.performHapticFeedback(HapticFeedbackType.ToggleOn)
                 onCheckedChange(!checked)
             },
     ) {

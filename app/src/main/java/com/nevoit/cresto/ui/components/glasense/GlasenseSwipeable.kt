@@ -42,7 +42,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.unit.dp
 import com.nevoit.cresto.ui.components.CustomAnimatedVisibility
@@ -98,6 +100,8 @@ fun SwipeableContainer(
     modifier: Modifier = Modifier,
     content: @Composable () -> Unit
 ) {
+    val haptic = LocalHapticFeedback.current
+
     var swipeState by remember { mutableStateOf(SwipeState.IDLE) }
     var initialSwipeState by remember { mutableStateOf(SwipeState.IDLE) }
     val coroutineScope = rememberCoroutineScope()
@@ -281,6 +285,13 @@ fun SwipeableContainer(
             }
         }
 
+        val currentOffset = flingOffset.value
+        val isDeepSwipe = currentOffset < -deepSwipeThresholdPx
+        LaunchedEffect(isDeepSwipe) {
+            if (isDeepSwipe && initialSwipeState == SwipeState.REVEALED) haptic.performHapticFeedback(
+                HapticFeedbackType.GestureThresholdActivate
+            )
+        }
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -303,10 +314,8 @@ fun SwipeableContainer(
                     },
                     onDragStopped = { velocity ->
                         coroutineScope.launch {
-                            val currentOffset = flingOffset.value
-                            val isDeepSwipe = currentOffset < -deepSwipeThresholdPx
-                            val isFastSwipe = velocity < -velocityThreshold
 
+                            val isFastSwipe = velocity < -velocityThreshold
                             if (actions.isNotEmpty() && ((isDeepSwipe && initialSwipeState == SwipeState.REVEALED) || (isFastSwipe && initialSwipeState == SwipeState.REVEALED))) {
                                 executeAction(actions.last())
                             } else if ((currentOffset < snapThresholdPx || (isFastSwipe && currentOffset < 0)) && velocity <= 0) {
