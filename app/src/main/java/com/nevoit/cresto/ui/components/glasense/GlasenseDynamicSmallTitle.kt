@@ -16,13 +16,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.nevoit.cresto.toolkit.gaussiangradient.smoothGradientMask
+import com.nevoit.cresto.toolkit.gaussiangradient.smoothGradientMaskFallbackInvert
 import com.nevoit.cresto.ui.components.CustomAnimatedVisibility
 import com.nevoit.cresto.ui.components.myFadeIn
 import com.nevoit.cresto.ui.components.myFadeOut
 import com.nevoit.cresto.ui.components.myScaleIn
 import com.nevoit.cresto.ui.components.myScaleOut
-import com.nevoit.cresto.ui.gaussiangradient.smoothGradientMask
-import com.nevoit.cresto.ui.gaussiangradient.smoothGradientMaskFallbackInvert
 import com.nevoit.cresto.ui.theme.glasense.linearGradientMaskT2B70
 import dev.chrisbanes.haze.ExperimentalHazeApi
 import dev.chrisbanes.haze.HazeInputScale

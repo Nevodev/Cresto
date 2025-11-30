@@ -33,11 +33,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import com.nevoit.cresto.R
-import com.nevoit.cresto.ui.components.ConfigItem
-import com.nevoit.cresto.ui.components.ConfigItemContainer
-import com.nevoit.cresto.ui.components.ZeroHeightDivider
 import com.nevoit.cresto.ui.components.glasense.GlasenseCheckbox
 import com.nevoit.cresto.ui.components.glasense.GlasenseSwitch
+import com.nevoit.cresto.ui.components.glasense.ZeroHeightDivider
 import com.nevoit.cresto.ui.components.glasense.rememberCheckBoxState
 
 @Composable

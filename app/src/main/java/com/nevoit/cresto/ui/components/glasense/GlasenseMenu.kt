@@ -46,7 +46,6 @@ import com.kyant.backdrop.backdrops.LayerBackdrop
 import com.kyant.backdrop.drawPlainBackdrop
 import com.kyant.backdrop.effects.blur
 import com.kyant.capsule.ContinuousRoundedRectangle
-import com.nevoit.cresto.ui.components.ZeroHeightDivider
 import com.nevoit.cresto.ui.theme.glasense.Red500
 import com.nevoit.cresto.util.g2
 

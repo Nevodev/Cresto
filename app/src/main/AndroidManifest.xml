@@ -26,27 +26,27 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".settings.AppearanceActivity"
+            android:name=".ui.screens.settings.AppearanceActivity"
             android:exported="false"
             android:parentActivityName=".MainActivity"
             android:theme="@style/Theme.Cresto" />
         <activity
-            android:name=".settings.AIActivity"
+            android:name=".ui.screens.settings.AIActivity"
             android:exported="false"
             android:parentActivityName=".MainActivity"
             android:theme="@style/Theme.Cresto" />
         <activity
-            android:name=".settings.DataStorageActivity"
+            android:name=".ui.screens.settings.DataStorageActivity"
             android:exported="false"
             android:parentActivityName=".MainActivity"
             android:theme="@style/Theme.Cresto" />
         <activity
-            android:name=".settings.AboutActivity"
+            android:name=".ui.screens.settings.AboutActivity"
             android:exported="false"
             android:parentActivityName=".MainActivity"
             android:theme="@style/Theme.Cresto" />
         <activity
-            android:name=".ui.detailscreen.DetailActivity"
+            android:name=".ui.screens.detailscreen.DetailActivity"
             android:exported="false"
             android:parentActivityName=".MainActivity"
             android:theme="@style/Theme.Cresto"

@@ -1,4 +1,4 @@
-package com.nevoit.cresto
+package com.nevoit.cresto.ui.screens.settings
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -15,30 +15,22 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.core.view.WindowCompat
 import com.nevoit.cresto.toolkit.overscroll.OffsetOverscrollFactory
-import com.nevoit.cresto.ui.MainScreen
 import com.nevoit.cresto.ui.theme.glasense.GlasenseTheme
 
-/**
- * The main activity of the application.
- */
-class MainActivity : ComponentActivity() {
+class AIActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        // This makes the app display behind the system bars.
         WindowCompat.setDecorFitsSystemWindows(window, false)
         enableEdgeToEdge()
         setContent {
             GlasenseTheme {
                 val animationScope = rememberCoroutineScope()
-                // Create a custom overscroll factory.
                 val overscrollFactory = remember {
                     OffsetOverscrollFactory(
                         orientation = Orientation.Vertical,
                         animationScope = animationScope,
                     )
                 }
-
-                // Provide the custom overscroll factory to the composable tree.
                 CompositionLocalProvider(
                     LocalOverscrollFactory provides overscrollFactory
                 ) {
@@ -46,8 +38,7 @@ class MainActivity : ComponentActivity() {
                         modifier = Modifier.fillMaxSize(),
                         color = MaterialTheme.colorScheme.background
                     ) {
-                        // Display the main screen of the application.
-                        MainScreen()
+                        AIScreen()
                     }
                 }
             }
