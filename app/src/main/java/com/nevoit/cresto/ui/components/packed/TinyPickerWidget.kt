@@ -39,6 +39,7 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.nevoit.cresto.R
@@ -68,6 +69,7 @@ fun HorizontalFlagPicker(
     selectedIndex: Int,
     onIndexSelected: (Int) -> Unit,
 ) {
+    val context = LocalContext.current
     val colors = listOf(
         Color.Transparent,
         Red500,
@@ -87,7 +89,7 @@ fun HorizontalFlagPicker(
             itemsIndexed(colors) { index, color ->
                 if (index == 0) {
                     SelectorBox(
-                        text = "无",
+                        text = context.getString(R.string.none),
                         isSelected = (selectedIndex == 0),
                         onClick = { onIndexSelected(index) }
                     )

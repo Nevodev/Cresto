@@ -91,7 +91,7 @@ fun TodoItemRow(
     val hasTasks = !item.subTodos.isEmpty()
 
     val item = item.todoItem
-
+    val context = LocalContext.current
     Row(
         modifier = Modifier
             .defaultMinSize(minHeight = 68.dp)
@@ -124,7 +124,7 @@ fun TodoItemRow(
                     )
                     Row() {
                         Text(
-                            text = "Completed ",
+                            text = "${context.getString(R.string.completed)} ",
                             style = MaterialTheme.typography.bodyMedium,
                             fontSize = 14.sp,
                             modifier = Modifier.alpha(0.4f)
@@ -168,7 +168,7 @@ fun TodoItemRow(
                             modifier = Modifier.alpha(0.4f)
                         )
                         Text(
-                            text = " · Completed ",
+                            text = " · ${context.getString(R.string.completed)} ",
                             style = MaterialTheme.typography.bodyMedium,
                             fontSize = 14.sp,
                             modifier = Modifier.alpha(0.4f)
@@ -201,7 +201,7 @@ fun TodoItemRow(
             ) {
                 Icon(
                     painter = painterResource(R.drawable.ic_flag_fill),
-                    contentDescription = "Flag",
+                    contentDescription = context.getString(R.string.flag),
                     modifier = Modifier.fillMaxSize(),
                     tint = getFlagColor(item.flag)
                 )
