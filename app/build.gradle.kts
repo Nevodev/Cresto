@@ -77,12 +77,14 @@ android {
         targetCompatibility = JavaVersion.VERSION_11
     }
 
-    kotlinOptions {
-        jvmTarget = "11"
-    }
-
     buildFeatures {
         compose = true
+    }
+}
+
+kotlin {
+    compilerOptions {
+        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_11)
     }
 }
 
@@ -98,15 +100,9 @@ dependencies {
     implementation(libs.androidx.compose.animation)
     implementation(libs.androidx.material3)
     implementation(libs.androidx.compose.foundation)
-    implementation(libs.androidx.ui)
     implementation(libs.androidx.compose.runtime)
     implementation(libs.androidx.compose.animation.graphics)
-    implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.compose.foundation.layout)
-    implementation(libs.androidx.foundation.layout)
-    implementation(libs.ui)
-    implementation(libs.androidx.foundation)
-    implementation(libs.androidx.compose.ui.ui)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -115,21 +111,21 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
     implementation(libs.androidx.lifecycle.runtime.ktx)
-    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.9.4")
-    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.9.4")
-    implementation("androidx.room:room-runtime:2.8.2")
-    ksp("androidx.room:room-compiler:2.8.2")
-    implementation("androidx.room:room-ktx:2.8.2")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.2")
-    implementation("dev.chrisbanes.haze:haze:1.6.10")
-    implementation("androidx.navigation:navigation-compose:2.9.5")
-    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.9.4")
-    implementation("com.google.ai.client.generativeai:generativeai:0.9.0")
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.9.0")
-    implementation("com.tencent:mmkv:2.2.4")
-    implementation("io.github.kyant0:capsule:2.1.1")
-    implementation("io.github.kyant0:backdrop:1.0.0")
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
+    implementation(libs.androidx.lifecycle.runtime.compose)
+    implementation(libs.androidx.room.runtime)
+    ksp(libs.androidx.room.compiler)
+    implementation(libs.androidx.room.ktx)
+    implementation(libs.kotlinx.coroutines.core)
+    implementation(libs.kotlinx.coroutines.android)
+    implementation(libs.haze)
+    implementation(libs.androidx.navigation.compose)
+    implementation(libs.androidx.lifecycle.runtime.compose)
+    implementation(libs.generativeai)
+    implementation(libs.kotlinx.serialization.json)
+    implementation(libs.mmkv)
+    implementation(libs.capsule)
+    implementation(libs.backdrop)
 }
 
 tasks.register("incrementVersionCode") {
