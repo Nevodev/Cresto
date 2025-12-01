@@ -282,8 +282,8 @@ fun MainScreen() {
                 modifier = Modifier
                     .width(228.dp)
                     .graphicsLayer {
-                        scaleX = scaleAni.value;
-                        scaleY = scaleAni.value;
+                        scaleX = scaleAni.value
+                        scaleY = scaleAni.value
                         transformOrigin = TransformOrigin(0f, 0f)
                     },
                 alphaAni = { alphaAni.value },
