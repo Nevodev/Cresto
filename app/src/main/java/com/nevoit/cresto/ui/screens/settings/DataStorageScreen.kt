@@ -198,7 +198,7 @@ fun DataStorageScreen() {
             isPrimary = false
         ),
         DialogItemData(
-            "Confirm",
+            "Clear",
             onClick = {
                 scope.launch {
                     TodoDatabase.getDatabase(context).todoDao().deleteAllTodos()
@@ -218,7 +218,7 @@ fun DataStorageScreen() {
             isPrimary = false
         ),
         DialogItemData(
-            "Confirm",
+            "Reset",
             onClick = {
                 scope.launch {
                     MMKV.defaultMMKV().clearAll()
