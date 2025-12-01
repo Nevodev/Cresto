@@ -4,7 +4,6 @@ package com.nevoit.cresto.ui.screens.settings
 // Import necessary libraries and components
 import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.background
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -94,8 +93,6 @@ fun AppearanceScreen(settingsViewModel: SettingsViewModel = viewModel()) {
         1.dp.toPx()
     }
 
-    val colorMode = isSystemInDarkTheme()
-
     // State variables for the various appearance settings, managed by the ViewModel
     var isCustomPrimaryColor by settingsViewModel.isCustomPrimaryColorEnabled
     var isUseDynamicColorScheme by settingsViewModel.isUseDynamicColor
@@ -144,7 +141,6 @@ fun AppearanceScreen(settingsViewModel: SettingsViewModel = viewModel()) {
                 ColorModeSelector(
                     backgroundColor = hierarchicalSurfaceColor,
                     onChange = { settingsViewModel.colorMode(it) },
-                    systemColorMode = colorMode,
                     currentMode = currentMode
                 )
                 Spacer(modifier = Modifier.height(12.dp))

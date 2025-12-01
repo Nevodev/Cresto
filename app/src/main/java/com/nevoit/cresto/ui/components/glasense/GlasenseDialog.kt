@@ -6,7 +6,6 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -59,6 +58,7 @@ import com.kyant.backdrop.effects.blur
 import com.kyant.capsule.ContinuousRoundedRectangle
 import com.nevoit.cresto.ui.theme.glasense.AppButtonColors
 import com.nevoit.cresto.ui.theme.glasense.Red500
+import com.nevoit.cresto.ui.theme.glasense.isAppInDarkTheme
 import com.nevoit.cresto.util.g2
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
@@ -142,7 +142,7 @@ fun GlasenseDialog(
     onDismiss: () -> Unit,
     modifier: Modifier
 ) {
-    val isSystemInDarkTheme = isSystemInDarkTheme()
+    val darkTheme = isAppInDarkTheme()
     val screenWidth =
         with(LocalDensity.current) { LocalWindowInfo.current.containerSize.width.toDp() }
 
@@ -186,7 +186,7 @@ fun GlasenseDialog(
                     RoundedCornerShape(24.dp),
                     shadow = Shadow(
                         radius = 32.dp,
-                        color = if (isSystemInDarkTheme) Color.Black.copy(alpha = 0.2f) else Color.Black.copy(
+                        color = if (darkTheme) Color.Black.copy(alpha = 0.2f) else Color.Black.copy(
                             alpha = 0.1f
                         ),
                         offset = DpOffset(0.dp, 16.dp),
@@ -213,7 +213,7 @@ fun GlasenseDialog(
                             )
                         )
                         // The drawing logic is different for light and dark themes.
-                        if (!isSystemInDarkTheme) {
+                        if (!darkTheme) {
                             drawRect(
                                 brush = SolidColor(Color(0xFF6C6C6C).copy(alpha = 0.7f)),
                                 style = Fill,

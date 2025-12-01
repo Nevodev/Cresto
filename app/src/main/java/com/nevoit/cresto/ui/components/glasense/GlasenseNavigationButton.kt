@@ -1,6 +1,5 @@
 package com.nevoit.cresto.ui.components.glasense
 
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
@@ -28,6 +27,7 @@ import com.kyant.backdrop.effects.blur
 import com.kyant.capsule.ContinuousCapsule
 import com.nevoit.cresto.ui.theme.glasense.NavigationButtonActiveColors
 import com.nevoit.cresto.ui.theme.glasense.NavigationButtonNormalColors
+import com.nevoit.cresto.ui.theme.glasense.isAppInDarkTheme
 import com.nevoit.cresto.util.g2
 
 /**
@@ -47,7 +47,7 @@ fun GlasenseNavigationButton(
     backdrop: LayerBackdrop,
     content: @Composable () -> Unit
 ) {
-    val isSystemInDarkTheme = isSystemInDarkTheme()
+    val darkTheme = isAppInDarkTheme()
     // Modifier for drawing the button's background based on its state.
     val finalModifier = if (isActive) {
         // Active state: draw a simple gradient outline.
@@ -100,7 +100,7 @@ fun GlasenseNavigationButton(
                         )
                     )
                     // Light theme inactive style.
-                    if (!isSystemInDarkTheme && !isActive) {
+                    if (!darkTheme && !isActive) {
                         drawRect(
                             brush = SolidColor(Color(0xFF888888).copy(alpha = 0.7f)),
                             style = Fill,
@@ -130,7 +130,7 @@ fun GlasenseNavigationButton(
                             )
                         }
                         // Dark theme inactive style.
-                    } else if (isSystemInDarkTheme && !isActive) {
+                    } else if (darkTheme && !isActive) {
                         drawRect(
                             brush = SolidColor(Color(0xFFFFFFFF).copy(alpha = 0.1f)),
                             style = Fill

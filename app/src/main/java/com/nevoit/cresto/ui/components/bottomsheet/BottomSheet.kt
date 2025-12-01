@@ -9,7 +9,6 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -72,6 +71,7 @@ import com.kyant.backdrop.effects.colorControls
 import com.kyant.capsule.ContinuousCapsule
 import com.nevoit.cresto.CrestoApplication
 import com.nevoit.cresto.R
+import com.nevoit.cresto.secrets.ApiKey
 import com.nevoit.cresto.ui.components.CustomAnimatedVisibility
 import com.nevoit.cresto.ui.components.glasense.DialogItemData
 import com.nevoit.cresto.ui.components.glasense.GlasenseButton
@@ -86,6 +86,7 @@ import com.nevoit.cresto.ui.theme.glasense.gradientColorsDark
 import com.nevoit.cresto.ui.theme.glasense.gradientColorsLight
 import com.nevoit.cresto.ui.theme.glasense.highlightColorsDark
 import com.nevoit.cresto.ui.theme.glasense.highlightColorsLight
+import com.nevoit.cresto.ui.theme.glasense.isAppInDarkTheme
 import com.nevoit.cresto.ui.viewmodel.AiSideEffect
 import com.nevoit.cresto.ui.viewmodel.AiViewModel
 import com.nevoit.cresto.ui.viewmodel.TodoViewModel
@@ -129,15 +130,15 @@ fun BottomSheet(
 
     val isImeVisible = WindowInsets.isImeVisible
 
-    val isSystemInDarkTheme = isSystemInDarkTheme()
+    val darkTheme = isAppInDarkTheme()
 
-    val gradientColors = if (isSystemInDarkTheme) {
+    val gradientColors = if (darkTheme) {
         gradientColorsDark
     } else {
         gradientColorsLight
     }
 
-    val highlightColors = if (isSystemInDarkTheme) {
+    val highlightColors = if (darkTheme) {
         highlightColorsDark
     } else {
         highlightColorsLight
@@ -163,7 +164,7 @@ fun BottomSheet(
         )
     )
     val isLoading = uiState is UiState.Loading
-    val apikey = "placeholder"
+    val apikey = ApiKey
 
     LaunchedEffect(true) {
         aiViewModel.sideEffect.collect { effect ->
@@ -344,7 +345,7 @@ fun BottomSheet(
                                     )
                                 )
                                 // The drawing logic is different for light and dark themes.
-                                if (!isSystemInDarkTheme) {
+                                if (!darkTheme) {
                                     drawRect(
                                         brush = SolidColor(Color(0xFF272727).copy(alpha = 0.2f)),
                                         style = Fill,
@@ -444,10 +445,10 @@ fun BottomSheet(
                                                 .graphicsLayer {
                                                     alpha = 0.5f
                                                     blendMode =
-                                                        if (isSystemInDarkTheme) BlendMode.Plus else BlendMode.Luminosity
+                                                        if (darkTheme) BlendMode.Plus else BlendMode.Luminosity
                                                 },
                                             style = MaterialTheme.typography.bodyLarge,
-                                            color = if (!isSystemInDarkTheme) Color(0xFF545454) else MaterialTheme.typography.bodyLarge.color
+                                            color = if (!darkTheme) Color(0xFF545454) else MaterialTheme.typography.bodyLarge.color
                                         )
                                     }
                                 }
@@ -570,10 +571,10 @@ fun BottomSheet(
                                     .graphicsLayer {
                                         alpha = 0.5f
                                         blendMode =
-                                            if (isSystemInDarkTheme) BlendMode.Plus else BlendMode.Luminosity
+                                            if (darkTheme) BlendMode.Plus else BlendMode.Luminosity
                                     },
                                 style = MaterialTheme.typography.bodyLarge,
-                                color = if (!isSystemInDarkTheme) Color(0xFF545454) else MaterialTheme.typography.bodyLarge.color
+                                color = if (!darkTheme) Color(0xFF545454) else MaterialTheme.typography.bodyLarge.color
                             )
                         }
                     }

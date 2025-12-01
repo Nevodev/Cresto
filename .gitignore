@@ -14,3 +14,4 @@
 .cxx
 local.properties
 /app/release/app-release.apk
+/app/src/main/java/com/nevoit/cresto/secrets/

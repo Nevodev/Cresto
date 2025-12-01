@@ -4,7 +4,6 @@ import androidx.compose.animation.core.Animatable
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.PressInteraction
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -47,6 +46,7 @@ import com.kyant.backdrop.drawPlainBackdrop
 import com.kyant.backdrop.effects.blur
 import com.kyant.capsule.ContinuousRoundedRectangle
 import com.nevoit.cresto.ui.theme.glasense.Red500
+import com.nevoit.cresto.ui.theme.glasense.isAppInDarkTheme
 import com.nevoit.cresto.util.g2
 
 data class MenuItemData(
@@ -70,9 +70,9 @@ data class MenuState(
  */
 @Composable
 fun CustomMenuContent(items: List<MenuItemData>, onDismiss: () -> Unit) {
-    val isSystemInDarkTheme = isSystemInDarkTheme()
+    val darkTheme = isAppInDarkTheme()
     // Define divider color based on the current theme.
-    val dividerColor = if (isSystemInDarkTheme) Color.White.copy(.1f) else Color.Black.copy(.1f)
+    val dividerColor = if (darkTheme) Color.White.copy(.1f) else Color.Black.copy(.1f)
 
     Column {
         items.forEachIndexed { index, item ->
@@ -189,7 +189,7 @@ fun GlasenseMenu(
     alphaAni: () -> Float,
     scaleAni: () -> Float
 ) {
-    val isSystemInDarkTheme = isSystemInDarkTheme()
+    val darkTheme = isAppInDarkTheme()
     Box(
         modifier = Modifier
             // Position the menu at the anchor point defined in menuState.
@@ -203,7 +203,7 @@ fun GlasenseMenu(
                 RoundedCornerShape(16.dp),
                 shadow = Shadow(
                     radius = 32.dp,
-                    color = if (isSystemInDarkTheme) Color.Black.copy(alpha = 0.4f) else Color.Black.copy(
+                    color = if (darkTheme) Color.Black.copy(alpha = 0.4f) else Color.Black.copy(
                         alpha = 0.1f
                     ),
                     offset = DpOffset(0.dp, 16.dp),
@@ -234,7 +234,7 @@ fun GlasenseMenu(
                         )
                     )
                     // The drawing logic is different for light and dark themes.
-                    if (!isSystemInDarkTheme) {
+                    if (!darkTheme) {
                         drawRect(
                             brush = SolidColor(Color(0xFF272727).copy(alpha = 0.2f)),
                             style = Fill,

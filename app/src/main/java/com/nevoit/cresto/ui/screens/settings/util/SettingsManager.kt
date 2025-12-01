@@ -1,5 +1,7 @@
 package com.nevoit.cresto.ui.screens.settings.util
 
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import com.tencent.mmkv.MMKV
 
 /**
@@ -17,46 +19,49 @@ object SettingsManager {
     private const val KEY_LITE_MODE = "lite_mode_enabled"
     private const val KEY_LIQUID_GLASS = "liquid_glass_enabled"
     private const val KEY_COLOR_MODE = "color_mode"
+    const val MODE_LIGHT = 0
+    const val MODE_DARK = 1
+    const val MODE_SYSTEM = 2
+
+    val colorModeState = mutableIntStateOf(mmkv.decodeInt(KEY_COLOR_MODE, MODE_SYSTEM))
+    val isCustomPrimaryColorEnabledState =
+        mutableStateOf(mmkv.decodeBool(KEY_CUSTOM_PRIMARY_COLOR_ENABLED, false))
+    val isUseDynamicColorState = mutableStateOf(mmkv.decodeBool(KEY_USE_DYNAMIC_COLOR, false))
+    val isLiteModeState = mutableStateOf(mmkv.decodeBool(KEY_LITE_MODE, false))
+    val isLiquidGlassState = mutableStateOf(mmkv.decodeBool(KEY_LIQUID_GLASS, false))
 
     var isCustomPrimaryColorEnabled: Boolean
         get() = mmkv.decodeBool(KEY_CUSTOM_PRIMARY_COLOR_ENABLED, false)
         set(value) {
             mmkv.encode(KEY_CUSTOM_PRIMARY_COLOR_ENABLED, value)
+            isCustomPrimaryColorEnabledState.value = value
         }
 
     var isUseDynamicColor: Boolean
         get() = mmkv.decodeBool(KEY_USE_DYNAMIC_COLOR, false)
         set(value) {
             mmkv.encode(KEY_USE_DYNAMIC_COLOR, value)
+            isUseDynamicColorState.value = value
         }
 
     var isLiteMode: Boolean
         get() = mmkv.decodeBool(KEY_LITE_MODE, false)
         set(value) {
             mmkv.encode(KEY_LITE_MODE, value)
+            isLiteModeState.value = value
         }
 
     var isLiquidGlass: Boolean
         get() = mmkv.decodeBool(KEY_LIQUID_GLASS, false)
         set(value) {
             mmkv.encode(KEY_LIQUID_GLASS, value)
+            isLiquidGlassState.value = value
         }
 
     var colorMode: Int
-        get() = mmkv.decodeInt(KEY_COLOR_MODE, 0)
+        get() = mmkv.decodeInt(KEY_COLOR_MODE, MODE_SYSTEM)
         set(value) {
             mmkv.encode(KEY_COLOR_MODE, value)
+            colorModeState.intValue = value
         }
-
-
-    // Example 3: String - Username
-    /*var username: String
-        get() = mmkv.decodeString(KEY_USERNAME, "") ?: "" // Provides a default value of an empty string
-        set(value) = mmkv.encode(KEY_USERNAME, value)
-
-    // Example 4: Int - Sync Frequency (minutes)
-    var syncFrequency: Int
-        get() = mmkv.decodeInt(KEY_SYNC_FREQUENCY, 15) // Provides a default value of 15
-        set(value) = mmkv.encode(KEY_SYNC_FREQUENCY, value)*/
-
 }

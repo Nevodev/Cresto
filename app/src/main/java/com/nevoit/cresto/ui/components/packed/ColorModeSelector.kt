@@ -5,6 +5,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -27,7 +28,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -42,25 +42,20 @@ import com.nevoit.cresto.ui.components.glasense.rememberCheckBoxState
 fun ColorModeSelector(
     backgroundColor: Color,
     currentMode: Int,
-    systemColorMode: Boolean,
     onChange: (Int) -> Unit
 ) {
     // 0 is light, 1 is dark, 2 is auto
     val isAutomatic = currentMode == 2
 
     val onBackground = MaterialTheme.colorScheme.onBackground
-    val density = LocalDensity.current
-    val dp = with(density) {
-        1.dp.toPx()
-    }
     var returnMode by remember { mutableIntStateOf(0) }
     val transparency by animateFloatAsState(
         targetValue = if (isAutomatic) .6f else 1f,
         animationSpec = tween(durationMillis = 200),
     )
-
+    val systemColorMode = isSystemInDarkTheme()
     val selectionState =
-        rememberCheckBoxState<String>(
+        rememberCheckBoxState(
             initialSelection = if (currentMode == 1) "dark" else if (currentMode == 0) "light" else {
                 if (systemColorMode) "dark" else "light"
             }
@@ -88,8 +83,8 @@ fun ColorModeSelector(
     ConfigItemContainer(
         backgroundColor = backgroundColor
     ) {
-        Column() {
-            Box() {
+        Column {
+            Box {
                 if (isAutomatic) {
                     Box(
                         modifier = Modifier

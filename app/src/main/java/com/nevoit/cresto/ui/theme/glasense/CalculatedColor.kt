@@ -6,11 +6,13 @@ import androidx.compose.ui.graphics.Color
 
 
 object CalculatedColor {
+
     val onSurfaceContainer: Color
         @Composable
         get() {
+            val isDark = isAppInDarkTheme()
             val onSurfaceColor = MaterialTheme.colorScheme.onSurface
-            return if (onSurfaceColor == Color.Black) {
+            return if (!isDark) {
                 onSurfaceColor.copy(alpha = 0.05f)
             } else {
                 onSurfaceColor.copy(alpha = 0.1f)
@@ -19,8 +21,9 @@ object CalculatedColor {
     val onSurfaceContainerBold: Color
         @Composable
         get() {
+            val isDark = isAppInDarkTheme()
             val onSurfaceColor = MaterialTheme.colorScheme.onSurface
-            return if (onSurfaceColor == Color.Black) {
+            return if (!isDark) {
                 onSurfaceColor.copy(alpha = 0.2f)
             } else {
                 onSurfaceColor.copy(alpha = 0.4f)
@@ -29,8 +32,8 @@ object CalculatedColor {
     val hierarchicalBackgroundColor: Color
         @Composable
         get() {
-            val background = MaterialTheme.colorScheme.background
-            return if (background == Color.Black) {
+            val isDark = isAppInDarkTheme()
+            return if (isDark) {
                 MaterialTheme.colorScheme.background
             } else {
                 MaterialTheme.colorScheme.surface
@@ -39,8 +42,8 @@ object CalculatedColor {
     val hierarchicalSurfaceColor: Color
         @Composable
         get() {
-            val background = MaterialTheme.colorScheme.background
-            return if (background == Color.Black) {
+            val isDark = isAppInDarkTheme()
+            return if (isDark) {
                 MaterialTheme.colorScheme.surface
             } else {
                 MaterialTheme.colorScheme.background

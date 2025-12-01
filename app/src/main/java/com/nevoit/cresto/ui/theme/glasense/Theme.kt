@@ -9,6 +9,8 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.nevoit.cresto.ui.screens.settings.util.SettingsViewModel
 
 private val DarkColorScheme = darkColorScheme(
     onBackground = Color.White,
@@ -28,17 +30,27 @@ private val LightColorScheme = lightColorScheme(
 
 @Composable
 fun GlasenseTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
-    dynamicColor: Boolean = false,
+    settingsViewModel: SettingsViewModel = viewModel(),
     content: @Composable () -> Unit
 ) {
+    val colorMode = settingsViewModel.colorMode.intValue
+    val dynamicColor = settingsViewModel.isUseDynamicColor.value
+
+    val systemInDark = isSystemInDarkTheme()
+
+    val useDarkTheme = when (colorMode) {
+        0 -> false
+        1 -> true
+        else -> systemInDark
+    }
+
     val colorScheme = when {
         dynamicColor -> {
             val context = LocalContext.current
-            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
+            if (useDarkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
         }
 
-        darkTheme -> DarkColorScheme
+        useDarkTheme -> DarkColorScheme
         else -> LightColorScheme
     }
 
