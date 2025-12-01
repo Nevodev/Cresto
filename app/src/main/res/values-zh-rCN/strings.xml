@@ -97,4 +97,8 @@
         <item quantity="other">%d 小时前</item>
     </plurals>
     <string name="add_task">添加任务</string>
+    <string name="app_icon">应用图标</string>
+    <string name="developed_by_nevoit">由 Nevoit 开发</string>
+    <string name="config_entry">%1$s 设置项</string>
+    <string name="version">版本</string>
 </resources>

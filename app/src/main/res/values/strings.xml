@@ -83,8 +83,8 @@
     <string name="detail">Detail</string>
     <string name="created">Created %1$s</string>
     <string name="delete_current_todo">Delete current todo?</string>
-    <string name="just_now">Just now</string>
-    <string name="yesterday">Yesterday</string>
+    <string name="just_now">just now</string>
+    <string name="yesterday">yesterday</string>
     <plurals name="minutes_ago">
         <item quantity="one">%d minute ago</item>
         <item quantity="other">%d minutes ago</item>
@@ -107,4 +107,8 @@
     </plurals>
     <string name="delete_todo_simple">This will delete current todo permanently. This action cannot be undone.</string>
     <string name="add_task">Add task</string>
+    <string name="app_icon">App Icon</string>
+    <string name="developed_by_nevoit">Developed by Nevoit</string>
+    <string name="config_entry">%1$s config entry</string>
+    <string name="version">Version</string>
 </resources>

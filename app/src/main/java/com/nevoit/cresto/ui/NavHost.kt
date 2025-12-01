@@ -32,13 +32,13 @@ fun AppNavHost(
         enterTransition = {
             fadeIn(animationSpec = tween(250)) + scaleIn(
                 animationSpec = tween(400, 0, EaseOutQuint),
-                initialScale = 0.95f
+                initialScale = 0.90f
             )
         },
         exitTransition = {
             fadeOut(animationSpec = tween(150)) + scaleOut(
                 animationSpec = tween(300, 0, CubicBezierEasing(.2f, .2f, .0f, 1f)),
-                targetScale = 0.95f
+                targetScale = 0.90f
             )
         }
     ) {

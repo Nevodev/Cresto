@@ -40,6 +40,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -90,7 +91,7 @@ fun ConfigEntryItem(
             1f
         }
     }
-
+    val context = LocalContext.current
     // The main row layout for the item.
     Row(
         modifier = Modifier
@@ -133,7 +134,7 @@ fun ConfigEntryItem(
                 Icon(
                     painter = icon,
                     tint = Color.White.copy(.5f),
-                    contentDescription = "$title config entry",
+                    contentDescription = null,
                     modifier = Modifier
                         .graphicsLayer { blendMode = BlendMode.Plus }
                         .fillMaxSize()
@@ -144,7 +145,7 @@ fun ConfigEntryItem(
             Icon(
                 painter = icon,
                 tint = Color.White,
-                contentDescription = "$title config entry",
+                contentDescription = null,
                 modifier = Modifier
                     .graphicsLayer { blendMode = BlendMode.Plus }
                     .fillMaxSize()
@@ -162,10 +163,11 @@ fun ConfigEntryItem(
         Spacer(modifier = Modifier.width(12.dp))
         // Display a forward arrow if it's not a switch item.
         if (isSwitch == null || !isSwitch) {
+
             Icon(
                 painter = painterResource(R.drawable.ic_forward),
                 tint = MaterialTheme.colorScheme.onBackground.copy(.2f),
-                contentDescription = "Enter icon",
+                contentDescription = context.getString(R.string.enter_icon),
                 modifier = Modifier
                     .align(Alignment.CenterVertically)
                     .height(40.dp)
@@ -246,7 +248,7 @@ fun AboutEntryItem(
                 .size(48.dp)
                 .clip(ContinuousRoundedRectangle(12.dp, g2))
         ) {
-            Image(painter = icon, contentDescription = "App Icon")
+            Image(painter = icon, contentDescription = stringResource(R.string.app_icon))
         }
         Spacer(modifier = Modifier.width(12.dp))
         // Column for the app information text.
@@ -262,14 +264,14 @@ fun AboutEntryItem(
                 color = MaterialTheme.colorScheme.onBackground,
             )
             Text(
-                text = "Developed by Nevoit",
+                text = stringResource(R.string.developed_by_nevoit),
                 fontSize = 12.sp,
                 lineHeight = 12.sp,
                 fontWeight = FontWeight.W400,
                 color = MaterialTheme.colorScheme.onBackground.copy(.5f),
             )
             Text(
-                text = "Version ${packageInfo?.versionName}",
+                text = "${context.getString(R.string.version)} ${packageInfo?.versionName}",
                 fontSize = 12.sp,
                 lineHeight = 12.sp,
                 fontWeight = FontWeight.W400,
@@ -281,7 +283,7 @@ fun AboutEntryItem(
         Icon(
             painter = painterResource(R.drawable.ic_forward),
             tint = MaterialTheme.colorScheme.onBackground.copy(.2f),
-            contentDescription = "Enter icon",
+            contentDescription = context.getString(R.string.enter_icon),
             modifier = Modifier
                 .align(Alignment.CenterVertically)
                 .height(40.dp)

@@ -84,7 +84,9 @@ fun HorizontalFlagPicker(
         LazyRow(
             horizontalArrangement = Arrangement.spacedBy(12.dp),
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.align(Alignment.Center)
+            contentPadding = PaddingValues(horizontal = 16.dp),
+            modifier = Modifier
+                .align(Alignment.Center)
         ) {
             itemsIndexed(colors) { index, color ->
                 if (index == 0) {

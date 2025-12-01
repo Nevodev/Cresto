@@ -90,7 +90,7 @@ fun ConfigInfoHeader(
             Icon(
                 painter = icon,
                 tint = Color.White,
-                contentDescription = "$title config entry",
+                contentDescription = null,
                 modifier = Modifier
                     .graphicsLayer { blendMode = BlendMode.Plus }
                     .fillMaxSize()
