@@ -13,6 +13,7 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -100,7 +101,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 
-@OptIn(ExperimentalHazeApi::class)
+@OptIn(ExperimentalHazeApi::class, ExperimentalLayoutApi::class)
 @Composable
 fun DetailScreen(
     todoId: Int,
@@ -219,7 +220,6 @@ fun DetailScreen(
     }
 
 
-
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -287,7 +287,8 @@ fun DetailScreen(
                             // Calculate the width of the buttons based on the selected state.
                             val collapsedSize = 48.dp
                             val spacerSize = 12.dp
-                            val expandedWidth = totalWidth - (collapsedSize * 1) - (spacerSize * 1)
+                            val expandedWidth =
+                                totalWidth - (collapsedSize * 1) - (spacerSize * 1)
                             val defaultWidth = (totalWidth - (spacerSize * 1)) / 2
 
                             // Animate the width of the due date button.
@@ -365,7 +366,11 @@ fun DetailScreen(
                                                 animationSpec = tween(delayMillis = 100),
                                                 initialScale = 0.9f
                                             ),
-                                            exit = myFadeOut(animationSpec = tween(durationMillis = 100)) + myScaleOut(
+                                            exit = myFadeOut(
+                                                animationSpec = tween(
+                                                    durationMillis = 100
+                                                )
+                                            ) + myScaleOut(
                                                 animationSpec = tween(delayMillis = 100),
                                                 targetScale = 0.9f
                                             )
@@ -383,7 +388,11 @@ fun DetailScreen(
                                                 animationSpec = tween(delayMillis = 100),
                                                 initialScale = 0.9f
                                             ),
-                                            exit = myFadeOut(animationSpec = tween(durationMillis = 100)) + myScaleOut(
+                                            exit = myFadeOut(
+                                                animationSpec = tween(
+                                                    durationMillis = 100
+                                                )
+                                            ) + myScaleOut(
                                                 animationSpec = tween(delayMillis = 100),
                                                 targetScale = 0.9f
                                             )
@@ -433,7 +442,11 @@ fun DetailScreen(
                                                 animationSpec = tween(delayMillis = 100),
                                                 initialScale = 0.9f
                                             ),
-                                            exit = myFadeOut(animationSpec = tween(durationMillis = 100)) + myScaleOut(
+                                            exit = myFadeOut(
+                                                animationSpec = tween(
+                                                    durationMillis = 100
+                                                )
+                                            ) + myScaleOut(
                                                 animationSpec = tween(delayMillis = 100),
                                                 targetScale = 0.9f
                                             )
@@ -448,7 +461,9 @@ fun DetailScreen(
                                                 contentDescription = "Flag",
                                                 modifier = Modifier.width(28.dp),
                                                 tint = if (displayColor == Color.Transparent) {
-                                                    MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5F)
+                                                    MaterialTheme.colorScheme.onSurface.copy(
+                                                        alpha = 0.5F
+                                                    )
                                                 } else {
                                                     displayColor
                                                 }
@@ -461,7 +476,11 @@ fun DetailScreen(
                                                 animationSpec = tween(delayMillis = 100),
                                                 initialScale = 0.9f
                                             ),
-                                            exit = myFadeOut(animationSpec = tween(durationMillis = 100)) + myScaleOut(
+                                            exit = myFadeOut(
+                                                animationSpec = tween(
+                                                    durationMillis = 100
+                                                )
+                                            ) + myScaleOut(
                                                 animationSpec = tween(delayMillis = 100),
                                                 targetScale = 0.9f
                                             )

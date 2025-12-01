@@ -1,6 +1,7 @@
 package com.nevoit.cresto.ui.components.packed
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -16,6 +17,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.isImeVisible
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.requiredSize
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
@@ -54,10 +57,15 @@ import com.nevoit.cresto.R
 import com.nevoit.cresto.data.SubTodoItem
 import com.nevoit.cresto.data.TodoItem
 import com.nevoit.cresto.data.TodoItemWithSubTodos
+import com.nevoit.cresto.ui.components.CustomAnimatedVisibility
 import com.nevoit.cresto.ui.components.glasense.GlasenseCheckbox
 import com.nevoit.cresto.ui.components.glasense.SwipeableActionButton
 import com.nevoit.cresto.ui.components.glasense.SwipeableContainer
 import com.nevoit.cresto.ui.components.glasense.SwipeableListState
+import com.nevoit.cresto.ui.components.myFadeIn
+import com.nevoit.cresto.ui.components.myFadeOut
+import com.nevoit.cresto.ui.components.myScaleIn
+import com.nevoit.cresto.ui.components.myScaleOut
 import com.nevoit.cresto.ui.theme.glasense.CalculatedColor
 import com.nevoit.cresto.ui.theme.glasense.Red500
 import com.nevoit.cresto.ui.theme.glasense.getFlagColor
@@ -477,6 +485,7 @@ fun SubTodoItemRowAdd(
     var isFocused by remember { mutableStateOf(false) }
 
     val focusRequester = remember { FocusRequester() }
+
     fun submit() {
         val text = state.text.toString()
         if (text.isNotBlank()) {
@@ -515,10 +524,44 @@ fun SubTodoItemRowAdd(
         verticalAlignment = Alignment.CenterVertically
     ) {
         Spacer(modifier = Modifier.width(12.dp))
-        GlasenseCheckbox(
-            checked = checked,
-            onCheckedChange = { checked = !checked }
-        )
+        Box(modifier = Modifier.size(24.dp)) {
+            CustomAnimatedVisibility(
+                visible = isFocused,
+                enter = myFadeIn(animationSpec = tween(delayMillis = 100)) + myScaleIn(
+                    animationSpec = tween(delayMillis = 100),
+                    initialScale = 0.9f
+                ),
+                exit = myFadeOut(animationSpec = tween(durationMillis = 100)) + myScaleOut(
+                    animationSpec = tween(delayMillis = 100),
+                    targetScale = 0.9f
+                )
+            ) {
+                GlasenseCheckbox(
+                    checked = checked,
+                    onCheckedChange = { checked = !checked }
+                )
+            }
+            CustomAnimatedVisibility(
+                visible = !isFocused,
+                enter = myFadeIn(animationSpec = tween(delayMillis = 100)) + myScaleIn(
+                    animationSpec = tween(delayMillis = 100),
+                    initialScale = 0.9f
+                ),
+                exit = myFadeOut(animationSpec = tween(durationMillis = 100)) + myScaleOut(
+                    animationSpec = tween(delayMillis = 100),
+                    targetScale = 0.9f
+                )
+            ) {
+                Icon(
+                    modifier = Modifier
+                        .align(Alignment.Center)
+                        .requiredSize(32.dp),
+                    painter = painterResource(id = R.drawable.ic_add),
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary
+                )
+            }
+        }
         Spacer(modifier = Modifier.width(12.dp))
 
         Box(
@@ -554,7 +597,7 @@ fun SubTodoItemRowAdd(
                                 color = MaterialTheme.colorScheme.onSurface,
                                 textDecoration = if (checked) TextDecoration.LineThrough else TextDecoration.None,
                             ),
-                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
+                            color = MaterialTheme.colorScheme.primary,
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .align(Alignment.Center)
