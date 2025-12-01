@@ -227,6 +227,9 @@ fun HomeScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
+            .graphicsLayer {
+                clip = true
+            }
             .background(CalculatedColor.hierarchicalBackgroundColor)
     ) {
         LazyColumn(

@@ -16,7 +16,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -126,7 +125,7 @@ fun MainScreen() {
                 .fillMaxSize()
                 .layerBackdrop(backdrop)
                 .hazeSource(hazeState, 0f)
-                .background(color = MaterialTheme.colorScheme.background)
+                .background(color = CalculatedColor.hierarchicalBackgroundColor)
         ) {
             AppNavHost(
                 navController = navController,

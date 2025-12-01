@@ -1,8 +1,12 @@
 package com.nevoit.cresto.ui
 
+import androidx.compose.animation.core.CubicBezierEasing
+import androidx.compose.animation.core.EaseOutQuint
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -21,43 +25,37 @@ fun AppNavHost(
     showDialog: (items: List<DialogItemData>, title: String, message: String?) -> Unit,
     viewModel: TodoViewModel
 ) {
-    val fadeDuration = 0
+
     NavHost(
         navController = navController,
-        startDestination = Screen.Home.route
+        startDestination = Screen.Home.route,
+        enterTransition = {
+            fadeIn(animationSpec = tween(250)) + scaleIn(
+                animationSpec = tween(400, 0, EaseOutQuint),
+                initialScale = 0.95f
+            )
+        },
+        exitTransition = {
+            fadeOut(animationSpec = tween(150)) + scaleOut(
+                animationSpec = tween(300, 0, CubicBezierEasing(.2f, .2f, .0f, 1f)),
+                targetScale = 0.95f
+            )
+        }
     ) {
         composable(
-            route = Screen.Home.route,
-            enterTransition = {
-                fadeIn(animationSpec = tween(fadeDuration))
-            },
-            exitTransition = {
-                fadeOut(animationSpec = tween(fadeDuration))
-            }
+            route = Screen.Home.route
         ) {
             HomeScreen(showMenu = showMenu, viewModel = viewModel, showDialog = showDialog)
         }
 
         composable(
-            route = Screen.Star.route,
-            enterTransition = {
-                fadeIn(animationSpec = tween(fadeDuration))
-            },
-            exitTransition = {
-                fadeOut(animationSpec = tween(fadeDuration))
-            }
+            route = Screen.Star.route
         ) {
             StarScreen()
         }
 
         composable(
-            route = Screen.Settings.route,
-            enterTransition = {
-                fadeIn(animationSpec = tween(fadeDuration))
-            },
-            exitTransition = {
-                fadeOut(animationSpec = tween(fadeDuration))
-            }
+            route = Screen.Settings.route
         ) {
             SettingsScreen()
         }

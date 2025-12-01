@@ -21,12 +21,14 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.nevoit.cresto.CrestoApplication
 import com.nevoit.cresto.ui.components.glasense.GlasenseDynamicSmallTitle
+import com.nevoit.cresto.ui.components.glasense.GlasenseLoadingIndicator
 import com.nevoit.cresto.ui.components.glasense.GlasensePageHeader
 import com.nevoit.cresto.ui.theme.glasense.CalculatedColor
 import com.nevoit.cresto.ui.viewmodel.AiViewModel
@@ -75,6 +77,9 @@ fun StarScreen(aiViewModel: AiViewModel = viewModel()) {
     Box(
         modifier = Modifier
             .fillMaxSize()
+            .graphicsLayer {
+                clip = true
+            }
             .background(surfaceColor)
     ) {
         LazyColumn(
@@ -93,6 +98,9 @@ fun StarScreen(aiViewModel: AiViewModel = viewModel()) {
         ) {
             item {
                 GlasensePageHeader(title = "Mind Flow", statusBarHeight = statusBarHeight)
+            }
+            item {
+                GlasenseLoadingIndicator(modifier = Modifier.fillMaxSize())
             }
         }
         GlasenseDynamicSmallTitle(

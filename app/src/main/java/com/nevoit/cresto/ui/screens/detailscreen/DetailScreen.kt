@@ -75,6 +75,7 @@ import com.nevoit.cresto.ui.components.glasense.GlasenseButton
 import com.nevoit.cresto.ui.components.glasense.GlasenseButtonAlt
 import com.nevoit.cresto.ui.components.glasense.GlasenseDialog
 import com.nevoit.cresto.ui.components.glasense.GlasenseDynamicSmallTitle
+import com.nevoit.cresto.ui.components.glasense.GlasenseLoadingIndicator
 import com.nevoit.cresto.ui.components.glasense.rememberSwipeableListState
 import com.nevoit.cresto.ui.components.myFadeIn
 import com.nevoit.cresto.ui.components.myFadeOut
@@ -230,7 +231,7 @@ fun DetailScreen(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
             ) {
-
+                GlasenseLoadingIndicator(modifier = Modifier.fillMaxSize())
             }
         } else {
             LazyColumn(
