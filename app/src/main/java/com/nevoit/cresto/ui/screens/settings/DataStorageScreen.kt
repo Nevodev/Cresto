@@ -48,6 +48,7 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -193,12 +194,12 @@ fun DataStorageScreen() {
 
     val dialogItems = listOf(
         DialogItemData(
-            "Cancel",
+            stringResource(R.string.cancel),
             onClick = { dismissDialog() },
             isPrimary = false
         ),
         DialogItemData(
-            "Clear",
+            stringResource(R.string.clear),
             onClick = {
                 scope.launch {
                     TodoDatabase.getDatabase(context).todoDao().deleteAllTodos()
@@ -213,12 +214,12 @@ fun DataStorageScreen() {
     )
     val dialogItems2 = listOf(
         DialogItemData(
-            "Cancel",
+            stringResource(R.string.cancel),
             onClick = { dismissDialog() },
             isPrimary = false
         ),
         DialogItemData(
-            "Reset",
+            stringResource(R.string.reset),
             onClick = {
                 scope.launch {
                     MMKV.defaultMMKV().clearAll()
@@ -261,9 +262,9 @@ fun DataStorageScreen() {
                     color = Slate500,
                     backgroundColor = hierarchicalSurfaceColor,
                     icon = painterResource(R.drawable.ic_twotone_storage),
-                    title = "Data & Storage",
+                    title = stringResource(R.string.data_storage),
                     enableGlow = false,
-                    info = "Manage your application's storage footprint."
+                    info = stringResource(R.string.manage_your_application_s_storage_footprint)
                 )
                 Spacer(modifier = Modifier.height(12.dp))
             }
@@ -272,7 +273,7 @@ fun DataStorageScreen() {
             item {
                 Column(modifier = Modifier.fillMaxWidth()) {
                     Text(
-                        text = "Storage Usage",
+                        text = stringResource(R.string.storage_usage),
                         fontSize = 14.sp,
                         lineHeight = 14.sp,
                         color = MaterialTheme.colorScheme.onBackground.copy(.5f),
@@ -306,22 +307,22 @@ fun DataStorageScreen() {
                             )
                             Spacer(modifier = Modifier.height(8.dp))
                             StorageInfoRow(
-                                label = "App Size",
+                                label = stringResource(R.string.app_size),
                                 value = appSize,
                                 icon = painterResource(R.drawable.ic_mini_parcel)
                             )
                             StorageInfoRow(
-                                label = "User Data",
+                                label = stringResource(R.string.user_data),
                                 value = dataSize,
                                 icon = painterResource(R.drawable.ic_mini_user)
                             )
                             StorageInfoRow(
-                                label = "Cache",
+                                label = stringResource(R.string.cache),
                                 value = cacheSize,
                                 icon = painterResource(R.drawable.ic_mini_cache)
                             )
                             StorageInfoRow(
-                                label = "Total",
+                                label = stringResource(R.string.total),
                                 value = totalSize,
                                 isTotal = true,
                                 icon = painterResource(R.drawable.ic_mini_drive)
@@ -337,7 +338,7 @@ fun DataStorageScreen() {
                     backgroundColor = hierarchicalSurfaceColor
                 ) {
                     Column {
-                        ConfigItem(title = "Export Database") {
+                        ConfigItem(title = stringResource(R.string.export_database)) {
                             // TODO: Implement database export functionality
                         }
                         Spacer(modifier = Modifier.height(8.dp))
@@ -355,7 +356,7 @@ fun DataStorageScreen() {
                                 .fillMaxWidth()
                                 .height(0.dp))
                         Spacer(modifier = Modifier.height(8.dp))
-                        ConfigItem(title = "Import Database") {
+                        ConfigItem(title = stringResource(R.string.import_database)) {
                             // TODO: Implement database import functionality
                         }
                     }
@@ -365,20 +366,20 @@ fun DataStorageScreen() {
             // Item containing data reset and clearing options
             item {
                 ConfigItemContainer(
-                    title = "Reset",
+                    title = stringResource(R.string.reset),
                     backgroundColor = hierarchicalSurfaceColor
                 ) {
                     Column {
                         ConfigItem(
-                            title = "Reset All Settings",
+                            title = stringResource(R.string.reset_all_settings),
                             color = Red500,
                             clickable = true,
                             indication = true,
                             onClick = {
                                 showDialog(
                                     dialogItems2,
-                                    "Reset All Settings?",
-                                    "This will reset all settings to their defaults. Your todos will not be deleted."
+                                    "${context.getString(R.string.reset_all_settings)}?",
+                                    context.getString(R.string.this_will_reset_all_settings_to_their_defaults_your_todos_will_not_be_deleted)
                                 )
                             }
                         ) {}
@@ -398,15 +399,15 @@ fun DataStorageScreen() {
                                 .height(0.dp))
                         Spacer(modifier = Modifier.height(8.dp))
                         ConfigItem(
-                            title = "Clear All Data",
+                            title = stringResource(R.string.clear_all_data),
                             color = Red500,
                             clickable = true,
                             indication = true,
                             onClick = {
                                 showDialog(
                                     dialogItems,
-                                    "Clear All Data?",
-                                    "This will permanently delete all application data, including todos and settings. This action cannot be undone."
+                                    "${context.getString(R.string.clear_all_data)}?",
+                                    context.getString(R.string.this_will_permanently_delete_all_application_data_including_todos_and_settings_this_action_cannot_be_undone)
                                 )
                             }
                         ) {}
@@ -419,7 +420,7 @@ fun DataStorageScreen() {
         // A small title that dynamically appears at the top when the user scrolls down
         GlasenseDynamicSmallTitle(
             modifier = Modifier.align(Alignment.TopCenter),
-            title = "Data & Storage",
+            title = stringResource(R.string.data_storage),
             statusBarHeight = statusBarHeight,
             isVisible = isSmallTitleVisible,
             hazeState = hazeState,
@@ -443,7 +444,7 @@ fun DataStorageScreen() {
         ) {
             Icon(
                 painter = painterResource(id = R.drawable.ic_forward_nav),
-                contentDescription = "Back",
+                contentDescription = stringResource(R.string.back),
                 modifier = Modifier.width(32.dp)
             )
         }
@@ -573,11 +574,11 @@ private fun StorageChart(appSize: Long, dataSize: Long, cacheSize: Long) {
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.Center
         ) {
-            LegendItem(color = appColor, text = "App Size")
+            LegendItem(color = appColor, text = stringResource(R.string.app_size))
             Spacer(Modifier.width(16.dp))
-            LegendItem(color = dataColor, text = "User Data")
+            LegendItem(color = dataColor, text = stringResource(R.string.user_data))
             Spacer(Modifier.width(16.dp))
-            LegendItem(color = cacheColor, text = "Cache")
+            LegendItem(color = cacheColor, text = stringResource(R.string.cache))
         }
     }
 }

@@ -43,6 +43,7 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.ImeAction
@@ -511,6 +512,7 @@ fun SubTodoItemRowAdd(
 
     BackHandler(isFocused, { focusManager.clearFocus() })
 
+    val context = LocalContext.current
 
     Row(
         modifier = modifier
@@ -592,7 +594,7 @@ fun SubTodoItemRowAdd(
                 decorator = { innerTextField ->
                     if (state.text.isEmpty() && !isFocused) {
                         Text(
-                            text = "Add task",
+                            text = context.getString(R.string.add_task),
                             style = MaterialTheme.typography.bodyMedium.copy(
                                 color = MaterialTheme.colorScheme.onSurface,
                                 textDecoration = if (checked) TextDecoration.LineThrough else TextDecoration.None,

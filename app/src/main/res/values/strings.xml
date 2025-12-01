@@ -1,3 +1,110 @@
 <resources>
     <string name="app_name">Cresto</string>
+    <string name="all_todos">All Todos</string>
+    <string name="mind_flow">Mind Flow</string>
+    <string name="settings">Settings</string>
+    <string name="cancel">Cancel</string>
+    <string name="delete">Delete</string>
+    <string name="filter_default">Default</string>
+    <string name="due_date">Due Date</string>
+    <string name="flag">Flag</string>
+    <string name="title">Title</string>
+    <string name="completed">Completed</string>
+    <string name="expand">Expand</string>
+    <string name="selected_todos">%1$d Selected</string>
+    <string name="search_all_todos">Search all todos</string>
+    <string name="filter">Filter</string>
+    <string name="add_new_todo">Add new todo</string>
+    <string name="delete_selected_todo_s">Delete selected todo(s)</string>
+    <string name="exit_selection_mode">Exit selection mode</string>
+    <string name="ai" translatable="false">AI</string>
+    <string name="appearance">Appearance</string>
+    <string name="data_storage"><![CDATA[Data & Storage]]></string>
+    <string name="general">General</string>
+    <string name="credits">Credits</string>
+    <string name="developer">Developer</string>
+    <string name="developer_avatar">Developer Avatar</string>
+    <string name="main_developer">Main Developer</string>
+    <string name="designer">Designer</string>
+    <string name="enter_icon">Enter icon</string>
+    <string name="overscroll_animation_developer">Overscroll Animation Developer</string>
+    <string name="version_info">Version Info</string>
+    <string name="version_name">Version name</string>
+    <string name="version_code">Version Code</string>
+    <string name="about">About</string>
+    <string name="back">Back</string>
+    <string name="boost_your_experience_with_intelligent_cresto_function_calling">Boost your experience with intelligent Cresto function calling.</string>
+    <string name="api" translatable="false">API</string>
+    <string name="api_key" translatable="false">API Key</string>
+    <string name="url" translatable="false">URL</string>
+    <string name="test">Test</string>
+    <string name="input">Input</string>
+    <string name="response">Response</string>
+    <string name="craft_your_unique_style_with_a_few_adorable_tweaks">Craft your unique style with a few adorable tweaks.</string>
+    <string name="color">Color</string>
+    <string name="custom_primary_color">Custom Primary Color</string>
+    <string name="use_dynamic_color_scheme">Use Dynamic Color Scheme</string>
+    <string name="lite_mode">Lite Mode</string>
+    <string name="design">Design</string>
+    <string name="liquid_glass" translatable="false">Liquid Glass</string>
+    <string name="clear">Clear</string>
+    <string name="reset">Reset</string>
+    <string name="manage_your_application_s_storage_footprint">Manage your application\'s storage footprint.</string>
+    <string name="storage_usage">Storage Usage</string>
+    <string name="app_size">App Size</string>
+    <string name="user_data">User Data</string>
+    <string name="cache">Cache</string>
+    <string name="total">Total</string>
+    <string name="export_database">Export Database</string>
+    <string name="import_database">Import Database</string>
+    <string name="reset_all_settings">Reset All Settings</string>
+    <string name="this_will_reset_all_settings_to_their_defaults_your_todos_will_not_be_deleted">This will reset all settings to their defaults. Your todos will not be deleted.</string>
+    <string name="clear_all_data">Clear All Data</string>
+    <string name="this_will_permanently_delete_all_application_data_including_todos_and_settings_this_action_cannot_be_undone">This will permanently delete all application data, including todos and settings. This action cannot be undone.</string>
+    <string name="light_mode_image">Light Mode Image</string>
+    <string name="light_mode">Light</string>
+    <string name="dark_mode_image">Dark Mode Image</string>
+    <string name="dark_mode">Dark</string>
+    <string name="automatic">Automatic</string>
+    <string name="custom">Custom</string>
+    <string name="done">Done</string>
+    <string name="none">None</string>
+    <string name="today">Today</string>
+    <string name="tomorrow">Tomorrow</string>
+    <string name="next_week">Next Week</string>
+    <string name="new_todo">New Todo</string>
+    <string name="ok">OK</string>
+    <string name="error">Error</string>
+    <string name="extract_from_text">Extract from text...</string>
+    <string name="extract">Extract</string>
+    <string name="extract_from_image">Extract from image</string>
+    <string name="extracting">Extracting...</string>
+    <string name="task">Task</string>
+    <string name="detail">Detail</string>
+    <string name="created">Created %1$s</string>
+    <string name="delete_current_todo">Delete current todo?</string>
+    <string name="just_now">Just now</string>
+    <string name="yesterday">Yesterday</string>
+    <plurals name="minutes_ago">
+        <item quantity="one">%d minute ago</item>
+        <item quantity="other">%d minutes ago</item>
+    </plurals>
+    <plurals name="hours_ago">
+        <item quantity="one">%d hour ago</item>
+        <item quantity="other">%d hours ago</item>
+    </plurals>
+    <plurals name="delete_todo_dialog_title">
+        <item quantity="one">Delete %d todo?</item>
+        <item quantity="other">Delete %d todos?</item>
+    </plurals>
+    <plurals name="delete_todo_dialog_msg">
+        <item quantity="one">This will delete the selected todo permanently. This action cannot be undone.</item>
+        <item quantity="other">This will delete the selected todos permanently. This action cannot be undone.</item>
+    </plurals>
+    <plurals name="delete_todo_with_subtasks">
+        <item quantity="one">This will delete current todo and its task permanently. This action cannot be undone.</item>
+        <item quantity="other">This will delete current todo and its tasks permanently. This action cannot be undone.</item>
+    </plurals>
+    <string name="delete_todo_simple">This will delete current todo permanently. This action cannot be undone.</string>
+    <string name="add_task">Add task</string>
 </resources>

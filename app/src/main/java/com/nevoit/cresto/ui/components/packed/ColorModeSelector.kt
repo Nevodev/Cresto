@@ -29,6 +29,7 @@ import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
@@ -106,13 +107,17 @@ fun ColorModeSelector(
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Image(
                             painter = painterResource(R.drawable.light_mode),
-                            contentDescription = "Light Mode Image",
+                            contentDescription = stringResource(R.string.light_mode_image),
                             modifier = Modifier
                                 .width(64.dp)
                                 .height(128.dp)
                         )
                         Spacer(modifier = Modifier.height(8.dp))
-                        Text(text = "Light", fontSize = 16.sp, lineHeight = 16.sp)
+                        Text(
+                            text = stringResource(R.string.light_mode),
+                            fontSize = 16.sp,
+                            lineHeight = 16.sp
+                        )
                         Spacer(modifier = Modifier.height(8.dp))
                         GlasenseCheckbox(state = selectionState, value = "light")
                     }
@@ -120,13 +125,17 @@ fun ColorModeSelector(
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Image(
                             painter = painterResource(R.drawable.dark_mode),
-                            contentDescription = "Dark Mode Image",
+                            contentDescription = stringResource(R.string.dark_mode_image),
                             modifier = Modifier
                                 .width(64.dp)
                                 .height(128.dp)
                         )
                         Spacer(modifier = Modifier.height(8.dp))
-                        Text(text = "Dark", fontSize = 16.sp, lineHeight = 16.sp)
+                        Text(
+                            text = stringResource(R.string.dark_mode),
+                            fontSize = 16.sp,
+                            lineHeight = 16.sp
+                        )
                         Spacer(modifier = Modifier.height(8.dp))
                         GlasenseCheckbox(state = selectionState, value = "dark")
                     }
@@ -139,7 +148,7 @@ fun ColorModeSelector(
                 blendMode = BlendMode.SrcOver
             )
             Spacer(modifier = Modifier.height(8.dp))
-            ConfigItem(title = "Automatic") {
+            ConfigItem(title = stringResource(R.string.automatic)) {
                 GlasenseSwitch(
                     enabled = true,
                     checked = isAutomatic,

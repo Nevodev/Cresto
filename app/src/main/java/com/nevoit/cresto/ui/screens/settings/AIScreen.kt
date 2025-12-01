@@ -35,6 +35,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.nevoit.cresto.R
 import com.nevoit.cresto.ui.components.glasense.GlasenseButton
@@ -130,20 +131,20 @@ fun AIScreen() {
                     ),
                     backgroundColor = hierarchicalSurfaceColor,
                     icon = painterResource(R.drawable.ic_twotone_sparkles),
-                    title = "AI",
+                    title = stringResource(R.string.ai),
                     enableGlow = true,
-                    info = "Boost your experience with intelligent Cresto function calling."
+                    info = stringResource(R.string.boost_your_experience_with_intelligent_cresto_function_calling)
                 )
                 Spacer(modifier = Modifier.height(12.dp))
             }
             // Item container for API-related settings
             item {
                 ConfigItemContainer(
-                    title = "API",
+                    title = stringResource(R.string.api),
                     backgroundColor = hierarchicalSurfaceColor
                 ) {
                     Column {
-                        ConfigItem(title = "API Key") {
+                        ConfigItem(title = stringResource(R.string.api_key)) {
                             // Placeholder switch; functionality to be implemented
                             GlasenseSwitch(checked = true, onCheckedChange = {})
                         }
@@ -162,7 +163,7 @@ fun AIScreen() {
                                 .fillMaxWidth()
                                 .height(0.dp))
                         Spacer(modifier = Modifier.height(8.dp))
-                        ConfigItem(title = "URL") {
+                        ConfigItem(title = stringResource(R.string.url)) {
                             // Placeholder switch; functionality to be implemented
                             GlasenseSwitch(checked = true, onCheckedChange = {})
                         }
@@ -173,11 +174,11 @@ fun AIScreen() {
             // Item container for testing the AI functionality
             item {
                 ConfigItemContainer(
-                    title = "Test",
+                    title = stringResource(R.string.test),
                     backgroundColor = hierarchicalSurfaceColor
                 ) {
                     Column() {
-                        ConfigItem(title = "Input") {
+                        ConfigItem(title = stringResource(R.string.input)) {
                             // Placeholder switch; functionality to be implemented
                             GlasenseSwitch(checked = true, onCheckedChange = {})
                         }
@@ -196,7 +197,7 @@ fun AIScreen() {
                                 .fillMaxWidth()
                                 .height(0.dp))
                         Spacer(modifier = Modifier.height(8.dp))
-                        ConfigItem(title = "Response") {
+                        ConfigItem(title = stringResource(R.string.response)) {
                             // Placeholder switch; functionality to be implemented
                             GlasenseSwitch(checked = true, onCheckedChange = {})
                         }
@@ -209,7 +210,7 @@ fun AIScreen() {
         // A small title that dynamically appears at the top when the user scrolls down
         GlasenseDynamicSmallTitle(
             modifier = Modifier.align(Alignment.TopCenter),
-            title = "AI",
+            title = stringResource(R.string.ai),
             statusBarHeight = statusBarHeight,
             isVisible = isSmallTitleVisible,
             hazeState = hazeState,
@@ -233,7 +234,7 @@ fun AIScreen() {
         ) {
             Icon(
                 painter = painterResource(id = R.drawable.ic_forward_nav),
-                contentDescription = "Back",
+                contentDescription = stringResource(R.string.back),
                 modifier = Modifier.width(32.dp)
             )
         }

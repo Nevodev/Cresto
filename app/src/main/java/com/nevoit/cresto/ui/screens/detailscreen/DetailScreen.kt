@@ -51,8 +51,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shadow
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -148,12 +150,12 @@ fun DetailScreen(
 
     val deleteDialogItems = listOf(
         DialogItemData(
-            "Cancel",
+            stringResource(R.string.cancel),
             onClick = {},
             isPrimary = false
         ),
         DialogItemData(
-            "Delete",
+            stringResource(R.string.delete),
             icon = painterResource(R.drawable.ic_trash),
             onClick = {
                 val resultIntent = Intent().apply {
@@ -178,6 +180,8 @@ fun DetailScreen(
     val dismissDialog = {
         dialogState = dialogState.copy(isVisible = false)
     }
+
+    val context = LocalContext.current
 
     LaunchedEffect(Unit) {
         while (true) {
@@ -377,7 +381,7 @@ fun DetailScreen(
                                         ) {
                                             Icon(
                                                 painter = painterResource(id = R.drawable.ic_calendar),
-                                                contentDescription = "Due Date",
+                                                contentDescription = stringResource(R.string.due_date),
                                                 modifier = Modifier.width(28.dp)
                                             )
                                         }
@@ -458,7 +462,7 @@ fun DetailScreen(
                                                 } else {
                                                     painterResource(id = R.drawable.ic_flag_fill)
                                                 },
-                                                contentDescription = "Flag",
+                                                contentDescription = stringResource(R.string.flag),
                                                 modifier = Modifier.width(28.dp),
                                                 tint = if (displayColor == Color.Transparent) {
                                                     MaterialTheme.colorScheme.onSurface.copy(
@@ -503,7 +507,7 @@ fun DetailScreen(
                 item(key = "small_title") {
                     Spacer(modifier = Modifier.height(12.dp))
                     Text(
-                        text = "Task",
+                        text = stringResource(R.string.task),
                         fontSize = 14.sp,
                         lineHeight = 14.sp,
                         fontWeight = FontWeight.Normal,
@@ -563,7 +567,7 @@ fun DetailScreen(
         // A small title that dynamically appears at the top when the user scrolls down
         GlasenseDynamicSmallTitle(
             modifier = Modifier.align(Alignment.TopCenter),
-            title = itemWithSubTodos?.todoItem?.title ?: "Detail",
+            title = itemWithSubTodos?.todoItem?.title ?: stringResource(R.string.detail),
             statusBarHeight = statusBarHeight,
             isVisible = isSmallTitleVisible,
             hazeState = hazeState,
@@ -587,7 +591,7 @@ fun DetailScreen(
         ) {
             Icon(
                 painter = painterResource(id = R.drawable.ic_forward_nav),
-                contentDescription = "Back",
+                contentDescription = stringResource(R.string.back),
                 modifier = Modifier.width(32.dp)
             )
         }
@@ -608,11 +612,11 @@ fun DetailScreen(
             ) {
                 val creationTime = remember(itemWithSubTodos, ticker) {
                     itemWithSubTodos?.todoItem?.creationDate?.let {
-                        formatRelativeTime(it)
+                        formatRelativeTime(it, context)
                     } ?: ""
                 }
                 Text(
-                    text = "Created $creationTime",
+                    text = stringResource(R.string.created, creationTime),
                     modifier = Modifier
                         .padding(start = 12.dp)
                         .weight(1f),
@@ -628,14 +632,24 @@ fun DetailScreen(
                         )
                     )
                 )
+                val subTodoCount = itemWithSubTodos?.subTodos?.size ?: 0
+
+                val message = if (subTodoCount == 0) {
+                    context.getString(R.string.delete_todo_simple)
+                } else {
+                    context.resources.getQuantityString(
+                        R.plurals.delete_todo_with_subtasks,
+                        subTodoCount
+                    )
+                }
                 GlasenseButton(
                     enabled = true,
                     shape = CircleShape,
                     onClick = {
                         showDialog(
                             deleteDialogItems,
-                            "Delete current todo?",
-                            "This will delete current todo${if (itemWithSubTodos?.subTodos?.isEmpty() == true) "" else " and its task${if (itemWithSubTodos?.subTodos?.size == 1) "" else ("s")}"} permanently. This action cannot be undone."
+                            context.getString(R.string.delete_current_todo),
+                            message
                         )
                     },
                     modifier = Modifier
@@ -647,7 +661,7 @@ fun DetailScreen(
                 ) {
                     Icon(
                         painter = painterResource(id = R.drawable.ic_trash),
-                        contentDescription = "Delete Current Todo",
+                        contentDescription = stringResource(R.string.delete_current_todo),
                         modifier = Modifier.width(32.dp),
                         tint = Red500
                     )

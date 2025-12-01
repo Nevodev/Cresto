@@ -65,6 +65,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
@@ -112,6 +114,17 @@ fun HomeScreen(
     val isSelectionModeActive by viewModel.isSelectionModeActive.collectAsState()
     val selectedItemCount by viewModel.selectedItemCount.collectAsState()
 
+    val title = pluralStringResource(
+        id = R.plurals.delete_todo_dialog_title,
+        count = selectedItemCount,
+        selectedItemCount
+    )
+
+    val message = pluralStringResource(
+        id = R.plurals.delete_todo_dialog_msg,
+        count = selectedItemCount
+    )
+
     val statusBarHeight = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
     val density = LocalDensity.current
     val thresholdPx = if (statusBarHeight > 0.dp) {
@@ -139,23 +152,14 @@ fun HomeScreen(
     val isSmallTitleVisible by remember(thresholdPx) { derivedStateOf { ((lazyListState.firstVisibleItemIndex == 0) && (lazyListState.firstVisibleItemScrollOffset > thresholdPx)) || lazyListState.firstVisibleItemIndex > 0 } }
     val interactionSource = remember { MutableInteractionSource() }
 
-    val menuItems = listOf(
-        MenuItemData("Set Flag", painterResource(R.drawable.ic_flag), onClick = {}),
-        MenuItemData(
-            "Delete",
-            painterResource(R.drawable.ic_trash),
-            isDestructive = true,
-            onClick = {})
-    )
-
     val dialogItems = listOf(
         DialogItemData(
-            "Cancel",
+            stringResource(R.string.cancel),
             onClick = {},
             isPrimary = false
         ),
         DialogItemData(
-            "Delete",
+            stringResource(R.string.delete),
             icon = painterResource(R.drawable.ic_trash),
             onClick = { viewModel.deleteSelectedItems() },
             isPrimary = true,
@@ -165,22 +169,22 @@ fun HomeScreen(
 
     val menuItemsFilter = listOf(
         MenuItemData(
-            "Default",
+            stringResource(R.string.filter_default),
             painterResource(R.drawable.ic_rank),
             onClick = {}
         ),
         MenuItemData(
-            "Due Date",
+            stringResource(R.string.due_date),
             painterResource(R.drawable.ic_calendar_alt),
             onClick = {}
         ),
         MenuItemData(
-            "Flag",
+            stringResource(R.string.flag),
             painterResource(R.drawable.ic_flag),
             onClick = {}
         ),
         MenuItemData(
-            "Title",
+            stringResource(R.string.title),
             painterResource(R.drawable.ic_character),
             onClick = {}
         )
@@ -247,7 +251,10 @@ fun HomeScreen(
             )
         ) {
             item {
-                GlasensePageHeader(title = "All Todos", statusBarHeight = statusBarHeight)
+                GlasensePageHeader(
+                    title = stringResource(R.string.all_todos),
+                    statusBarHeight = statusBarHeight
+                )
             }
             items(
                 items = incompleteTodos,
@@ -368,7 +375,7 @@ fun HomeScreen(
                             .padding(top = 8.dp, bottom = 8.dp, start = 12.dp)
                     ) {
                         Text(
-                            text = "Completed",
+                            text = stringResource(R.string.completed),
                             fontSize = 14.sp,
                             lineHeight = 14.sp,
                             fontWeight = FontWeight.Normal,
@@ -376,7 +383,7 @@ fun HomeScreen(
                         )
                         Icon(
                             painter = painterResource(R.drawable.ic_forward_nav),
-                            contentDescription = "Expand",
+                            contentDescription = stringResource(R.string.expand),
                             modifier = Modifier
                                 .padding(end = 8.dp)
                                 .size(20.dp)
@@ -490,7 +497,10 @@ fun HomeScreen(
         }
         GlasenseDynamicSmallTitle(
             modifier = Modifier.align(Alignment.TopCenter),
-            title = if (isComposed) "$selectedItemCount Selected" else "All Todos",
+            title = if (isComposed) stringResource(
+                R.string.selected_todos,
+                selectedItemCount
+            ) else stringResource(R.string.all_todos),
             statusBarHeight = statusBarHeight,
             isVisible = if (isSelectionModeActive) true else isSmallTitleVisible,
             hazeState = hazeState,
@@ -529,7 +539,7 @@ fun HomeScreen(
                         ) {
                             Icon(
                                 painter = painterResource(id = R.drawable.ic_magnifying_glass),
-                                contentDescription = "Search all todos",
+                                contentDescription = stringResource(R.string.search_all_todos),
                                 modifier = Modifier.width(32.dp),
                                 tint = MaterialTheme.colorScheme.primary
                             )
@@ -558,7 +568,7 @@ fun HomeScreen(
                         ) {
                             Icon(
                                 painter = painterResource(id = R.drawable.ic_funnel),
-                                contentDescription = "Filter",
+                                contentDescription = stringResource(R.string.filter),
                                 modifier = Modifier.width(32.dp),
                                 tint = MaterialTheme.colorScheme.primary
                             )
@@ -587,7 +597,7 @@ fun HomeScreen(
                 ) {
                     Icon(
                         painter = painterResource(id = R.drawable.ic_add_large),
-                        contentDescription = "Add new todo",
+                        contentDescription = stringResource(R.string.add_new_todo),
                         modifier = Modifier.width(32.dp)
                     )
                 }
@@ -604,8 +614,8 @@ fun HomeScreen(
                 onClick = {
                     showDialog(
                         dialogItems,
-                        "Delete $selectedItemCount ${if (selectedItemCount == 1) "todo" else ("todos")}?",
-                        "This will delete selected ${if (selectedItemCount == 1) "todo" else ("todos")} permanently. This action cannot be undone."
+                        title,
+                        message
                     )
                 },
                 modifier = Modifier
@@ -621,7 +631,7 @@ fun HomeScreen(
             ) {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_trash),
-                    contentDescription = "Delete selected todo(s)",
+                    contentDescription = stringResource(R.string.delete_selected_todo_s),
                     modifier = Modifier.width(32.dp)
                 )
             }
@@ -648,7 +658,7 @@ fun HomeScreen(
             ) {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_cross),
-                    contentDescription = "Exit selection mode",
+                    contentDescription = stringResource(R.string.exit_selection_mode),
                     modifier = Modifier.width(32.dp)
                 )
             }

@@ -30,6 +30,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -194,7 +195,7 @@ fun MainScreen() {
                 ) {
                     Icon(
                         painter = painterResource(id = R.drawable.ic_list),
-                        contentDescription = "All To-Dos"
+                        contentDescription = stringResource(R.string.all_todos)
                     )
                 }
                 Spacer(modifier = Modifier.width(8.dp))
@@ -214,7 +215,7 @@ fun MainScreen() {
                 ) {
                     Icon(
                         painter = painterResource(id = R.drawable.ic_star),
-                        contentDescription = "Starred To-Dos"
+                        contentDescription = stringResource(R.string.mind_flow)
                     )
                 }
                 Spacer(modifier = Modifier.width(8.dp))
@@ -234,7 +235,7 @@ fun MainScreen() {
                 ) {
                     Icon(
                         painter = painterResource(id = R.drawable.ic_gear),
-                        contentDescription = "Settings"
+                        contentDescription = stringResource(R.string.settings)
                     )
                 }
             }

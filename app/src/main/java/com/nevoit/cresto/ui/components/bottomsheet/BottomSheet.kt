@@ -60,6 +60,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
@@ -157,7 +158,7 @@ fun BottomSheet(
 
     val errorDialogItems = listOf(
         DialogItemData(
-            "OK",
+            stringResource(R.string.ok),
             onClick = {},
             isPrimary = true,
             isDestructive = true
@@ -166,6 +167,7 @@ fun BottomSheet(
     val isLoading = uiState is UiState.Loading
     val apikey = ApiKey
 
+    val context = LocalContext.current
     LaunchedEffect(true) {
         aiViewModel.sideEffect.collect { effect ->
             when (effect) {
@@ -176,7 +178,7 @@ fun BottomSheet(
                 is AiSideEffect.ShowError -> {
                     showDialog(
                         errorDialogItems,
-                        "Error",
+                        context.getString(R.string.error),
                         effect.message
                     )
                 }
@@ -438,7 +440,7 @@ fun BottomSheet(
                                     )
                                     if (state.text.isBlank()) {
                                         Text(
-                                            "Extract from text...",
+                                            stringResource(R.string.extract_from_text),
                                             modifier = Modifier
                                                 .align(Alignment.CenterStart)
                                                 .fillMaxWidth()
@@ -508,7 +510,7 @@ fun BottomSheet(
                                         ) {
                                             Icon(
                                                 painter = painterResource(id = R.drawable.ic_arrow_up),
-                                                contentDescription = "Extract",
+                                                contentDescription = stringResource(R.string.extract),
                                                 modifier = Modifier.width(28.dp)
                                             )
                                         }
@@ -540,7 +542,7 @@ fun BottomSheet(
                                     ) {
                                         Icon(
                                             painter = painterResource(R.drawable.ic_photo),
-                                            contentDescription = "Extract from image",
+                                            contentDescription = stringResource(R.string.extract_from_image),
                                             modifier = Modifier
                                                 .size(32.dp)
                                                 .graphicsLayer {
@@ -565,7 +567,7 @@ fun BottomSheet(
                                 timeMillis = 3000
                             )
                             Text(
-                                "Extracting...",
+                                stringResource(R.string.extracting),
                                 modifier = Modifier
                                     .align(Alignment.Center)
                                     .graphicsLayer {

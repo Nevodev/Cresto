@@ -12,37 +12,29 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.nevoit.cresto.CrestoApplication
+import com.nevoit.cresto.R
 import com.nevoit.cresto.ui.components.glasense.GlasenseDynamicSmallTitle
 import com.nevoit.cresto.ui.components.glasense.GlasenseLoadingIndicator
 import com.nevoit.cresto.ui.components.glasense.GlasensePageHeader
 import com.nevoit.cresto.ui.theme.glasense.CalculatedColor
 import com.nevoit.cresto.ui.viewmodel.AiViewModel
-import com.nevoit.cresto.ui.viewmodel.TodoViewModel
-import com.nevoit.cresto.ui.viewmodel.TodoViewModelFactory
 import dev.chrisbanes.haze.ExperimentalHazeApi
 import dev.chrisbanes.haze.hazeSource
 import dev.chrisbanes.haze.rememberHazeState
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalHazeApi::class)
 @Composable
-fun StarScreen(aiViewModel: AiViewModel = viewModel()) {
-    val scope = rememberCoroutineScope()
-
+fun MindFlowScreen(aiViewModel: AiViewModel = viewModel()) {
     val statusBarHeight = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
     val density = LocalDensity.current
     val thresholdPx = if (statusBarHeight > 0.dp) {
@@ -53,26 +45,11 @@ fun StarScreen(aiViewModel: AiViewModel = viewModel()) {
 
     val hazeState = rememberHazeState()
 
-    val onSurfaceContainer = CalculatedColor.onSurfaceContainer
-
     val surfaceColor = CalculatedColor.hierarchicalBackgroundColor
-    val hierarchicalSurfaceColor = CalculatedColor.hierarchicalSurfaceColor
 
     val lazyListState = rememberLazyListState()
 
     val isSmallTitleVisible by remember(thresholdPx) { derivedStateOf { ((lazyListState.firstVisibleItemIndex == 0) && (lazyListState.firstVisibleItemScrollOffset > thresholdPx)) || lazyListState.firstVisibleItemIndex > 0 } }
-
-    var promptText by remember { mutableStateOf("") }
-    var apiKey by remember { mutableStateOf("") }
-
-    val uiState by aiViewModel.uiState.collectAsState()
-
-    val application = LocalContext.current.applicationContext as CrestoApplication
-    val viewModel: TodoViewModel = viewModel(
-        factory = TodoViewModelFactory(application.repository)
-    )
-
-    val context = LocalContext.current
 
     Box(
         modifier = Modifier
@@ -97,7 +74,10 @@ fun StarScreen(aiViewModel: AiViewModel = viewModel()) {
             )
         ) {
             item {
-                GlasensePageHeader(title = "Mind Flow", statusBarHeight = statusBarHeight)
+                GlasensePageHeader(
+                    title = stringResource(R.string.mind_flow),
+                    statusBarHeight = statusBarHeight
+                )
             }
             item {
                 GlasenseLoadingIndicator(modifier = Modifier.fillMaxSize())
@@ -105,7 +85,7 @@ fun StarScreen(aiViewModel: AiViewModel = viewModel()) {
         }
         GlasenseDynamicSmallTitle(
             modifier = Modifier.align(Alignment.TopCenter),
-            title = "Mind Flow",
+            title = stringResource(R.string.mind_flow),
             statusBarHeight = statusBarHeight,
             isVisible = isSmallTitleVisible,
             hazeState = hazeState,

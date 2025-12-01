@@ -14,8 +14,8 @@ import androidx.navigation.compose.composable
 import com.nevoit.cresto.ui.components.glasense.DialogItemData
 import com.nevoit.cresto.ui.components.glasense.MenuItemData
 import com.nevoit.cresto.ui.screens.HomeScreen
+import com.nevoit.cresto.ui.screens.MindFlowScreen
 import com.nevoit.cresto.ui.screens.SettingsScreen
-import com.nevoit.cresto.ui.screens.StarScreen
 import com.nevoit.cresto.ui.viewmodel.TodoViewModel
 
 @Composable
@@ -51,7 +51,7 @@ fun AppNavHost(
         composable(
             route = Screen.Star.route
         ) {
-            StarScreen()
+            MindFlowScreen()
         }
 
         composable(

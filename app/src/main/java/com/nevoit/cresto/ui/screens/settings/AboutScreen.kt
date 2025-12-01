@@ -1,7 +1,5 @@
-// Package declaration for the settings screen
 package com.nevoit.cresto.ui.screens.settings
 
-// Import necessary libraries and components
 import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
 import androidx.activity.compose.LocalActivity
@@ -49,6 +47,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.LayoutDirection
@@ -186,7 +185,7 @@ fun AboutScreen() {
             item {
                 ConfigItemContainer(
                     backgroundColor = hierarchicalSurfaceColor,
-                    title = "Developer"
+                    title = stringResource(R.string.developer)
                 ) {
                     Column {
                         // Row for the main developer's information
@@ -196,7 +195,7 @@ fun AboutScreen() {
                         ) {
                             Image(
                                 painter = painterResource(R.drawable.avatar),
-                                contentDescription = "Developer Avatar",
+                                contentDescription = stringResource(R.string.developer_avatar),
                                 modifier = Modifier
                                     .clip(CircleShape)
                                     .size(48.dp)
@@ -237,7 +236,7 @@ fun AboutScreen() {
                                             )
                                     ) {
                                         Text(
-                                            text = "Main Developer",
+                                            text = stringResource(R.string.main_developer),
                                             fontSize = 10.sp,
                                             lineHeight = 10.sp,
                                             fontWeight = FontWeight.W400,
@@ -254,7 +253,7 @@ fun AboutScreen() {
                                             )
                                     ) {
                                         Text(
-                                            text = "Designer",
+                                            text = stringResource(R.string.designer),
                                             fontSize = 10.sp,
                                             lineHeight = 10.sp,
                                             fontWeight = FontWeight.W400,
@@ -270,7 +269,7 @@ fun AboutScreen() {
                             Icon(
                                 painter = painterResource(R.drawable.ic_forward),
                                 tint = MaterialTheme.colorScheme.onBackground.copy(.2f),
-                                contentDescription = "Enter icon",
+                                contentDescription = stringResource(R.string.enter_icon),
                                 modifier = Modifier
                                     .align(Alignment.CenterVertically)
                                     .offset(4.dp)
@@ -293,7 +292,7 @@ fun AboutScreen() {
                         ) {
                             Image(
                                 painter = painterResource(R.drawable.kyant_avatar),
-                                contentDescription = "Developer Avatar",
+                                contentDescription = stringResource(R.string.developer_avatar),
                                 modifier = Modifier
                                     .clip(CircleShape)
                                     .size(48.dp)
@@ -333,7 +332,7 @@ fun AboutScreen() {
                                             )
                                     ) {
                                         Text(
-                                            text = "Overscroll Animation Developer",
+                                            text = stringResource(R.string.overscroll_animation_developer),
                                             fontSize = 10.sp,
                                             lineHeight = 10.sp,
                                             fontWeight = FontWeight.W400,
@@ -349,7 +348,7 @@ fun AboutScreen() {
                             Icon(
                                 painter = painterResource(R.drawable.ic_forward),
                                 tint = MaterialTheme.colorScheme.onBackground.copy(.2f),
-                                contentDescription = "Enter icon",
+                                contentDescription = stringResource(R.string.enter_icon),
                                 modifier = Modifier
                                     .align(Alignment.CenterVertically)
                                     .offset(4.dp)
@@ -365,7 +364,7 @@ fun AboutScreen() {
             item {
                 Column(modifier = Modifier.fillMaxWidth()) {
                     Text(
-                        text = "Version Info",
+                        text = stringResource(R.string.version_info),
                         fontSize = 14.sp,
                         lineHeight = 14.sp,
                         color = MaterialTheme.colorScheme.onBackground.copy(.5f),
@@ -399,7 +398,7 @@ fun AboutScreen() {
                             ) {
                                 Image(
                                     painter = painterResource(R.drawable.ic_mini_info),
-                                    contentDescription = "Version name",
+                                    contentDescription = stringResource(R.string.version_name),
                                     colorFilter = ColorFilter.tint(onBackground),
                                     alpha = .5f,
                                     modifier = Modifier
@@ -407,7 +406,7 @@ fun AboutScreen() {
 
                                 )
                                 Text(
-                                    text = "Version Name",
+                                    text = stringResource(R.string.version_name),
                                     fontSize = 16.sp,
                                     lineHeight = 16.sp,
                                     color = onBackground.copy(.5f),
@@ -431,7 +430,7 @@ fun AboutScreen() {
                             ) {
                                 Image(
                                     painter = painterResource(R.drawable.ic_mini_version_code),
-                                    contentDescription = "Version name",
+                                    contentDescription = stringResource(R.string.version_code),
                                     colorFilter = ColorFilter.tint(onBackground),
                                     alpha = .5f,
                                     modifier = Modifier
@@ -439,7 +438,7 @@ fun AboutScreen() {
 
                                 )
                                 Text(
-                                    text = "Version Code",
+                                    text = stringResource(R.string.version_code),
                                     fontSize = 16.sp,
                                     lineHeight = 16.sp,
                                     color = onBackground.copy(.5f),
@@ -465,7 +464,7 @@ fun AboutScreen() {
         // A small title that dynamically appears at the top when the user scrolls down
         GlasenseDynamicSmallTitle(
             modifier = Modifier.align(Alignment.TopCenter),
-            title = "About",
+            title = stringResource(R.string.about),
             statusBarHeight = statusBarHeight,
             isVisible = isSmallTitleVisible,
             hazeState = hazeState,
@@ -488,7 +487,7 @@ fun AboutScreen() {
         ) {
             Icon(
                 painter = painterResource(id = R.drawable.ic_forward_nav),
-                contentDescription = "Back",
+                contentDescription = stringResource(R.string.back),
                 modifier = Modifier.width(32.dp)
             )
         }

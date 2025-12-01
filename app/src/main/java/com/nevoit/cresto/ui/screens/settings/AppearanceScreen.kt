@@ -35,6 +35,7 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.nevoit.cresto.R
@@ -131,8 +132,8 @@ fun AppearanceScreen(settingsViewModel: SettingsViewModel = viewModel()) {
                     color = Blue500,
                     backgroundColor = hierarchicalSurfaceColor,
                     icon = painterResource(R.drawable.ic_twotone_image),
-                    title = "Appearance",
-                    info = "Craft your unique style with a few adorable tweaks."
+                    title = stringResource(R.string.appearance),
+                    info = stringResource(R.string.craft_your_unique_style_with_a_few_adorable_tweaks)
                 )
                 Spacer(modifier = Modifier.height(12.dp))
             }
@@ -148,11 +149,11 @@ fun AppearanceScreen(settingsViewModel: SettingsViewModel = viewModel()) {
             // Item container for color-related settings
             item {
                 ConfigItemContainer(
-                    title = "Color",
+                    title = stringResource(R.string.color),
                     backgroundColor = hierarchicalSurfaceColor
                 ) {
                     Column {
-                        ConfigItem(title = "Custom Primary Color") {
+                        ConfigItem(title = stringResource(R.string.custom_primary_color)) {
                             GlasenseSwitch(
                                 checked = isCustomPrimaryColor,
                                 onCheckedChange = { settingsViewModel.onCustomPrimaryColorChanged(it) })
@@ -172,7 +173,7 @@ fun AppearanceScreen(settingsViewModel: SettingsViewModel = viewModel()) {
                                 .fillMaxWidth()
                                 .height(0.dp))
                         Spacer(modifier = Modifier.height(8.dp))
-                        ConfigItem(title = "Use Dynamic Color Scheme") {
+                        ConfigItem(title = stringResource(R.string.use_dynamic_color_scheme)) {
                             GlasenseSwitch(
                                 checked = isUseDynamicColorScheme,
                                 onCheckedChange = { settingsViewModel.onUseDynamicColorChanged(it) })
@@ -184,11 +185,11 @@ fun AppearanceScreen(settingsViewModel: SettingsViewModel = viewModel()) {
             // Item container for design-related settings
             item {
                 ConfigItemContainer(
-                    title = "Design",
+                    title = stringResource(R.string.design),
                     backgroundColor = hierarchicalSurfaceColor
                 ) {
                     Column() {
-                        ConfigItem(title = "Lite Mode") {
+                        ConfigItem(title = stringResource(R.string.lite_mode)) {
                             GlasenseSwitch(
                                 checked = isLiteMode,
                                 onCheckedChange = { settingsViewModel.onLiteModeChanged(it) })
@@ -208,7 +209,7 @@ fun AppearanceScreen(settingsViewModel: SettingsViewModel = viewModel()) {
                                 .fillMaxWidth()
                                 .height(0.dp))
                         Spacer(modifier = Modifier.height(8.dp))
-                        ConfigItem(title = "Liquid Glass") {
+                        ConfigItem(title = stringResource(R.string.liquid_glass)) {
                             GlasenseSwitch(
                                 checked = isLiquidGlass,
                                 onCheckedChange = { settingsViewModel.onLiquidGlassChanged(it) })
@@ -221,7 +222,7 @@ fun AppearanceScreen(settingsViewModel: SettingsViewModel = viewModel()) {
         // A small title that dynamically appears at the top when the user scrolls down
         GlasenseDynamicSmallTitle(
             modifier = Modifier.align(Alignment.TopCenter),
-            title = "Appearance",
+            title = stringResource(R.string.appearance),
             statusBarHeight = statusBarHeight,
             isVisible = isSmallTitleVisible,
             hazeState = hazeState,
@@ -245,7 +246,7 @@ fun AppearanceScreen(settingsViewModel: SettingsViewModel = viewModel()) {
         ) {
             Icon(
                 painter = painterResource(id = R.drawable.ic_forward_nav),
-                contentDescription = "Back",
+                contentDescription = stringResource(R.string.back),
                 modifier = Modifier.width(32.dp)
             )
         }

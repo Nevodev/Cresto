@@ -46,6 +46,7 @@ import androidx.compose.ui.graphics.drawOutline
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -136,13 +137,13 @@ fun AddTodoSheet(
             ) {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_cross),
-                    contentDescription = "Done",
+                    contentDescription = stringResource(R.string.done),
                     modifier = Modifier.width(28.dp)
                 )
             }
             // Title text.
             Text(
-                text = "New Todo",
+                text = stringResource(R.string.new_todo),
                 modifier = Modifier.weight(1f),
                 textAlign = TextAlign.Center,
                 style = MaterialTheme.typography.headlineSmall
@@ -182,7 +183,7 @@ fun AddTodoSheet(
                 ) {
                     Icon(
                         painter = painterResource(id = R.drawable.ic_checkmark),
-                        contentDescription = "Done",
+                        contentDescription = stringResource(R.string.done),
                         modifier = Modifier.width(28.dp)
                     )
                 }
@@ -308,7 +309,7 @@ fun AddTodoSheet(
                             ) {
                                 Icon(
                                     painter = painterResource(id = R.drawable.ic_calendar),
-                                    contentDescription = "Due Date",
+                                    contentDescription = stringResource(R.string.due_date),
                                     modifier = Modifier.width(28.dp)
                                 )
                             }
@@ -376,7 +377,7 @@ fun AddTodoSheet(
                                     } else {
                                         painterResource(id = R.drawable.ic_flag_fill)
                                     },
-                                    contentDescription = "Flag",
+                                    contentDescription = stringResource(R.string.flag),
                                     modifier = Modifier.width(28.dp),
                                     tint = if (displayColor == Color.Transparent) {
                                         MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5F)

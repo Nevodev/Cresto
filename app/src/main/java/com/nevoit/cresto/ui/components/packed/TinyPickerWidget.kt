@@ -39,7 +39,9 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.nevoit.cresto.R
 import com.nevoit.cresto.ui.theme.glasense.Blue500
 import com.nevoit.cresto.ui.theme.glasense.Gray500
 import com.nevoit.cresto.ui.theme.glasense.Green500
@@ -76,21 +78,28 @@ fun HorizontalFlagPicker(
         Purple500,
         Gray500
     )
-
-    LazyRow(
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-        contentPadding = PaddingValues(14.dp),
-    ) {
-        itemsIndexed(colors) { index, color ->
-
-            ColorCircle(
-                color = color,
-                isSelected = (selectedIndex == index),
-                onClick = {
-                    onIndexSelected(index)
+    Box(modifier = Modifier.fillMaxSize()) {
+        LazyRow(
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.align(Alignment.Center)
+        ) {
+            itemsIndexed(colors) { index, color ->
+                if (index == 0) {
+                    SelectorBox(
+                        text = "无",
+                        isSelected = (selectedIndex == 0),
+                        onClick = { onIndexSelected(index) }
+                    )
+                } else {
+                    // 其他项目显示颜色圆圈
+                    ColorCircle(
+                        color = color,
+                        isSelected = (selectedIndex == index),
+                        onClick = { onIndexSelected(index) }
+                    )
                 }
-            )
-
+            }
         }
     }
 }
@@ -230,71 +239,72 @@ fun HorizontalPresetDatePicker(
     )
 
     val presets = listOf(
-        "None",
-        "Today",
-        "Tomorrow",
-        "Next Week"
+        stringResource(R.string.none),
+        stringResource(R.string.today),
+        stringResource(R.string.tomorrow),
+        stringResource(R.string.next_week)
     )
     // Update state if the initial date changes.
     LaunchedEffect(initialDate) {
         selectedDate = initialDate
         selectedPreset = getPresetTypeForDate(initialDate)
     }
-
-    LazyRow(
-        modifier = Modifier
-            .fillMaxSize()
-            .clickable( // Prevent clicks from passing through.
-                interactionSource = remember { MutableInteractionSource() },
-                indication = null
-            ) {},
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 0.dp)
-    ) {
-        itemsIndexed(presets) { index, text ->
-            SelectorBox(
-                text = text,
-                isSelected = (selectedPreset == index),
-                onClick = {
-                    val newDate = when (index) {
-                        0 -> null
-                        1 -> LocalDate.now()
-                        2 -> LocalDate.now().plusDays(1)
-                        3 -> LocalDate.now().plusWeeks(1)
-                        else -> selectedDate
+    Box(modifier = Modifier.fillMaxSize()) {
+        LazyRow(
+            modifier = Modifier
+                .align(Alignment.Center)
+                .clickable( // Prevent clicks from passing through.
+                    interactionSource = remember { MutableInteractionSource() },
+                    indication = null
+                ) {},
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 0.dp)
+        ) {
+            itemsIndexed(presets) { index, text ->
+                SelectorBox(
+                    text = text,
+                    isSelected = (selectedPreset == index),
+                    onClick = {
+                        val newDate = when (index) {
+                            0 -> null
+                            1 -> LocalDate.now()
+                            2 -> LocalDate.now().plusDays(1)
+                            3 -> LocalDate.now().plusWeeks(1)
+                            else -> selectedDate
+                        }
+                        selectedPreset = index
+                        selectedDate = newDate
+                        onDateSelected(newDate)
                     }
-                    selectedPreset = index
-                    selectedDate = newDate
-                    onDateSelected(newDate)
-                }
-            )
-        }
-        item {
-            // Divider
-            Spacer(
-                modifier = Modifier
-                    .width(1.5.dp)
-                    .height(20.dp)
-                    .background(
-                        MaterialTheme.colorScheme.onBackground.copy(alpha = 0.2f),
-                        RoundedCornerShape(1.dp)
-                    )
-            )
-        }
-        item {
-            val isCustomDateSelected = (selectedPreset == 4)
-            val buttonText = if (isCustomDateSelected) {
-                selectedDate?.format(DateTimeFormatter.ofPattern("MM/dd"))
-            } else {
-                "Custom"
+                )
             }
+            item {
+                // Divider
+                Spacer(
+                    modifier = Modifier
+                        .width(1.5.dp)
+                        .height(20.dp)
+                        .background(
+                            MaterialTheme.colorScheme.onBackground.copy(alpha = 0.2f),
+                            RoundedCornerShape(1.dp)
+                        )
+                )
+            }
+            item {
+                val isCustomDateSelected = (selectedPreset == 4)
+                val buttonText = if (isCustomDateSelected) {
+                    selectedDate?.format(DateTimeFormatter.ofPattern("MM/dd"))
+                } else {
+                    stringResource(R.string.custom)
+                }
 
-            DateSelectorBox(
-                text = buttonText ?: "Custom",
-                isSelected = isCustomDateSelected,
-                onClick = { showDatePicker = true }
-            )
+                DateSelectorBox(
+                    text = buttonText ?: stringResource(R.string.custom),
+                    isSelected = isCustomDateSelected,
+                    onClick = { showDatePicker = true }
+                )
+            }
         }
     }
 
@@ -317,12 +327,12 @@ fun HorizontalPresetDatePicker(
                     },
                     enabled = datePickerState.selectedDateMillis != null
                 ) {
-                    Text("Done")
+                    Text(stringResource(R.string.done))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showDatePicker = false }) {
-                    Text("Cancel")
+                    Text(stringResource(R.string.cancel))
                 }
             }
         ) {

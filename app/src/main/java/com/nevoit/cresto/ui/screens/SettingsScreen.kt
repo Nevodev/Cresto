@@ -17,13 +17,9 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -31,9 +27,9 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.nevoit.cresto.CrestoApplication
 import com.nevoit.cresto.R
 import com.nevoit.cresto.ui.components.glasense.GlasenseDynamicSmallTitle
 import com.nevoit.cresto.ui.components.glasense.GlasensePageHeader
@@ -50,8 +46,6 @@ import com.nevoit.cresto.ui.theme.glasense.Pink400
 import com.nevoit.cresto.ui.theme.glasense.Purple500
 import com.nevoit.cresto.ui.theme.glasense.Slate500
 import com.nevoit.cresto.ui.viewmodel.AiViewModel
-import com.nevoit.cresto.ui.viewmodel.TodoViewModel
-import com.nevoit.cresto.ui.viewmodel.TodoViewModelFactory
 import dev.chrisbanes.haze.ExperimentalHazeApi
 import dev.chrisbanes.haze.hazeSource
 import dev.chrisbanes.haze.rememberHazeState
@@ -59,8 +53,6 @@ import dev.chrisbanes.haze.rememberHazeState
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalHazeApi::class)
 @Composable
 fun SettingsScreen(aiViewModel: AiViewModel = viewModel()) {
-    val scope = rememberCoroutineScope()
-
     val statusBarHeight = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
     val density = LocalDensity.current
     val thresholdPx = if (statusBarHeight > 0.dp) {
@@ -71,24 +63,12 @@ fun SettingsScreen(aiViewModel: AiViewModel = viewModel()) {
 
     val hazeState = rememberHazeState()
 
-    val onSurfaceContainer = CalculatedColor.onSurfaceContainer
-
     val surfaceColor = CalculatedColor.hierarchicalBackgroundColor
     val hierarchicalSurfaceColor = CalculatedColor.hierarchicalSurfaceColor
 
     val lazyListState = rememberLazyListState()
 
     val isSmallTitleVisible by remember(thresholdPx) { derivedStateOf { ((lazyListState.firstVisibleItemIndex == 0) && (lazyListState.firstVisibleItemScrollOffset > thresholdPx)) || lazyListState.firstVisibleItemIndex > 0 } }
-
-    var promptText by remember { mutableStateOf("") }
-    var apiKey by remember { mutableStateOf("") }
-
-    val uiState by aiViewModel.uiState.collectAsState()
-
-    val application = LocalContext.current.applicationContext as CrestoApplication
-    val viewModel: TodoViewModel = viewModel(
-        factory = TodoViewModelFactory(application.repository)
-    )
 
     val context = LocalContext.current
 
@@ -115,7 +95,10 @@ fun SettingsScreen(aiViewModel: AiViewModel = viewModel()) {
             )
         ) {
             item {
-                GlasensePageHeader(title = "Settings", statusBarHeight = statusBarHeight)
+                GlasensePageHeader(
+                    title = stringResource(R.string.settings),
+                    statusBarHeight = statusBarHeight
+                )
             }
             item {
                 ConfigContainer(backgroundColor = hierarchicalSurfaceColor) {
@@ -130,7 +113,7 @@ fun SettingsScreen(aiViewModel: AiViewModel = viewModel()) {
                                 )
                             ),
                             icon = painterResource(R.drawable.ic_twotone_sparkles),
-                            title = "AI",
+                            title = stringResource(R.string.ai),
                             enableGlow = true,
                             onClick = {
                                 val intent = Intent(context, AIActivity::class.java)
@@ -147,7 +130,7 @@ fun SettingsScreen(aiViewModel: AiViewModel = viewModel()) {
                         ConfigEntryItem(
                             color = Blue500,
                             icon = painterResource(R.drawable.ic_twotone_image),
-                            title = "Appearance",
+                            title = stringResource(R.string.appearance),
                             onClick = {
                                 val intent = Intent(context, AppearanceActivity::class.java)
                                 context.startActivity(intent)
@@ -157,7 +140,7 @@ fun SettingsScreen(aiViewModel: AiViewModel = viewModel()) {
                         ConfigEntryItem(
                             color = Slate500,
                             icon = painterResource(R.drawable.ic_twotone_storage),
-                            title = "Data & Storage",
+                            title = stringResource(R.string.data_storage),
                             onClick = {
                                 val intent = Intent(context, DataStorageActivity::class.java)
                                 context.startActivity(intent)
@@ -167,7 +150,7 @@ fun SettingsScreen(aiViewModel: AiViewModel = viewModel()) {
                         ConfigEntryItem(
                             color = Slate500,
                             icon = painterResource(R.drawable.ic_twotone_gear),
-                            title = "General",
+                            title = stringResource(R.string.general),
                             onClick = {}
                         )
                     }
@@ -191,7 +174,7 @@ fun SettingsScreen(aiViewModel: AiViewModel = viewModel()) {
                     ConfigEntryItem(
                         color = Slate500,
                         icon = painterResource(R.drawable.ic_twotone_info),
-                        title = "Credits",
+                        title = stringResource(R.string.credits),
                         onClick = {}
                     )
                 }
@@ -203,7 +186,7 @@ fun SettingsScreen(aiViewModel: AiViewModel = viewModel()) {
         }
         GlasenseDynamicSmallTitle(
             modifier = Modifier.align(Alignment.TopCenter),
-            title = "Settings",
+            title = stringResource(R.string.settings),
             statusBarHeight = statusBarHeight,
             isVisible = isSmallTitleVisible,
             hazeState = hazeState,
