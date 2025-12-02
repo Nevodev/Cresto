@@ -28,6 +28,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -111,10 +112,12 @@ fun MindFlowScreen(viewModel: TodoViewModel) {
                                 fontSize = 48.sp,
                                 lineHeight = 48.sp,
                                 letterSpacing = (-2).sp,
-                                color = MaterialTheme.colorScheme.onBackground
+                                fontWeight = FontWeight.W300,
                             )
                             Text(
                                 text = stringResource(R.string.completed),
+                                fontSize = 16.sp,
+                                lineHeight = 16.sp,
                                 color = MaterialTheme.colorScheme.onBackground.copy(.5f)
                             )
                         }
