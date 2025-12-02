@@ -1,7 +1,7 @@
 package com.nevoit.cresto.ui
 
 import androidx.compose.animation.core.CubicBezierEasing
-import androidx.compose.animation.core.EaseOutQuint
+import androidx.compose.animation.core.EaseOutExpo
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -30,15 +30,15 @@ fun AppNavHost(
         navController = navController,
         startDestination = Screen.Home.route,
         enterTransition = {
-            fadeIn(animationSpec = tween(250)) + scaleIn(
-                animationSpec = tween(400, 0, EaseOutQuint),
-                initialScale = 0.90f
+            fadeIn(animationSpec = tween(200, 100)) + scaleIn(
+                animationSpec = tween(400, 100, EaseOutExpo),
+                initialScale = 0.95f
             )
         },
         exitTransition = {
-            fadeOut(animationSpec = tween(150)) + scaleOut(
-                animationSpec = tween(300, 0, CubicBezierEasing(.2f, .2f, .0f, 1f)),
-                targetScale = 0.90f
+            fadeOut(animationSpec = tween(200)) + scaleOut(
+                animationSpec = tween(600, 0, CubicBezierEasing(.2f, .2f, .0f, 1f)),
+                targetScale = 0.95f
             )
         }
     ) {
