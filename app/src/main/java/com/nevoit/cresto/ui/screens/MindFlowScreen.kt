@@ -1,6 +1,7 @@
 package com.nevoit.cresto.ui.screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -11,6 +12,7 @@ import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
@@ -21,7 +23,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
@@ -38,6 +42,9 @@ import com.nevoit.cresto.ui.components.glasense.GlasenseDynamicSmallTitle
 import com.nevoit.cresto.ui.components.glasense.GlasenseLoadingIndicator
 import com.nevoit.cresto.ui.components.glasense.GlasensePageHeader
 import com.nevoit.cresto.ui.components.packed.CardWithTitle
+import com.nevoit.cresto.ui.components.packed.CardWithoutTitle
+import com.nevoit.cresto.ui.components.packed.CircularTimer
+import com.nevoit.cresto.ui.components.packed.StrictText
 import com.nevoit.cresto.ui.theme.glasense.CalculatedColor
 import dev.chrisbanes.haze.ExperimentalHazeApi
 import dev.chrisbanes.haze.hazeSource
@@ -57,7 +64,8 @@ fun MindFlowScreen(viewModel: TodoViewModel) {
 
     val hazeState = rememberHazeState()
 
-    val surfaceColor = CalculatedColor.hierarchicalBackgroundColor
+    val backgroundColor = CalculatedColor.hierarchicalBackgroundColor
+    val surfaceColor = CalculatedColor.hierarchicalSurfaceColor
 
     val lazyListState = rememberLazyListState()
 
@@ -67,13 +75,16 @@ fun MindFlowScreen(viewModel: TodoViewModel) {
     val dailyStats by viewModel.dailyStats.collectAsStateWithLifecycle()
     val todayStat = dailyStats.find { it.date == LocalDate.now() }
     val completedCount = todayStat?.count ?: 0
+
+    var minutes by remember { mutableIntStateOf(15) }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
             .graphicsLayer {
                 clip = true
             }
-            .background(surfaceColor)
+            .background(backgroundColor)
     ) {
         LazyColumn(
             state = lazyListState,
@@ -81,7 +92,7 @@ fun MindFlowScreen(viewModel: TodoViewModel) {
                 .hazeSource(hazeState, 0f)
                 .fillMaxSize()
                 .padding(0.dp)
-                .background(surfaceColor),
+                .background(backgroundColor),
             contentPadding = PaddingValues(
                 start = 12.dp,
                 top = 0.dp,
@@ -96,6 +107,71 @@ fun MindFlowScreen(viewModel: TodoViewModel) {
                 )
             }
             item {
+                Row(modifier = Modifier.height(320.dp)) {
+                    CardWithoutTitle(
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxSize(),
+                            horizontalAlignment = Alignment.Start,
+                            verticalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize(),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Box(
+                                    modifier = Modifier.fillMaxSize(),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    CircularTimer(
+                                        modifier = Modifier
+                                            .size(288.dp),
+                                        currentMinutes = minutes,
+                                        onMinutesChange = { minutes = it },
+                                        startIcon = painterResource(R.drawable.ic_trash),
+                                        endIcon = painterResource(R.drawable.ic_trash),
+                                        knobSize = 36.dp,
+                                        iconSize = 24.dp,
+                                        strokeWidth = 48.dp,
+                                        thumbWidth = 36.dp,
+                                        progressColor = surfaceColor,
+                                        trackColor = backgroundColor,
+                                        iconColor = MaterialTheme.colorScheme.onBackground.copy(.5f),
+                                        contentColor = MaterialTheme.colorScheme.onBackground
+                                    )
+
+                                    // 中间显示时间
+                                    Text(
+                                        text = "$minutes min",
+                                        style = MaterialTheme.typography.displaySmall,
+                                        fontWeight = FontWeight.W400,
+                                    )
+                                }
+//                                GlasenseButtonAlt(
+//                                    onClick = {},
+//                                    modifier = Modifier
+//                                        .height(32.dp)
+//                                        .width(96.dp),
+//                                    colors = AppButtonColors.primary()
+//                                ) {
+//                                    Text(
+//                                        text = "Start",
+//                                        fontWeight = FontWeight.W500,
+//                                        fontSize = 16.sp
+//                                    )
+//                                }
+                            }
+                        }
+                    }
+                }
+            }
+            item {
+                Spacer(Modifier.height(12.dp))
+            }
+            item {
                 Row(modifier = Modifier.height(160.dp)) {
                     CardWithTitle(
                         title = stringResource(R.string.today_stat),
@@ -105,19 +181,34 @@ fun MindFlowScreen(viewModel: TodoViewModel) {
                         Column(
                             modifier = Modifier
                                 .fillMaxSize(),
-                            horizontalAlignment = Alignment.Start
+                            horizontalAlignment = Alignment.Start,
+                            verticalArrangement = Arrangement.SpaceBetween
                         ) {
+                            Column(
+                                modifier = Modifier
+                                    .weight(1f),
+                                horizontalAlignment = Alignment.Start
+                            ) {
+                                StrictText(
+                                    text = "$completedCount",
+                                    fontSize = 48.sp,
+                                    lineHeight = 48.sp,
+                                    letterSpacing = (-2).sp,
+                                    fontWeight = FontWeight.W300,
+                                    modifier = Modifier.padding(top = 8.dp)
+                                )
+                                Text(
+                                    text = stringResource(R.string.completed),
+                                    fontSize = 14.sp,
+                                    lineHeight = 14.sp,
+                                    color = MaterialTheme.colorScheme.onBackground.copy(.5f),
+                                    modifier = Modifier.padding(top = 4.dp)
+                                )
+                            }
                             Text(
-                                text = "$completedCount",
-                                fontSize = 48.sp,
-                                lineHeight = 48.sp,
-                                letterSpacing = (-2).sp,
-                                fontWeight = FontWeight.W300,
-                            )
-                            Text(
-                                text = stringResource(R.string.completed),
-                                fontSize = 16.sp,
-                                lineHeight = 16.sp,
+                                text = "Great!",
+                                fontSize = 14.sp,
+                                lineHeight = 14.sp,
                                 color = MaterialTheme.colorScheme.onBackground.copy(.5f)
                             )
                         }
@@ -140,7 +231,7 @@ fun MindFlowScreen(viewModel: TodoViewModel) {
             statusBarHeight = statusBarHeight,
             isVisible = isSmallTitleVisible,
             hazeState = hazeState,
-            surfaceColor = surfaceColor
+            surfaceColor = backgroundColor
         ) {
         }
     }

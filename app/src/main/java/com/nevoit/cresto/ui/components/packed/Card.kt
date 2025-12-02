@@ -85,3 +85,20 @@ fun CardWithTitle(
         ) { content() }
     }
 }
+
+@Composable
+fun CardWithoutTitle(
+    modifier: Modifier = Modifier,
+    content: @Composable () -> Unit,
+) {
+    val hierarchicalSurfaceColor = CalculatedColor.hierarchicalSurfaceColor
+    Box(
+        modifier = Modifier
+            .background(
+                color = hierarchicalSurfaceColor,
+                shape = ContinuousRoundedRectangle(12.dp, g2)
+            )
+            .fillMaxSize()
+            .padding(12.dp)
+    ) { content() }
+}

@@ -11,9 +11,9 @@
       "type": "SINGLE",
       "filters": [],
       "attributes": [],
-      "versionCode": 19,
+      "versionCode": 20,
       "versionName": "1.0",
-      "outputFile": "cresto-alpha19-release.APK"
+      "outputFile": "cresto-alpha20-release.APK"
     }
   ],
   "elementType": "File",
@@ -22,14 +22,14 @@
       "minApi": 28,
       "maxApi": 30,
       "baselineProfiles": [
-        "baselineProfiles/1/cresto-alpha19-release.dm"
+        "baselineProfiles/1/cresto-alpha20-release.dm"
       ]
     },
     {
       "minApi": 31,
       "maxApi": 2147483647,
       "baselineProfiles": [
-        "baselineProfiles/0/cresto-alpha19-release.dm"
+        "baselineProfiles/0/cresto-alpha20-release.dm"
       ]
     }
   ],
