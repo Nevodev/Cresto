@@ -38,6 +38,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.nevoit.cresto.R
 import com.nevoit.cresto.data.todo.TodoViewModel
+import com.nevoit.cresto.ui.components.glasense.GlasenseButtonAlt
 import com.nevoit.cresto.ui.components.glasense.GlasenseDynamicSmallTitle
 import com.nevoit.cresto.ui.components.glasense.GlasenseLoadingIndicator
 import com.nevoit.cresto.ui.components.glasense.GlasensePageHeader
@@ -45,6 +46,7 @@ import com.nevoit.cresto.ui.components.packed.CardWithTitle
 import com.nevoit.cresto.ui.components.packed.CardWithoutTitle
 import com.nevoit.cresto.ui.components.packed.CircularTimer
 import com.nevoit.cresto.ui.components.packed.StrictText
+import com.nevoit.cresto.ui.theme.glasense.AppButtonColors
 import com.nevoit.cresto.ui.theme.glasense.CalculatedColor
 import dev.chrisbanes.haze.ExperimentalHazeApi
 import dev.chrisbanes.haze.hazeSource
@@ -76,7 +78,7 @@ fun MindFlowScreen(viewModel: TodoViewModel) {
     val todayStat = dailyStats.find { it.date == LocalDate.now() }
     val completedCount = todayStat?.count ?: 0
 
-    var minutes by remember { mutableIntStateOf(15) }
+    var minutes by remember { mutableIntStateOf(25) }
 
     Box(
         modifier = Modifier
@@ -107,14 +109,14 @@ fun MindFlowScreen(viewModel: TodoViewModel) {
                 )
             }
             item {
-                Row(modifier = Modifier.height(320.dp)) {
+                Row(modifier = Modifier) {
                     CardWithoutTitle(
                         modifier = Modifier.weight(1f)
                     ) {
                         Column(
                             modifier = Modifier
                                 .fillMaxSize(),
-                            horizontalAlignment = Alignment.Start,
+                            horizontalAlignment = Alignment.CenterHorizontally,
                             verticalArrangement = Arrangement.SpaceBetween
                         ) {
                             Box(
@@ -122,47 +124,44 @@ fun MindFlowScreen(viewModel: TodoViewModel) {
                                     .fillMaxSize(),
                                 contentAlignment = Alignment.Center
                             ) {
-                                Box(
-                                    modifier = Modifier.fillMaxSize(),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    CircularTimer(
-                                        modifier = Modifier
-                                            .size(288.dp),
-                                        currentMinutes = minutes,
-                                        onMinutesChange = { minutes = it },
-                                        startIcon = painterResource(R.drawable.ic_trash),
-                                        endIcon = painterResource(R.drawable.ic_trash),
-                                        knobSize = 36.dp,
-                                        iconSize = 24.dp,
-                                        strokeWidth = 48.dp,
-                                        thumbWidth = 36.dp,
-                                        progressColor = surfaceColor,
-                                        trackColor = backgroundColor,
-                                        iconColor = MaterialTheme.colorScheme.onBackground.copy(.5f),
-                                        contentColor = MaterialTheme.colorScheme.onBackground
-                                    )
-
-                                    // 中间显示时间
-                                    Text(
-                                        text = "$minutes min",
-                                        style = MaterialTheme.typography.displaySmall,
-                                        fontWeight = FontWeight.W400,
-                                    )
-                                }
-//                                GlasenseButtonAlt(
-//                                    onClick = {},
-//                                    modifier = Modifier
-//                                        .height(32.dp)
-//                                        .width(96.dp),
-//                                    colors = AppButtonColors.primary()
-//                                ) {
-//                                    Text(
-//                                        text = "Start",
-//                                        fontWeight = FontWeight.W500,
-//                                        fontSize = 16.sp
-//                                    )
-//                                }
+                                CircularTimer(
+                                    modifier = Modifier
+                                        .size(288.dp),
+                                    currentMinutes = minutes,
+                                    onMinutesChange = { minutes = it },
+                                    startIcon = painterResource(R.drawable.ic_bell),
+                                    endIcon = painterResource(R.drawable.ic_play),
+                                    knobSize = 36.dp,
+                                    iconSize = 24.dp,
+                                    strokeWidth = 48.dp,
+                                    thumbWidth = 36.dp,
+                                    progressColor = surfaceColor,
+                                    trackColor = backgroundColor,
+                                    iconColor = MaterialTheme.colorScheme.onBackground.copy(.5f),
+                                    contentColor = MaterialTheme.colorScheme.onBackground,
+                                    tomatoIcon = painterResource(R.drawable.ic_bell),
+                                    innerIconSize = 24.dp
+                                )
+                            }
+                            Spacer(Modifier.height(12.dp))
+                            Text(
+                                text = "$minutes min",
+                                fontSize = 24.sp,
+                                fontWeight = FontWeight.W400,
+                            )
+                            Spacer(Modifier.height(12.dp))
+                            GlasenseButtonAlt(
+                                onClick = {},
+                                modifier = Modifier
+                                    .height(32.dp)
+                                    .width(96.dp),
+                                colors = AppButtonColors.primary()
+                            ) {
+                                Text(
+                                    text = "Start",
+                                    fontWeight = FontWeight.W500,
+                                    fontSize = 16.sp
+                                )
                             }
                         }
                     }

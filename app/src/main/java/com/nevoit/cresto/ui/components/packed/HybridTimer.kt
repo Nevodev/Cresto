@@ -18,6 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
@@ -26,6 +27,7 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.nevoit.cresto.ui.theme.glasense.Red500
 import kotlinx.coroutines.launch
 import kotlin.math.atan2
 import kotlin.math.cos
@@ -40,11 +42,11 @@ fun CircularTimer(
     onMinutesChange: (Int) -> Unit,
     startIcon: Painter,
     endIcon: Painter,
+    tomatoIcon: Painter,
     primaryColor: Color = MaterialTheme.colorScheme.primary,
-    secondaryColor: Color = MaterialTheme.colorScheme.surfaceVariant,
-    tickColor: Color = MaterialTheme.colorScheme.outlineVariant,
     knobSize: Dp,
     iconSize: Dp,
+    innerIconSize: Dp,
     strokeWidth: Dp,
     progressColor: Color,
     trackColor: Color,
@@ -113,7 +115,7 @@ fun CircularTimer(
 
                                     val diff = kotlin.math.abs(targetAngle - currentVisualAngle)
 
-                                    if (diff > 180) {
+                                    if (diff > 270) {
                                         angleAnimatable.snapTo(targetAngle)
                                     } else {
                                         angleAnimatable.animateTo(
@@ -138,6 +140,61 @@ fun CircularTimer(
         val height = size.height
         val center = Offset(width / 2, height / 2)
         val radius = (width.coerceAtMost(height) - strokeWidth.toPx()) / 2
+
+        val innerClockRadius =
+            (width.coerceAtMost(height) - strokeWidth.toPx() * 2 - 16.dp.toPx()) / 2
+
+        for (i in 0 until 60) {
+            val angleInDegrees = i * 6f - 90f
+            val angleInRad = Math.toRadians(angleInDegrees.toDouble())
+
+            val isMajorTick = i % 5 == 0
+
+            val tickLength = if (isMajorTick) 8.dp.toPx() else 2.dp.toPx()
+            val tickWidth = if (isMajorTick) 2.dp.toPx() else 2.dp.toPx()
+
+            val color = contentColor.copy(.2f)
+
+            val endX = center.x + (innerClockRadius * cos(angleInRad)).toFloat()
+            val endY = center.y + (innerClockRadius * sin(angleInRad)).toFloat()
+
+            val startX = center.x + ((innerClockRadius - tickLength) * cos(angleInRad)).toFloat()
+            val startY = center.y + ((innerClockRadius - tickLength) * sin(angleInRad)).toFloat()
+
+            drawLine(
+                color = color,
+                start = Offset(startX, startY),
+                end = Offset(endX, endY),
+                strokeWidth = tickWidth,
+                cap = StrokeCap.Round
+            )
+        }
+
+
+        val offsetDistance = 16.dp.toPx()
+        val iconRadius = innerClockRadius - offsetDistance - innerIconSize.toPx() / 2
+
+        run {
+            val targetMinute = 25
+            val iconAngleDeg = targetMinute * 6f - 90f
+            val iconAngleRad = Math.toRadians(iconAngleDeg.toDouble())
+
+            val iconX = center.x + (iconRadius * cos(iconAngleRad)).toFloat()
+            val iconY = center.y + (iconRadius * sin(iconAngleRad)).toFloat()
+
+            translate(
+                left = iconX - innerIconSize.toPx() / 2,
+                top = iconY - innerIconSize.toPx() / 2
+            ) {
+                with(tomatoIcon) {
+                    draw(
+                        size = Size(innerIconSize.toPx(), innerIconSize.toPx()),
+                        colorFilter = ColorFilter.tint(Red500)
+                    )
+                }
+            }
+        }
+
         drawCircle(
             color = trackColor,
             radius = radius,
@@ -210,7 +267,6 @@ fun CircularTimer(
     }
 }
 
-// 辅助函数：绘制带图标的圆球
 private fun DrawScope.drawKnobWithIcon(
     center: Offset,
     radius: Float,
@@ -221,21 +277,16 @@ private fun DrawScope.drawKnobWithIcon(
     iconSize: Float,
     iconTint: Color
 ) {
-    // 计算圆球中心位置
-    // 注意：Canvas 0度是3点钟，所以我们需要减90度来匹配我们逻辑上的12点钟
     val angleRad = Math.toRadians((angleDegrees - 90).toDouble())
     val knobCx = center.x + (radius * cos(angleRad)).toFloat()
     val knobCy = center.y + (radius * sin(angleRad)).toFloat()
 
-    // 绘制圆球背景
     drawCircle(
         color = knobColor,
         radius = knobSize / 2,
         center = Offset(knobCx, knobCy)
     )
 
-    // 绘制图标
-    // 我们需要将Canvas原点移动到圆球中心，绘制图标，然后再移回来
     translate(left = knobCx - iconSize / 2, top = knobCy - iconSize / 2) {
         with(iconPainter) {
             draw(
