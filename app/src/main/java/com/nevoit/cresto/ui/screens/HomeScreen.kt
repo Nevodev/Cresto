@@ -76,7 +76,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.kyant.capsule.ContinuousCapsule
 import com.kyant.capsule.ContinuousRoundedRectangle
 import com.nevoit.cresto.R
-import com.nevoit.cresto.data.EXTRA_TODO_ID
+import com.nevoit.cresto.data.todo.EXTRA_TODO_ID
+import com.nevoit.cresto.data.todo.TodoViewModel
 import com.nevoit.cresto.ui.components.glasense.DialogItemData
 import com.nevoit.cresto.ui.components.glasense.GlasenseButton
 import com.nevoit.cresto.ui.components.glasense.GlasenseButtonAdaptable
@@ -89,7 +90,6 @@ import com.nevoit.cresto.ui.screens.detailscreen.DetailActivity
 import com.nevoit.cresto.ui.theme.glasense.Blue500
 import com.nevoit.cresto.ui.theme.glasense.CalculatedColor
 import com.nevoit.cresto.ui.theme.glasense.Red500
-import com.nevoit.cresto.ui.viewmodel.TodoViewModel
 import com.nevoit.cresto.util.g2
 import dev.chrisbanes.haze.ExperimentalHazeApi
 import dev.chrisbanes.haze.hazeSource

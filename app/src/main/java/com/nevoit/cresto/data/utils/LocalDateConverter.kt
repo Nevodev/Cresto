@@ -1,4 +1,4 @@
-package com.nevoit.cresto.data
+package com.nevoit.cresto.data.utils
 
 import androidx.room.TypeConverter
 import java.time.LocalDate

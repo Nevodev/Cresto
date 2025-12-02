@@ -72,6 +72,8 @@ import com.kyant.backdrop.effects.colorControls
 import com.kyant.capsule.ContinuousCapsule
 import com.nevoit.cresto.CrestoApplication
 import com.nevoit.cresto.R
+import com.nevoit.cresto.data.todo.TodoViewModel
+import com.nevoit.cresto.data.todo.TodoViewModelFactory
 import com.nevoit.cresto.secrets.ApiKey
 import com.nevoit.cresto.ui.components.CustomAnimatedVisibility
 import com.nevoit.cresto.ui.components.glasense.DialogItemData
@@ -90,8 +92,6 @@ import com.nevoit.cresto.ui.theme.glasense.highlightColorsLight
 import com.nevoit.cresto.ui.theme.glasense.isAppInDarkTheme
 import com.nevoit.cresto.ui.viewmodel.AiSideEffect
 import com.nevoit.cresto.ui.viewmodel.AiViewModel
-import com.nevoit.cresto.ui.viewmodel.TodoViewModel
-import com.nevoit.cresto.ui.viewmodel.TodoViewModelFactory
 import com.nevoit.cresto.ui.viewmodel.UiState
 import com.nevoit.cresto.util.deviceCornerShape
 import kotlinx.coroutines.delay

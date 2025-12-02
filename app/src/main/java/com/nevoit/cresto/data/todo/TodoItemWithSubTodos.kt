@@ -1,4 +1,4 @@
-package com.nevoit.cresto.data
+package com.nevoit.cresto.data.todo
 
 import androidx.room.Embedded
 import androidx.room.Relation

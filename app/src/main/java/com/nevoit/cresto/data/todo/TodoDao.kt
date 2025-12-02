@@ -1,4 +1,4 @@
-package com.nevoit.cresto.data
+package com.nevoit.cresto.data.todo
 
 import androidx.room.Dao
 import androidx.room.Delete
@@ -7,6 +7,7 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Update
+import com.nevoit.cresto.data.statistics.DailyStat
 import kotlinx.coroutines.flow.Flow
 
 // Data Access Object (DAO) for the todo_items table.
@@ -69,4 +70,21 @@ interface TodoDao {
 
     @Query("DELETE FROM todo_items WHERE id = :id")
     suspend fun deleteById(id: Int)
+
+    @Query("SELECT COUNT(*) FROM todo_items")
+    fun getTotalCount(): Flow<Int>
+
+    @Query("SELECT COUNT(*) FROM todo_items WHERE isCompleted = true")
+    fun getCompletedCount(): Flow<Int>
+
+    @Query(
+        """
+        SELECT completedDate as date, COUNT(*) as count 
+        FROM todo_items 
+        WHERE isCompleted = 1 AND completedDate IS NOT NULL 
+        GROUP BY completedDate 
+        ORDER BY completedDate DESC
+    """
+    )
+    fun getDailyStats(): Flow<List<DailyStat>>
 }

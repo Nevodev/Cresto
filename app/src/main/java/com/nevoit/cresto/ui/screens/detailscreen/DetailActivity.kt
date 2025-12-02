@@ -16,10 +16,10 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.core.view.WindowCompat
 import com.nevoit.cresto.CrestoApplication
+import com.nevoit.cresto.data.todo.TodoViewModel
+import com.nevoit.cresto.data.todo.TodoViewModelFactory
 import com.nevoit.cresto.toolkit.overscroll.OffsetOverscrollFactory
 import com.nevoit.cresto.ui.theme.glasense.GlasenseTheme
-import com.nevoit.cresto.ui.viewmodel.TodoViewModel
-import com.nevoit.cresto.ui.viewmodel.TodoViewModelFactory
 
 class DetailActivity : ComponentActivity() {
 

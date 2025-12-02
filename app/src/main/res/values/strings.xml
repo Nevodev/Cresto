@@ -111,4 +111,6 @@
     <string name="developed_by_nevoit">Developed by Nevoit</string>
     <string name="config_entry">%1$s config entry</string>
     <string name="version">Version</string>
+    <string name="today_stat">Today</string>
+    <string name="statistics">Statistics</string>
 </resources>

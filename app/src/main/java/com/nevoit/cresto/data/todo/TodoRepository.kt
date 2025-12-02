@@ -1,9 +1,6 @@
-package com.nevoit.cresto.repository
+package com.nevoit.cresto.data.todo
 
-import com.nevoit.cresto.data.SubTodoItem
-import com.nevoit.cresto.data.TodoDao
-import com.nevoit.cresto.data.TodoItem
-import com.nevoit.cresto.data.TodoItemWithSubTodos
+import com.nevoit.cresto.data.statistics.DailyStat
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -101,5 +98,17 @@ class TodoRepository(private val todoDao: TodoDao) {
 
     suspend fun deleteById(id: Int) {
         todoDao.deleteById(id)
+    }
+
+    fun getTotalCount(): Flow<Int> {
+        return todoDao.getTotalCount()
+    }
+
+    fun getCompletedCount(): Flow<Int> {
+        return todoDao.getCompletedCount()
+    }
+
+    fun getDailyStatistics(): Flow<List<DailyStat>> {
+        return todoDao.getDailyStats()
     }
 }

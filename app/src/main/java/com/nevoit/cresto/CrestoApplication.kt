@@ -1,8 +1,8 @@
 package com.nevoit.cresto
 
 import android.app.Application
-import com.nevoit.cresto.data.TodoDatabase
-import com.nevoit.cresto.repository.TodoRepository
+import com.nevoit.cresto.data.todo.TodoDatabase
+import com.nevoit.cresto.data.todo.TodoRepository
 import com.tencent.mmkv.MMKV
 
 /**

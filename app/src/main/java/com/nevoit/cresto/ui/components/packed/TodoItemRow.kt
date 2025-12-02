@@ -55,9 +55,9 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.kyant.capsule.ContinuousRoundedRectangle
 import com.nevoit.cresto.R
-import com.nevoit.cresto.data.SubTodoItem
-import com.nevoit.cresto.data.TodoItem
-import com.nevoit.cresto.data.TodoItemWithSubTodos
+import com.nevoit.cresto.data.todo.SubTodoItem
+import com.nevoit.cresto.data.todo.TodoItem
+import com.nevoit.cresto.data.todo.TodoItemWithSubTodos
 import com.nevoit.cresto.ui.components.CustomAnimatedVisibility
 import com.nevoit.cresto.ui.components.glasense.GlasenseCheckbox
 import com.nevoit.cresto.ui.components.glasense.SwipeableActionButton

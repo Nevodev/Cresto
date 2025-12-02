@@ -1,13 +1,14 @@
-package com.nevoit.cresto.data
+package com.nevoit.cresto.data.todo
 
 import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
+import com.nevoit.cresto.data.utils.Converters
 
 // Annotates the class as a Room Database with tables for TodoItem and SubTodoItem.
-@Database(entities = [TodoItem::class, SubTodoItem::class], version = 9, exportSchema = false)
+@Database(entities = [TodoItem::class, SubTodoItem::class], version = 10, exportSchema = false)
 @TypeConverters(Converters::class)
 // Abstract class that represents the Room database for the application.
 abstract class TodoDatabase : RoomDatabase() {

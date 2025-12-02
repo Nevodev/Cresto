@@ -64,9 +64,10 @@ import com.kyant.backdrop.backdrops.layerBackdrop
 import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import com.kyant.capsule.ContinuousCapsule
 import com.nevoit.cresto.R
-import com.nevoit.cresto.data.EXTRA_DELETE_ID
-import com.nevoit.cresto.data.SubTodoItem
-import com.nevoit.cresto.data.TodoItem
+import com.nevoit.cresto.data.todo.EXTRA_DELETE_ID
+import com.nevoit.cresto.data.todo.SubTodoItem
+import com.nevoit.cresto.data.todo.TodoItem
+import com.nevoit.cresto.data.todo.TodoViewModel
 import com.nevoit.cresto.toolkit.overscroll.OffsetOverscrollFactory
 import com.nevoit.cresto.ui.components.CustomAnimatedVisibility
 import com.nevoit.cresto.ui.components.bottomsheet.SelectedButton
@@ -93,7 +94,6 @@ import com.nevoit.cresto.ui.theme.glasense.CalculatedColor
 import com.nevoit.cresto.ui.theme.glasense.Red500
 import com.nevoit.cresto.ui.theme.glasense.getFlagColor
 import com.nevoit.cresto.ui.theme.glasense.isAppInDarkTheme
-import com.nevoit.cresto.ui.viewmodel.TodoViewModel
 import com.nevoit.cresto.util.formatRelativeTime
 import com.nevoit.cresto.util.g2
 import dev.chrisbanes.haze.ExperimentalHazeApi

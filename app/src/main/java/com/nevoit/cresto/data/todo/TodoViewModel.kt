@@ -1,18 +1,17 @@
-package com.nevoit.cresto.ui.viewmodel
+package com.nevoit.cresto.data.todo
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.nevoit.cresto.data.EventItem
-import com.nevoit.cresto.data.SubTodoItem
-import com.nevoit.cresto.data.TodoItem
-import com.nevoit.cresto.data.TodoItemWithSubTodos
-import com.nevoit.cresto.repository.TodoRepository
+import com.nevoit.cresto.data.statistics.DailyStat
+import com.nevoit.cresto.data.statistics.TodoStat
+import com.nevoit.cresto.data.utils.EventItem
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
@@ -86,7 +85,25 @@ class TodoViewModel(private val repository: TodoRepository) : ViewModel() {
     }
 
     fun update(item: TodoItem) = viewModelScope.launch {
-        repository.update(item)
+        viewModelScope.launch {
+            val itemToPersist = when {
+                item.isCompleted && item.completedDate == null -> {
+                    item.copy(
+                        completedDate = LocalDate.now()
+                    )
+                }
+
+                !item.isCompleted -> {
+                    item.copy(
+                        completedDate = null
+                    )
+                }
+
+                else -> item
+            }
+            repository.update(itemToPersist)
+        }
+
     }
 
     fun delete(item: TodoItem) = viewModelScope.launch {
@@ -99,6 +116,7 @@ class TodoViewModel(private val repository: TodoRepository) : ViewModel() {
             repository.deleteById(id)
         }
     }
+
     // --- SubTodo Operations ---
 
     fun insertSubTodo(item: SubTodoItem) = viewModelScope.launch {
@@ -169,6 +187,24 @@ class TodoViewModel(private val repository: TodoRepository) : ViewModel() {
     fun hideBottomSheet() {
         _bottomSheetState.update { it.copy(isVisible = false) }
     }
+
+    val statistics: StateFlow<TodoStat> = combine(
+        repository.getTotalCount(),
+        repository.getCompletedCount()
+    ) { total, completed ->
+        TodoStat(totalCount = total, completedCount = completed)
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = TodoStat()
+    )
+
+    val dailyStats: StateFlow<List<DailyStat>> = repository.getDailyStatistics()
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyList()
+        )
 }
 
 class TodoViewModelFactory(private val repository: TodoRepository) : ViewModelProvider.Factory {

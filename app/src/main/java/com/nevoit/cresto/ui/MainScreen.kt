@@ -39,7 +39,9 @@ import com.kyant.backdrop.backdrops.layerBackdrop
 import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import com.nevoit.cresto.CrestoApplication
 import com.nevoit.cresto.R
-import com.nevoit.cresto.data.TodoItem
+import com.nevoit.cresto.data.todo.TodoItem
+import com.nevoit.cresto.data.todo.TodoViewModel
+import com.nevoit.cresto.data.todo.TodoViewModelFactory
 import com.nevoit.cresto.toolkit.gaussiangradient.smoothGradientMask
 import com.nevoit.cresto.toolkit.gaussiangradient.smoothGradientMaskFallback
 import com.nevoit.cresto.ui.components.bottomsheet.BottomSheet
@@ -53,8 +55,6 @@ import com.nevoit.cresto.ui.components.glasense.MenuState
 import com.nevoit.cresto.ui.theme.glasense.CalculatedColor
 import com.nevoit.cresto.ui.theme.glasense.linearGradientMaskB2T70
 import com.nevoit.cresto.ui.theme.glasense.linearGradientMaskB2T90
-import com.nevoit.cresto.ui.viewmodel.TodoViewModel
-import com.nevoit.cresto.ui.viewmodel.TodoViewModelFactory
 import dev.chrisbanes.haze.ExperimentalHazeApi
 import dev.chrisbanes.haze.HazeInputScale
 import dev.chrisbanes.haze.HazeProgressive

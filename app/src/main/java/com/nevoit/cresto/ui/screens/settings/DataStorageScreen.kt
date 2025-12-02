@@ -58,7 +58,7 @@ import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import com.kyant.capsule.ContinuousCapsule
 import com.kyant.capsule.ContinuousRoundedRectangle
 import com.nevoit.cresto.R
-import com.nevoit.cresto.data.TodoDatabase
+import com.nevoit.cresto.data.todo.TodoDatabase
 import com.nevoit.cresto.ui.components.glasense.DialogItemData
 import com.nevoit.cresto.ui.components.glasense.DialogState
 import com.nevoit.cresto.ui.components.glasense.GlasenseButton

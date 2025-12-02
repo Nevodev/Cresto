@@ -101,4 +101,6 @@
     <string name="developed_by_nevoit">由 Nevoit 开发</string>
     <string name="config_entry">%1$s 设置项</string>
     <string name="version">版本</string>
+    <string name="today_stat">今日</string>
+    <string name="statistics">统计</string>
 </resources>

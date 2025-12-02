@@ -1,6 +1,7 @@
-package com.nevoit.cresto.data
+package com.nevoit.cresto.data.todo
 
 import androidx.room.Entity
+import androidx.room.Index
 import androidx.room.PrimaryKey
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -16,7 +17,10 @@ import java.time.LocalDateTime
  * @property hashtag An optional string for tagging or categorizing the to-do item.
  * @property flag An optional integer flag, can be used for priority or other categorizations.
  */
-@Entity(tableName = "todo_items")
+@Entity(
+    tableName = "todo_items",
+    indices = [Index(value = ["isCompleted", "completedDate"])]
+)
 data class TodoItem(
     @PrimaryKey(autoGenerate = true)
     val id: Int = 0,
@@ -25,7 +29,8 @@ data class TodoItem(
     val creationDate: LocalDateTime = LocalDateTime.now(),
     val isCompleted: Boolean = false,
     val hashtag: String? = null,
-    val flag: Int = 0
+    val flag: Int = 0,
+    val completedDate: LocalDate? = null
 )
 
 const val EXTRA_DELETE_ID = "extra_delete_id"
