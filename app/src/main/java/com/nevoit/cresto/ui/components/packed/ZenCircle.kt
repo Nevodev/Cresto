@@ -18,9 +18,8 @@ import androidx.compose.ui.graphics.ShaderBrush
 import androidx.compose.ui.graphics.toArgb
 import org.intellij.lang.annotations.Language
 
-// AGSL: 智能混合版 (暗色叠加，亮色遮盖)
 @Language("AGSL")
-val ZEN_CIRCLES_HYBRID_SHADER = """
+val ZEN_CIRCLES_PLUS_HYBRID_SHADER = """
     uniform float2 iResolution;
     uniform float iTime;
     layout(color) uniform half4 iBackColor;
@@ -33,7 +32,7 @@ val ZEN_CIRCLES_HYBRID_SHADER = """
     uniform float layerDelay;
     uniform float blur;
     uniform float layerGap;
-    uniform float intensity; // 强度控制
+    uniform float intensity;
 
     // --- Noise Functions ---
     float hash(float2 p) {
@@ -68,16 +67,14 @@ val ZEN_CIRCLES_HYBRID_SHADER = """
         float w = 0.628318;
         float layers = 5.0;
         
-        // 1. 计算背景亮度 (Luminance)
-        // 接近 0.0 = 黑底，接近 1.0 = 白底
+        // 1. 判断背景亮度 (Luminance)
+        // 0.0 = 黑, 1.0 = 白
         float bgLum = dot(iBackColor.rgb, vec3(0.299, 0.587, 0.114));
         
-        // 初始颜色
         vec3 finalColor = iBackColor.rgb;
         
         for (float i = 0.0; i < 5.0; i += 1.0) {
             float2 noiseUV = uv * 1.2 + float2(i * 7.0, t_noise * 0.4);
-            
             float distortion = fbm(noiseUV);
             float wave = (distortion - 0.5) * 2.0; 
             
@@ -88,25 +85,32 @@ val ZEN_CIRCLES_HYBRID_SHADER = """
             
             float distToRing = abs(len - (baseRadius + breath) + wave * 0.12);
             
+            // 基础 Alpha
             float ringAlpha = smoothstep(thickness + blur, thickness, distToRing);
-            // 稍作锐化，保证颜色扎实
             ringAlpha = clamp(pow(ringAlpha, 0.8), 0.0, 1.0);
+            
+            // 有效透明度：受 intensity 控制
+            float effectiveAlpha = clamp(ringAlpha * intensity, 0.0, 1.0);
             
             vec3 layerColor = mix(iColorA.rgb, iColorB.rgb, i / (layers - 1.0));
             
-            // --- 【核心逻辑：智能混合算法】 ---
+            // --- 【核心逻辑：加法(Plus) vs 正常(Normal)】 ---
             
-            // 混合系数：
-            // 如果 bgLum 是 1 (白底)，bgMixFactor = (1.0 - ringAlpha)。这是标准的 Alpha 混合公式：Result = BG*(1-A) + Color*A。
-            // 如果 bgLum 是 0 (黑底)，bgMixFactor = 1.0。这是加法混合公式：Result = BG + Color*A。
-            // 这样在黑底上，颜色会越叠越亮，不会变灰。
-            float bgMixFactor = mix(1.0, 1.0 - ringAlpha, bgLum);
+            // 模式 A: 加法混合 (Plus / Additive) -> 适用于暗色背景
+            // 颜色直接累加，重叠处变亮，产生发光感
+            vec3 colorPlus = finalColor + layerColor * effectiveAlpha;
             
-            finalColor = finalColor * bgMixFactor + layerColor * ringAlpha * intensity;
+            // 模式 B: 正常混合 (Normal / Alpha Blend) -> 适用于亮色背景
+            // 颜色基于透明度进行遮盖，产生透明感
+            vec3 colorNormal = mix(finalColor, layerColor, effectiveAlpha);
+            
+            // 根据背景亮度在两种模式间切换
+            // 如果背景黑(bgLum=0)，完全使用 colorPlus
+            // 如果背景白(bgLum=1)，完全使用 colorNormal
+            finalColor = mix(colorPlus, colorNormal, bgLum);
         }
         
-        // Vignette (暗角)
-        // 边缘渐变回背景色 (无论黑白，边缘都应该融合进背景)
+        // 暗角处理：边缘平滑过渡回背景色
         float dist = length(uv);
         float vignetteStrength = smoothstep(0.6, 1.4, dist); 
         finalColor = mix(finalColor, iBackColor.rgb, vignetteStrength);
@@ -119,19 +123,22 @@ val ZEN_CIRCLES_HYBRID_SHADER = """
 @Composable
 fun ZenCirclesBreathing(
     modifier: Modifier = Modifier,
-    // 参数配置
-    backgroundColor: Color = Color.Black, // 试着改成 Color.White 对比效果
-    colorA: Color = Color(0xFF00E6FF),    // 青色
-    colorB: Color = Color(0xFF9980FF),    // 紫色
+    // 默认黑色背景 + 霓虹配色，效果最炸裂
+    backgroundColor: Color = Color.Black,
+    colorA: Color = Color(0xFF00E6FF),
+    colorB: Color = Color(0xFF9980FF),
     scale: Float = 2.00f,
     thickness: Float = 0.001f,
     breathAmp: Float = 0.068f,
     layerDelay: Float = 0.42f,
     blur: Float = 0.11f,
     layerGap: Float = 0.007f,
-    intensity: Float = 1.0f // 颜色强度，黑底如果不满意可以调大到 1.5
+    // 默认强度 1.0。
+    // 在白底你可以设为 0.5 获得淡雅效果。
+    // 在黑底你可以设为 1.2 获得超强光感。
+    intensity: Float = 1.0f
 ) {
-    val shader = remember { RuntimeShader(ZEN_CIRCLES_HYBRID_SHADER) }
+    val shader = remember { RuntimeShader(ZEN_CIRCLES_PLUS_HYBRID_SHADER) }
     var time by remember { mutableFloatStateOf(0f) }
 
     LaunchedEffect(Unit) {

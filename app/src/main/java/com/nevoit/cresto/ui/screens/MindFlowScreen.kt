@@ -31,6 +31,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.BlurredEdgeTreatment
 import androidx.compose.ui.draw.blur
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
@@ -56,6 +57,7 @@ import com.nevoit.cresto.ui.components.packed.CircularTimer
 import com.nevoit.cresto.ui.components.packed.StrictText
 import com.nevoit.cresto.ui.components.packed.ZenCirclesBreathing
 import com.nevoit.cresto.ui.theme.glasense.AppButtonColors
+import com.nevoit.cresto.ui.theme.glasense.Blue500
 import com.nevoit.cresto.ui.theme.glasense.CalculatedColor
 import com.nevoit.cresto.ui.theme.glasense.Red500
 import com.nevoit.cresto.ui.theme.glasense.defaultEnterTransition
@@ -164,12 +166,16 @@ fun MindFlowScreen(
                                     ) {
                                         ZenCirclesBreathing(
                                             backgroundColor = surfaceColor,
-                                            scale = 1.8f,
-                                            modifier = Modifier.blur(
-                                                8.dp,
-                                                BlurredEdgeTreatment.Unbounded
+                                            colorA = if (isAppInDarkTheme()) Blue500 else Color(
+                                                0xFF00E6FF
                                             ),
-                                            intensity = if (isAppInDarkTheme()) 2f else 1f
+                                            scale = 1.8f,
+                                            modifier = Modifier
+                                                .blur(
+                                                    8.dp,
+                                                    BlurredEdgeTreatment.Unbounded
+                                                ),
+                                            intensity = if (isAppInDarkTheme()) .4f else .3f
                                         )
                                         Text(
                                             text = timerViewModel.formattedTime,
