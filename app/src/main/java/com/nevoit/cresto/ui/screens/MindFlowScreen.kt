@@ -1,6 +1,10 @@
 package com.nevoit.cresto.ui.screens
 
 import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.EaseInOutSine
+import androidx.compose.animation.core.EaseOutExpo
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -24,6 +28,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -107,7 +112,16 @@ fun MindFlowScreen(
     val isFinished = timerViewModel.isFinished
     val isPaused = timerViewModel.isPaused
 
+    val scaleAni = remember { Animatable(if (isTimerMode) 1.8f else 0f) }
 
+    LaunchedEffect(isTimerMode) {
+        if (isTimerMode) {
+            scaleAni.animateTo(1.8f, tween(2000, 100, EaseOutExpo))
+        }
+        if (!isTimerMode) {
+            scaleAni.animateTo(0f, tween(500, 0, EaseInOutSine))
+        }
+    }
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -169,7 +183,7 @@ fun MindFlowScreen(
                                             colorA = if (isAppInDarkTheme()) Blue500 else Color(
                                                 0xFF00E6FF
                                             ),
-                                            scale = 1.8f,
+                                            scale = scaleAni.value,
                                             modifier = Modifier
                                                 .blur(
                                                     8.dp,
