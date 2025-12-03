@@ -18,22 +18,24 @@ import androidx.compose.ui.graphics.ShaderBrush
 import androidx.compose.ui.graphics.toArgb
 import org.intellij.lang.annotations.Language
 
-// 1. 定义 AGSL Shader 代码 (加法混合版)
+// AGSL: 智能混合版 (暗色叠加，亮色遮盖)
 @Language("AGSL")
-val ZEN_CIRCLES_ADDITIVE_SHADER = """
+val ZEN_CIRCLES_HYBRID_SHADER = """
     uniform float2 iResolution;
     uniform float iTime;
-    layout(color) uniform half4 iBackColor; // 背景颜色
+    layout(color) uniform half4 iBackColor;
+    layout(color) uniform half4 iColorA;
+    layout(color) uniform half4 iColorB;
     
-    // Configurable Parameters
     uniform float scale;
     uniform float thickness;
     uniform float breathAmp;
     uniform float layerDelay;
     uniform float blur;
     uniform float layerGap;
+    uniform float intensity; // 强度控制
 
-    // --- Noise Functions (保持不变) ---
+    // --- Noise Functions ---
     float hash(float2 p) {
         return fract(sin(dot(p, float2(12.9898, 78.233))) * 43758.5453);
     }
@@ -60,16 +62,18 @@ val ZEN_CIRCLES_ADDITIVE_SHADER = """
 
     half4 main(float2 fragCoord) {
         float2 uv = (fragCoord * 2.0 - iResolution.xy) / iResolution.y;
-        
-        // Apply Scale
         uv /= scale;
         
         float t_noise = iTime * 0.15;
         float w = 0.628318;
         float layers = 5.0;
         
-        // 【核心修改 1】：初始化为 0，准备累加光线
-        vec3 totalLight = vec3(0.0);
+        // 1. 计算背景亮度 (Luminance)
+        // 接近 0.0 = 黑底，接近 1.0 = 白底
+        float bgLum = dot(iBackColor.rgb, vec3(0.299, 0.587, 0.114));
+        
+        // 初始颜色
+        vec3 finalColor = iBackColor.rgb;
         
         for (float i = 0.0; i < 5.0; i += 1.0) {
             float2 noiseUV = uv * 1.2 + float2(i * 7.0, t_noise * 0.4);
@@ -79,38 +83,33 @@ val ZEN_CIRCLES_ADDITIVE_SHADER = """
             
             float len = length(uv);
             float baseRadius = 0.3 + i * layerGap; 
-            
             float phase = i * layerDelay;
             float breath = sin(iTime * w - phase) * breathAmp;
             
             float distToRing = abs(len - (baseRadius + breath) + wave * 0.12);
             
-            // 形状计算保持不变
             float ringAlpha = smoothstep(thickness + blur, thickness, distToRing);
+            // 稍作锐化，保证颜色扎实
+            ringAlpha = clamp(pow(ringAlpha, 0.8), 0.0, 1.0);
             
-            // 颜色定义 (你可以根据喜好调整这里的发光色)
-            vec3 colA = vec3(0.0, 0.9, 1.0); // 青色
-            vec3 colB = vec3(0.6, 0.4, 1.0); // 紫色
+            vec3 layerColor = mix(iColorA.rgb, iColorB.rgb, i / (layers - 1.0));
             
-            vec3 layerColor = mix(colA, colB, i / (layers - 1.0));
+            // --- 【核心逻辑：智能混合算法】 ---
             
-            // 【核心修改 2】：加法混合 (Additive Mixing)
-            // 将当前层的颜色 * 透明度 累加到总光照中
-            // 这里的 1.5 是强度系数，可以让光更亮一点
-            totalLight += layerColor * ringAlpha * 1.5;
+            // 混合系数：
+            // 如果 bgLum 是 1 (白底)，bgMixFactor = (1.0 - ringAlpha)。这是标准的 Alpha 混合公式：Result = BG*(1-A) + Color*A。
+            // 如果 bgLum 是 0 (黑底)，bgMixFactor = 1.0。这是加法混合公式：Result = BG + Color*A。
+            // 这样在黑底上，颜色会越叠越亮，不会变灰。
+            float bgMixFactor = mix(1.0, 1.0 - ringAlpha, bgLum);
+            
+            finalColor = finalColor * bgMixFactor + layerColor * ringAlpha * intensity;
         }
         
         // Vignette (暗角)
-        // 这是一个遮罩，让光线在边缘衰减，而不是让背景变色
-        float vig = 1.0 - length(uv * 0.5);
-        vig = smoothstep(0.0, 1.5, vig);
-        
-        // 应用暗角到光线上
-        totalLight *= vig;
-
-        // 【核心修改 3】：最终合成
-        // 背景色 + 累加的光线 = 发光效果
-        vec3 finalColor = iBackColor.rgb + totalLight;
+        // 边缘渐变回背景色 (无论黑白，边缘都应该融合进背景)
+        float dist = length(uv);
+        float vignetteStrength = smoothstep(0.6, 1.4, dist); 
+        finalColor = mix(finalColor, iBackColor.rgb, vignetteStrength);
 
         return half4(finalColor, 1.0);
     }
@@ -120,15 +119,19 @@ val ZEN_CIRCLES_ADDITIVE_SHADER = """
 @Composable
 fun ZenCirclesBreathing(
     modifier: Modifier = Modifier,
-    backgroundColor: Color = Color.Black, // 默认改为黑色，加法混合在深色背景下效果最好
+    // 参数配置
+    backgroundColor: Color = Color.Black, // 试着改成 Color.White 对比效果
+    colorA: Color = Color(0xFF00E6FF),    // 青色
+    colorB: Color = Color(0xFF9980FF),    // 紫色
     scale: Float = 2.00f,
     thickness: Float = 0.001f,
     breathAmp: Float = 0.068f,
     layerDelay: Float = 0.42f,
     blur: Float = 0.11f,
-    layerGap: Float = 0.007f
+    layerGap: Float = 0.007f,
+    intensity: Float = 1.0f // 颜色强度，黑底如果不满意可以调大到 1.5
 ) {
-    val shader = remember { RuntimeShader(ZEN_CIRCLES_ADDITIVE_SHADER) }
+    val shader = remember { RuntimeShader(ZEN_CIRCLES_HYBRID_SHADER) }
     var time by remember { mutableFloatStateOf(0f) }
 
     LaunchedEffect(Unit) {
@@ -144,6 +147,8 @@ fun ZenCirclesBreathing(
         shader.setFloatUniform("iResolution", size.width, size.height)
         shader.setFloatUniform("iTime", time)
         shader.setColorUniform("iBackColor", backgroundColor.toArgb())
+        shader.setColorUniform("iColorA", colorA.toArgb())
+        shader.setColorUniform("iColorB", colorB.toArgb())
 
         shader.setFloatUniform("scale", scale)
         shader.setFloatUniform("thickness", thickness)
@@ -151,6 +156,7 @@ fun ZenCirclesBreathing(
         shader.setFloatUniform("layerDelay", layerDelay)
         shader.setFloatUniform("blur", blur)
         shader.setFloatUniform("layerGap", layerGap)
+        shader.setFloatUniform("intensity", intensity)
 
         drawRect(brush = ShaderBrush(shader))
     }

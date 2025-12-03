@@ -29,6 +29,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.BlurredEdgeTreatment
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
@@ -59,6 +61,7 @@ import com.nevoit.cresto.ui.theme.glasense.Red500
 import com.nevoit.cresto.ui.theme.glasense.defaultEnterTransition
 import com.nevoit.cresto.ui.theme.glasense.defaultExitTransition
 import com.nevoit.cresto.ui.theme.glasense.glasenseHighlight
+import com.nevoit.cresto.ui.theme.glasense.isAppInDarkTheme
 import com.nevoit.cresto.ui.viewmodel.ModeTimerViewModel
 import com.nevoit.cresto.util.g2
 import dev.chrisbanes.haze.ExperimentalHazeApi
@@ -155,16 +158,30 @@ fun MindFlowScreen(
                                     enter = defaultEnterTransition,
                                     exit = defaultExitTransition
                                 ) {
-                                    Text(
-                                        text = timerViewModel.formattedTime,
-                                        fontSize = 48.sp,
-                                        fontWeight = FontWeight.W400,
-                                        modifier = Modifier.fillMaxWidth(),
-                                        textAlign = TextAlign.Center,
-                                        style = TextStyle(
-                                            fontFeatureSettings = "tnum"
+                                    Box(
+                                        modifier = Modifier.fillMaxSize(),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        ZenCirclesBreathing(
+                                            backgroundColor = surfaceColor,
+                                            scale = 1.8f,
+                                            modifier = Modifier.blur(
+                                                8.dp,
+                                                BlurredEdgeTreatment.Unbounded
+                                            ),
+                                            intensity = if (isAppInDarkTheme()) 2f else 1f
                                         )
-                                    )
+                                        Text(
+                                            text = timerViewModel.formattedTime,
+                                            fontSize = 48.sp,
+                                            fontWeight = FontWeight.W400,
+                                            modifier = Modifier.fillMaxWidth(),
+                                            textAlign = TextAlign.Center,
+                                            style = TextStyle(
+                                                fontFeatureSettings = "tnum"
+                                            )
+                                        )
+                                    }
                                 }
                                 CustomAnimatedVisibility(
                                     visible = !isTimerMode,
@@ -189,7 +206,7 @@ fun MindFlowScreen(
                                         innerIconSize = 24.dp
                                     )
                                 }
-                                ZenCirclesBreathing(backgroundColor = surfaceColor, scale = 1.8f)
+
                             }
                             Spacer(Modifier.height(12.dp))
                             Box(
