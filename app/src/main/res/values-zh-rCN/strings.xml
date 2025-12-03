@@ -105,4 +105,8 @@
     <string name="statistics">统计</string>
     <string name="min">%1$d 分钟</string>
     <string name="start">开始</string>
+    <string name="stopwatch">计时</string>
+    <string name="in_progress_timer">进行中</string>
+    <string name="counting_up">计时中</string>
+    <string name="paused">已暂停</string>
 </resources>

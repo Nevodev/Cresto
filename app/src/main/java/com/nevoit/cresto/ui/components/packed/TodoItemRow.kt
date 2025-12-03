@@ -1,7 +1,6 @@
 package com.nevoit.cresto.ui.components.packed
 
 import androidx.activity.compose.BackHandler
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -63,12 +62,10 @@ import com.nevoit.cresto.ui.components.glasense.GlasenseCheckbox
 import com.nevoit.cresto.ui.components.glasense.SwipeableActionButton
 import com.nevoit.cresto.ui.components.glasense.SwipeableContainer
 import com.nevoit.cresto.ui.components.glasense.SwipeableListState
-import com.nevoit.cresto.ui.components.myFadeIn
-import com.nevoit.cresto.ui.components.myFadeOut
-import com.nevoit.cresto.ui.components.myScaleIn
-import com.nevoit.cresto.ui.components.myScaleOut
 import com.nevoit.cresto.ui.theme.glasense.CalculatedColor
 import com.nevoit.cresto.ui.theme.glasense.Red500
+import com.nevoit.cresto.ui.theme.glasense.defaultEnterTransition
+import com.nevoit.cresto.ui.theme.glasense.defaultExitTransition
 import com.nevoit.cresto.ui.theme.glasense.getFlagColor
 import com.nevoit.cresto.util.g2
 import java.time.format.DateTimeFormatter
@@ -529,14 +526,8 @@ fun SubTodoItemRowAdd(
         Box(modifier = Modifier.size(24.dp)) {
             CustomAnimatedVisibility(
                 visible = isFocused,
-                enter = myFadeIn(animationSpec = tween(delayMillis = 100)) + myScaleIn(
-                    animationSpec = tween(delayMillis = 100),
-                    initialScale = 0.9f
-                ),
-                exit = myFadeOut(animationSpec = tween(durationMillis = 100)) + myScaleOut(
-                    animationSpec = tween(delayMillis = 100),
-                    targetScale = 0.9f
-                )
+                enter = defaultEnterTransition,
+                exit = defaultExitTransition
             ) {
                 GlasenseCheckbox(
                     checked = checked,
@@ -545,14 +536,8 @@ fun SubTodoItemRowAdd(
             }
             CustomAnimatedVisibility(
                 visible = !isFocused,
-                enter = myFadeIn(animationSpec = tween(delayMillis = 100)) + myScaleIn(
-                    animationSpec = tween(delayMillis = 100),
-                    initialScale = 0.9f
-                ),
-                exit = myFadeOut(animationSpec = tween(durationMillis = 100)) + myScaleOut(
-                    animationSpec = tween(delayMillis = 100),
-                    targetScale = 0.9f
-                )
+                enter = defaultEnterTransition,
+                exit = defaultExitTransition
             ) {
                 Icon(
                     modifier = Modifier

@@ -82,9 +82,9 @@ import com.nevoit.cresto.ui.components.glasense.RotatingGlow
 import com.nevoit.cresto.ui.components.glasense.RotatingGlowBorder
 import com.nevoit.cresto.ui.components.myFadeIn
 import com.nevoit.cresto.ui.components.myFadeOut
-import com.nevoit.cresto.ui.components.myScaleIn
-import com.nevoit.cresto.ui.components.myScaleOut
 import com.nevoit.cresto.ui.theme.glasense.AppButtonColors
+import com.nevoit.cresto.ui.theme.glasense.defaultEnterTransition
+import com.nevoit.cresto.ui.theme.glasense.defaultExitTransition
 import com.nevoit.cresto.ui.theme.glasense.gradientColorsDark
 import com.nevoit.cresto.ui.theme.glasense.gradientColorsLight
 import com.nevoit.cresto.ui.theme.glasense.highlightColorsDark
@@ -461,14 +461,8 @@ fun BottomSheet(
                             ) {
                                 CustomAnimatedVisibility(
                                     visible = !state.text.isBlank(),
-                                    enter = myFadeIn(animationSpec = tween(delayMillis = 100)) + myScaleIn(
-                                        animationSpec = tween(delayMillis = 100),
-                                        initialScale = 0.9f
-                                    ),
-                                    exit = myFadeOut(animationSpec = tween(durationMillis = 100)) + myScaleOut(
-                                        animationSpec = tween(delayMillis = 100),
-                                        targetScale = 0.9f
-                                    )
+                                    enter = defaultEnterTransition,
+                                    exit = defaultExitTransition
                                 ) {
                                     GlasenseButton(
                                         enabled = true,
@@ -518,14 +512,8 @@ fun BottomSheet(
                                 }
                                 CustomAnimatedVisibility(
                                     visible = state.text.isBlank(),
-                                    enter = myFadeIn(animationSpec = tween(delayMillis = 100)) + myScaleIn(
-                                        animationSpec = tween(delayMillis = 100),
-                                        initialScale = 0.9f
-                                    ),
-                                    exit = myFadeOut(animationSpec = tween(durationMillis = 100)) + myScaleOut(
-                                        animationSpec = tween(delayMillis = 100),
-                                        targetScale = 0.9f
-                                    )
+                                    enter = defaultEnterTransition,
+                                    exit = defaultExitTransition
                                 ) {
                                     GlasenseButton(
                                         enabled = true,

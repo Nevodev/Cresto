@@ -36,10 +36,6 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.nevoit.cresto.R
-import com.nevoit.cresto.ui.theme.glasense.Amber500
-import com.nevoit.cresto.ui.theme.glasense.Blue500
-import com.nevoit.cresto.ui.theme.glasense.Red500
-import com.nevoit.cresto.ui.theme.glasense.Violet500
 import kotlinx.coroutines.launch
 import kotlin.math.atan2
 import kotlin.math.cos
@@ -217,7 +213,7 @@ fun CircularTimer(
                 with(tomato) {
                     draw(
                         size = Size((innerIconSize * 0.9f).toPx(), (innerIconSize * 0.9f).toPx()),
-                        colorFilter = ColorFilter.tint(Red500)
+                        colorFilter = ColorFilter.tint(contentColor.copy(.2f))
                     )
                 }
             }
@@ -240,7 +236,7 @@ fun CircularTimer(
                 with(ecg) {
                     draw(
                         size = Size(innerIconSize.toPx(), innerIconSize.toPx()),
-                        colorFilter = ColorFilter.tint(Blue500)
+                        colorFilter = ColorFilter.tint(contentColor.copy(.2f))
                     )
                 }
             }
@@ -263,7 +259,7 @@ fun CircularTimer(
                 with(bolt) {
                     draw(
                         size = Size(innerIconSize.toPx(), innerIconSize.toPx()),
-                        colorFilter = ColorFilter.tint(Amber500)
+                        colorFilter = ColorFilter.tint(contentColor.copy(.2f))
                     )
                 }
             }
@@ -287,7 +283,7 @@ fun CircularTimer(
                     with(sparkles) {
                         draw(
                             size = Size(innerIconSize.toPx(), innerIconSize.toPx()),
-                            colorFilter = ColorFilter.tint(Violet500)
+                            colorFilter = ColorFilter.tint(contentColor.copy(.2f))
                         )
                     }
                 }

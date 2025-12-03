@@ -115,4 +115,8 @@
     <string name="statistics">Statistics</string>
     <string name="min">%1$d min</string>
     <string name="start">Start</string>
+    <string name="stopwatch">Stopwatch</string>
+    <string name="in_progress_timer">In Progress</string>
+    <string name="counting_up">Counting Up</string>
+    <string name="paused">Paused</string>
 </resources>

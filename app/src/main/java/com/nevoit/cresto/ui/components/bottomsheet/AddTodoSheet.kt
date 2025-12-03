@@ -2,7 +2,6 @@ package com.nevoit.cresto.ui.components.bottomsheet
 
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.spring
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.LocalOverscrollFactory
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.Orientation
@@ -57,13 +56,11 @@ import com.nevoit.cresto.toolkit.overscroll.OffsetOverscrollFactory
 import com.nevoit.cresto.ui.components.CustomAnimatedVisibility
 import com.nevoit.cresto.ui.components.glasense.GlasenseButton
 import com.nevoit.cresto.ui.components.glasense.GlasenseButtonAlt
-import com.nevoit.cresto.ui.components.myFadeIn
-import com.nevoit.cresto.ui.components.myFadeOut
-import com.nevoit.cresto.ui.components.myScaleIn
-import com.nevoit.cresto.ui.components.myScaleOut
 import com.nevoit.cresto.ui.components.packed.HorizontalFlagPicker
 import com.nevoit.cresto.ui.components.packed.HorizontalPresetDatePicker
 import com.nevoit.cresto.ui.theme.glasense.AppButtonColors
+import com.nevoit.cresto.ui.theme.glasense.defaultEnterTransition
+import com.nevoit.cresto.ui.theme.glasense.defaultExitTransition
 import com.nevoit.cresto.ui.theme.glasense.getFlagColor
 import com.nevoit.cresto.util.g2
 import java.time.LocalDate
@@ -298,14 +295,8 @@ fun AddTodoSheet(
                             // Animated visibility for the due date icon.
                             CustomAnimatedVisibility(
                                 visible = selectedButton != SelectedButton.DUE_DATE,
-                                enter = myFadeIn(animationSpec = tween(delayMillis = 100)) + myScaleIn(
-                                    animationSpec = tween(delayMillis = 100),
-                                    initialScale = 0.9f
-                                ),
-                                exit = myFadeOut(animationSpec = tween(durationMillis = 100)) + myScaleOut(
-                                    animationSpec = tween(delayMillis = 100),
-                                    targetScale = 0.9f
-                                )
+                                enter = defaultEnterTransition,
+                                exit = defaultExitTransition
                             ) {
                                 Icon(
                                     painter = painterResource(id = R.drawable.ic_calendar),
@@ -316,14 +307,8 @@ fun AddTodoSheet(
                             // Animated visibility for the date picker.
                             CustomAnimatedVisibility(
                                 visible = selectedButton == SelectedButton.DUE_DATE,
-                                enter = myFadeIn(animationSpec = tween(delayMillis = 100)) + myScaleIn(
-                                    animationSpec = tween(delayMillis = 100),
-                                    initialScale = 0.9f
-                                ),
-                                exit = myFadeOut(animationSpec = tween(durationMillis = 100)) + myScaleOut(
-                                    animationSpec = tween(delayMillis = 100),
-                                    targetScale = 0.9f
-                                )
+                                enter = defaultEnterTransition,
+                                exit = defaultExitTransition
                             ) {
                                 HorizontalPresetDatePicker(
                                     initialDate = finalDate,
@@ -361,14 +346,8 @@ fun AddTodoSheet(
                             // Animated visibility for the flag icon.
                             CustomAnimatedVisibility(
                                 visible = selectedButton != SelectedButton.FLAG,
-                                enter = myFadeIn(animationSpec = tween(delayMillis = 100)) + myScaleIn(
-                                    animationSpec = tween(delayMillis = 100),
-                                    initialScale = 0.9f
-                                ),
-                                exit = myFadeOut(animationSpec = tween(durationMillis = 100)) + myScaleOut(
-                                    animationSpec = tween(delayMillis = 100),
-                                    targetScale = 0.9f
-                                )
+                                enter = defaultEnterTransition,
+                                exit = defaultExitTransition
                             ) {
                                 val displayColor = getFlagColor(selectedIndex)
                                 Icon(
@@ -389,14 +368,8 @@ fun AddTodoSheet(
                             // Animated visibility for the flag picker.
                             CustomAnimatedVisibility(
                                 visible = selectedButton == SelectedButton.FLAG,
-                                enter = myFadeIn(animationSpec = tween(delayMillis = 100)) + myScaleIn(
-                                    animationSpec = tween(delayMillis = 100),
-                                    initialScale = 0.9f
-                                ),
-                                exit = myFadeOut(animationSpec = tween(durationMillis = 100)) + myScaleOut(
-                                    animationSpec = tween(delayMillis = 100),
-                                    targetScale = 0.9f
-                                )
+                                enter = defaultEnterTransition,
+                                exit = defaultExitTransition
                             ) {
                                 HorizontalFlagPicker(
                                     selectedIndex = selectedIndex,
