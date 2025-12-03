@@ -1,5 +1,6 @@
 package com.nevoit.cresto.ui.screens
 
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -10,6 +11,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -18,6 +20,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -28,26 +31,41 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.graphics.BlendMode
+import androidx.compose.ui.graphics.Brush.Companion.verticalGradient
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawOutline
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.kyant.capsule.ContinuousRoundedRectangle
 import com.nevoit.cresto.R
 import com.nevoit.cresto.data.todo.TodoViewModel
+import com.nevoit.cresto.ui.components.CustomAnimatedVisibility
 import com.nevoit.cresto.ui.components.glasense.GlasenseButtonAlt
 import com.nevoit.cresto.ui.components.glasense.GlasenseDynamicSmallTitle
 import com.nevoit.cresto.ui.components.glasense.GlasenseLoadingIndicator
 import com.nevoit.cresto.ui.components.glasense.GlasensePageHeader
+import com.nevoit.cresto.ui.components.myFadeIn
+import com.nevoit.cresto.ui.components.myFadeOut
+import com.nevoit.cresto.ui.components.myScaleIn
+import com.nevoit.cresto.ui.components.myScaleOut
 import com.nevoit.cresto.ui.components.packed.CardWithTitle
 import com.nevoit.cresto.ui.components.packed.CardWithoutTitle
 import com.nevoit.cresto.ui.components.packed.CircularTimer
 import com.nevoit.cresto.ui.components.packed.StrictText
 import com.nevoit.cresto.ui.theme.glasense.AppButtonColors
 import com.nevoit.cresto.ui.theme.glasense.CalculatedColor
+import com.nevoit.cresto.util.g2
 import dev.chrisbanes.haze.ExperimentalHazeApi
 import dev.chrisbanes.haze.hazeSource
 import dev.chrisbanes.haze.rememberHazeState
@@ -79,7 +97,9 @@ fun MindFlowScreen(viewModel: TodoViewModel) {
     val completedCount = todayStat?.count ?: 0
 
     var minutes by remember { mutableIntStateOf(25) }
+    val finalMinutes = if (minutes == 0) 1 else minutes
 
+    val isTimer = minutes == 0
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -139,29 +159,127 @@ fun MindFlowScreen(viewModel: TodoViewModel) {
                                     trackColor = backgroundColor,
                                     iconColor = MaterialTheme.colorScheme.onBackground.copy(.5f),
                                     contentColor = MaterialTheme.colorScheme.onBackground,
-                                    tomatoIcon = painterResource(R.drawable.ic_bell),
                                     innerIconSize = 24.dp
                                 )
                             }
                             Spacer(Modifier.height(12.dp))
-                            Text(
-                                text = "$minutes min",
-                                fontSize = 24.sp,
-                                fontWeight = FontWeight.W400,
-                            )
+                            Box(modifier = Modifier.fillMaxWidth()) {
+                                CustomAnimatedVisibility(
+                                    visible = isTimer,
+                                    enter = myFadeIn(animationSpec = tween(delayMillis = 100)) + myScaleIn(
+                                        animationSpec = tween(delayMillis = 100),
+                                        initialScale = 0.9f
+                                    ),
+                                    exit = myFadeOut(animationSpec = tween(durationMillis = 100)) + myScaleOut(
+                                        animationSpec = tween(delayMillis = 100),
+                                        targetScale = 0.9f
+                                    )
+                                ) {
+                                    Text(
+                                        text = "00:00",
+                                        fontSize = 24.sp,
+                                        fontWeight = FontWeight.W400,
+                                        modifier = Modifier.fillMaxWidth(),
+                                        textAlign = TextAlign.Center
+                                    )
+                                }
+                                CustomAnimatedVisibility(
+                                    visible = !isTimer,
+                                    enter = myFadeIn(animationSpec = tween(delayMillis = 100)) + myScaleIn(
+                                        animationSpec = tween(delayMillis = 100),
+                                        initialScale = 0.9f
+                                    ),
+                                    exit = myFadeOut(animationSpec = tween(durationMillis = 100)) + myScaleOut(
+                                        animationSpec = tween(delayMillis = 100),
+                                        targetScale = 0.9f
+                                    )
+                                ) {
+                                    Text(
+                                        text = stringResource(R.string.min, finalMinutes),
+                                        fontSize = 24.sp,
+                                        fontWeight = FontWeight.W400,
+                                        modifier = Modifier.fillMaxWidth(),
+                                        textAlign = TextAlign.Center
+                                    )
+                                }
+                            }
                             Spacer(Modifier.height(12.dp))
                             GlasenseButtonAlt(
-                                onClick = {},
+                                enabled = true,
+                                shape = ContinuousRoundedRectangle(12.dp, g2),
+                                onClick = { },
                                 modifier = Modifier
-                                    .height(32.dp)
-                                    .width(96.dp),
+                                    .height(48.dp)
+                                    .width(96.dp)
+                                    .drawBehind() {
+                                        val outline =
+                                            ContinuousRoundedRectangle(12.dp, g2).createOutline(
+                                                size,
+                                                LayoutDirection.Ltr,
+                                                density
+                                            )
+                                        val gradientBrush = verticalGradient(
+                                            colorStops = arrayOf(
+                                                0.0f to Color.White.copy(alpha = 0.2f),
+                                                1.0f to Color.White.copy(alpha = 0.02f)
+                                            )
+                                        )
+                                        drawOutline(
+                                            outline = outline,
+                                            brush = gradientBrush,
+                                            style = Stroke(width = 3.dp.toPx()),
+                                            blendMode = BlendMode.Plus
+                                        )
+                                    },
                                 colors = AppButtonColors.primary()
                             ) {
-                                Text(
-                                    text = "Start",
-                                    fontWeight = FontWeight.W500,
-                                    fontSize = 16.sp
-                                )
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.Center,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Box(modifier = Modifier.size(24.dp)) {
+                                        CustomAnimatedVisibility(
+                                            visible = isTimer,
+                                            enter = myFadeIn(animationSpec = tween(delayMillis = 100)) + myScaleIn(
+                                                animationSpec = tween(delayMillis = 100),
+                                                initialScale = 0.9f
+                                            ),
+                                            exit = myFadeOut(animationSpec = tween(durationMillis = 100)) + myScaleOut(
+                                                animationSpec = tween(delayMillis = 100),
+                                                targetScale = 0.9f
+                                            )
+                                        ) {
+                                            Icon(
+                                                painter = painterResource(R.drawable.ic_timer),
+                                                contentDescription = null,
+                                                modifier = Modifier.size(24.dp)
+                                            )
+                                        }
+                                        CustomAnimatedVisibility(
+                                            visible = !isTimer,
+                                            enter = myFadeIn(animationSpec = tween(delayMillis = 100)) + myScaleIn(
+                                                animationSpec = tween(delayMillis = 100),
+                                                initialScale = 0.9f
+                                            ),
+                                            exit = myFadeOut(animationSpec = tween(durationMillis = 100)) + myScaleOut(
+                                                animationSpec = tween(delayMillis = 100),
+                                                targetScale = 0.9f
+                                            )
+                                        ) {
+                                            Icon(
+                                                painter = painterResource(R.drawable.ic_hourglass),
+                                                contentDescription = null,
+                                                modifier = Modifier.size(24.dp)
+                                            )
+                                        }
+                                    }
+                                    Spacer(modifier = Modifier.width(4.dp))
+                                    Text(
+                                        text = stringResource(R.string.start),
+                                        style = MaterialTheme.typography.bodyMedium
+                                    )
+                                }
                             }
                         }
                     }

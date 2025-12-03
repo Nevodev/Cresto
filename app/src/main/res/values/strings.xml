@@ -113,4 +113,6 @@
     <string name="version">Version</string>
     <string name="today_stat">Today</string>
     <string name="statistics">Statistics</string>
+    <string name="min">%1$d min</string>
+    <string name="start">Start</string>
 </resources>

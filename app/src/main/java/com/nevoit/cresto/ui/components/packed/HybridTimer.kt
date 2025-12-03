@@ -24,10 +24,22 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.drawText
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.nevoit.cresto.R
+import com.nevoit.cresto.ui.theme.glasense.Amber500
+import com.nevoit.cresto.ui.theme.glasense.Blue500
 import com.nevoit.cresto.ui.theme.glasense.Red500
+import com.nevoit.cresto.ui.theme.glasense.Violet500
 import kotlinx.coroutines.launch
 import kotlin.math.atan2
 import kotlin.math.cos
@@ -42,7 +54,6 @@ fun CircularTimer(
     onMinutesChange: (Int) -> Unit,
     startIcon: Painter,
     endIcon: Painter,
-    tomatoIcon: Painter,
     primaryColor: Color = MaterialTheme.colorScheme.primary,
     knobSize: Dp,
     iconSize: Dp,
@@ -59,6 +70,20 @@ fun CircularTimer(
     var isDragging by remember { mutableStateOf(false) }
     val angleAnimatable = remember { Animatable(currentMinutes * 6f) }
     var currentSnapedMinute by remember { mutableIntStateOf(currentMinutes) }
+
+    val textMeasurer = rememberTextMeasurer()
+    val textStyle = TextStyle(
+        color = contentColor.copy(.5f),
+        fontWeight = FontWeight.Bold,
+        fontSize = 12.sp
+    )
+
+    val tomato = painterResource(R.drawable.ic_tomato)
+    val ecg = painterResource(R.drawable.ic_ecg)
+    val bolt = painterResource(R.drawable.ic_bolt)
+    val sparkles = painterResource(R.drawable.ic_sparkles)
+
+    val haptic = LocalHapticFeedback.current
 
     Canvas(
         modifier = modifier
@@ -129,6 +154,7 @@ fun CircularTimer(
                                 }
 
                                 currentSnapedMinute = targetMinute
+                                haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                                 onMinutesChange(targetMinute)
                             }
                         }
@@ -172,8 +198,9 @@ fun CircularTimer(
 
 
         val offsetDistance = 16.dp.toPx()
-        val iconRadius = innerClockRadius - offsetDistance - innerIconSize.toPx() / 2
+        val iconRadius = innerClockRadius - offsetDistance - innerIconSize.toPx() / 4
 
+        // tomato
         run {
             val targetMinute = 25
             val iconAngleDeg = targetMinute * 6f - 90f
@@ -182,16 +209,117 @@ fun CircularTimer(
             val iconX = center.x + (iconRadius * cos(iconAngleRad)).toFloat()
             val iconY = center.y + (iconRadius * sin(iconAngleRad)).toFloat()
 
+
             translate(
                 left = iconX - innerIconSize.toPx() / 2,
                 top = iconY - innerIconSize.toPx() / 2
             ) {
-                with(tomatoIcon) {
+                with(tomato) {
                     draw(
-                        size = Size(innerIconSize.toPx(), innerIconSize.toPx()),
+                        size = Size((innerIconSize * 0.9f).toPx(), (innerIconSize * 0.9f).toPx()),
                         colorFilter = ColorFilter.tint(Red500)
                     )
                 }
+            }
+        }
+
+        // flow
+        run {
+            val targetMinute = 10
+            val iconAngleDeg = targetMinute * 6f - 90f
+            val iconAngleRad = Math.toRadians(iconAngleDeg.toDouble())
+
+            val iconX = center.x + (iconRadius * cos(iconAngleRad)).toFloat()
+            val iconY = center.y + (iconRadius * sin(iconAngleRad)).toFloat()
+
+
+            translate(
+                left = iconX - innerIconSize.toPx() / 2,
+                top = iconY - innerIconSize.toPx() / 2
+            ) {
+                with(ecg) {
+                    draw(
+                        size = Size(innerIconSize.toPx(), innerIconSize.toPx()),
+                        colorFilter = ColorFilter.tint(Blue500)
+                    )
+                }
+            }
+        }
+
+        // bolt
+        run {
+            val targetMinute = 55
+            val iconAngleDeg = targetMinute * 6f - 90f
+            val iconAngleRad = Math.toRadians(iconAngleDeg.toDouble())
+
+            val iconX = center.x + (iconRadius * cos(iconAngleRad)).toFloat()
+            val iconY = center.y + (iconRadius * sin(iconAngleRad)).toFloat()
+
+
+            translate(
+                left = iconX - innerIconSize.toPx() / 2,
+                top = iconY - innerIconSize.toPx() / 2
+            ) {
+                with(bolt) {
+                    draw(
+                        size = Size(innerIconSize.toPx(), innerIconSize.toPx()),
+                        colorFilter = ColorFilter.tint(Amber500)
+                    )
+                }
+            }
+        }
+
+        // sparkles
+        run {
+            val targetMinute = listOf(40)
+            for (minute in targetMinute) {
+                val iconAngleDeg = minute * 6f - 90f
+                val iconAngleRad = Math.toRadians(iconAngleDeg.toDouble())
+
+                val iconX = center.x + (iconRadius * cos(iconAngleRad)).toFloat()
+                val iconY = center.y + (iconRadius * sin(iconAngleRad)).toFloat()
+
+
+                translate(
+                    left = iconX - innerIconSize.toPx() / 2,
+                    top = iconY - innerIconSize.toPx() / 2
+                ) {
+                    with(sparkles) {
+                        draw(
+                            size = Size(innerIconSize.toPx(), innerIconSize.toPx()),
+                            colorFilter = ColorFilter.tint(Violet500)
+                        )
+                    }
+                }
+            }
+        }
+        val textRadius = innerClockRadius - offsetDistance - innerIconSize.toPx() / 4
+        val keyPoints = listOf(0, 15, 30, 45)
+
+        run {
+            for (minute in keyPoints) {
+                val angleDeg = minute * 6f - 90f
+                val angleRad = Math.toRadians(angleDeg.toDouble())
+
+                val textCx = center.x + (textRadius * cos(angleRad)).toFloat()
+                val textCy = center.y + (textRadius * sin(angleRad)).toFloat()
+
+                val text = minute.toString()
+
+                val textSize = textMeasurer.measure(
+                    text = text,
+                    style = textStyle
+                ).size
+
+                drawText(
+                    textMeasurer = textMeasurer,
+                    text = text,
+                    style = textStyle,
+                    topLeft = Offset(
+                        textCx - textSize.width / 2,
+                        textCy - textSize.height / 2
+                    )
+                )
             }
         }
 
@@ -220,7 +348,7 @@ fun CircularTimer(
             val tickWidth = 2.dp.toPx()
 
             val isHighlighted = i * 6f <= angleAnimatable.value && currentMinutes != 0
-            val color = if (isHighlighted) primaryColor.copy(.5f) else contentColor.copy(.1f)
+            val color = if (isHighlighted) contentColor.copy(.1f) else Color.Transparent
 
             val lineStartRadius = radius + tickLength / 2
             val lineEndRadius = radius - tickLength / 2

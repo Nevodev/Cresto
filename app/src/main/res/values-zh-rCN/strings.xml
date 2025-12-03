@@ -103,4 +103,6 @@
     <string name="version">版本</string>
     <string name="today_stat">今日</string>
     <string name="statistics">统计</string>
+    <string name="min">%1$d 分钟</string>
+    <string name="start">开始</string>
 </resources>
