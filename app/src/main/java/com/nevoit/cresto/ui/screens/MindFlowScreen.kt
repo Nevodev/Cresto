@@ -52,6 +52,7 @@ import com.nevoit.cresto.ui.components.packed.CardWithTitle
 import com.nevoit.cresto.ui.components.packed.CardWithoutTitle
 import com.nevoit.cresto.ui.components.packed.CircularTimer
 import com.nevoit.cresto.ui.components.packed.StrictText
+import com.nevoit.cresto.ui.components.packed.ZenCirclesBreathing
 import com.nevoit.cresto.ui.theme.glasense.AppButtonColors
 import com.nevoit.cresto.ui.theme.glasense.CalculatedColor
 import com.nevoit.cresto.ui.theme.glasense.Red500
@@ -188,6 +189,7 @@ fun MindFlowScreen(
                                         innerIconSize = 24.dp
                                     )
                                 }
+                                ZenCirclesBreathing(backgroundColor = surfaceColor, scale = 1.8f)
                             }
                             Spacer(Modifier.height(12.dp))
                             Box(
@@ -221,7 +223,7 @@ fun MindFlowScreen(
                                     )
                                 }
                                 CustomAnimatedVisibility(
-                                    visible = !isStopwatch && !isRunning,
+                                    visible = !isStopwatch && !isRunning && !isFinished,
                                     enter = defaultEnterTransition,
                                     exit = defaultExitTransition
                                 ) {
@@ -234,6 +236,19 @@ fun MindFlowScreen(
                                         style = TextStyle(
                                             fontFeatureSettings = "tnum"
                                         )
+                                    )
+                                }
+                                CustomAnimatedVisibility(
+                                    visible = isFinished,
+                                    enter = defaultEnterTransition,
+                                    exit = defaultExitTransition
+                                ) {
+                                    Text(
+                                        text = stringResource(R.string.finished),
+                                        fontSize = 24.sp,
+                                        fontWeight = FontWeight.W400,
+                                        modifier = Modifier.fillMaxWidth(),
+                                        textAlign = TextAlign.Center,
                                     )
                                 }
                                 CustomAnimatedVisibility(

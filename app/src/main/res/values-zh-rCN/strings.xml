@@ -109,4 +109,5 @@
     <string name="in_progress_timer">进行中</string>
     <string name="counting_up">计时中</string>
     <string name="paused">已暂停</string>
+    <string name="finished">已结束</string>
 </resources>
