@@ -36,11 +36,16 @@ class ModeTimerViewModel : ViewModel() {
 
     private var timerJob: Job? = null
 
+    private var resetJob: Job? = null
+
     fun updateSetupTime(minutes: Int) {
         setupMinutes = minutes
     }
 
     fun startTimer() {
+        resetJob?.cancel()
+        resetJob = null
+
         if (setupMinutes == 0) {
             isStopwatchMode = true
             currentSeconds = 0
@@ -82,6 +87,7 @@ class ModeTimerViewModel : ViewModel() {
                     } else {
                         currentSeconds = 0
                         isFinished = true
+                        isPaused = true
                         this.cancel()
                     }
                 }
@@ -105,10 +111,16 @@ class ModeTimerViewModel : ViewModel() {
     fun exitTimerMode() {
         timerJob?.cancel()
         timerJob = null
+        resetJob?.cancel()
+
         isTimerMode = false
         isPaused = false
         isFinished = false
-        currentSeconds = 0
+        resetJob = viewModelScope.launch {
+            delay(500)
+            currentSeconds = 0
+            resetJob = null
+        }
     }
 
     fun confirmFinish() {

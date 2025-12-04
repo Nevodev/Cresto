@@ -1,5 +1,6 @@
 package com.nevoit.cresto.ui.screens
 
+import androidx.compose.animation.Animatable
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.EaseInOutSine
@@ -31,11 +32,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.BlurredEdgeTreatment
 import androidx.compose.ui.draw.blur
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalDensity
@@ -62,18 +68,26 @@ import com.nevoit.cresto.ui.components.packed.CircularTimer
 import com.nevoit.cresto.ui.components.packed.StrictText
 import com.nevoit.cresto.ui.components.packed.ZenCirclesBreathing
 import com.nevoit.cresto.ui.theme.glasense.AppButtonColors
-import com.nevoit.cresto.ui.theme.glasense.Blue500
+import com.nevoit.cresto.ui.theme.glasense.Blue600
 import com.nevoit.cresto.ui.theme.glasense.CalculatedColor
+import com.nevoit.cresto.ui.theme.glasense.Cyan500
+import com.nevoit.cresto.ui.theme.glasense.Green500
 import com.nevoit.cresto.ui.theme.glasense.Red500
+import com.nevoit.cresto.ui.theme.glasense.Rose500
+import com.nevoit.cresto.ui.theme.glasense.Yellow500
 import com.nevoit.cresto.ui.theme.glasense.defaultEnterTransition
 import com.nevoit.cresto.ui.theme.glasense.defaultExitTransition
+import com.nevoit.cresto.ui.theme.glasense.elegantEnterTransition
 import com.nevoit.cresto.ui.theme.glasense.glasenseHighlight
 import com.nevoit.cresto.ui.theme.glasense.isAppInDarkTheme
+import com.nevoit.cresto.ui.theme.glasense.strongEnterTransition
+import com.nevoit.cresto.ui.theme.glasense.strongExitTransition
 import com.nevoit.cresto.ui.viewmodel.ModeTimerViewModel
 import com.nevoit.cresto.util.g2
 import dev.chrisbanes.haze.ExperimentalHazeApi
 import dev.chrisbanes.haze.hazeSource
 import dev.chrisbanes.haze.rememberHazeState
+import kotlinx.coroutines.launch
 import java.time.LocalDate
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalHazeApi::class)
@@ -105,7 +119,14 @@ fun MindFlowScreen(
     val completedCount = todayStat?.count ?: 0
 
     val setupMinutes = timerViewModel.setupMinutes
-    val finalMinutes = if (setupMinutes == 0) 1 else setupMinutes
+    var lastNonZeroMinutes by remember { mutableIntStateOf(1) }
+
+    if (setupMinutes != 0) {
+        lastNonZeroMinutes = setupMinutes
+    }
+
+    val finalMinutes = lastNonZeroMinutes
+
     val isStopwatch = setupMinutes == 0
     val isRunning = timerViewModel.isRunning
     val isTimerMode = timerViewModel.isTimerMode
@@ -113,15 +134,61 @@ fun MindFlowScreen(
     val isPaused = timerViewModel.isPaused
 
     val scaleAni = remember { Animatable(if (isTimerMode) 1.8f else 0f) }
+    var isShaderInComposition by remember { mutableStateOf(isTimerMode) }
 
     LaunchedEffect(isTimerMode) {
         if (isTimerMode) {
-            scaleAni.animateTo(1.8f, tween(2000, 100, EaseOutExpo))
+            isShaderInComposition = true
+            scaleAni.animateTo(1.8f, tween(2000, 200, EaseOutExpo))
         }
         if (!isTimerMode) {
-            scaleAni.animateTo(0f, tween(500, 0, EaseInOutSine))
+            scaleAni.animateTo(0f, tween(400, 0, EaseInOutSine))
+            isShaderInComposition = false
         }
     }
+
+    val scope = rememberCoroutineScope()
+
+    val colorA = if (isAppInDarkTheme()) Blue600 else Color(0xFF00E6FF)
+    val colorB = Color(0xFF9980FF)
+    val colorAAnimated =
+        remember { Animatable(if (!isFinished && !isPaused) colorA else if (!isFinished) Yellow500 else Green500) }
+    val colorBAnimated =
+        remember { Animatable(if (!isFinished && !isPaused) colorB else if (!isFinished) Rose500 else Cyan500) }
+
+    val breathAmp = remember { Animatable(if (isPaused) 0f else 0.068f) }
+    val layerGap = remember { Animatable(if (isPaused) 0.014f else 0.007f) }
+
+    LaunchedEffect(isFinished) {
+        if (isFinished) {
+            scope.launch { colorAAnimated.animateTo(Green500, tween(1000)) }
+            scope.launch { colorBAnimated.animateTo(Cyan500, tween(1000)) }
+        }
+        if (!isFinished) {
+            scope.launch { colorAAnimated.animateTo(colorA, tween(1000)) }
+            scope.launch { colorBAnimated.animateTo(colorB, tween(1000)) }
+        }
+    }
+
+    LaunchedEffect(isPaused) {
+        if (!isFinished && isPaused) {
+            scope.launch { colorAAnimated.animateTo(Yellow500, tween(1000)) }
+            scope.launch { colorBAnimated.animateTo(Rose500, tween(1000)) }
+        }
+        if (!isFinished && !isPaused) {
+            scope.launch { colorAAnimated.animateTo(colorA, tween(1000)) }
+            scope.launch { colorBAnimated.animateTo(colorB, tween(1000)) }
+        }
+        if (isPaused) {
+            scope.launch { breathAmp.animateTo(0f, tween(1000)) }
+            scope.launch { layerGap.animateTo(0.014f, tween(1000)) }
+        }
+        if (!isPaused) {
+            scope.launch { breathAmp.animateTo(0.068f, tween(1000)) }
+            scope.launch { layerGap.animateTo(0.007f, tween(1000)) }
+        }
+    }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -154,6 +221,7 @@ fun MindFlowScreen(
                 Row(modifier = Modifier) {
                     CardWithoutTitle(
                         modifier = Modifier
+                            .clip(ContinuousRoundedRectangle(12.dp, g2))
                             .weight(1f)
                             .animateContentSize()
                     ) {
@@ -169,28 +237,36 @@ fun MindFlowScreen(
                                     .size(288.dp),
                                 contentAlignment = Alignment.Center
                             ) {
+                                if (isShaderInComposition) {
+                                    ZenCirclesBreathing(
+                                        backgroundColor = surfaceColor,
+                                        colorA = colorAAnimated.value,
+                                        colorB = colorBAnimated.value,
+                                        scale = 1f,
+                                        modifier = Modifier
+                                            .graphicsLayer {
+                                                alpha = scaleAni.value / 1.8f
+                                                scaleX = 3.8f - scaleAni.value
+                                                scaleY = 3.8f - scaleAni.value
+                                            }
+                                            .blur(
+                                                8.dp,
+                                                BlurredEdgeTreatment.Unbounded
+                                            ),
+                                        intensity = if (isAppInDarkTheme()) .4f else .2f,
+                                        breathAmp = breathAmp.value,
+                                        layerGap = layerGap.value
+                                    )
+                                }
                                 CustomAnimatedVisibility(
                                     visible = isTimerMode,
-                                    enter = defaultEnterTransition,
+                                    enter = elegantEnterTransition,
                                     exit = defaultExitTransition
                                 ) {
                                     Box(
                                         modifier = Modifier.fillMaxSize(),
                                         contentAlignment = Alignment.Center
                                     ) {
-                                        ZenCirclesBreathing(
-                                            backgroundColor = surfaceColor,
-                                            colorA = if (isAppInDarkTheme()) Blue500 else Color(
-                                                0xFF00E6FF
-                                            ),
-                                            scale = scaleAni.value,
-                                            modifier = Modifier
-                                                .blur(
-                                                    8.dp,
-                                                    BlurredEdgeTreatment.Unbounded
-                                                ),
-                                            intensity = if (isAppInDarkTheme()) .4f else .3f
-                                        )
                                         Text(
                                             text = timerViewModel.formattedTime,
                                             fontSize = 48.sp,
@@ -205,8 +281,8 @@ fun MindFlowScreen(
                                 }
                                 CustomAnimatedVisibility(
                                     visible = !isTimerMode,
-                                    enter = defaultEnterTransition,
-                                    exit = defaultExitTransition
+                                    enter = strongEnterTransition,
+                                    exit = strongExitTransition
                                 ) {
                                     CircularTimer(
                                         modifier = Modifier
@@ -447,59 +523,80 @@ fun MindFlowScreen(
             item {
                 Spacer(Modifier.height(12.dp))
             }
+//            item {
+//                CardWithTitle(
+//                    title = stringResource(R.string.brain_dump),
+//                    icon = painterResource(R.drawable.ic_mini_analytics),
+//                    modifier = Modifier
+//                        .fillMaxWidth()
+//                        .height(128.dp)
+//                ) { }
+//            }
+//            item {
+//                Spacer(Modifier.height(12.dp))
+//            }
             item {
-                Row(modifier = Modifier.height(160.dp)) {
-                    CardWithTitle(
-                        title = stringResource(R.string.today_stat),
-                        icon = painterResource(R.drawable.ic_mini_checkmark_seal),
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxSize(),
-                            horizontalAlignment = Alignment.Start,
-                            verticalArrangement = Arrangement.SpaceBetween
+                CustomAnimatedVisibility(
+                    visible = !isRunning,
+                    enter = defaultEnterTransition,
+                    exit = defaultExitTransition
+                ) {
+                    Row(modifier = Modifier.height(160.dp)) {
+                        CardWithTitle(
+                            title = stringResource(R.string.today_stat),
+                            icon = painterResource(R.drawable.ic_mini_checkmark_seal),
+                            modifier = Modifier.weight(1f)
                         ) {
                             Column(
                                 modifier = Modifier
-                                    .weight(1f),
-                                horizontalAlignment = Alignment.Start
+                                    .fillMaxSize(),
+                                horizontalAlignment = Alignment.Start,
+                                verticalArrangement = Arrangement.SpaceBetween
                             ) {
-                                StrictText(
-                                    text = "$completedCount",
-                                    fontSize = 48.sp,
-                                    lineHeight = 48.sp,
-                                    letterSpacing = (-2).sp,
-                                    fontWeight = FontWeight.W300,
-                                    modifier = Modifier.padding(top = 8.dp)
-                                )
+                                Column(
+                                    modifier = Modifier
+                                        .weight(1f),
+                                    horizontalAlignment = Alignment.Start
+                                ) {
+                                    StrictText(
+                                        text = "$completedCount",
+                                        fontSize = 48.sp,
+                                        lineHeight = 48.sp,
+                                        letterSpacing = (-2).sp,
+                                        fontWeight = FontWeight.W300,
+                                        modifier = Modifier.padding(top = 8.dp)
+                                    )
+                                    Text(
+                                        text = stringResource(R.string.completed),
+                                        fontSize = 14.sp,
+                                        lineHeight = 14.sp,
+                                        color = MaterialTheme.colorScheme.onBackground.copy(.5f),
+                                        modifier = Modifier.padding(top = 4.dp)
+                                    )
+                                }
                                 Text(
-                                    text = stringResource(R.string.completed),
+                                    text = "Great!",
                                     fontSize = 14.sp,
                                     lineHeight = 14.sp,
-                                    color = MaterialTheme.colorScheme.onBackground.copy(.5f),
-                                    modifier = Modifier.padding(top = 4.dp)
+                                    color = MaterialTheme.colorScheme.onBackground.copy(.5f)
                                 )
                             }
-                            Text(
-                                text = "Great!",
-                                fontSize = 14.sp,
-                                lineHeight = 14.sp,
-                                color = MaterialTheme.colorScheme.onBackground.copy(.5f)
+                        }
+                        Spacer(Modifier.width(12.dp))
+                        CardWithTitle(
+                            title = stringResource(R.string.statistics),
+                            icon = painterResource(R.drawable.ic_mini_analytics),
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            GlasenseLoadingIndicator(
+                                modifier = Modifier.fillMaxSize(),
+                                size = 24.dp
                             )
                         }
                     }
-                    Spacer(Modifier.width(12.dp))
-                    CardWithTitle(
-                        title = stringResource(R.string.statistics),
-                        icon = painterResource(R.drawable.ic_mini_analytics),
-                        modifier = Modifier.weight(1f)
-                    ) { GlasenseLoadingIndicator(modifier = Modifier.fillMaxSize(), size = 24.dp) }
                 }
             }
-            item {
 
-            }
         }
         GlasenseDynamicSmallTitle(
             modifier = Modifier.align(Alignment.TopCenter),

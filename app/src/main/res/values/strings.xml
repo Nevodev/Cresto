@@ -120,4 +120,5 @@
     <string name="counting_up">Counting Up</string>
     <string name="paused">Paused</string>
     <string name="finished">Finished</string>
+    <string name="brain_dump">Brain Dump</string>
 </resources>

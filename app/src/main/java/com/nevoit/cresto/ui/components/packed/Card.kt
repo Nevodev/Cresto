@@ -93,7 +93,7 @@ fun CardWithoutTitle(
 ) {
     val hierarchicalSurfaceColor = CalculatedColor.hierarchicalSurfaceColor
     Box(
-        modifier = Modifier
+        modifier = modifier
             .background(
                 color = hierarchicalSurfaceColor,
                 shape = ContinuousRoundedRectangle(12.dp, g2)
