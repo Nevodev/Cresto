@@ -19,7 +19,7 @@ fun formatRelativeTime(dateTime: LocalDateTime, context: Context): String {
         )
 
         duration.toDays() < 1 -> context.resources.getQuantityString(
-            R.plurals.minutes_ago,
+            R.plurals.hours_ago,
             duration.toHours().toInt(),
             duration.toHours()
         )
