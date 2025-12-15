@@ -4,5 +4,5 @@ plugins {
     alias(libs.plugins.kotlin.android) apply false
     alias(libs.plugins.kotlin.compose) apply false
     id("com.google.devtools.ksp") version "2.2.20-2.0.4" apply false
-    id("org.jetbrains.kotlin.plugin.serialization") version "2.2.20" apply false
+    id("org.jetbrains.kotlin.plugin.serialization") version "2.2.21" apply false
 }
