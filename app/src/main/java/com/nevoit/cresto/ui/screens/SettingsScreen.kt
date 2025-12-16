@@ -29,7 +29,6 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.nevoit.cresto.R
 import com.nevoit.cresto.ui.components.glasense.GlasenseDynamicSmallTitle
 import com.nevoit.cresto.ui.components.glasense.GlasensePageHeader
@@ -45,14 +44,13 @@ import com.nevoit.cresto.ui.theme.glasense.CalculatedColor
 import com.nevoit.cresto.ui.theme.glasense.Pink400
 import com.nevoit.cresto.ui.theme.glasense.Purple500
 import com.nevoit.cresto.ui.theme.glasense.Slate500
-import com.nevoit.cresto.ui.viewmodel.AiViewModel
 import dev.chrisbanes.haze.ExperimentalHazeApi
 import dev.chrisbanes.haze.hazeSource
 import dev.chrisbanes.haze.rememberHazeState
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalHazeApi::class)
 @Composable
-fun SettingsScreen(aiViewModel: AiViewModel = viewModel()) {
+fun SettingsScreen() {
     val statusBarHeight = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
     val density = LocalDensity.current
     val thresholdPx = if (statusBarHeight > 0.dp) {

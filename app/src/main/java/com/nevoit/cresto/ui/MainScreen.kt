@@ -287,7 +287,6 @@ fun MainScreen() {
                         transformOrigin = TransformOrigin(0f, 0f)
                     },
                 alphaAni = { alphaAni.value },
-                scaleAni = { scaleAni.value }
             )
         }
         if (bottomSheetState.isVisible) {

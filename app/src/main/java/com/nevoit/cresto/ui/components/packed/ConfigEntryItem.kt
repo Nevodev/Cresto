@@ -91,7 +91,7 @@ fun ConfigEntryItem(
             1f
         }
     }
-    val context = LocalContext.current
+    val enterIconText = stringResource(R.string.enter_icon)
     // The main row layout for the item.
     Row(
         modifier = Modifier
@@ -167,7 +167,7 @@ fun ConfigEntryItem(
             Icon(
                 painter = painterResource(R.drawable.ic_forward),
                 tint = MaterialTheme.colorScheme.onBackground.copy(.2f),
-                contentDescription = context.getString(R.string.enter_icon),
+                contentDescription = enterIconText,
                 modifier = Modifier
                     .align(Alignment.CenterVertically)
                     .height(40.dp)
@@ -201,6 +201,9 @@ fun AboutEntryItem(
     val scope = rememberCoroutineScope()
 
     val context = LocalContext.current
+
+    val versionText = stringResource(R.string.version)
+    val enterIconText = stringResource(R.string.enter_icon)
 
     // Retrieve package information to get the app version name.
     val packageInfo: PackageInfo? = remember {
@@ -271,7 +274,7 @@ fun AboutEntryItem(
                 color = MaterialTheme.colorScheme.onBackground.copy(.5f),
             )
             Text(
-                text = "${context.getString(R.string.version)} ${packageInfo?.versionName}",
+                text = "$versionText ${packageInfo?.versionName}",
                 fontSize = 12.sp,
                 lineHeight = 12.sp,
                 fontWeight = FontWeight.W400,
@@ -283,7 +286,7 @@ fun AboutEntryItem(
         Icon(
             painter = painterResource(R.drawable.ic_forward),
             tint = MaterialTheme.colorScheme.onBackground.copy(.2f),
-            contentDescription = context.getString(R.string.enter_icon),
+            contentDescription = enterIconText,
             modifier = Modifier
                 .align(Alignment.CenterVertically)
                 .height(40.dp)

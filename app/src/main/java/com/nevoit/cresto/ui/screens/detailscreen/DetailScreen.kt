@@ -53,6 +53,7 @@ import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -590,14 +591,14 @@ fun DetailScreen(
                     )
                 )
                 val subTodoCount = itemWithSubTodos?.subTodos?.size ?: 0
-
+                val deleteTodoSimpleText = stringResource(R.string.delete_todo_simple)
+                val deletePluralsText =
+                    pluralStringResource(R.plurals.delete_todo_with_subtasks, subTodoCount)
+                val deleteCurrentTodoText = stringResource(R.string.delete_current_todo)
                 val message = if (subTodoCount == 0) {
-                    context.getString(R.string.delete_todo_simple)
+                    deleteTodoSimpleText
                 } else {
-                    context.resources.getQuantityString(
-                        R.plurals.delete_todo_with_subtasks,
-                        subTodoCount
-                    )
+                    deletePluralsText
                 }
                 GlasenseButton(
                     enabled = true,
@@ -605,7 +606,7 @@ fun DetailScreen(
                     onClick = {
                         showDialog(
                             deleteDialogItems,
-                            context.getString(R.string.delete_current_todo),
+                            deleteCurrentTodoText,
                             message
                         )
                     },

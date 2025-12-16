@@ -22,17 +22,19 @@ import dev.chrisbanes.haze.HazeInputScale
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.hazeEffect
 
+
 /**
- * A dynamic small title bar that appears with an animation.
- * It includes a background with a haze effect and a gradient mask.
+ * It's designed to sit at the bottom of the screen, often behind navigation controls,
+ * providing a blurred and gradient-masked background for its content.
+ * The bar's visibility can be animated.
  *
- * @param modifier The modifier to be applied to the container.
- * @param title The text to display as the title.
- * @param statusBarHeight The height of the system status bar.
- * @param isVisible Whether the title should be visible.
- * @param hazeState The state for the haze effect.
- * @param surfaceColor The color of the surface behind the title.
- * @param content The main content to be displayed below the title bar.
+ * @param modifier The modifier to be applied to the main container.
+ * @param navigationBarHeight The height of the system navigation bar, used to correctly position the effect.
+ * @param height The specific height of the bottom bar itself, excluding the navigation bar area.
+ * @param isVisible Controls the visibility of the bar, with fade-in/fade-out animations.
+ * @param hazeState The state object from the Haze library to manage the blur effect.
+ * @param surfaceColor The color of the surface that the gradient mask will fade to/from.
+ * @param content The composable content to be displayed within the bottom bar area.
  */
 @OptIn(ExperimentalHazeApi::class)
 @Composable

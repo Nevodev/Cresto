@@ -29,6 +29,7 @@ import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -39,7 +40,6 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.nevoit.cresto.R
@@ -69,7 +69,6 @@ fun HorizontalFlagPicker(
     selectedIndex: Int,
     onIndexSelected: (Int) -> Unit,
 ) {
-    val context = LocalContext.current
     val colors = listOf(
         Color.Transparent,
         Red500,
@@ -80,6 +79,7 @@ fun HorizontalFlagPicker(
         Purple500,
         Gray500
     )
+    val noneText = stringResource(R.string.none)
     Box(modifier = Modifier.fillMaxSize()) {
         LazyRow(
             horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -91,7 +91,7 @@ fun HorizontalFlagPicker(
             itemsIndexed(colors) { index, color ->
                 if (index == 0) {
                     SelectorBox(
-                        text = context.getString(R.string.none),
+                        text = noneText,
                         isSelected = (selectedIndex == 0),
                         onClick = { onIndexSelected(index) }
                     )
@@ -234,7 +234,7 @@ fun HorizontalPresetDatePicker(
     onDateSelected: (LocalDate?) -> Unit
 ) {
     var selectedDate by remember { mutableStateOf(initialDate) }
-    var selectedPreset by remember { mutableStateOf(getPresetTypeForDate(initialDate)) }
+    var selectedPreset by remember { mutableIntStateOf(getPresetTypeForDate(initialDate)) }
     var showDatePicker by remember { mutableStateOf(false) }
 
     val datePickerState = rememberDatePickerState(

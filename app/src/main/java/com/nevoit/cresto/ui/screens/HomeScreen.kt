@@ -2,6 +2,7 @@ package com.nevoit.cresto.ui.screens
 
 import android.app.Activity
 import android.content.Intent
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.core.Animatable
@@ -233,7 +234,9 @@ fun HomeScreen(
             }
         }
     }
-
+    if (isSelectionModeActive) {
+        BackHandler { viewModel.clearSelections() }
+    }
     Box(
         modifier = Modifier
             .fillMaxSize()

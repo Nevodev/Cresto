@@ -177,7 +177,6 @@ private fun CustomMenuItem(
  * @param onDismiss Lambda to be called to dismiss the menu.
  * @param modifier The modifier to be applied to the menu container.
  * @param alphaAni A lambda providing the current alpha for animations.
- * @param scaleAni A lambda providing the current scale for animations (unused in this specific implementation but kept for API consistency).
  */
 @Composable
 fun GlasenseMenu(
@@ -186,8 +185,7 @@ fun GlasenseMenu(
     backdrop: LayerBackdrop,
     onDismiss: () -> Unit,
     modifier: Modifier,
-    alphaAni: () -> Float,
-    scaleAni: () -> Float
+    alphaAni: () -> Float
 ) {
     val darkTheme = isAppInDarkTheme()
     Box(

@@ -32,6 +32,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -100,9 +101,9 @@ fun DataStorageScreen() {
     var dataSize by remember { mutableStateOf("Calculating...") }
     var cacheSize by remember { mutableStateOf("Calculating...") }
     var totalSize by remember { mutableStateOf("Calculating...") }
-    var appSizeLong by remember { mutableStateOf(0L) }
-    var dataSizeLong by remember { mutableStateOf(0L) }
-    var cacheSizeLong by remember { mutableStateOf(0L) }
+    var appSizeLong by remember { mutableLongStateOf(0L) }
+    var dataSizeLong by remember { mutableLongStateOf(0L) }
+    var cacheSizeLong by remember { mutableLongStateOf(0L) }
 
     // Fetch storage stats when the composable is first launched
     LaunchedEffect(Unit) {
@@ -230,6 +231,13 @@ fun DataStorageScreen() {
             isDestructive = true
         )
     )
+
+    val resetAllSettingsText = stringResource(R.string.reset_all_settings)
+    val resetContentText =
+        stringResource(R.string.this_will_reset_all_settings_to_their_defaults_your_todos_will_not_be_deleted)
+    val clearAllDataText = stringResource(R.string.clear_all_data)
+    val clearContentText =
+        stringResource(R.string.this_will_permanently_delete_all_application_data_including_todos_and_settings_this_action_cannot_be_undone)
     // Root container for the screen, filling the entire available space
     Box(
         modifier = Modifier
@@ -378,8 +386,8 @@ fun DataStorageScreen() {
                             onClick = {
                                 showDialog(
                                     dialogItems2,
-                                    "${context.getString(R.string.reset_all_settings)}?",
-                                    context.getString(R.string.this_will_reset_all_settings_to_their_defaults_your_todos_will_not_be_deleted)
+                                    "$resetAllSettingsText?",
+                                    resetContentText
                                 )
                             }
                         ) {}
@@ -406,8 +414,8 @@ fun DataStorageScreen() {
                             onClick = {
                                 showDialog(
                                     dialogItems,
-                                    "${context.getString(R.string.clear_all_data)}?",
-                                    context.getString(R.string.this_will_permanently_delete_all_application_data_including_todos_and_settings_this_action_cannot_be_undone)
+                                    "$clearAllDataText?",
+                                    clearContentText
                                 )
                             }
                         ) {}

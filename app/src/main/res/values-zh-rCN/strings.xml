@@ -76,10 +76,10 @@
     <string name="new_todo">新建待办事项</string>
     <string name="ok">好</string>
     <string name="error">错误</string>
-    <string name="extract_from_text">从文本中提取...</string>
+    <string name="extract_from_text">从文本中提取…</string>
     <string name="extract">提取</string>
     <string name="extract_from_image">从图像中提取</string>
-    <string name="extracting">提取中...</string>
+    <string name="extracting">提取中…</string>
     <string name="task">任务</string>
     <string name="detail">详细信息</string>
     <string name="created">创建于 %1$s</string>

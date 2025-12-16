@@ -75,10 +75,10 @@
     <string name="new_todo">New Todo</string>
     <string name="ok">OK</string>
     <string name="error">Error</string>
-    <string name="extract_from_text">Extract from text...</string>
+    <string name="extract_from_text">Extract from text…</string>
     <string name="extract">Extract</string>
     <string name="extract_from_image">Extract from image</string>
-    <string name="extracting">Extracting...</string>
+    <string name="extracting">Extracting…</string>
     <string name="task">Task</string>
     <string name="detail">Detail</string>
     <string name="created">Created %1$s</string>

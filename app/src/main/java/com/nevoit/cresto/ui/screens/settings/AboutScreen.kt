@@ -103,10 +103,6 @@ fun AboutScreen() {
     // Determine if the small title should be visible based on the scroll position
     val isSmallTitleVisible by remember(thresholdPx) { derivedStateOf { ((lazyListState.firstVisibleItemIndex == 0) && (lazyListState.firstVisibleItemScrollOffset > thresholdPx)) || lazyListState.firstVisibleItemIndex > 0 } }
 
-    // Get the pixel value for 1dp, used for drawing divider lines
-    val dp = with(density) {
-        1.dp.toPx()
-    }
     val context = LocalContext.current
 
     // Retrieve the app's package information to display version name and code
