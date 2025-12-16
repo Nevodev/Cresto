@@ -13,6 +13,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -46,6 +47,7 @@ import dev.chrisbanes.haze.hazeEffect
 fun GlasenseDynamicSmallTitle(
     modifier: Modifier,
     title: String,
+    textStyle: TextStyle = TextStyle(),
     statusBarHeight: Dp,
     isVisible: Boolean,
     hazeState: HazeState,
@@ -105,10 +107,10 @@ fun GlasenseDynamicSmallTitle(
         ) {
             Text(
                 title,
-                style = MaterialTheme.typography.headlineSmall,
+                style = MaterialTheme.typography.headlineSmall.merge(textStyle),
                 maxLines = 1,
                 modifier = Modifier.padding(horizontal = 80.dp),
-                overflow = TextOverflow.Ellipsis
+                overflow = TextOverflow.Ellipsis,
             )
         }
     }

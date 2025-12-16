@@ -177,7 +177,7 @@ fun AIScreen() {
                     title = stringResource(R.string.test),
                     backgroundColor = hierarchicalSurfaceColor
                 ) {
-                    Column() {
+                    Column {
                         ConfigItem(title = stringResource(R.string.input)) {
                             // Placeholder switch; functionality to be implemented
                             GlasenseSwitch(checked = true, onCheckedChange = {})

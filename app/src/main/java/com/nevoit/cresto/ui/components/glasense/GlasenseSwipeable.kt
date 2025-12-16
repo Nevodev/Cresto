@@ -52,9 +52,11 @@ import com.nevoit.cresto.ui.components.myFadeIn
 import com.nevoit.cresto.ui.components.myFadeOut
 import com.nevoit.cresto.ui.components.myScaleIn
 import com.nevoit.cresto.ui.components.myScaleOut
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 import kotlin.math.abs
+import kotlin.random.Random
 
 enum class SwipeState {
     /**
@@ -151,6 +153,12 @@ fun SwipeableContainer(
 
     fun executeAction(action: SwipeableActionButton) {
         if (action.isDestructive) {
+            coroutineScope.launch {
+                repeat(5) {
+                    haptic.performHapticFeedback(HapticFeedbackType.SegmentFrequentTick)
+                    delay(Random.nextLong(50, 70))
+                }
+            }
             coroutineScope.launch {
                 val jobs = listOf(
                     launch { scale.animateTo(0.8f, tween(100)) },
@@ -256,7 +264,7 @@ fun SwipeableContainer(
                         ) {
                             Box(
                                 modifier = Modifier
-                                    .drawBehind() {
+                                    .drawBehind {
                                         // Draw a gradient border around the delete button.
                                         val gradientBrush = verticalGradient(
                                             colorStops = arrayOf(

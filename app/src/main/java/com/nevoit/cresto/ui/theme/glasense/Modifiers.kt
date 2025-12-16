@@ -15,7 +15,7 @@ import com.nevoit.cresto.util.g2
 fun Modifier.glasenseHighlight(
     cornerRadius: Dp = 12.dp,
     strokeWidth: Dp = 3.dp
-): Modifier = this.drawBehind() {
+): Modifier = this.drawBehind {
     val outline =
         ContinuousRoundedRectangle(cornerRadius, g2).createOutline(
             size,

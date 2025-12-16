@@ -6,7 +6,6 @@ import androidx.compose.animation.core.spring
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -50,7 +49,6 @@ fun CircularTimer(
     onMinutesChange: (Int) -> Unit,
     startIcon: Painter,
     endIcon: Painter,
-    primaryColor: Color = MaterialTheme.colorScheme.primary,
     knobSize: Dp,
     iconSize: Dp,
     innerIconSize: Dp,
@@ -103,11 +101,7 @@ fun CircularTimer(
                         val isValidTouch = distance >= (currentRadius - touchThreshold) &&
                                 distance <= (currentRadius + touchThreshold)
 
-                        if (isValidTouch) {
-                            isDragging = true
-                        } else {
-                            isDragging = false
-                        }
+                        isDragging = isValidTouch
                     },
                     onDragEnd = { isDragging = false },
                     onDragCancel = { isDragging = false },
@@ -339,7 +333,7 @@ fun CircularTimer(
             val angleInDegrees = i * 6f - 90f
             val angleInRad = Math.toRadians(angleInDegrees.toDouble())
 
-            val isMajorTick = i % 5 == 0
+            i % 5 == 0
             val tickLength = 12.dp.toPx()
             val tickWidth = 2.dp.toPx()
 
@@ -415,7 +409,7 @@ private fun DrawScope.drawKnobWithIcon(
         with(iconPainter) {
             draw(
                 size = Size(iconSize, iconSize),
-                colorFilter = androidx.compose.ui.graphics.ColorFilter.tint(iconTint)
+                colorFilter = ColorFilter.tint(iconTint)
             )
         }
     }

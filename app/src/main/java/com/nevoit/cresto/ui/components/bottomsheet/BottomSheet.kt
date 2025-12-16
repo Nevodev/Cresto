@@ -167,7 +167,8 @@ fun BottomSheet(
     val isLoading = uiState is UiState.Loading
     val apikey = ApiKey
 
-    val context = LocalContext.current
+    val errorTitle = stringResource(R.string.error)
+
     LaunchedEffect(true) {
         aiViewModel.sideEffect.collect { effect ->
             when (effect) {
@@ -178,7 +179,7 @@ fun BottomSheet(
                 is AiSideEffect.ShowError -> {
                     showDialog(
                         errorDialogItems,
-                        context.getString(R.string.error),
+                        errorTitle,
                         effect.message
                     )
                 }
@@ -216,7 +217,7 @@ fun BottomSheet(
 
         }
     }
-    BackHandler() {
+    BackHandler {
         scope.launch {
             isVisible = false
             // Animate the sheet out of view.

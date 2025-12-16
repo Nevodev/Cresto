@@ -41,6 +41,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -63,10 +64,10 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionOnScreen
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
@@ -106,13 +107,18 @@ fun HomeScreen(
 ) {
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
-    val view = LocalView.current
 
     val todoList by viewModel.allTodos.collectAsStateWithLifecycle()
     val revealedItemId by viewModel.revealedItemId.collectAsState()
     val selectedItemIds by viewModel.selectedItemIds.collectAsState()
     val isSelectionModeActive by viewModel.isSelectionModeActive.collectAsState()
     val selectedItemCount by viewModel.selectedItemCount.collectAsState()
+
+    var lastNonZeroSelected by remember { mutableIntStateOf(1) }
+
+    if (selectedItemCount != 0) {
+        lastNonZeroSelected = selectedItemCount
+    }
 
     val title = pluralStringResource(
         id = R.plurals.delete_todo_dialog_title,
@@ -499,8 +505,9 @@ fun HomeScreen(
             modifier = Modifier.align(Alignment.TopCenter),
             title = if (isComposed) stringResource(
                 R.string.selected_todos,
-                selectedItemCount
+                lastNonZeroSelected
             ) else stringResource(R.string.all_todos),
+            textStyle = TextStyle(fontFeatureSettings = "tnum"),
             statusBarHeight = statusBarHeight,
             isVisible = if (isSelectionModeActive) true else isSmallTitleVisible,
             hazeState = hazeState,

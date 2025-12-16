@@ -188,7 +188,7 @@ fun AppearanceScreen(settingsViewModel: SettingsViewModel = viewModel()) {
                     title = stringResource(R.string.design),
                     backgroundColor = hierarchicalSurfaceColor
                 ) {
-                    Column() {
+                    Column {
                         ConfigItem(title = stringResource(R.string.lite_mode)) {
                             GlasenseSwitch(
                                 checked = isLiteMode,

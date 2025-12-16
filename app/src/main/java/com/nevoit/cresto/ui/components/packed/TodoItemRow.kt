@@ -42,9 +42,9 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
@@ -88,7 +88,10 @@ fun TodoItemRow(
     val hasTasks = !item.subTodos.isEmpty()
 
     val item = item.todoItem
-    val context = LocalContext.current
+
+    val completedText = stringResource(R.string.completed)
+    val flagText = stringResource(R.string.flag)
+
     Row(
         modifier = Modifier
             .defaultMinSize(minHeight = 68.dp)
@@ -119,9 +122,9 @@ fun TodoItemRow(
                         textDecoration = if (item.isCompleted) TextDecoration.LineThrough else TextDecoration.None,
                         style = MaterialTheme.typography.bodyMedium,
                     )
-                    Row() {
+                    Row {
                         Text(
-                            text = "${context.getString(R.string.completed)} ",
+                            text = "$completedText ",
                             style = MaterialTheme.typography.bodyMedium,
                             fontSize = 14.sp,
                             modifier = Modifier.alpha(0.4f)
@@ -157,7 +160,7 @@ fun TodoItemRow(
                     style = MaterialTheme.typography.bodyMedium
                 )
                 if (hasTasks) {
-                    Row() {
+                    Row {
                         Text(
                             text = item.dueDate.format(DateTimeFormatter.ofPattern("yyyy/MM/dd")),
                             style = MaterialTheme.typography.bodyMedium,
@@ -165,7 +168,7 @@ fun TodoItemRow(
                             modifier = Modifier.alpha(0.4f)
                         )
                         Text(
-                            text = " · ${context.getString(R.string.completed)} ",
+                            text = " · $completedText ",
                             style = MaterialTheme.typography.bodyMedium,
                             fontSize = 14.sp,
                             modifier = Modifier.alpha(0.4f)
@@ -198,7 +201,7 @@ fun TodoItemRow(
             ) {
                 Icon(
                     painter = painterResource(R.drawable.ic_flag_fill),
-                    contentDescription = context.getString(R.string.flag),
+                    contentDescription = flagText,
                     modifier = Modifier.fillMaxSize(),
                     tint = getFlagColor(item.flag)
                 )
@@ -216,22 +219,6 @@ fun TodoItemRow(
     }
 }
 
-/**
- * An enum representing the two possible states of the swipeable to-do item.
- */
-
-
-/**
- * A composable that makes a [TodoItemRow] swipeable to reveal a delete button.
- *
- * @param item The [TodoItem] to display.
- * @param isRevealed Whether the delete button is revealed.
- * @param onExpand A callback that is invoked when the swipe is started.
- * @param onCollapse A callback that is invoked when the swipe is cancelled.
- * @param onCheckedChange A callback that is invoked when the checkbox is checked or unchecked.
- * @param onDeleteClick A callback that is invoked when the delete button is clicked.
- * @param modifier A [Modifier] for this composable.
- */
 
 @Composable
 fun SwipeableTodoItem(
@@ -507,9 +494,11 @@ fun SubTodoItemRowAdd(
     }
 
 
-    BackHandler(isFocused, { focusManager.clearFocus() })
+    BackHandler(isFocused){
+        focusManager.clearFocus()
+    }
 
-    val context = LocalContext.current
+    val addTaskText = stringResource(R.string.add_task)
 
     Row(
         modifier = modifier
@@ -579,7 +568,7 @@ fun SubTodoItemRowAdd(
                 decorator = { innerTextField ->
                     if (state.text.isEmpty() && !isFocused) {
                         Text(
-                            text = context.getString(R.string.add_task),
+                            text = addTaskText,
                             style = MaterialTheme.typography.bodyMedium.copy(
                                 color = MaterialTheme.colorScheme.onSurface,
                                 textDecoration = if (checked) TextDecoration.LineThrough else TextDecoration.None,

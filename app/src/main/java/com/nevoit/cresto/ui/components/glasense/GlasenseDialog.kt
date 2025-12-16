@@ -11,10 +11,12 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.requiredWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -43,8 +45,10 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.shadow.Shadow
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Density
@@ -61,7 +65,9 @@ import com.nevoit.cresto.ui.theme.glasense.Red500
 import com.nevoit.cresto.ui.theme.glasense.isAppInDarkTheme
 import com.nevoit.cresto.util.g2
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlin.random.Random
 
 data class DialogItemData(
     val text: String,
@@ -95,7 +101,7 @@ fun GlasenseDialogButton(
         modifier = Modifier
             .height(48.dp)
             .then(modifier)
-            .then(if (isPrimary) Modifier.drawBehind() {
+            .then(if (isPrimary) Modifier.drawBehind {
                 val outline = ContinuousRoundedRectangle(12.dp, g2).createOutline(
                     size,
                     LayoutDirection.Ltr,
@@ -153,6 +159,7 @@ fun GlasenseDialog(
     val alphaAni2 = remember { Animatable(0f) }
 
     val scope = rememberCoroutineScope()
+    val haptic = LocalHapticFeedback.current
 
     LaunchedEffect(isVisible) {
         coroutineScope {
@@ -163,8 +170,6 @@ fun GlasenseDialog(
     }
     val interactionSource = remember { MutableInteractionSource() }
     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-
-
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -180,8 +185,8 @@ fun GlasenseDialog(
 
 
         Box(
-            modifier = Modifier
-                .width(width = screenWidth - 48.dp * 2)
+            modifier = modifier
+                .width(screenWidth - 48.dp * 2)
                 .dropShadow(
                     RoundedCornerShape(24.dp),
                     shadow = Shadow(
@@ -319,6 +324,14 @@ fun GlasenseDialog(
                             isDestructive = item.isDestructive,
                             isPrimary = item.isPrimary,
                             onDismiss = {
+                                if (item.isDestructive) {
+                                    scope.launch {
+                                        repeat(5) {
+                                            haptic.performHapticFeedback(HapticFeedbackType.SegmentFrequentTick)
+                                            delay(Random.nextLong(50, 70))
+                                        }
+                                    }
+                                }
                                 scope.launch {
                                     launch { alphaAni2.animateTo(0f, tween(200, 0)) }
                                     alphaAni.animateTo(0f, tween(200, 0))
