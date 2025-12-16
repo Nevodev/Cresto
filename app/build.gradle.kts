@@ -1,6 +1,6 @@
 import com.android.build.api.dsl.ApplicationExtension
 import java.io.FileInputStream
-import java.util.Locale
+import java.io.FileOutputStream
 import java.util.Properties
 
 fun getVersionProps(project: Project): Properties {
@@ -118,25 +118,40 @@ dependencies {
 }
 
 tasks.register("incrementVersionCode") {
-    doLast {
-        val props = getVersionProps(project)
-        val currentCode = props["VERSION_CODE"].toString().toInt()
-        val newCode = currentCode + 1
-        props["VERSION_CODE"] = newCode.toString()
+    val versionPropsFile = layout.projectDirectory.file("version.properties").asFile
 
-        val versionPropsFile = project.file("version.properties")
-        versionPropsFile.writer().use { writer ->
-            props.store(writer, "Version properties updated")
+    outputs.upToDateWhen { false }
+
+    doLast {
+        if (versionPropsFile.exists()) {
+            val props = Properties()
+
+            FileInputStream(versionPropsFile).use { stream ->
+                props.load(stream)
+            }
+
+            val currentCode = props.getProperty("VERSION_CODE", "1").toInt()
+            val newCode = currentCode + 1
+            props.setProperty("VERSION_CODE", newCode.toString())
+
+            FileOutputStream(versionPropsFile).use { stream ->
+                props.store(stream, "Version properties updated")
+            }
+
+            println("✅ Version code incremented to $newCode")
+        } else {
+            println("⚠️ version.properties not found, skipping increment.")
         }
-        println("Version code incremented to $newCode")
     }
 }
 
-tasks.whenTaskAdded {
-    if (name.contains("assemble") || name.contains("bundle")) {
-        if (name.lowercase(Locale.getDefault()).contains("release")) {
-            dependsOn("incrementVersionCode")
-        }
+tasks.configureEach {
+    val taskName = name.lowercase()
+    val isRelease = taskName.contains("release")
+    val isPackageTask = taskName.contains("assemble") || taskName.contains("bundle")
+
+    if (isRelease && isPackageTask) {
+        dependsOn("incrementVersionCode")
     }
 }
 
