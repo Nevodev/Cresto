@@ -1,4 +1,4 @@
-import com.android.build.gradle.internal.api.BaseVariantOutputImpl
+import com.android.build.api.dsl.ApplicationExtension
 import java.io.FileInputStream
 import java.util.Locale
 import java.util.Properties
@@ -19,13 +19,12 @@ val vName = versionProps["VERSION_NAME"].toString()
 
 plugins {
     alias(libs.plugins.android.application)
-    alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     id("com.google.devtools.ksp")
     id("org.jetbrains.kotlin.plugin.serialization")
 }
 
-android {
+configure<ApplicationExtension> {
     namespace = "com.nevoit.cresto"
     compileSdk {
         version = release(36)
@@ -41,20 +40,6 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         ndk {
             abiFilters.add("arm64-v8a")
-        }
-
-        setProperty("archivesBaseName", "cresto-alpha${versionCode}")
-    }
-
-    applicationVariants.all {
-        outputs.map { it as BaseVariantOutputImpl }.forEach { output ->
-            val originalFileName = output.outputFileName
-            val newName = originalFileName.replace(
-                ".apk",
-                ".APK"
-            )
-
-            output.outputFileName = newName
         }
     }
 
@@ -80,6 +65,10 @@ android {
     buildFeatures {
         compose = true
     }
+}
+
+base {
+    archivesName.set("cresto-alpha${vCode}")
 }
 
 kotlin {
