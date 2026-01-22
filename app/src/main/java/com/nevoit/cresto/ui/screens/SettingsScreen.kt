@@ -94,8 +94,7 @@ fun SettingsScreen() {
         ) {
             item {
                 GlasensePageHeader(
-                    title = stringResource(R.string.settings),
-                    statusBarHeight = statusBarHeight
+                    title = stringResource(R.string.settings)
                 )
             }
             item {

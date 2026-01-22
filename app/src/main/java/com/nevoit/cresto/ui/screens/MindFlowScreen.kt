@@ -213,8 +213,7 @@ fun MindFlowScreen(
         ) {
             item {
                 GlasensePageHeader(
-                    title = stringResource(R.string.mind_flow),
-                    statusBarHeight = statusBarHeight
+                    title = stringResource(R.string.mind_flow)
                 )
             }
             item {

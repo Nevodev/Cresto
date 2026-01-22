@@ -261,8 +261,7 @@ fun HomeScreen(
         ) {
             item {
                 GlasensePageHeader(
-                    title = stringResource(R.string.all_todos),
-                    statusBarHeight = statusBarHeight
+                    title = stringResource(R.string.all_todos)
                 )
             }
             items(
