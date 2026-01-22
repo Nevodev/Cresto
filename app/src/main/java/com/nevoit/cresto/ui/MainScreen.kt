@@ -10,9 +10,12 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
@@ -118,6 +121,8 @@ fun MainScreen() {
 
     val bottomSheetState by viewModel.bottomSheetState.collectAsState()
 
+    val navigationBarHeight = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -140,7 +145,7 @@ fun MainScreen() {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(136.dp)
+                .height(120.dp + navigationBarHeight)
                 .align(Alignment.BottomCenter)
                 .then(
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) Modifier.hazeEffect(
