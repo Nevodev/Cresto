@@ -91,6 +91,7 @@ import com.nevoit.cresto.ui.components.glasense.extend.overscrollSpacer
 import com.nevoit.cresto.ui.components.glasense.rememberSwipeableListState
 import com.nevoit.cresto.ui.components.packed.SwipeableTodoItem
 import com.nevoit.cresto.ui.screens.detailscreen.DetailActivity
+import com.nevoit.cresto.ui.screens.settings.util.SettingsManager
 import com.nevoit.cresto.ui.theme.glasense.Blue500
 import com.nevoit.cresto.ui.theme.glasense.CalculatedColor
 import com.nevoit.cresto.ui.theme.glasense.Red500
@@ -116,6 +117,8 @@ fun BoxScope.HomeScreen(
     val selectedItemIds by viewModel.selectedItemIds.collectAsState()
     val isSelectionModeActive by viewModel.isSelectionModeActive.collectAsState()
     val selectedItemCount by viewModel.selectedItemCount.collectAsState()
+
+    val liteMode = SettingsManager.isLiteMode
 
     var lastNonZeroSelected by remember { mutableIntStateOf(1) }
 
@@ -501,7 +504,8 @@ fun BoxScope.HomeScreen(
         statusBarHeight = statusBarHeight,
         isVisible = if (isSelectionModeActive) true else isSmallTitleVisible,
         hazeState = hazeState,
-        surfaceColor = surfaceColor
+        surfaceColor = surfaceColor,
+        blur = !liteMode
     ) {
         var coordinatesCaptured by remember { mutableStateOf<LayoutCoordinates?>(null) }
         if (!isGone) {

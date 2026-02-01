@@ -86,6 +86,7 @@ import com.nevoit.cresto.ui.components.packed.HorizontalPresetDatePicker
 import com.nevoit.cresto.ui.components.packed.SubTodoItemRowAdd
 import com.nevoit.cresto.ui.components.packed.SwipeableSubTodoItemRowEditable
 import com.nevoit.cresto.ui.components.packed.TodoItemRowEditable
+import com.nevoit.cresto.ui.screens.settings.util.SettingsManager
 import com.nevoit.cresto.ui.theme.glasense.AppButtonColors
 import com.nevoit.cresto.ui.theme.glasense.CalculatedColor
 import com.nevoit.cresto.ui.theme.glasense.Red500
@@ -181,6 +182,7 @@ fun DetailScreen(
     }
 
     val context = LocalContext.current
+    val liteMode = SettingsManager.isLiteMode
 
     LaunchedEffect(Unit) {
         while (true) {
@@ -530,7 +532,8 @@ fun DetailScreen(
             statusBarHeight = statusBarHeight,
             isVisible = isSmallTitleVisible,
             hazeState = hazeState,
-            surfaceColor = surfaceColor
+            surfaceColor = surfaceColor,
+            blur = !liteMode
         ) {
             // This lambda is empty as the component handles its own content
         }
@@ -560,6 +563,7 @@ fun DetailScreen(
             isVisible = true,
             hazeState = hazeState,
             surfaceColor = surfaceColor,
+            blur = !liteMode,
             height = 64.dp
         ) {
             Row(
@@ -636,7 +640,8 @@ fun DetailScreen(
             dialogState = dialogState,
             backdrop = backdrop,
             onDismiss = { dismissDialog() },
-            modifier = Modifier
+            modifier = Modifier,
+            blur = !liteMode
         )
     }
 }

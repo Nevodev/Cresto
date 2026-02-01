@@ -45,6 +45,7 @@ fun GlasenseBottomBar(
     isVisible: Boolean,
     hazeState: HazeState,
     surfaceColor: Color,
+    blur: Boolean = true,
     content: @Composable () -> Unit
 ) {
     // Main container for the title bar and content.
@@ -64,12 +65,12 @@ fun GlasenseBottomBar(
                     .height(navigationBarHeight + height)
                     .fillMaxWidth()
                     .align(Alignment.TopCenter)
-                    .hazeEffect(hazeState) {
+                    .then(if (blur) Modifier.hazeEffect(hazeState) {
                         blurRadius = 4.dp
                         noiseFactor = 0f
                         inputScale = HazeInputScale.Fixed(0.5f)
                         mask = linearGradientMaskB2T70
-                    }
+                    } else Modifier)
                     .then(
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) Modifier.smoothGradientMask(
                             surfaceColor.copy(alpha = 0f),

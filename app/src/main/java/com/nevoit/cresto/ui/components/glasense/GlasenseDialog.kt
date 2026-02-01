@@ -60,6 +60,7 @@ import com.kyant.backdrop.drawPlainBackdrop
 import com.kyant.backdrop.effects.blur
 import com.kyant.capsule.ContinuousRoundedRectangle
 import com.nevoit.cresto.ui.theme.glasense.AppButtonColors
+import com.nevoit.cresto.ui.theme.glasense.CalculatedColor
 import com.nevoit.cresto.ui.theme.glasense.Red500
 import com.nevoit.cresto.ui.theme.glasense.isAppInDarkTheme
 import com.nevoit.cresto.util.g2
@@ -144,6 +145,7 @@ fun GlasenseDialog(
     density: Density,
     dialogState: DialogState,
     backdrop: LayerBackdrop,
+    blur: Boolean = true,
     onDismiss: () -> Unit,
     modifier: Modifier
 ) {
@@ -168,6 +170,8 @@ fun GlasenseDialog(
         }
     }
     val interactionSource = remember { MutableInteractionSource() }
+    val surfaceColor = CalculatedColor.hierarchicalSurfaceColor
+
     BackHandler() { }
     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         Box(
@@ -202,7 +206,7 @@ fun GlasenseDialog(
                     backdrop = backdrop,
                     shape = { ContinuousRoundedRectangle(24.dp, g2) },
                     effects = {
-                        blur(64f.dp.toPx(), TileMode.Mirror)
+                        if (blur) blur(64f.dp.toPx(), TileMode.Mirror)
                     },
                     // Custom drawing on top of the blurred background to create stunning colors.
                     onDrawSurface = {
@@ -216,6 +220,10 @@ fun GlasenseDialog(
                                 0.0f to Color.White.copy(alpha = 1f),
                                 1.0f to Color.White.copy(alpha = 0.2f)
                             )
+                        )
+                        if (!blur) drawRect(
+                            brush = SolidColor(surfaceColor),
+                            style = Fill
                         )
                         // The drawing logic is different for light and dark themes.
                         if (!darkTheme) {

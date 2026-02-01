@@ -55,6 +55,7 @@ import com.nevoit.cresto.ui.components.glasense.GlasenseMenu
 import com.nevoit.cresto.ui.components.glasense.GlasenseNavigationButton
 import com.nevoit.cresto.ui.components.glasense.MenuItemData
 import com.nevoit.cresto.ui.components.glasense.MenuState
+import com.nevoit.cresto.ui.screens.settings.util.SettingsManager
 import com.nevoit.cresto.ui.theme.glasense.CalculatedColor
 import com.nevoit.cresto.ui.theme.glasense.linearGradientMaskB2T70
 import com.nevoit.cresto.ui.theme.glasense.linearGradientMaskB2T90
@@ -80,6 +81,7 @@ sealed class Screen(val route: String) {
 fun MainScreen() {
     val surfaceColor = CalculatedColor.hierarchicalBackgroundColor
     var currentRoute by remember { mutableStateOf(Screen.Home.route) }
+    val liteMode = SettingsManager.isLiteMode
 
     val hazeState = rememberHazeState()
     val backdrop = rememberLayerBackdrop {
@@ -152,7 +154,8 @@ fun MainScreen() {
                 .height(120.dp + navigationBarHeight)
                 .align(Alignment.BottomCenter)
                 .then(
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) Modifier.hazeEffect(
+                    if (liteMode) Modifier
+                    else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) Modifier.hazeEffect(
                         hazeState
                     ) {
                         blurRadius = 10.dp
@@ -308,7 +311,8 @@ fun MainScreen() {
                 dialogState = dialogState,
                 backdrop = backdrop,
                 onDismiss = { dismissDialog() },
-                modifier = Modifier
+                modifier = Modifier,
+                blur = !liteMode
             )
         }
     }

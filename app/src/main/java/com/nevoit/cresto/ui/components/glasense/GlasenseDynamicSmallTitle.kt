@@ -52,6 +52,7 @@ fun GlasenseDynamicSmallTitle(
     statusBarHeight: Dp,
     isVisible: Boolean,
     hazeState: HazeState,
+    blur: Boolean = true,
     surfaceColor: Color,
     content: @Composable () -> Unit
 ) {
@@ -72,13 +73,13 @@ fun GlasenseDynamicSmallTitle(
                     .height(48.dp + statusBarHeight + 48.dp)
                     .fillMaxWidth()
                     .align(Alignment.TopCenter)
-                    .hazeEffect(hazeState) {
+                    .then(if (blur) Modifier.hazeEffect(hazeState) {
                         blurRadius = 2.dp
                         noiseFactor = 0f
                         inputScale = HazeInputScale.Fixed(0.5f)
                         mask = linearGradientMaskT2B70
                         style = HazeStyle(backgroundColor = surfaceColor, tint = null)
-                    }
+                    } else Modifier)
                     .then(
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) Modifier.smoothGradientMask(
                             surfaceColor.copy(alpha = 1f),
