@@ -182,7 +182,7 @@ fun DetailScreen(
     }
 
     val context = LocalContext.current
-    val liteMode = SettingsManager.isLiteMode
+    val liteMode by SettingsManager.isLiteModeState
 
     LaunchedEffect(Unit) {
         while (true) {

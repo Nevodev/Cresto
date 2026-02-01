@@ -111,7 +111,7 @@ fun BoxScope.MindFlowScreen(
 
     val hazeState = rememberHazeState()
 
-    val liteMode = SettingsManager.isLiteMode
+    val liteMode by SettingsManager.isLiteModeState
 
     val backgroundColor = CalculatedColor.hierarchicalBackgroundColor
     val surfaceColor = CalculatedColor.hierarchicalSurfaceColor

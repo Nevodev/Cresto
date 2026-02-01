@@ -81,7 +81,8 @@ sealed class Screen(val route: String) {
 fun MainScreen() {
     val surfaceColor = CalculatedColor.hierarchicalBackgroundColor
     var currentRoute by remember { mutableStateOf(Screen.Home.route) }
-    val liteMode = SettingsManager.isLiteMode
+    val liteMode by SettingsManager.isLiteModeState
+    val liquidGlass by SettingsManager.isLiquidGlassState
 
     val hazeState = rememberHazeState()
     val backdrop = rememberLayerBackdrop {
@@ -198,7 +199,8 @@ fun MainScreen() {
                             currentRoute = Screen.Home.route
                         }
                     },
-                    backdrop = backdrop
+                    backdrop = backdrop,
+                    liquidGlass = liquidGlass
                 ) {
                     Icon(
                         painter = painterResource(id = R.drawable.ic_list),
@@ -214,7 +216,8 @@ fun MainScreen() {
                             currentRoute = Screen.Star.route
                         }
                     },
-                    backdrop = backdrop
+                    backdrop = backdrop,
+                    liquidGlass = liquidGlass
                 ) {
                     Icon(
                         painter = painterResource(id = R.drawable.ic_star),
@@ -230,7 +233,8 @@ fun MainScreen() {
                             currentRoute = Screen.Settings.route
                         }
                     },
-                    backdrop = backdrop
+                    backdrop = backdrop,
+                    liquidGlass = liquidGlass
                 ) {
                     Icon(
                         painter = painterResource(id = R.drawable.ic_gear),

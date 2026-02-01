@@ -22,8 +22,10 @@ import androidx.compose.ui.graphics.shadow.Shadow
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import com.kyant.backdrop.backdrops.LayerBackdrop
-import com.kyant.backdrop.drawPlainBackdrop
+import com.kyant.backdrop.drawBackdrop
 import com.kyant.backdrop.effects.blur
+import com.kyant.backdrop.effects.lens
+import com.kyant.backdrop.highlight.Highlight
 import com.kyant.capsule.ContinuousCapsule
 import com.nevoit.cresto.ui.theme.glasense.NavigationButtonActiveColors
 import com.nevoit.cresto.ui.theme.glasense.NavigationButtonNormalColors
@@ -45,6 +47,7 @@ fun GlasenseNavigationButton(
     isActive: Boolean,
     onClick: () -> Unit,
     backdrop: LayerBackdrop,
+    liquidGlass: Boolean = false,
     content: @Composable () -> Unit
 ) {
     val darkTheme = isAppInDarkTheme()
@@ -55,7 +58,10 @@ fun GlasenseNavigationButton(
             .fillMaxSize()
             .drawBehind {
                 val outline = ContinuousCapsule(g2).createOutline(
-                    size = Size(this.size.width - 1.5.dp.toPx(), this.size.height - 1.5.dp.toPx()),
+                    size = Size(
+                        this.size.width - 1.5.dp.toPx(),
+                        this.size.height - 1.5.dp.toPx()
+                    ),
                     layoutDirection = this.layoutDirection,
                     density = this
                 )
@@ -78,11 +84,15 @@ fun GlasenseNavigationButton(
         // Inactive state: draw a blurred backdrop with different effects for light/dark theme.
         Modifier
             .fillMaxSize()
-            .drawPlainBackdrop(
+            .drawBackdrop(
                 backdrop = backdrop,
                 shape = { ContinuousCapsule },
+                shadow = null,
+                innerShadow = null,
+                highlight = { if (liquidGlass) Highlight.Default else null },
                 effects = {
-                    blur(32f.dp.toPx(), TileMode.Decal)
+                    blur(if (liquidGlass) 8f.dp.toPx() else 32f.dp.toPx(), TileMode.Decal)
+                    if (liquidGlass) lens(16f.dp.toPx(), 32f.dp.toPx())
                 },
                 onDrawSurface = {
                     val outline = ContinuousCapsule(g2).createOutline(
@@ -121,13 +131,15 @@ fun GlasenseNavigationButton(
                             style = Fill,
                             blendMode = BlendMode.SrcOver
                         )
-                        translate(0.75.dp.toPx(), 0.75.dp.toPx()) {
-                            drawOutline(
-                                outline = outline,
-                                brush = gradientBrush,
-                                style = Stroke(width = 1.5.dp.toPx()),
-                                blendMode = BlendMode.Plus
-                            )
+                        if (!liquidGlass) {
+                            translate(0.75.dp.toPx(), 0.75.dp.toPx()) {
+                                drawOutline(
+                                    outline = outline,
+                                    brush = gradientBrush,
+                                    style = Stroke(width = 1.5.dp.toPx()),
+                                    blendMode = BlendMode.Plus
+                                )
+                            }
                         }
                         // Dark theme inactive style.
                     } else if (darkTheme && !isActive) {
@@ -155,13 +167,15 @@ fun GlasenseNavigationButton(
                             style = Fill,
                             blendMode = BlendMode.Luminosity
                         )
-                        translate(0.75.dp.toPx(), 0.75.dp.toPx()) {
-                            drawOutline(
-                                outline = outline,
-                                brush = gradientBrush,
-                                style = Stroke(width = 1.5.dp.toPx()),
-                                blendMode = BlendMode.Plus
-                            )
+                        if (!liquidGlass) {
+                            translate(0.75.dp.toPx(), 0.75.dp.toPx()) {
+                                drawOutline(
+                                    outline = outline,
+                                    brush = gradientBrush,
+                                    style = Stroke(width = 1.5.dp.toPx()),
+                                    blendMode = BlendMode.Plus
+                                )
+                            }
                         }
                     }
                 }
@@ -190,6 +204,5 @@ fun GlasenseNavigationButton(
         Box(modifier = finalModifier, contentAlignment = Alignment.Center) {
             content()
         }
-
     }
 }

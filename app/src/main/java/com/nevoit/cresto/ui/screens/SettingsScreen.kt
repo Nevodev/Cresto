@@ -73,7 +73,7 @@ fun BoxScope.SettingsScreen() {
 
     val context = LocalContext.current
 
-    val liteMode = SettingsManager.isLiteMode
+    val liteMode by SettingsManager.isLiteModeState
 
     LazyColumn(
         state = lazyListState,

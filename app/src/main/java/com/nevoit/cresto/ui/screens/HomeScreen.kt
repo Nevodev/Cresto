@@ -118,7 +118,7 @@ fun BoxScope.HomeScreen(
     val isSelectionModeActive by viewModel.isSelectionModeActive.collectAsState()
     val selectedItemCount by viewModel.selectedItemCount.collectAsState()
 
-    val liteMode = SettingsManager.isLiteMode
+    val liteMode by SettingsManager.isLiteModeState
 
     var lastNonZeroSelected by remember { mutableIntStateOf(1) }
 
