@@ -52,7 +52,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.BlurredEdgeTreatment
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.blur
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
@@ -277,7 +276,6 @@ fun BoxScope.HomeScreen(
             Box(
                 modifier = Modifier
                     .animateItem(placementSpec = spring(0.9f, 400f))
-                    .clip(shape = ContinuousRoundedRectangle(12.dp))
                     .combinedClickable(
                         interactionSource = remember { MutableInteractionSource() },
                         indication = DimIndication(shape = ContinuousRoundedRectangle(12.dp)),
