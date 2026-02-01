@@ -8,10 +8,8 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
+import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import com.nevoit.cresto.data.todo.TodoViewModel
 import com.nevoit.cresto.ui.components.glasense.DialogItemData
 import com.nevoit.cresto.ui.components.glasense.MenuItemData
@@ -35,30 +33,34 @@ fun AppNavHost(
         animationSpec = tween(600, 0, CubicBezierEasing(.2f, .2f, .0f, 1f)),
         targetScale = 0.95f
     )
+    val saveableStateHolder = rememberSaveableStateHolder()
 
-    Box(modifier = Modifier.fillMaxSize()) {
-
-        AnimatedVisibility(
-            visible = currentRoute == Screen.Home.route,
-            enter = commonEnterTransition,
-            exit = commonExitTransition
-        ) {
+    AnimatedVisibility(
+        visible = currentRoute == Screen.Home.route,
+        enter = commonEnterTransition,
+        exit = commonExitTransition
+    ) {
+        saveableStateHolder.SaveableStateProvider(key = Screen.Home.route) {
             HomeScreen(showMenu = showMenu, viewModel = viewModel, showDialog = showDialog)
         }
+    }
 
-        AnimatedVisibility(
-            visible = currentRoute == Screen.Star.route,
-            enter = commonEnterTransition,
-            exit = commonExitTransition
-        ) {
+    AnimatedVisibility(
+        visible = currentRoute == Screen.Star.route,
+        enter = commonEnterTransition,
+        exit = commonExitTransition
+    ) {
+        saveableStateHolder.SaveableStateProvider(key = Screen.Star.route) {
             MindFlowScreen(viewModel)
         }
+    }
 
-        AnimatedVisibility(
-            visible = currentRoute == Screen.Settings.route,
-            enter = commonEnterTransition,
-            exit = commonExitTransition
-        ) {
+    AnimatedVisibility(
+        visible = currentRoute == Screen.Settings.route,
+        enter = commonEnterTransition,
+        exit = commonExitTransition
+    ) {
+        saveableStateHolder.SaveableStateProvider(key = Screen.Settings.route) {
             SettingsScreen()
         }
     }
