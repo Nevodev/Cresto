@@ -15,7 +15,6 @@ import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -52,6 +51,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.BlurredEdgeTreatment
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.blur
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
@@ -81,6 +81,7 @@ import com.nevoit.cresto.R
 import com.nevoit.cresto.data.todo.EXTRA_TODO_ID
 import com.nevoit.cresto.data.todo.TodoViewModel
 import com.nevoit.cresto.ui.components.glasense.DialogItemData
+import com.nevoit.cresto.ui.components.glasense.DimIndication
 import com.nevoit.cresto.ui.components.glasense.GlasenseButton
 import com.nevoit.cresto.ui.components.glasense.GlasenseButtonAdaptable
 import com.nevoit.cresto.ui.components.glasense.GlasenseDynamicSmallTitle
@@ -277,13 +278,13 @@ fun HomeScreen(
                         alpha.animateTo(0f, tween(100))
                     }
                 }
-
-                Column(
+                Box(
                     modifier = Modifier
                         .animateItem(placementSpec = spring(0.9f, 400f))
+                        .clip(shape = ContinuousRoundedRectangle(12.dp))
                         .combinedClickable(
-                            interactionSource = interactionSource,
-                            indication = null,
+                            interactionSource = remember { MutableInteractionSource() },
+                            indication = DimIndication(),
                             onLongClick = {
                                 if (!isSelectionModeActive) {
                                     scope.launch {
@@ -306,66 +307,62 @@ fun HomeScreen(
                                     launcher.launch(intent)
                                 }
                             }
-                        )
-                ) {
-                    Box {
-                        SwipeableTodoItem(
-                            item = item,
-                            onCheckedChange = { isChecked ->
-                                viewModel.update(item.todoItem.copy(isCompleted = isChecked))
-                            },
-                            onDelete = { viewModel.delete(item.todoItem) },
+                        )) {
+                    SwipeableTodoItem(
+                        item = item,
+                        onCheckedChange = { isChecked ->
+                            viewModel.update(item.todoItem.copy(isCompleted = isChecked))
+                        },
+                        onDelete = { viewModel.delete(item.todoItem) },
+                        modifier = Modifier
+                            .then(if (isComposed) Modifier.drawBehind {
+                                val outline =
+                                    ContinuousRoundedRectangle(10.5.dp, g2).createOutline(
+                                        size = Size(
+                                            this.size.width - 3.dp.toPx(),
+                                            this.size.height - 3.dp.toPx()
+                                        ),
+                                        layoutDirection = LayoutDirection.Ltr,
+                                        density = density
+                                    )
+                                translate(1.5.dp.toPx(), 1.5.dp.toPx()) {
+                                    drawOutline(
+                                        outline = outline,
+                                        color = Blue500,
+                                        alpha = alpha.value,
+                                        style = Stroke(width = 3.dp.toPx()),
+                                    )
+                                }
+                            } else Modifier),
+                        listState = swipeListState
+                    )
+                    // Selection mode selector box
+                    if (isSelectionModeActive) {
+                        Box(
                             modifier = Modifier
-                                .then(if (isComposed) Modifier.drawBehind {
-                                    val outline =
-                                        ContinuousRoundedRectangle(10.5.dp, g2).createOutline(
-                                            size = Size(
-                                                this.size.width - 3.dp.toPx(),
-                                                this.size.height - 3.dp.toPx()
-                                            ),
-                                            layoutDirection = LayoutDirection.Ltr,
-                                            density = density
-                                        )
-                                    translate(1.5.dp.toPx(), 1.5.dp.toPx()) {
-                                        drawOutline(
-                                            outline = outline,
-                                            color = Blue500,
-                                            alpha = alpha.value,
-                                            style = Stroke(width = 3.dp.toPx()),
-                                        )
-                                    }
-                                } else Modifier),
-                            listState = swipeListState
-                        )
-                        // Selection mode selector box
-                        if (isSelectionModeActive) {
-                            Box(
-                                modifier = Modifier
-                                    .matchParentSize()
-                                    .combinedClickable(
-                                        interactionSource = interactionSource,
-                                        indication = null,
-                                        onClick = {
-                                            scope.launch {
-                                                viewModel.toggleSelection(item.todoItem.id)
-                                            }
+                                .matchParentSize()
+                                .combinedClickable(
+                                    interactionSource = interactionSource,
+                                    indication = null,
+                                    onClick = {
+                                        scope.launch {
+                                            viewModel.toggleSelection(item.todoItem.id)
                                         }
-                                    )) {}
-                        }
+                                    }
+                                )) {}
                     }
-
-                    Spacer(modifier = Modifier.height(12.dp))
                 }
+                Spacer(modifier = Modifier.height(12.dp))
             }
 
             if (completeTodos.isNotEmpty()) {
                 item(key = "small_title") {
-                    val degree = remember { Animatable(if (completedVisible) 90f else 270f) }
+                    val degree = remember { Animatable(if (completedVisible) 90f else 180f) }
                     LaunchedEffect(completedVisible) {
                         if (completedVisible) {
                             degree.animateTo(90f, tween(200))
                         } else {
-                            degree.animateTo(270f, tween(200))
+                            degree.animateTo(180f, tween(200))
                         }
                     }
                     Row(
@@ -416,13 +413,12 @@ fun HomeScreen(
                                 alpha.animateTo(0f, tween(100))
                             }
                         }
-
-                        Column(
+                        Box(
                             modifier = Modifier
                                 .animateItem(placementSpec = spring(0.9f, 400f))
                                 .combinedClickable(
-                                    interactionSource = interactionSource,
-                                    indication = null,
+                                    interactionSource = remember { MutableInteractionSource() },
+                                    indication = DimIndication(),
                                     onLongClick = {
                                         if (!isSelectionModeActive) {
                                             scope.launch {
@@ -448,57 +444,54 @@ fun HomeScreen(
                                             launcher.launch(intent)
                                         }
                                     }
-                                )
-                        ) {
-                            Box {
-                                SwipeableTodoItem(
-                                    item = item,
-                                    onCheckedChange = { isChecked ->
-                                        viewModel.update(item.todoItem.copy(isCompleted = isChecked))
-                                    },
-                                    onDelete = { viewModel.delete(item.todoItem) },
+                                )) {
+                            SwipeableTodoItem(
+                                item = item,
+                                onCheckedChange = { isChecked ->
+                                    viewModel.update(item.todoItem.copy(isCompleted = isChecked))
+                                },
+                                onDelete = { viewModel.delete(item.todoItem) },
+                                modifier = Modifier
+                                    .then(if (isComposed) Modifier.drawBehind {
+                                        val outline =
+                                            ContinuousRoundedRectangle(
+                                                10.5.dp,
+                                                g2
+                                            ).createOutline(
+                                                size = Size(
+                                                    this.size.width - 3.dp.toPx(),
+                                                    this.size.height - 3.dp.toPx()
+                                                ),
+                                                layoutDirection = LayoutDirection.Ltr,
+                                                density = density
+                                            )
+                                        translate(1.5.dp.toPx(), 1.5.dp.toPx()) {
+                                            drawOutline(
+                                                outline = outline,
+                                                color = Blue500,
+                                                alpha = alpha.value,
+                                                style = Stroke(width = 3.dp.toPx()),
+                                            )
+                                        }
+                                    } else Modifier),
+                                listState = swipeListState
+                            )
+                            if (isSelectionModeActive) {
+                                Box(
                                     modifier = Modifier
-                                        .then(if (isComposed) Modifier.drawBehind {
-                                            val outline =
-                                                ContinuousRoundedRectangle(
-                                                    10.5.dp,
-                                                    g2
-                                                ).createOutline(
-                                                    size = Size(
-                                                        this.size.width - 3.dp.toPx(),
-                                                        this.size.height - 3.dp.toPx()
-                                                    ),
-                                                    layoutDirection = LayoutDirection.Ltr,
-                                                    density = density
-                                                )
-                                            translate(1.5.dp.toPx(), 1.5.dp.toPx()) {
-                                                drawOutline(
-                                                    outline = outline,
-                                                    color = Blue500,
-                                                    alpha = alpha.value,
-                                                    style = Stroke(width = 3.dp.toPx()),
-                                                )
-                                            }
-                                        } else Modifier),
-                                    listState = swipeListState
-                                )
-                                if (isSelectionModeActive) {
-                                    Box(
-                                        modifier = Modifier
-                                            .matchParentSize()
-                                            .combinedClickable(
-                                                interactionSource = interactionSource,
-                                                indication = null,
-                                                onClick = {
-                                                    scope.launch {
-                                                        viewModel.toggleSelection(item.todoItem.id)
-                                                    }
+                                        .matchParentSize()
+                                        .combinedClickable(
+                                            interactionSource = interactionSource,
+                                            indication = null,
+                                            onClick = {
+                                                scope.launch {
+                                                    viewModel.toggleSelection(item.todoItem.id)
                                                 }
-                                            )) {}
-                                }
+                                            }
+                                        )) {}
                             }
-                            Spacer(modifier = Modifier.height(12.dp))
                         }
+                        Spacer(modifier = Modifier.height(12.dp))
                     }
                 }
             }

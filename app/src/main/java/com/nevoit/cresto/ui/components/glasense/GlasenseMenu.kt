@@ -1,9 +1,7 @@
 package com.nevoit.cresto.ui.components.glasense
 
-import androidx.compose.animation.core.Animatable
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -18,11 +16,9 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.dropShadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.BlendMode
@@ -115,40 +111,15 @@ private fun CustomMenuItem(
     // Determine the content color based on whether the action is destructive.
     val contentColor = if (isDestructive) Red500 else MaterialTheme.colorScheme.onBackground
     val interactionSource = remember { MutableInteractionSource() }
-    // Animatable for the press feedback effect's alpha.
-    val alpha = remember { Animatable(0f) }
-
-    // Observe interactions to animate the press feedback.
-    LaunchedEffect(interactionSource) {
-        interactionSource.interactions.collect { interaction ->
-            when (interaction) {
-                is PressInteraction.Press -> {
-                    alpha.animateTo(1f)
-                }
-
-                is PressInteraction.Release -> {
-                    alpha.animateTo(0f)
-                }
-
-                is PressInteraction.Cancel -> {
-                    alpha.animateTo(0f)
-                }
-            }
-        }
-    }
     Row(
         modifier = Modifier
             .height(48.dp)
             .fillMaxWidth()
-            // Draw a background overlay with an animated alpha for press feedback.
-            .drawBehind {
-                drawRect(
-                    color = Color.Black.copy(0.1f),
-                    alpha = alpha.value
-                )
-            }
-            // Use a custom interaction source and disable the default ripple effect.
-            .clickable(interactionSource = interactionSource, onClick = onClick, indication = null)
+            .clickable(
+                interactionSource = interactionSource,
+                onClick = onClick,
+                indication = DimIndication()
+            )
             .padding(horizontal = 16.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
