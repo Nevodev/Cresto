@@ -1,5 +1,6 @@
 package com.nevoit.cresto.ui.components.glasense
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
@@ -167,6 +168,7 @@ fun GlasenseDialog(
         }
     }
     val interactionSource = remember { MutableInteractionSource() }
+    BackHandler() { }
     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         Box(
             modifier = Modifier

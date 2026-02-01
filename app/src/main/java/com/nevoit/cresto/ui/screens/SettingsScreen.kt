@@ -26,6 +26,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -69,7 +70,27 @@ fun SettingsScreen() {
     val isSmallTitleVisible by remember(thresholdPx) { derivedStateOf { ((lazyListState.firstVisibleItemIndex == 0) && (lazyListState.firstVisibleItemScrollOffset > thresholdPx)) || lazyListState.firstVisibleItemIndex > 0 } }
 
     val context = LocalContext.current
+    val screenHeightPx = LocalWindowInfo.current.containerSize.height
+    val spacerHeight by remember {
+        derivedStateOf {
+            val layoutInfo = lazyListState.layoutInfo
+            val visibleItems = layoutInfo.visibleItemsInfo
 
+            if (visibleItems.isEmpty()) {
+                return@derivedStateOf with(density) { screenHeightPx.toDp() }
+            }
+
+            val contentItems = visibleItems.filter { it.key != "footer_spacer" }
+
+            val contentHeightPx = contentItems.sumOf { it.size }
+
+            if (contentHeightPx < screenHeightPx) {
+                with(density) { (screenHeightPx - contentHeightPx).toDp() }
+            } else {
+                0.dp
+            }
+        }
+    }
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -179,6 +200,9 @@ fun SettingsScreen() {
             }
             item {
                 Spacer(Modifier.height(200.dp))
+            }
+            item(key = "footer_spacer") {
+                Spacer(modifier = Modifier.height(spacerHeight))
             }
         }
         GlasenseDynamicSmallTitle(

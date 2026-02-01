@@ -65,6 +65,7 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionOnScreen
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
@@ -238,6 +239,29 @@ fun HomeScreen(
     if (isSelectionModeActive) {
         BackHandler { viewModel.clearSelections() }
     }
+
+    val screenHeightPx = LocalWindowInfo.current.containerSize.height
+    val spacerHeight by remember {
+        derivedStateOf {
+            val layoutInfo = lazyListState.layoutInfo
+            val visibleItems = layoutInfo.visibleItemsInfo
+
+            if (visibleItems.isEmpty()) {
+                return@derivedStateOf with(density) { screenHeightPx.toDp() }
+            }
+
+            val contentItems = visibleItems.filter { it.key != "footer_spacer" }
+
+            val contentHeightPx = contentItems.sumOf { it.size }
+
+            if (contentHeightPx < screenHeightPx) {
+                with(density) { (screenHeightPx - contentHeightPx).toDp() }
+            } else {
+                0.dp
+            }
+        }
+    }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -494,6 +518,9 @@ fun HomeScreen(
                         Spacer(modifier = Modifier.height(12.dp))
                     }
                 }
+            }
+            item(key = "footer_spacer") {
+                Spacer(modifier = Modifier.height(spacerHeight))
             }
         }
         GlasenseDynamicSmallTitle(
