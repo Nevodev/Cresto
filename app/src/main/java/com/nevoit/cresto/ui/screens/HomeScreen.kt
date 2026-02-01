@@ -280,7 +280,7 @@ fun BoxScope.HomeScreen(
                     .clip(shape = ContinuousRoundedRectangle(12.dp))
                     .combinedClickable(
                         interactionSource = remember { MutableInteractionSource() },
-                        indication = DimIndication(),
+                        indication = DimIndication(shape = ContinuousRoundedRectangle(12.dp)),
                         onLongClick = {
                             if (!isSelectionModeActive) {
                                 scope.launch {
@@ -414,7 +414,7 @@ fun BoxScope.HomeScreen(
                             .animateItem(placementSpec = spring(0.9f, 400f))
                             .combinedClickable(
                                 interactionSource = remember { MutableInteractionSource() },
-                                indication = DimIndication(),
+                                indication = DimIndication(shape = ContinuousRoundedRectangle(12.dp)),
                                 onLongClick = {
                                     if (!isSelectionModeActive) {
                                         scope.launch {

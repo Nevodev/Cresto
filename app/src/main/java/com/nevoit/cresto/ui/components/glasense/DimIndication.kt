@@ -7,6 +7,9 @@ import androidx.compose.foundation.interaction.InteractionSource
 import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.drawOutline
 import androidx.compose.ui.graphics.drawscope.ContentDrawScope
 import androidx.compose.ui.node.DelegatableNode
 import androidx.compose.ui.node.DrawModifierNode
@@ -16,16 +19,18 @@ import kotlinx.coroutines.launch
 data class DimIndication(
     val color: Color = Color.Black,
     val maxAlpha: Float = 0.1f,
+    val shape: Shape = RectangleShape,
 ) : IndicationNodeFactory {
     override fun create(interactionSource: InteractionSource): DelegatableNode {
-        return DimIndicationNode(interactionSource, color, maxAlpha)
+        return DimIndicationNode(interactionSource, color, maxAlpha, shape)
     }
 }
 
 private class DimIndicationNode(
     private val interactionSource: InteractionSource,
     private val color: Color,
-    private val maxAlpha: Float
+    private val maxAlpha: Float,
+    private val shape: Shape,
 ) : Modifier.Node(), DrawModifierNode {
 
     private val alphaAnimatable = Animatable(0f)
@@ -60,7 +65,8 @@ private class DimIndicationNode(
     override fun ContentDrawScope.draw() {
         drawContent()
         if (alphaAnimatable.value > 0f) {
-            drawRect(color = color.copy(alpha = alphaAnimatable.value))
+            val outline = shape.createOutline(size, layoutDirection, this)
+            drawOutline(outline, color = color.copy(alpha = alphaAnimatable.value))
         }
     }
 }
