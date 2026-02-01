@@ -28,6 +28,7 @@ import com.nevoit.cresto.ui.theme.glasense.linearGradientMaskT2B70
 import dev.chrisbanes.haze.ExperimentalHazeApi
 import dev.chrisbanes.haze.HazeInputScale
 import dev.chrisbanes.haze.HazeState
+import dev.chrisbanes.haze.HazeStyle
 import dev.chrisbanes.haze.hazeEffect
 
 /**
@@ -76,6 +77,7 @@ fun GlasenseDynamicSmallTitle(
                         noiseFactor = 0f
                         inputScale = HazeInputScale.Fixed(0.5f)
                         mask = linearGradientMaskT2B70
+                        style = HazeStyle(backgroundColor = surfaceColor, tint = null)
                     }
                     .then(
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) Modifier.smoothGradientMask(

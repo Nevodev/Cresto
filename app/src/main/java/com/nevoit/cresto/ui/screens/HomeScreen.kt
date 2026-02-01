@@ -8,13 +8,13 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -104,7 +104,7 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalHazeApi::class)
 @Composable
-fun HomeScreen(
+fun BoxScope.HomeScreen(
     showMenu: (anchorPosition: Offset, items: List<MenuItemData>) -> Unit,
     showDialog: (items: List<DialogItemData>, title: String, message: String?) -> Unit,
     viewModel: TodoViewModel
@@ -243,421 +243,351 @@ fun HomeScreen(
         BackHandler { viewModel.clearSelections() }
     }
 
-    Box(
+    LazyColumn(
+        state = lazyListState,
         modifier = Modifier
+            .hazeSource(hazeState, 0f)
             .fillMaxSize()
-            .graphicsLayer {
-                clip = true
-            }
-            .background(CalculatedColor.hierarchicalBackgroundColor)
+            .padding(0.dp),
+        contentPadding = PaddingValues(
+            start = 12.dp,
+            top = 0.dp,
+            end = 12.dp,
+            bottom = 120.dp + navigationBarHeight
+        )
     ) {
-        LazyColumn(
-            state = lazyListState,
-            modifier = Modifier
-                .hazeSource(hazeState, 0f)
-                .fillMaxSize()
-                .padding(0.dp)
-                .background(CalculatedColor.hierarchicalBackgroundColor),
-            contentPadding = PaddingValues(
-                start = 12.dp,
-                top = 0.dp,
-                end = 12.dp,
-                bottom = 120.dp + navigationBarHeight
+        item {
+            GlasensePageHeader(
+                title = stringResource(R.string.all_todos)
             )
-        ) {
-            item {
-                GlasensePageHeader(
-                    title = stringResource(R.string.all_todos)
-                )
-            }
-            items(
-                items = incompleteTodos,
-                key = { it.todoItem.id },
-            ) { item ->
-                val isSelected = item.todoItem.id in selectedItemIds
-                val alpha = remember { Animatable(if (isSelected) 1f else 0f) }
-                LaunchedEffect(isSelected) {
-                    if (isSelected) {
-                        alpha.animateTo(1f, tween(100))
-                    } else {
-                        alpha.animateTo(0f, tween(100))
-                    }
+        }
+        items(
+            items = incompleteTodos,
+            key = { it.todoItem.id },
+        ) { item ->
+            val isSelected = item.todoItem.id in selectedItemIds
+            val alpha = remember { Animatable(if (isSelected) 1f else 0f) }
+            LaunchedEffect(isSelected) {
+                if (isSelected) {
+                    alpha.animateTo(1f, tween(100))
+                } else {
+                    alpha.animateTo(0f, tween(100))
                 }
-                Box(
-                    modifier = Modifier
-                        .animateItem(placementSpec = spring(0.9f, 400f))
-                        .clip(shape = ContinuousRoundedRectangle(12.dp))
-                        .combinedClickable(
-                            interactionSource = remember { MutableInteractionSource() },
-                            indication = DimIndication(),
-                            onLongClick = {
-                                if (!isSelectionModeActive) {
-                                    scope.launch {
-                                        viewModel.enterSelectionMode(item.todoItem.id)
-                                    }
-                                } else {
+            }
+            Box(
+                modifier = Modifier
+                    .animateItem(placementSpec = spring(0.9f, 400f))
+                    .clip(shape = ContinuousRoundedRectangle(12.dp))
+                    .combinedClickable(
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = DimIndication(),
+                        onLongClick = {
+                            if (!isSelectionModeActive) {
+                                scope.launch {
+                                    viewModel.enterSelectionMode(item.todoItem.id)
+                                }
+                            } else {
+                                viewModel.toggleSelection(item.todoItem.id)
+                            }
+                        },
+                        onClick = {
+                            if (isSelectionModeActive) {
+                                scope.launch {
                                     viewModel.toggleSelection(item.todoItem.id)
                                 }
-                            },
-                            onClick = {
-                                if (isSelectionModeActive) {
+                            } else {
+                                val intent =
+                                    Intent(context, DetailActivity::class.java).apply {
+                                        putExtra("todo_id", item.todoItem.id)
+                                    }
+                                launcher.launch(intent)
+                            }
+                        }
+                    )) {
+                SwipeableTodoItem(
+                    item = item,
+                    onCheckedChange = { isChecked ->
+                        viewModel.update(item.todoItem.copy(isCompleted = isChecked))
+                    },
+                    onDelete = { viewModel.delete(item.todoItem) },
+                    modifier = Modifier
+                        .then(if (isComposed) Modifier.drawBehind {
+                            val outline =
+                                ContinuousRoundedRectangle(10.5.dp, g2).createOutline(
+                                    size = Size(
+                                        this.size.width - 3.dp.toPx(),
+                                        this.size.height - 3.dp.toPx()
+                                    ),
+                                    layoutDirection = LayoutDirection.Ltr,
+                                    density = density
+                                )
+                            translate(1.5.dp.toPx(), 1.5.dp.toPx()) {
+                                drawOutline(
+                                    outline = outline,
+                                    color = Blue500,
+                                    alpha = alpha.value,
+                                    style = Stroke(width = 3.dp.toPx()),
+                                )
+                            }
+                        } else Modifier),
+                    listState = swipeListState
+                )
+                // Selection mode selector box
+                if (isSelectionModeActive) {
+                    Box(
+                        modifier = Modifier
+                            .matchParentSize()
+                            .combinedClickable(
+                                interactionSource = interactionSource,
+                                indication = null,
+                                onClick = {
                                     scope.launch {
                                         viewModel.toggleSelection(item.todoItem.id)
                                     }
-                                } else {
-                                    val intent =
-                                        Intent(context, DetailActivity::class.java).apply {
-                                            putExtra("todo_id", item.todoItem.id)
-                                        }
-                                    launcher.launch(intent)
                                 }
-                            }
-                        )) {
-                    SwipeableTodoItem(
-                        item = item,
-                        onCheckedChange = { isChecked ->
-                            viewModel.update(item.todoItem.copy(isCompleted = isChecked))
-                        },
-                        onDelete = { viewModel.delete(item.todoItem) },
-                        modifier = Modifier
-                            .then(if (isComposed) Modifier.drawBehind {
-                                val outline =
-                                    ContinuousRoundedRectangle(10.5.dp, g2).createOutline(
-                                        size = Size(
-                                            this.size.width - 3.dp.toPx(),
-                                            this.size.height - 3.dp.toPx()
-                                        ),
-                                        layoutDirection = LayoutDirection.Ltr,
-                                        density = density
-                                    )
-                                translate(1.5.dp.toPx(), 1.5.dp.toPx()) {
-                                    drawOutline(
-                                        outline = outline,
-                                        color = Blue500,
-                                        alpha = alpha.value,
-                                        style = Stroke(width = 3.dp.toPx()),
-                                    )
-                                }
-                            } else Modifier),
-                        listState = swipeListState
+                            )) {}
+                }
+            }
+            Spacer(modifier = Modifier.height(12.dp))
+        }
+
+        if (completeTodos.isNotEmpty()) {
+            item(key = "small_title") {
+                val degree = remember { Animatable(if (completedVisible) 90f else 180f) }
+                LaunchedEffect(completedVisible) {
+                    if (completedVisible) {
+                        degree.animateTo(90f, tween(200))
+                    } else {
+                        degree.animateTo(180f, tween(200))
+                    }
+                }
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    modifier = Modifier
+                        .zIndex(-1f)
+                        .animateItem(placementSpec = spring(0.9f, 400f))
+                        .fillMaxWidth()
+                        .clickable(
+                            interactionSource = interactionSource,
+                            indication = null,
+                            onClick = { completedVisible = !completedVisible }
+                        )
+                        .padding(top = 8.dp, bottom = 8.dp, start = 12.dp)
+                ) {
+                    Text(
+                        text = stringResource(R.string.completed),
+                        fontSize = 14.sp,
+                        lineHeight = 14.sp,
+                        fontWeight = FontWeight.Normal,
+                        color = MaterialTheme.colorScheme.onBackground.copy(.5f)
                     )
-                    // Selection mode selector box
-                    if (isSelectionModeActive) {
-                        Box(
-                            modifier = Modifier
-                                .matchParentSize()
-                                .combinedClickable(
-                                    interactionSource = interactionSource,
-                                    indication = null,
-                                    onClick = {
+                    Icon(
+                        painter = painterResource(R.drawable.ic_forward_nav),
+                        contentDescription = stringResource(R.string.expand),
+                        modifier = Modifier
+                            .padding(end = 8.dp)
+                            .size(20.dp)
+                            .alpha(.5f)
+                            .graphicsLayer {
+                                rotationZ = degree.value
+                            }
+                    )
+                }
+            }
+            if (completedVisible) {
+                items(
+                    items = completeTodos,
+                    key = { it.todoItem.id },
+                ) { item ->
+                    val isSelected = item.todoItem.id in selectedItemIds
+                    val alpha = remember { Animatable(if (isSelected) 1f else 0f) }
+                    LaunchedEffect(isSelected) {
+                        if (isSelected) {
+                            alpha.animateTo(1f, tween(100))
+                        } else {
+                            alpha.animateTo(0f, tween(100))
+                        }
+                    }
+                    Box(
+                        modifier = Modifier
+                            .animateItem(placementSpec = spring(0.9f, 400f))
+                            .combinedClickable(
+                                interactionSource = remember { MutableInteractionSource() },
+                                indication = DimIndication(),
+                                onLongClick = {
+                                    if (!isSelectionModeActive) {
+                                        scope.launch {
+                                            viewModel.enterSelectionMode(item.todoItem.id)
+                                        }
+                                    } else {
+                                        viewModel.toggleSelection(item.todoItem.id)
+                                    }
+                                },
+                                onClick = {
+                                    if (isSelectionModeActive) {
                                         scope.launch {
                                             viewModel.toggleSelection(item.todoItem.id)
                                         }
-                                    }
-                                )) {}
-                    }
-                }
-                Spacer(modifier = Modifier.height(12.dp))
-            }
-
-            if (completeTodos.isNotEmpty()) {
-                item(key = "small_title") {
-                    val degree = remember { Animatable(if (completedVisible) 90f else 180f) }
-                    LaunchedEffect(completedVisible) {
-                        if (completedVisible) {
-                            degree.animateTo(90f, tween(200))
-                        } else {
-                            degree.animateTo(180f, tween(200))
-                        }
-                    }
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        modifier = Modifier
-                            .zIndex(-1f)
-                            .animateItem(placementSpec = spring(0.9f, 400f))
-                            .fillMaxWidth()
-                            .clickable(
-                                interactionSource = interactionSource,
-                                indication = null,
-                                onClick = { completedVisible = !completedVisible }
-                            )
-                            .padding(top = 8.dp, bottom = 8.dp, start = 12.dp)
-                    ) {
-                        Text(
-                            text = stringResource(R.string.completed),
-                            fontSize = 14.sp,
-                            lineHeight = 14.sp,
-                            fontWeight = FontWeight.Normal,
-                            color = MaterialTheme.colorScheme.onBackground.copy(.5f)
-                        )
-                        Icon(
-                            painter = painterResource(R.drawable.ic_forward_nav),
-                            contentDescription = stringResource(R.string.expand),
-                            modifier = Modifier
-                                .padding(end = 8.dp)
-                                .size(20.dp)
-                                .alpha(.5f)
-                                .graphicsLayer {
-                                    rotationZ = degree.value
-                                }
-                        )
-                    }
-                }
-                if (completedVisible) {
-                    items(
-                        items = completeTodos,
-                        key = { it.todoItem.id },
-                    ) { item ->
-                        val isSelected = item.todoItem.id in selectedItemIds
-                        val alpha = remember { Animatable(if (isSelected) 1f else 0f) }
-                        LaunchedEffect(isSelected) {
-                            if (isSelected) {
-                                alpha.animateTo(1f, tween(100))
-                            } else {
-                                alpha.animateTo(0f, tween(100))
-                            }
-                        }
-                        Box(
-                            modifier = Modifier
-                                .animateItem(placementSpec = spring(0.9f, 400f))
-                                .combinedClickable(
-                                    interactionSource = remember { MutableInteractionSource() },
-                                    indication = DimIndication(),
-                                    onLongClick = {
-                                        if (!isSelectionModeActive) {
-                                            scope.launch {
-                                                viewModel.enterSelectionMode(item.todoItem.id)
+                                    } else {
+                                        val intent =
+                                            Intent(
+                                                context,
+                                                DetailActivity::class.java
+                                            ).apply {
+                                                putExtra(EXTRA_TODO_ID, item.todoItem.id)
                                             }
-                                        } else {
-                                            viewModel.toggleSelection(item.todoItem.id)
-                                        }
-                                    },
-                                    onClick = {
-                                        if (isSelectionModeActive) {
+                                        launcher.launch(intent)
+                                    }
+                                }
+                            )) {
+                        SwipeableTodoItem(
+                            item = item,
+                            onCheckedChange = { isChecked ->
+                                viewModel.update(item.todoItem.copy(isCompleted = isChecked))
+                            },
+                            onDelete = { viewModel.delete(item.todoItem) },
+                            modifier = Modifier
+                                .then(if (isComposed) Modifier.drawBehind {
+                                    val outline =
+                                        ContinuousRoundedRectangle(
+                                            10.5.dp,
+                                            g2
+                                        ).createOutline(
+                                            size = Size(
+                                                this.size.width - 3.dp.toPx(),
+                                                this.size.height - 3.dp.toPx()
+                                            ),
+                                            layoutDirection = LayoutDirection.Ltr,
+                                            density = density
+                                        )
+                                    translate(1.5.dp.toPx(), 1.5.dp.toPx()) {
+                                        drawOutline(
+                                            outline = outline,
+                                            color = Blue500,
+                                            alpha = alpha.value,
+                                            style = Stroke(width = 3.dp.toPx()),
+                                        )
+                                    }
+                                } else Modifier),
+                            listState = swipeListState
+                        )
+                        if (isSelectionModeActive) {
+                            Box(
+                                modifier = Modifier
+                                    .matchParentSize()
+                                    .combinedClickable(
+                                        interactionSource = interactionSource,
+                                        indication = null,
+                                        onClick = {
                                             scope.launch {
                                                 viewModel.toggleSelection(item.todoItem.id)
                                             }
-                                        } else {
-                                            val intent =
-                                                Intent(
-                                                    context,
-                                                    DetailActivity::class.java
-                                                ).apply {
-                                                    putExtra(EXTRA_TODO_ID, item.todoItem.id)
-                                                }
-                                            launcher.launch(intent)
                                         }
-                                    }
-                                )) {
-                            SwipeableTodoItem(
-                                item = item,
-                                onCheckedChange = { isChecked ->
-                                    viewModel.update(item.todoItem.copy(isCompleted = isChecked))
-                                },
-                                onDelete = { viewModel.delete(item.todoItem) },
-                                modifier = Modifier
-                                    .then(if (isComposed) Modifier.drawBehind {
-                                        val outline =
-                                            ContinuousRoundedRectangle(
-                                                10.5.dp,
-                                                g2
-                                            ).createOutline(
-                                                size = Size(
-                                                    this.size.width - 3.dp.toPx(),
-                                                    this.size.height - 3.dp.toPx()
-                                                ),
-                                                layoutDirection = LayoutDirection.Ltr,
-                                                density = density
-                                            )
-                                        translate(1.5.dp.toPx(), 1.5.dp.toPx()) {
-                                            drawOutline(
-                                                outline = outline,
-                                                color = Blue500,
-                                                alpha = alpha.value,
-                                                style = Stroke(width = 3.dp.toPx()),
-                                            )
-                                        }
-                                    } else Modifier),
-                                listState = swipeListState
-                            )
-                            if (isSelectionModeActive) {
-                                Box(
-                                    modifier = Modifier
-                                        .matchParentSize()
-                                        .combinedClickable(
-                                            interactionSource = interactionSource,
-                                            indication = null,
-                                            onClick = {
-                                                scope.launch {
-                                                    viewModel.toggleSelection(item.todoItem.id)
-                                                }
-                                            }
-                                        )) {}
-                            }
-                        }
-                        Spacer(modifier = Modifier.height(12.dp))
-                    }
-                }
-            }
-            overscrollSpacer(lazyListState)
-        }
-        GlasenseDynamicSmallTitle(
-            modifier = Modifier.align(Alignment.TopCenter),
-            title = if (isComposed) stringResource(
-                R.string.selected_todos,
-                lastNonZeroSelected
-            ) else stringResource(R.string.all_todos),
-            textStyle = TextStyle(fontFeatureSettings = "tnum"),
-            statusBarHeight = statusBarHeight,
-            isVisible = if (isSelectionModeActive) true else isSmallTitleVisible,
-            hazeState = hazeState,
-            surfaceColor = surfaceColor
-        ) {
-            var coordinatesCaptured by remember { mutableStateOf<LayoutCoordinates?>(null) }
-            if (!isGone) {
-                GlasenseButton(
-                    enabled = true,
-                    shape = ContinuousCapsule,
-                    onClick = {},
-                    modifier = Modifier
-                        .blur(
-                            targetBlurRadius.dp - topBarBlurAnimation.value.dp,
-                            BlurredEdgeTreatment.Unbounded
-                        )
-                        .graphicsLayer {
-                            alpha = 1 - topBarAlphaAnimation.value
-                        }
-                        .padding(top = statusBarHeight, start = 12.dp)
-                        .align(Alignment.TopStart),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = onSurfaceContainer,
-                        contentColor = MaterialTheme.colorScheme.primary
-                    )
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .height(48.dp),
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .height(48.dp)
-                                .width(48.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                painter = painterResource(id = R.drawable.ic_magnifying_glass),
-                                contentDescription = stringResource(R.string.search_all_todos),
-                                modifier = Modifier.width(32.dp),
-                                tint = MaterialTheme.colorScheme.primary
-                            )
-                        }
-                        Box(
-                            modifier = Modifier
-                                .height(48.dp)
-                                .width(48.dp)
-                                .onGloballyPositioned { coordinates ->
-                                    coordinatesCaptured = coordinates
-                                }
-                                .pointerInput(Unit) {
-                                    detectTapGestures(
-                                        onTap = {
-                                            coordinatesCaptured?.let {
-                                                val position = Offset(
-                                                    x = it.positionOnScreen().x,
-                                                    y = it.positionOnScreen().y + it.size.height + 8 * dpPx
-                                                )
-                                                showMenu(position, menuItemsFilter)
-                                            }
-                                        }
-                                    )
-                                },
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                painter = painterResource(id = R.drawable.ic_funnel),
-                                contentDescription = stringResource(R.string.filter),
-                                modifier = Modifier.width(32.dp),
-                                tint = MaterialTheme.colorScheme.primary
-                            )
+                                    )) {}
                         }
                     }
-                }
-                GlasenseButton(
-                    enabled = true,
-                    shape = CircleShape,
-                    onClick = { viewModel.showBottomSheet() },
-                    modifier = Modifier
-                        .blur(
-                            targetBlurRadius.dp - topBarBlurAnimation.value.dp,
-                            BlurredEdgeTreatment.Unbounded
-                        )
-                        .graphicsLayer {
-                            alpha = 1 - topBarAlphaAnimation.value
-                        }
-                        .padding(top = statusBarHeight, end = 12.dp)
-                        .size(48.dp)
-                        .align(Alignment.TopEnd),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = onSurfaceContainer,
-                        contentColor = MaterialTheme.colorScheme.primary
-                    )
-                ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_add_large),
-                        contentDescription = stringResource(R.string.add_new_todo),
-                        modifier = Modifier.width(32.dp)
-                    )
+                    Spacer(modifier = Modifier.height(12.dp))
                 }
             }
         }
-        if (isComposed) {
-            GlasenseButtonAdaptable(
-                width = { 48.dp },
-                height = { 48.dp },
-                padding = PaddingValues(top = statusBarHeight, start = 12.dp),
-                tint = Red500,
+        overscrollSpacer(lazyListState)
+    }
+    GlasenseDynamicSmallTitle(
+        modifier = Modifier.align(Alignment.TopCenter),
+        title = if (isComposed) stringResource(
+            R.string.selected_todos,
+            lastNonZeroSelected
+        ) else stringResource(R.string.all_todos),
+        textStyle = TextStyle(fontFeatureSettings = "tnum"),
+        statusBarHeight = statusBarHeight,
+        isVisible = if (isSelectionModeActive) true else isSmallTitleVisible,
+        hazeState = hazeState,
+        surfaceColor = surfaceColor
+    ) {
+        var coordinatesCaptured by remember { mutableStateOf<LayoutCoordinates?>(null) }
+        if (!isGone) {
+            GlasenseButton(
                 enabled = true,
                 shape = ContinuousCapsule,
-                onClick = {
-                    showDialog(
-                        dialogItems,
-                        title,
-                        message
-                    )
-                },
+                onClick = {},
                 modifier = Modifier
-                    .blur(topBarBlurAnimation.value.dp, BlurredEdgeTreatment.Unbounded)
+                    .blur(
+                        targetBlurRadius.dp - topBarBlurAnimation.value.dp,
+                        BlurredEdgeTreatment.Unbounded
+                    )
                     .graphicsLayer {
-                        alpha = topBarAlphaAnimation.value
+                        alpha = 1 - topBarAlphaAnimation.value
                     }
+                    .padding(top = statusBarHeight, start = 12.dp)
                     .align(Alignment.TopStart),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = onSurfaceContainer,
                     contentColor = MaterialTheme.colorScheme.primary
                 )
             ) {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_trash),
-                    contentDescription = stringResource(R.string.delete_selected_todo_s),
-                    modifier = Modifier.width(32.dp)
-                )
+                Row(
+                    modifier = Modifier
+                        .height(48.dp),
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .height(48.dp)
+                            .width(48.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_magnifying_glass),
+                            contentDescription = stringResource(R.string.search_all_todos),
+                            modifier = Modifier.width(32.dp),
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                    Box(
+                        modifier = Modifier
+                            .height(48.dp)
+                            .width(48.dp)
+                            .onGloballyPositioned { coordinates ->
+                                coordinatesCaptured = coordinates
+                            }
+                            .pointerInput(Unit) {
+                                detectTapGestures(
+                                    onTap = {
+                                        coordinatesCaptured?.let {
+                                            val position = Offset(
+                                                x = it.positionOnScreen().x,
+                                                y = it.positionOnScreen().y + it.size.height + 8 * dpPx
+                                            )
+                                            showMenu(position, menuItemsFilter)
+                                        }
+                                    }
+                                )
+                            },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_funnel),
+                            contentDescription = stringResource(R.string.filter),
+                            modifier = Modifier.width(32.dp),
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                }
             }
-            GlasenseButtonAdaptable(
-                width = { 48.dp },
-                height = { 48.dp },
-                padding = PaddingValues(top = statusBarHeight, end = 12.dp),
+            GlasenseButton(
                 enabled = true,
                 shape = CircleShape,
-                onClick = { viewModel.clearSelections() },
+                onClick = { viewModel.showBottomSheet() },
                 modifier = Modifier
                     .blur(
-                        topBarBlurAnimation.value.dp,
+                        targetBlurRadius.dp - topBarBlurAnimation.value.dp,
                         BlurredEdgeTreatment.Unbounded
                     )
                     .graphicsLayer {
-                        alpha = topBarAlphaAnimation.value
+                        alpha = 1 - topBarAlphaAnimation.value
                     }
+                    .padding(top = statusBarHeight, end = 12.dp)
+                    .size(48.dp)
                     .align(Alignment.TopEnd),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = onSurfaceContainer,
@@ -665,11 +595,71 @@ fun HomeScreen(
                 )
             ) {
                 Icon(
-                    painter = painterResource(id = R.drawable.ic_cross),
-                    contentDescription = stringResource(R.string.exit_selection_mode),
+                    painter = painterResource(id = R.drawable.ic_add_large),
+                    contentDescription = stringResource(R.string.add_new_todo),
                     modifier = Modifier.width(32.dp)
                 )
             }
+        }
+    }
+    if (isComposed) {
+        GlasenseButtonAdaptable(
+            width = { 48.dp },
+            height = { 48.dp },
+            padding = PaddingValues(top = statusBarHeight, start = 12.dp),
+            tint = Red500,
+            enabled = true,
+            shape = ContinuousCapsule,
+            onClick = {
+                showDialog(
+                    dialogItems,
+                    title,
+                    message
+                )
+            },
+            modifier = Modifier
+                .blur(topBarBlurAnimation.value.dp, BlurredEdgeTreatment.Unbounded)
+                .graphicsLayer {
+                    alpha = topBarAlphaAnimation.value
+                }
+                .align(Alignment.TopStart),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = onSurfaceContainer,
+                contentColor = MaterialTheme.colorScheme.primary
+            )
+        ) {
+            Icon(
+                painter = painterResource(id = R.drawable.ic_trash),
+                contentDescription = stringResource(R.string.delete_selected_todo_s),
+                modifier = Modifier.width(32.dp)
+            )
+        }
+        GlasenseButtonAdaptable(
+            width = { 48.dp },
+            height = { 48.dp },
+            padding = PaddingValues(top = statusBarHeight, end = 12.dp),
+            enabled = true,
+            shape = CircleShape,
+            onClick = { viewModel.clearSelections() },
+            modifier = Modifier
+                .blur(
+                    topBarBlurAnimation.value.dp,
+                    BlurredEdgeTreatment.Unbounded
+                )
+                .graphicsLayer {
+                    alpha = topBarAlphaAnimation.value
+                }
+                .align(Alignment.TopEnd),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = onSurfaceContainer,
+                contentColor = MaterialTheme.colorScheme.primary
+            )
+        ) {
+            Icon(
+                painter = painterResource(id = R.drawable.ic_cross),
+                contentDescription = stringResource(R.string.exit_selection_mode),
+                modifier = Modifier.width(32.dp)
+            )
         }
     }
 }

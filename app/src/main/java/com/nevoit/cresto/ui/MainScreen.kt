@@ -61,6 +61,7 @@ import com.nevoit.cresto.ui.theme.glasense.linearGradientMaskB2T90
 import dev.chrisbanes.haze.ExperimentalHazeApi
 import dev.chrisbanes.haze.HazeInputScale
 import dev.chrisbanes.haze.HazeProgressive
+import dev.chrisbanes.haze.HazeStyle
 import dev.chrisbanes.haze.hazeEffect
 import dev.chrisbanes.haze.hazeSource
 import dev.chrisbanes.haze.rememberHazeState
@@ -129,15 +130,15 @@ fun MainScreen() {
     Box(
         modifier = Modifier
             .fillMaxSize()
+            .background(surfaceColor)
     ) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .layerBackdrop(backdrop)
                 .hazeSource(hazeState, 0f)
-                .background(color = CalculatedColor.hierarchicalBackgroundColor)
         ) {
-            AppNavHost(
+            NavContainer(
                 currentRoute = currentRoute,
                 showMenu = showMenu,
                 viewModel = viewModel,
@@ -162,6 +163,7 @@ fun MainScreen() {
                         noiseFactor = 0f
                         mask = linearGradientMaskB2T90
                         inputScale = HazeInputScale.Fixed(0.5f)
+                        style = HazeStyle(backgroundColor = surfaceColor, tint = null)
                     } else Modifier.hazeEffect(
                         hazeState
                     ) {

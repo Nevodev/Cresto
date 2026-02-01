@@ -243,7 +243,6 @@ fun DetailScreen(
                     .hazeSource(hazeState, 0f)
                     .fillMaxSize()
                     .padding(0.dp)
-                    .background(surfaceColor)
                     .imePadding(),
                 contentPadding = PaddingValues(
                     start = 12.dp,
