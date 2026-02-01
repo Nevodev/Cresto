@@ -1,6 +1,7 @@
 package com.nevoit.cresto.ui
 
 import android.os.Build
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
@@ -37,8 +38,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.compose.currentBackStackEntryAsState
-import androidx.navigation.compose.rememberNavController
 import com.kyant.backdrop.backdrops.layerBackdrop
 import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import com.nevoit.cresto.CrestoApplication
@@ -79,7 +78,8 @@ sealed class Screen(val route: String) {
 @Composable
 fun MainScreen() {
     val surfaceColor = CalculatedColor.hierarchicalBackgroundColor
-    val navController = rememberNavController()
+    var currentRoute by remember { mutableStateOf(Screen.Home.route) }
+
     val hazeState = rememberHazeState()
     val backdrop = rememberLayerBackdrop {
         drawRect(surfaceColor)
@@ -123,6 +123,9 @@ fun MainScreen() {
 
     val navigationBarHeight = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
 
+    BackHandler(enabled = currentRoute != Screen.Home.route) {
+        currentRoute = Screen.Home.route
+    }
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -135,7 +138,7 @@ fun MainScreen() {
                 .background(color = CalculatedColor.hierarchicalBackgroundColor)
         ) {
             AppNavHost(
-                navController = navController,
+                currentRoute = currentRoute,
                 showMenu = showMenu,
                 viewModel = viewModel,
                 showDialog = showDialog
@@ -182,20 +185,12 @@ fun MainScreen() {
                     .align(Alignment.BottomCenter),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-
-                val navBackStackEntry by navController.currentBackStackEntryAsState()
-                val currentRoute = navBackStackEntry?.destination?.route
-
                 GlasenseNavigationButton(
                     modifier = Modifier.weight(1f),
                     isActive = currentRoute == Screen.Home.route,
                     onClick = {
                         if (currentRoute != Screen.Home.route) {
-                            navController.navigate(Screen.Home.route) {
-                                popUpTo(navController.graph.startDestinationId) {
-                                    saveState = true
-                                }; launchSingleTop = true; restoreState = true
-                            }
+                            currentRoute = Screen.Home.route
                         }
                     },
                     backdrop = backdrop
@@ -211,11 +206,7 @@ fun MainScreen() {
                     isActive = currentRoute == Screen.Star.route,
                     onClick = {
                         if (currentRoute != Screen.Star.route) {
-                            navController.navigate(Screen.Star.route) {
-                                popUpTo(navController.graph.startDestinationId) {
-                                    saveState = true
-                                }; launchSingleTop = true; restoreState = true
-                            }
+                            currentRoute = Screen.Star.route
                         }
                     },
                     backdrop = backdrop
@@ -231,11 +222,7 @@ fun MainScreen() {
                     isActive = currentRoute == Screen.Settings.route,
                     onClick = {
                         if (currentRoute != Screen.Settings.route) {
-                            navController.navigate(Screen.Settings.route) {
-                                popUpTo(navController.graph.startDestinationId) {
-                                    saveState = true
-                                }; launchSingleTop = true; restoreState = true
-                            }
+                            currentRoute = Screen.Settings.route
                         }
                     },
                     backdrop = backdrop

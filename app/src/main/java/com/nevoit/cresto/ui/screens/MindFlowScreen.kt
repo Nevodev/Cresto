@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
@@ -62,6 +63,7 @@ import com.nevoit.cresto.ui.components.glasense.GlasenseButtonAlt
 import com.nevoit.cresto.ui.components.glasense.GlasenseDynamicSmallTitle
 import com.nevoit.cresto.ui.components.glasense.GlasenseLoadingIndicator
 import com.nevoit.cresto.ui.components.glasense.GlasensePageHeader
+import com.nevoit.cresto.ui.components.glasense.extend.overscrollSpacer
 import com.nevoit.cresto.ui.components.packed.CardWithTitle
 import com.nevoit.cresto.ui.components.packed.CardWithoutTitle
 import com.nevoit.cresto.ui.components.packed.CircularTimer
@@ -97,6 +99,8 @@ fun MindFlowScreen(
     timerViewModel: ModeTimerViewModel = viewModel()
 ) {
     val statusBarHeight = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
+    val navigationBarHeight = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+
     val density = LocalDensity.current
     val thresholdPx = if (statusBarHeight > 0.dp) {
         with(density) {
@@ -208,7 +212,7 @@ fun MindFlowScreen(
                 start = 12.dp,
                 top = 0.dp,
                 end = 12.dp,
-                bottom = 136.dp
+                bottom = 120.dp + navigationBarHeight
             )
         ) {
             item {
@@ -595,7 +599,7 @@ fun MindFlowScreen(
                     }
                 }
             }
-
+            overscrollSpacer(lazyListState)
         }
         GlasenseDynamicSmallTitle(
             modifier = Modifier.align(Alignment.TopCenter),

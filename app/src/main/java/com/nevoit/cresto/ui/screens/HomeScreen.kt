@@ -23,6 +23,7 @@ import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
@@ -65,7 +66,6 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionOnScreen
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
@@ -88,6 +88,7 @@ import com.nevoit.cresto.ui.components.glasense.GlasenseButtonAdaptable
 import com.nevoit.cresto.ui.components.glasense.GlasenseDynamicSmallTitle
 import com.nevoit.cresto.ui.components.glasense.GlasensePageHeader
 import com.nevoit.cresto.ui.components.glasense.MenuItemData
+import com.nevoit.cresto.ui.components.glasense.extend.overscrollSpacer
 import com.nevoit.cresto.ui.components.glasense.rememberSwipeableListState
 import com.nevoit.cresto.ui.components.packed.SwipeableTodoItem
 import com.nevoit.cresto.ui.screens.detailscreen.DetailActivity
@@ -135,6 +136,8 @@ fun HomeScreen(
     )
 
     val statusBarHeight = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
+    val navigationBarHeight = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+
     val density = LocalDensity.current
     val thresholdPx = if (statusBarHeight > 0.dp) {
         with(density) {
@@ -240,28 +243,6 @@ fun HomeScreen(
         BackHandler { viewModel.clearSelections() }
     }
 
-    val screenHeightPx = LocalWindowInfo.current.containerSize.height
-    val spacerHeight by remember {
-        derivedStateOf {
-            val layoutInfo = lazyListState.layoutInfo
-            val visibleItems = layoutInfo.visibleItemsInfo
-
-            if (visibleItems.isEmpty()) {
-                return@derivedStateOf with(density) { screenHeightPx.toDp() }
-            }
-
-            val contentItems = visibleItems.filter { it.key != "footer_spacer" }
-
-            val contentHeightPx = contentItems.sumOf { it.size }
-
-            if (contentHeightPx < screenHeightPx) {
-                with(density) { (screenHeightPx - contentHeightPx).toDp() }
-            } else {
-                0.dp
-            }
-        }
-    }
-
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -281,7 +262,7 @@ fun HomeScreen(
                 start = 12.dp,
                 top = 0.dp,
                 end = 12.dp,
-                bottom = 136.dp
+                bottom = 120.dp + navigationBarHeight
             )
         ) {
             item {
@@ -519,9 +500,7 @@ fun HomeScreen(
                     }
                 }
             }
-            item(key = "footer_spacer") {
-                Spacer(modifier = Modifier.height(spacerHeight))
-            }
+            overscrollSpacer(lazyListState)
         }
         GlasenseDynamicSmallTitle(
             modifier = Modifier.align(Alignment.TopCenter),
