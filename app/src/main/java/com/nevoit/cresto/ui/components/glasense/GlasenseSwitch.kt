@@ -53,8 +53,10 @@ import com.kyant.backdrop.shadow.Shadow
 import com.kyant.capsule.ContinuousCapsule
 import com.nevoit.cresto.ui.theme.glasense.AppColors
 import com.nevoit.cresto.ui.theme.glasense.GlasenseColors
+import com.nevoit.cresto.ui.theme.glasense.LocalGlasenseSettings
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.android.awaitFrame
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -68,7 +70,7 @@ import kotlin.math.abs
  * @param onCheckedChange Callback for when the switch is toggled.
  */
 @Composable
-fun GlasenseSwitch(
+private fun GlasenseSwitch(
     enabled: Boolean = true,
     checked: Boolean,
     colors: GlasenseColors = AppColors,
@@ -205,13 +207,13 @@ private fun DrawScope.drawTrack(
 
 @Composable
 fun GlasenseSwitch(
-    liquidGlass: Boolean = true,
     backgroundColor: Color,
     enabled: Boolean = true,
     checked: Boolean,
     colors: GlasenseColors = AppColors,
     onCheckedChange: (Boolean) -> Unit
 ) {
+    val liquidGlass = LocalGlasenseSettings.current.liquidGlass
     if (liquidGlass) {
         val trackBackdrop = rememberLayerBackdrop() {
             drawRect(backgroundColor)
@@ -261,27 +263,43 @@ fun GlasenseSwitch(
 
                 var scaleJob: Job? = null
 
-                var isInteractionInProgress = false
+                // 标记：是否正在执行 sync 动画
+                var isSyncing = false
 
                 val scaleProgress: Float
                     get() = ((1f - scaleAnim.value) / (1f - pressedScale)).coerceIn(0f, 1f)
 
                 fun press() {
-                    isInteractionInProgress = true
-
-                    scaleJob?.cancel()
-                    scaleJob = scope.launch {
-                        scaleAnim.animateTo(pressedScale, scaleSpec)
+                    // 只有当没有正在进行的 sync 动画时，才重新开始变大
+                    // 这防止了连点时的动画冲突
+                    if (!isSyncing) {
+                        scaleJob?.cancel()
+                        scaleJob = scope.launch {
+                            scaleAnim.animateTo(pressedScale, scaleSpec)
+                        }
                     }
                 }
 
-                fun toggle(newChecked: Boolean) {
-                    isInteractionInProgress = true
-                    val targetOffset = if (newChecked) moveDistance else 0f
+                fun release() {
+                    // 如果正在 sync，绝对不能执行 release 缩小
+                    if (isSyncing) return
+
+                    scaleJob?.cancel()
+                    scaleJob = scope.launch {
+                        scaleAnim.animateTo(1f, scaleSpec)
+                    }
+                }
+
+                fun sync(isChecked: Boolean) {
+                    val targetOffset = if (isChecked) moveDistance else 0f
+                    if (offsetAnim.targetValue == targetOffset) return
+
+                    isSyncing = true
 
                     scope.launch {
                         val threshold = 1f + (pressedScale - 1f) * 0.5f
 
+                        // 1. 确保涨到足够大 (接管 press 的动画)
                         if (scaleAnim.value < threshold) {
                             try {
                                 kotlinx.coroutines.withTimeout(200) {
@@ -293,17 +311,18 @@ fun GlasenseSwitch(
                             }
                         }
 
+                        // 2. 开始位移
                         offsetAnim.animateTo(targetOffset, offsetSpec)
-
-                        isInteractionInProgress = false
                     }
 
+                    // 3. 保持变大，直到位移结束
                     scaleJob?.cancel()
                     scaleJob = scope.launch {
                         val holdPressJob = launch {
                             scaleAnim.animateTo(pressedScale, scaleSpec)
                         }
 
+                        // 等待位移到达目标
                         awaitFrame()
                         if (offsetAnim.value != targetOffset) {
                             snapshotFlow { offsetAnim.value }
@@ -311,26 +330,10 @@ fun GlasenseSwitch(
                                 .first()
                         }
 
+                        // 位移完成，开始回弹缩小
                         holdPressJob.cancel()
                         scaleAnim.animateTo(1f, scaleSpec)
-                    }
-                }
-
-                fun cancel() {
-                    isInteractionInProgress = false
-
-                    scaleJob?.cancel()
-                    scaleJob = scope.launch {
-                        scaleAnim.animateTo(1f, scaleSpec)
-                    }
-                }
-
-                fun sync(isChecked: Boolean) {
-                    if (isInteractionInProgress) return
-
-                    val target = if (isChecked) moveDistance else 0f
-                    if (offsetAnim.targetValue != target) {
-                        scope.launch { offsetAnim.animateTo(target, offsetSpec) }
+                        isSyncing = false
                     }
                 }
             }
@@ -354,11 +357,15 @@ fun GlasenseSwitch(
 
                                 if (success) {
                                     haptic.performHapticFeedback(HapticFeedbackType.ToggleOn)
-                                    val newChecked = !currentChecked
-                                    currentOnCheckedChange(newChecked)
-                                    physicsController.toggle(newChecked)
+                                    currentOnCheckedChange(!currentChecked)
+                                    scope.launch {
+                                        delay(200)
+                                        if (!physicsController.isSyncing) {
+                                            physicsController.release()
+                                        }
+                                    }
                                 } else {
-                                    physicsController.cancel()
+                                    physicsController.release()
                                 }
                             }
                         )

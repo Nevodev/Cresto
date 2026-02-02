@@ -40,6 +40,7 @@ import com.nevoit.cresto.R
 import com.nevoit.cresto.ui.components.glasense.GlasenseButton
 import com.nevoit.cresto.ui.components.glasense.GlasenseDynamicSmallTitle
 import com.nevoit.cresto.ui.components.glasense.GlasenseSwitch
+import com.nevoit.cresto.ui.components.glasense.extend.overscrollSpacer
 import com.nevoit.cresto.ui.components.packed.ConfigInfoHeader
 import com.nevoit.cresto.ui.components.packed.ConfigItem
 import com.nevoit.cresto.ui.components.packed.ConfigItemContainer
@@ -145,7 +146,11 @@ fun AIScreen() {
                     Column {
                         ConfigItem(title = stringResource(R.string.api_key)) {
                             // Placeholder switch; functionality to be implemented
-                            GlasenseSwitch(checked = true, onCheckedChange = {})
+                            GlasenseSwitch(
+                                checked = true,
+                                onCheckedChange = {},
+                                backgroundColor = surfaceColor
+                            )
                         }
                         Spacer(modifier = Modifier.height(8.dp))
                         // Visual divider line
@@ -164,7 +169,11 @@ fun AIScreen() {
                         Spacer(modifier = Modifier.height(8.dp))
                         ConfigItem(title = stringResource(R.string.url)) {
                             // Placeholder switch; functionality to be implemented
-                            GlasenseSwitch(checked = true, onCheckedChange = {})
+                            GlasenseSwitch(
+                                checked = true,
+                                onCheckedChange = {},
+                                backgroundColor = surfaceColor
+                            )
                         }
                     }
                 }
@@ -179,7 +188,11 @@ fun AIScreen() {
                     Column {
                         ConfigItem(title = stringResource(R.string.input)) {
                             // Placeholder switch; functionality to be implemented
-                            GlasenseSwitch(checked = true, onCheckedChange = {})
+                            GlasenseSwitch(
+                                checked = true,
+                                onCheckedChange = {},
+                                backgroundColor = surfaceColor
+                            )
                         }
                         Spacer(modifier = Modifier.height(8.dp))
                         // Visual divider line
@@ -198,13 +211,16 @@ fun AIScreen() {
                         Spacer(modifier = Modifier.height(8.dp))
                         ConfigItem(title = stringResource(R.string.response)) {
                             // Placeholder switch; functionality to be implemented
-                            GlasenseSwitch(checked = true, onCheckedChange = {})
+                            GlasenseSwitch(
+                                checked = true,
+                                onCheckedChange = {},
+                                backgroundColor = surfaceColor
+                            )
                         }
                     }
                 }
-                // Large spacer at the end, likely for testing scrolling behavior
-                Spacer(modifier = Modifier.height(500.dp))
             }
+            overscrollSpacer(lazyListState)
         }
         // A small title that dynamically appears at the top when the user scrolls down
         GlasenseDynamicSmallTitle(

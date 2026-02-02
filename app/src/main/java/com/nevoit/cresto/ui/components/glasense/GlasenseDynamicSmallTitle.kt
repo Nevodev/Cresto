@@ -24,6 +24,7 @@ import com.nevoit.cresto.ui.components.myFadeIn
 import com.nevoit.cresto.ui.components.myFadeOut
 import com.nevoit.cresto.ui.components.myScaleIn
 import com.nevoit.cresto.ui.components.myScaleOut
+import com.nevoit.cresto.ui.theme.glasense.LocalGlasenseSettings
 import com.nevoit.cresto.ui.theme.glasense.linearGradientMaskT2B70
 import dev.chrisbanes.haze.ExperimentalHazeApi
 import dev.chrisbanes.haze.HazeInputScale
@@ -52,10 +53,11 @@ fun GlasenseDynamicSmallTitle(
     statusBarHeight: Dp,
     isVisible: Boolean,
     hazeState: HazeState,
-    blur: Boolean = true,
     surfaceColor: Color,
     content: @Composable () -> Unit
 ) {
+    val blur = !LocalGlasenseSettings.current.liteMode
+
     // Main container for the title bar and content.
     Box(
         modifier = modifier

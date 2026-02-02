@@ -39,7 +39,6 @@ import com.nevoit.cresto.ui.screens.settings.AIActivity
 import com.nevoit.cresto.ui.screens.settings.AboutActivity
 import com.nevoit.cresto.ui.screens.settings.AppearanceActivity
 import com.nevoit.cresto.ui.screens.settings.DataStorageActivity
-import com.nevoit.cresto.ui.screens.settings.util.SettingsManager
 import com.nevoit.cresto.ui.theme.glasense.AppColors
 import com.nevoit.cresto.ui.theme.glasense.Blue500
 import com.nevoit.cresto.ui.theme.glasense.Pink400
@@ -73,7 +72,7 @@ fun BoxScope.SettingsScreen() {
 
     val context = LocalContext.current
 
-    val liteMode by SettingsManager.isLiteModeState
+
 
     LazyColumn(
         state = lazyListState,
@@ -180,8 +179,7 @@ fun BoxScope.SettingsScreen() {
         statusBarHeight = statusBarHeight,
         isVisible = isSmallTitleVisible,
         hazeState = hazeState,
-        surfaceColor = surfaceColor,
-        blur = !liteMode
+        surfaceColor = surfaceColor
     ) {
     }
 }

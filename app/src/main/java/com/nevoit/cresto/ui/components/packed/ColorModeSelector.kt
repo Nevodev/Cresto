@@ -152,7 +152,6 @@ fun ColorModeSelector(
             Spacer(modifier = Modifier.height(8.dp))
             ConfigItem(title = stringResource(R.string.automatic)) {
                 GlasenseSwitch(
-                    liquidGlass = isLiquidGlass,
                     backgroundColor = AppColors.cardBackground,
                     enabled = true,
                     checked = isAutomatic,

@@ -90,7 +90,6 @@ import com.nevoit.cresto.ui.components.glasense.extend.overscrollSpacer
 import com.nevoit.cresto.ui.components.glasense.rememberSwipeableListState
 import com.nevoit.cresto.ui.components.packed.SwipeableTodoItem
 import com.nevoit.cresto.ui.screens.detailscreen.DetailActivity
-import com.nevoit.cresto.ui.screens.settings.util.SettingsManager
 import com.nevoit.cresto.ui.theme.glasense.AppColors
 import com.nevoit.cresto.ui.theme.glasense.AppSpecs
 import dev.chrisbanes.haze.ExperimentalHazeApi
@@ -115,7 +114,6 @@ fun BoxScope.HomeScreen(
     val isSelectionModeActive by viewModel.isSelectionModeActive.collectAsState()
     val selectedItemCount by viewModel.selectedItemCount.collectAsState()
 
-    val liteMode by SettingsManager.isLiteModeState
 
     var lastNonZeroSelected by remember { mutableIntStateOf(1) }
 
@@ -299,6 +297,13 @@ fun BoxScope.HomeScreen(
         ) { item ->
             val isSelected = item.todoItem.id in selectedItemIds
             val alpha = remember { Animatable(if (isSelected) 1f else 0f) }
+
+            var isChecked by remember(item.todoItem.id) { mutableStateOf(item.todoItem.isCompleted) }
+
+            val displayItem = remember(item, isChecked) {
+                item.copy(todoItem = item.todoItem.copy(isCompleted = isChecked))
+            }
+
             LaunchedEffect(isSelected) {
                 if (isSelected) {
                     alpha.animateTo(1f, tween(100))
@@ -336,9 +341,14 @@ fun BoxScope.HomeScreen(
                         }
                     )) {
                 SwipeableTodoItem(
-                    item = item,
-                    onCheckedChange = { isChecked ->
-                        viewModel.update(item.todoItem.copy(isCompleted = isChecked))
+                    item = displayItem,
+                    onCheckedChange = { checked ->
+                        isChecked = checked
+                        scope.launch {
+                            delay(300) // 2. 等待动画播放
+                            // 3. 提交真实数据，触发列表重排
+                            viewModel.update(item.todoItem.copy(isCompleted = checked))
+                        }
                     },
                     onDelete = { viewModel.delete(item.todoItem) },
                     modifier = Modifier.drawBehind {
@@ -434,6 +444,7 @@ fun BoxScope.HomeScreen(
                 ) { item ->
                     val isSelected = item.todoItem.id in selectedItemIds
                     val alpha = remember { Animatable(if (isSelected) 1f else 0f) }
+                    
                     LaunchedEffect(isSelected) {
                         if (isSelected) {
                             alpha.animateTo(1f, tween(100))
@@ -533,8 +544,7 @@ fun BoxScope.HomeScreen(
         statusBarHeight = statusBarHeight,
         isVisible = if (isSelectionModeActive) true else isSmallTitleVisible,
         hazeState = hazeState,
-        surfaceColor = surfaceColor,
-        blur = !liteMode
+        surfaceColor = surfaceColor
     ) {
         var coordinatesCaptured by remember { mutableStateOf<LayoutCoordinates?>(null) }
         if (!isGone) {

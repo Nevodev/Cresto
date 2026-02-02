@@ -21,6 +21,7 @@ import com.kyant.backdrop.effects.blur
 import com.kyant.backdrop.effects.lens
 import com.kyant.backdrop.highlight.Highlight
 import com.kyant.capsule.ContinuousCapsule
+import com.nevoit.cresto.ui.theme.glasense.AppColors
 import com.nevoit.cresto.ui.theme.glasense.NavigationButtonActiveColors
 import com.nevoit.cresto.ui.theme.glasense.NavigationButtonNormalColors
 import com.nevoit.cresto.ui.theme.glasense.glasenseHighlight
@@ -45,14 +46,13 @@ fun GlasenseNavigationButton(
     content: @Composable () -> Unit
 ) {
     val darkTheme = isAppInDarkTheme()
+    val tint = AppColors.primary
     // Modifier for drawing the button's background based on its state.
-    val finalModifier = if (isActive) {
-        // Active state: draw a simple gradient outline.
+    val finalModifier = if (isActive && !liquidGlass) {
         Modifier
             .fillMaxSize()
             .glasenseHighlight(100.dp)
     } else {
-        // Inactive state: draw a blurred backdrop with different effects for light/dark theme.
         Modifier
             .fillMaxSize()
             .drawBackdrop(
@@ -66,54 +66,59 @@ fun GlasenseNavigationButton(
                     if (liquidGlass) lens(16f.dp.toPx(), 32f.dp.toPx())
                 },
                 onDrawSurface = {
-                    // Light theme inactive style.
-                    if (!darkTheme && !isActive) {
-                        drawRect(
-                            brush = SolidColor(Color(0xFF888888).copy(alpha = 0.7f)),
-                            style = Fill,
-                            blendMode = BlendMode.Luminosity
-                        )
-                        drawRect(
-                            brush = SolidColor(Color(0xFF5F5F5F).copy(alpha = 1f)),
-                            style = Fill,
-                            blendMode = BlendMode.ColorDodge
-                        )
-                        drawRect(
-                            brush = SolidColor(Color(0xFF555555).copy(alpha = 0.5f)),
-                            style = Fill,
-                            blendMode = BlendMode.ColorDodge
-                        )
-                        drawRect(
-                            brush = SolidColor(Color(0xFFFFFFFF).copy(alpha = 0.1f)),
-                            style = Fill,
-                            blendMode = BlendMode.SrcOver
-                        )
-                        // Dark theme inactive style.
-                    } else if (darkTheme && !isActive) {
-                        drawRect(
-                            brush = SolidColor(Color(0xFFFFFFFF).copy(alpha = 0.1f)),
-                            style = Fill
-                        )
-                        drawRect(
-                            brush = SolidColor(Color(0xFF555555).copy(alpha = 0.5f)),
-                            style = Fill,
-                            blendMode = BlendMode.ColorDodge
-                        )
-                        drawRect(
-                            brush = SolidColor(Color(0xFF000000).copy(alpha = 0.2f)),
-                            style = Fill,
-                            blendMode = BlendMode.Luminosity
-                        )
-                        drawRect(
-                            brush = SolidColor(Color(0xFF000000).copy(alpha = 0.2f)),
-                            style = Fill,
-                            blendMode = BlendMode.Overlay
-                        )
-                        drawRect(
-                            brush = SolidColor(Color(0xFF595959).copy(alpha = 0.4f)),
-                            style = Fill,
-                            blendMode = BlendMode.Luminosity
-                        )
+                    if (!isActive) {
+                        if (!darkTheme) {
+                            drawRect(
+                                brush = SolidColor(Color(0xFF888888).copy(alpha = 0.7f)),
+                                style = Fill,
+                                blendMode = BlendMode.Luminosity
+                            )
+                            drawRect(
+                                brush = SolidColor(Color(0xFF5F5F5F).copy(alpha = 1f)),
+                                style = Fill,
+                                blendMode = BlendMode.ColorDodge
+                            )
+                            drawRect(
+                                brush = SolidColor(Color(0xFF555555).copy(alpha = 0.5f)),
+                                style = Fill,
+                                blendMode = BlendMode.ColorDodge
+                            )
+                            drawRect(
+                                brush = SolidColor(Color(0xFFFFFFFF).copy(alpha = 0.1f)),
+                                style = Fill,
+                                blendMode = BlendMode.SrcOver
+                            )
+                            // Dark theme inactive style.
+                        } else {
+                            drawRect(
+                                brush = SolidColor(Color(0xFFFFFFFF).copy(alpha = 0.1f)),
+                                style = Fill
+                            )
+                            drawRect(
+                                brush = SolidColor(Color(0xFF555555).copy(alpha = 0.5f)),
+                                style = Fill,
+                                blendMode = BlendMode.ColorDodge
+                            )
+                            drawRect(
+                                brush = SolidColor(Color(0xFF000000).copy(alpha = 0.2f)),
+                                style = Fill,
+                                blendMode = BlendMode.Luminosity
+                            )
+                            drawRect(
+                                brush = SolidColor(Color(0xFF000000).copy(alpha = 0.2f)),
+                                style = Fill,
+                                blendMode = BlendMode.Overlay
+                            )
+                            drawRect(
+                                brush = SolidColor(Color(0xFF595959).copy(alpha = 0.4f)),
+                                style = Fill,
+                                blendMode = BlendMode.Luminosity
+                            )
+                        }
+                    }
+                    if (liquidGlass && isActive) {
+                        drawRect(tint, blendMode = BlendMode.Hue, alpha = .8f)
+                        drawRect(tint.copy(alpha = 0.7f))
                     }
                 }
             )

@@ -24,6 +24,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -41,6 +42,7 @@ import com.nevoit.cresto.R
 import com.nevoit.cresto.ui.components.glasense.GlasenseButton
 import com.nevoit.cresto.ui.components.glasense.GlasenseDynamicSmallTitle
 import com.nevoit.cresto.ui.components.glasense.GlasenseSwitch
+import com.nevoit.cresto.ui.components.glasense.extend.overscrollSpacer
 import com.nevoit.cresto.ui.components.packed.ColorModeSelector
 import com.nevoit.cresto.ui.components.packed.ConfigInfoHeader
 import com.nevoit.cresto.ui.components.packed.ConfigItem
@@ -48,6 +50,7 @@ import com.nevoit.cresto.ui.components.packed.ConfigItemContainer
 import com.nevoit.cresto.ui.screens.settings.util.SettingsViewModel
 import com.nevoit.cresto.ui.theme.glasense.AppColors
 import com.nevoit.cresto.ui.theme.glasense.Blue500
+import com.nevoit.cresto.ui.theme.glasense.LocalGlasenseSettings
 import dev.chrisbanes.haze.ExperimentalHazeApi
 import dev.chrisbanes.haze.hazeSource
 import dev.chrisbanes.haze.rememberHazeState
@@ -154,7 +157,6 @@ fun AppearanceScreen(settingsViewModel: SettingsViewModel = viewModel()) {
                     Column {
                         ConfigItem(title = stringResource(R.string.custom_primary_color)) {
                             GlasenseSwitch(
-                                liquidGlass = isLiquidGlass,
                                 backgroundColor = AppColors.cardBackground,
                                 checked = isCustomPrimaryColor,
                                 onCheckedChange = { settingsViewModel.onCustomPrimaryColorChanged(it) })
@@ -176,7 +178,6 @@ fun AppearanceScreen(settingsViewModel: SettingsViewModel = viewModel()) {
                         Spacer(modifier = Modifier.height(8.dp))
                         ConfigItem(title = stringResource(R.string.use_dynamic_color_scheme)) {
                             GlasenseSwitch(
-                                liquidGlass = isLiquidGlass,
                                 backgroundColor = AppColors.cardBackground,
                                 checked = isUseDynamicColorScheme,
                                 onCheckedChange = { settingsViewModel.onUseDynamicColorChanged(it) })
@@ -194,7 +195,6 @@ fun AppearanceScreen(settingsViewModel: SettingsViewModel = viewModel()) {
                     Column {
                         ConfigItem(title = stringResource(R.string.lite_mode)) {
                             GlasenseSwitch(
-                                liquidGlass = isLiquidGlass,
                                 backgroundColor = AppColors.cardBackground,
                                 checked = isLiteMode,
                                 onCheckedChange = { settingsViewModel.onLiteModeChanged(it) })
@@ -215,16 +215,21 @@ fun AppearanceScreen(settingsViewModel: SettingsViewModel = viewModel()) {
                                 .height(0.dp))
                         Spacer(modifier = Modifier.height(8.dp))
                         ConfigItem(title = stringResource(R.string.liquid_glass)) {
-                            GlasenseSwitch(
-                                liquidGlass = true,
-                                backgroundColor = AppColors.cardBackground,
-                                checked = isLiquidGlass,
-                                onCheckedChange = { settingsViewModel.onLiquidGlassChanged(it) })
+                            CompositionLocalProvider(
+                                LocalGlasenseSettings provides LocalGlasenseSettings.current.copy(
+                                    liquidGlass = true
+                                )
+                            ) {
+                                GlasenseSwitch(
+                                    backgroundColor = AppColors.cardBackground,
+                                    checked = isLiquidGlass,
+                                    onCheckedChange = { settingsViewModel.onLiquidGlassChanged(it) })
+                            }
                         }
                     }
                 }
-                Spacer(modifier = Modifier.height(12.dp))
             }
+            overscrollSpacer(lazyListState)
         }
         // A small title that dynamically appears at the top when the user scrolls down
         GlasenseDynamicSmallTitle(

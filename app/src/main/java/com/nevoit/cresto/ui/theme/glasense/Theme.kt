@@ -10,11 +10,13 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.nevoit.cresto.ui.screens.settings.util.SettingsManager
 import com.nevoit.cresto.ui.screens.settings.util.SettingsViewModel
 
 private val DarkColorScheme = darkColorScheme(
@@ -74,10 +76,19 @@ fun GlasenseTheme(
         if (useDarkTheme) GlasenseDarkPalette else GlasenseLightPalette
     }
 
-    val glasenseSpecs = if (liquidGlass) {
+    val glasenseSpecs = if (liquidGlass || dynamicColor) {
         GlasenseSpecsVariant
     } else {
         GlasenseSpecsStandard
+    }
+
+    val liteMode = SettingsManager.isLiteModeState.value
+
+    val glasenseSettings = remember(liquidGlass, liteMode) {
+        GlasenseSettings(
+            liquidGlass = liquidGlass,
+            liteMode = liteMode
+        )
     }
 
     val view = LocalView.current
@@ -97,7 +108,8 @@ fun GlasenseTheme(
         content = {
             CompositionLocalProvider(
                 LocalGlasenseColors provides glasenseColors,
-                LocalGlasenseSpecs provides glasenseSpecs
+                LocalGlasenseSpecs provides glasenseSpecs,
+                LocalGlasenseSettings provides glasenseSettings
             ) {
                 content()
             }

@@ -69,7 +69,6 @@ import com.nevoit.cresto.ui.components.packed.CardWithoutTitle
 import com.nevoit.cresto.ui.components.packed.CircularTimer
 import com.nevoit.cresto.ui.components.packed.StrictText
 import com.nevoit.cresto.ui.components.packed.ZenCirclesBreathing
-import com.nevoit.cresto.ui.screens.settings.util.SettingsManager
 import com.nevoit.cresto.ui.theme.glasense.AppButtonColors
 import com.nevoit.cresto.ui.theme.glasense.AppColors
 import com.nevoit.cresto.ui.theme.glasense.AppSpecs
@@ -110,7 +109,6 @@ fun BoxScope.MindFlowScreen(
 
     val hazeState = rememberHazeState()
 
-    val liteMode by SettingsManager.isLiteModeState
 
     val backgroundColor = AppColors.pageBackground
     val surfaceColor = AppColors.cardBackground
@@ -603,8 +601,7 @@ fun BoxScope.MindFlowScreen(
         statusBarHeight = statusBarHeight,
         isVisible = isSmallTitleVisible,
         hazeState = hazeState,
-        surfaceColor = backgroundColor,
-        blur = !liteMode
+        surfaceColor = backgroundColor
     ) {
     }
 }

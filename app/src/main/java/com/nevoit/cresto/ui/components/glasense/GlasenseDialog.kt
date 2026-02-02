@@ -50,7 +50,6 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.kyant.backdrop.backdrops.LayerBackdrop
@@ -62,6 +61,7 @@ import com.nevoit.cresto.ui.screens.settings.util.SettingsManager
 import com.nevoit.cresto.ui.theme.glasense.AppButtonColors
 import com.nevoit.cresto.ui.theme.glasense.AppColors
 import com.nevoit.cresto.ui.theme.glasense.AppSpecs
+import com.nevoit.cresto.ui.theme.glasense.LocalGlasenseSettings
 import com.nevoit.cresto.ui.theme.glasense.glasenseHighlight
 import com.nevoit.cresto.ui.theme.glasense.isAppInDarkTheme
 import kotlinx.coroutines.coroutineScope
@@ -93,7 +93,6 @@ fun GlasenseDialogButton(
     isPrimary: Boolean = true,
     onDismiss: () -> Unit
 ) {
-    val density = LocalDensity.current
     val shape = AppSpecs.buttonShape
     val corner = AppSpecs.buttonCorner
     GlasenseButtonAlt(
@@ -127,13 +126,12 @@ fun GlasenseDialogButton(
 
 @Composable
 fun GlasenseDialog(
-    density: Density,
     dialogState: DialogState,
     backdrop: LayerBackdrop,
-    blur: Boolean = true,
     onDismiss: () -> Unit,
     modifier: Modifier
 ) {
+    val blur = !LocalGlasenseSettings.current.liteMode
     val darkTheme = isAppInDarkTheme()
     val screenWidth =
         with(LocalDensity.current) { LocalWindowInfo.current.containerSize.width.toDp() }
@@ -172,6 +170,8 @@ fun GlasenseDialog(
     val surfaceColor = AppColors.cardBackground
 
     var liquidGlass by SettingsManager.isLiquidGlassState
+
+    val isDarkMode = isAppInDarkTheme()
 
     BackHandler() { }
     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -244,9 +244,9 @@ fun GlasenseDialog(
                     effects = {
                         if (blur && !liquidGlass) blur(
                             64f.dp.toPx(),
-                            TileMode.Mirror
+                            TileMode.Repeated
                         ) else if (blur) {
-                            blur(16f.dp.toPx(), TileMode.Mirror)
+                            blur(if (isDarkMode) 16f.dp.toPx() else 8f.dp.toPx(), TileMode.Mirror)
                             lens(24f.dp.toPx(), 48f.dp.toPx(), depthEffect = true)
                         }
                     },

@@ -16,6 +16,7 @@ import com.nevoit.cresto.toolkit.gaussiangradient.smoothGradientMaskFallbackInve
 import com.nevoit.cresto.ui.components.CustomAnimatedVisibility
 import com.nevoit.cresto.ui.components.myFadeIn
 import com.nevoit.cresto.ui.components.myFadeOut
+import com.nevoit.cresto.ui.theme.glasense.LocalGlasenseSettings
 import com.nevoit.cresto.ui.theme.glasense.linearGradientMaskB2T70
 import dev.chrisbanes.haze.ExperimentalHazeApi
 import dev.chrisbanes.haze.HazeInputScale
@@ -45,9 +46,9 @@ fun GlasenseBottomBar(
     isVisible: Boolean,
     hazeState: HazeState,
     surfaceColor: Color,
-    blur: Boolean = true,
     content: @Composable () -> Unit
 ) {
+    val blur = !LocalGlasenseSettings.current.liteMode
     // Main container for the title bar and content.
     Box(
         modifier = modifier
