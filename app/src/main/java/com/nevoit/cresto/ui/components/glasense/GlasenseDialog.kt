@@ -61,8 +61,8 @@ import com.kyant.backdrop.effects.blur
 import com.kyant.capsule.ContinuousRoundedRectangle
 import com.nevoit.cresto.ui.theme.glasense.AppButtonColors
 import com.nevoit.cresto.ui.theme.glasense.AppColors
+import com.nevoit.cresto.ui.theme.glasense.AppSpecs
 import com.nevoit.cresto.ui.theme.glasense.isAppInDarkTheme
-import com.nevoit.cresto.util.g2
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -93,15 +93,16 @@ fun GlasenseDialogButton(
     onDismiss: () -> Unit
 ) {
     val density = LocalDensity.current
+    val shape = AppSpecs.buttonShape
     GlasenseButtonAlt(
         enabled = true,
-        shape = ContinuousRoundedRectangle(12.dp, g2),
+        shape = shape,
         onClick = { onDismiss() },
         modifier = Modifier
             .height(48.dp)
             .then(modifier)
             .then(if (isPrimary) Modifier.drawBehind {
-                val outline = ContinuousRoundedRectangle(12.dp, g2).createOutline(
+                val outline = shape.createOutline(
                     size,
                     LayoutDirection.Ltr,
                     density
@@ -204,13 +205,13 @@ fun GlasenseDialog(
                 )
                 .drawPlainBackdrop(
                     backdrop = backdrop,
-                    shape = { ContinuousRoundedRectangle(24.dp, g2) },
+                    shape = { ContinuousRoundedRectangle(24.dp) },
                     effects = {
                         if (blur) blur(64f.dp.toPx(), TileMode.Mirror)
                     },
                     // Custom drawing on top of the blurred background to create stunning colors.
                     onDrawSurface = {
-                        val outline = ContinuousRoundedRectangle(24.dp, g2).createOutline(
+                        val outline = ContinuousRoundedRectangle(24.dp).createOutline(
                             size = size,
                             layoutDirection = LayoutDirection.Ltr,
                             density = density

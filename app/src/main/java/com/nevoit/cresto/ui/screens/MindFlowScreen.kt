@@ -25,6 +25,7 @@ import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -55,7 +56,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.kyant.capsule.ContinuousRoundedRectangle
 import com.nevoit.cresto.R
 import com.nevoit.cresto.data.todo.TodoViewModel
 import com.nevoit.cresto.ui.components.CustomAnimatedVisibility
@@ -72,6 +72,7 @@ import com.nevoit.cresto.ui.components.packed.ZenCirclesBreathing
 import com.nevoit.cresto.ui.screens.settings.util.SettingsManager
 import com.nevoit.cresto.ui.theme.glasense.AppButtonColors
 import com.nevoit.cresto.ui.theme.glasense.AppColors
+import com.nevoit.cresto.ui.theme.glasense.AppSpecs
 import com.nevoit.cresto.ui.theme.glasense.Blue600
 import com.nevoit.cresto.ui.theme.glasense.Cyan500
 import com.nevoit.cresto.ui.theme.glasense.Green500
@@ -85,7 +86,6 @@ import com.nevoit.cresto.ui.theme.glasense.isAppInDarkTheme
 import com.nevoit.cresto.ui.theme.glasense.strongEnterTransition
 import com.nevoit.cresto.ui.theme.glasense.strongExitTransition
 import com.nevoit.cresto.ui.viewmodel.ModeTimerViewModel
-import com.nevoit.cresto.util.g2
 import dev.chrisbanes.haze.ExperimentalHazeApi
 import dev.chrisbanes.haze.hazeSource
 import dev.chrisbanes.haze.rememberHazeState
@@ -217,7 +217,7 @@ fun BoxScope.MindFlowScreen(
             Row(modifier = Modifier) {
                 CardWithoutTitle(
                     modifier = Modifier
-                        .clip(ContinuousRoundedRectangle(12.dp, g2))
+                        .clip(AppSpecs.cardShape)
                         .weight(1f)
                         .animateContentSize()
                 ) {
@@ -401,12 +401,12 @@ fun BoxScope.MindFlowScreen(
                             ) {
                                 GlasenseButtonAlt(
                                     enabled = true,
-                                    shape = ContinuousRoundedRectangle(12.dp, g2),
+                                    shape = AppSpecs.buttonShape,
                                     onClick = { timerViewModel.startTimer() },
                                     modifier = Modifier
                                         .height(48.dp)
                                         .width(96.dp)
-                                        .glasenseHighlight(12.dp, 3.dp),
+                                        .glasenseHighlight(AppSpecs.buttonCorner, 3.dp),
                                     colors = AppButtonColors.primary()
                                 ) {
                                     Row(
@@ -454,7 +454,7 @@ fun BoxScope.MindFlowScreen(
                                 Row(modifier = Modifier.height(48.dp)) {
                                     GlasenseButtonAlt(
                                         enabled = true,
-                                        shape = ContinuousRoundedRectangle(24.dp, g2),
+                                        shape = CircleShape,
                                         onClick = { timerViewModel.exitTimerMode() },
                                         modifier = Modifier
                                             .height(48.dp)
@@ -477,7 +477,7 @@ fun BoxScope.MindFlowScreen(
                                     Spacer(Modifier.width(12.dp))
                                     GlasenseButtonAlt(
                                         enabled = true,
-                                        shape = ContinuousRoundedRectangle(24.dp, g2),
+                                        shape = CircleShape,
                                         onClick = { if (isPaused) timerViewModel.resumeTimer() else timerViewModel.pauseTimer() },
                                         modifier = Modifier
                                             .height(48.dp)

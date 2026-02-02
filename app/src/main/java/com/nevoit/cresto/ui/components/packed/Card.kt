@@ -23,9 +23,8 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.kyant.capsule.ContinuousRoundedRectangle
 import com.nevoit.cresto.ui.theme.glasense.AppColors
-import com.nevoit.cresto.util.g2
+import com.nevoit.cresto.ui.theme.glasense.AppSpecs
 
 @Composable
 fun CardWithTitle(
@@ -40,7 +39,7 @@ fun CardWithTitle(
         modifier = modifier
             .background(
                 color = hierarchicalSurfaceColor,
-                shape = ContinuousRoundedRectangle(12.dp, g2)
+                shape = AppSpecs.cardShape
             )
             .fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally
@@ -95,7 +94,7 @@ fun CardWithoutTitle(
         modifier = modifier
             .background(
                 color = hierarchicalSurfaceColor,
-                shape = ContinuousRoundedRectangle(12.dp, g2)
+                shape = AppSpecs.cardShape
             )
             .fillMaxSize()
             .padding(12.dp)

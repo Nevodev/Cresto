@@ -92,7 +92,7 @@ import com.nevoit.cresto.ui.components.packed.SwipeableTodoItem
 import com.nevoit.cresto.ui.screens.detailscreen.DetailActivity
 import com.nevoit.cresto.ui.screens.settings.util.SettingsManager
 import com.nevoit.cresto.ui.theme.glasense.AppColors
-import com.nevoit.cresto.util.g2
+import com.nevoit.cresto.ui.theme.glasense.AppSpecs
 import dev.chrisbanes.haze.ExperimentalHazeApi
 import dev.chrisbanes.haze.hazeSource
 import dev.chrisbanes.haze.rememberHazeState
@@ -243,6 +243,8 @@ fun BoxScope.HomeScreen(
     }
 
     val selectionOutline = AppColors.primary
+    val cardCorner = AppSpecs.cardCorner
+
     LazyColumn(
         state = lazyListState,
         modifier = Modifier
@@ -279,7 +281,7 @@ fun BoxScope.HomeScreen(
                     .animateItem(placementSpec = spring(0.9f, 400f))
                     .combinedClickable(
                         interactionSource = remember { MutableInteractionSource() },
-                        indication = DimIndication(shape = ContinuousRoundedRectangle(12.dp)),
+                        indication = DimIndication(shape = AppSpecs.cardShape),
                         onLongClick = {
                             if (!isSelectionModeActive) {
                                 scope.launch {
@@ -312,7 +314,7 @@ fun BoxScope.HomeScreen(
                     modifier = Modifier
                         .then(if (isComposed) Modifier.drawBehind {
                             val outline =
-                                ContinuousRoundedRectangle(10.5.dp, g2).createOutline(
+                                ContinuousRoundedRectangle(cardCorner - 3.dp / 2).createOutline(
                                     size = Size(
                                         this.size.width - 3.dp.toPx(),
                                         this.size.height - 3.dp.toPx()
@@ -413,7 +415,7 @@ fun BoxScope.HomeScreen(
                             .animateItem(placementSpec = spring(0.9f, 400f))
                             .combinedClickable(
                                 interactionSource = remember { MutableInteractionSource() },
-                                indication = DimIndication(shape = ContinuousRoundedRectangle(12.dp)),
+                                indication = DimIndication(shape = AppSpecs.cardShape),
                                 onLongClick = {
                                     if (!isSelectionModeActive) {
                                         scope.launch {
@@ -449,10 +451,7 @@ fun BoxScope.HomeScreen(
                             modifier = Modifier
                                 .then(if (isComposed) Modifier.drawBehind {
                                     val outline =
-                                        ContinuousRoundedRectangle(
-                                            10.5.dp,
-                                            g2
-                                        ).createOutline(
+                                        ContinuousRoundedRectangle(cardCorner - 3.dp / 2).createOutline(
                                             size = Size(
                                                 this.size.width - 3.dp.toPx(),
                                                 this.size.height - 3.dp.toPx()

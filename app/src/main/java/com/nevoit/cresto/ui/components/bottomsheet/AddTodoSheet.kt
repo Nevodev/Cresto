@@ -50,7 +50,6 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.kyant.capsule.ContinuousCapsule
-import com.kyant.capsule.ContinuousRoundedRectangle
 import com.nevoit.cresto.R
 import com.nevoit.cresto.toolkit.overscroll.OffsetOverscrollFactory
 import com.nevoit.cresto.ui.components.CustomAnimatedVisibility
@@ -60,10 +59,10 @@ import com.nevoit.cresto.ui.components.packed.HorizontalFlagPicker
 import com.nevoit.cresto.ui.components.packed.HorizontalPresetDatePicker
 import com.nevoit.cresto.ui.theme.glasense.AppButtonColors
 import com.nevoit.cresto.ui.theme.glasense.AppColors
+import com.nevoit.cresto.ui.theme.glasense.AppSpecs
 import com.nevoit.cresto.ui.theme.glasense.defaultEnterTransition
 import com.nevoit.cresto.ui.theme.glasense.defaultExitTransition
 import com.nevoit.cresto.ui.theme.glasense.getFlagColor
-import com.nevoit.cresto.util.g2
 import java.time.LocalDate
 
 /**
@@ -195,7 +194,7 @@ fun AddTodoSheet(
                 .height(48.dp)
                 .background(
                     AppColors.content.copy(alpha = 0.05F),
-                    ContinuousRoundedRectangle(12.dp)
+                    AppSpecs.cardShape
                 ),
             contentAlignment = Alignment.CenterStart
         ) {
@@ -275,7 +274,7 @@ fun AddTodoSheet(
                     // Due date button.
                     GlasenseButtonAlt(
                         enabled = true,
-                        shape = ContinuousCapsule(g2),
+                        shape = ContinuousCapsule,
                         onClick = {
                             selectedButton = if (selectedButton == SelectedButton.DUE_DATE) {
                                 SelectedButton.NONE
@@ -327,7 +326,7 @@ fun AddTodoSheet(
                     // Flag button.
                     GlasenseButtonAlt(
                         enabled = true,
-                        shape = ContinuousCapsule(g2),
+                        shape = ContinuousCapsule,
                         onClick = {
                             selectedButton = if (selectedButton == SelectedButton.FLAG) {
                                 SelectedButton.NONE

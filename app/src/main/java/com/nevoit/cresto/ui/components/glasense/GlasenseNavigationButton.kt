@@ -30,7 +30,6 @@ import com.kyant.capsule.ContinuousCapsule
 import com.nevoit.cresto.ui.theme.glasense.NavigationButtonActiveColors
 import com.nevoit.cresto.ui.theme.glasense.NavigationButtonNormalColors
 import com.nevoit.cresto.ui.theme.glasense.isAppInDarkTheme
-import com.nevoit.cresto.util.g2
 
 /**
  * A custom navigation button with active and inactive states.
@@ -57,7 +56,7 @@ fun GlasenseNavigationButton(
         Modifier
             .fillMaxSize()
             .drawBehind {
-                val outline = ContinuousCapsule(g2).createOutline(
+                val outline = ContinuousCapsule.createOutline(
                     size = Size(
                         this.size.width - 1.5.dp.toPx(),
                         this.size.height - 1.5.dp.toPx()
@@ -95,7 +94,7 @@ fun GlasenseNavigationButton(
                     if (liquidGlass) lens(16f.dp.toPx(), 32f.dp.toPx())
                 },
                 onDrawSurface = {
-                    val outline = ContinuousCapsule(g2).createOutline(
+                    val outline = ContinuousCapsule.createOutline(
                         size = Size(
                             this.size.width - 1.5.dp.toPx(),
                             this.size.height - 1.5.dp.toPx()
@@ -184,7 +183,7 @@ fun GlasenseNavigationButton(
 
     // The base button with shape, click handling, shadow, and colors.
     GlasenseButton(
-        shape = ContinuousCapsule(g2),
+        shape = ContinuousCapsule,
         onClick = onClick,
         modifier = modifier
             .fillMaxHeight()

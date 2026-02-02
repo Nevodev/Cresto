@@ -57,7 +57,6 @@ import androidx.compose.ui.unit.times
 import com.kyant.backdrop.backdrops.layerBackdrop
 import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import com.kyant.capsule.ContinuousCapsule
-import com.kyant.capsule.ContinuousRoundedRectangle
 import com.nevoit.cresto.R
 import com.nevoit.cresto.data.todo.TodoDatabase
 import com.nevoit.cresto.ui.components.glasense.DialogItemData
@@ -70,9 +69,9 @@ import com.nevoit.cresto.ui.components.packed.ConfigItem
 import com.nevoit.cresto.ui.components.packed.ConfigItemContainer
 import com.nevoit.cresto.ui.theme.glasense.Amber400
 import com.nevoit.cresto.ui.theme.glasense.AppColors
+import com.nevoit.cresto.ui.theme.glasense.AppSpecs
 import com.nevoit.cresto.ui.theme.glasense.Emerald400
 import com.nevoit.cresto.ui.theme.glasense.Slate500
-import com.nevoit.cresto.util.g2
 import com.tencent.mmkv.MMKV
 import dev.chrisbanes.haze.ExperimentalHazeApi
 import dev.chrisbanes.haze.hazeSource
@@ -298,7 +297,7 @@ fun DataStorageScreen() {
                             .fillMaxWidth()
                             .background(
                                 color = hierarchicalSurfaceColor,
-                                shape = ContinuousRoundedRectangle(12.dp, g2)
+                                shape = AppSpecs.cardShape
                             )
                     ) {
                         Column(

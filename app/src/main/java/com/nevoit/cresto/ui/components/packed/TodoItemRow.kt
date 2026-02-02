@@ -52,7 +52,6 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
-import com.kyant.capsule.ContinuousRoundedRectangle
 import com.nevoit.cresto.R
 import com.nevoit.cresto.data.todo.SubTodoItem
 import com.nevoit.cresto.data.todo.TodoItem
@@ -63,10 +62,10 @@ import com.nevoit.cresto.ui.components.glasense.SwipeableActionButton
 import com.nevoit.cresto.ui.components.glasense.SwipeableContainer
 import com.nevoit.cresto.ui.components.glasense.SwipeableListState
 import com.nevoit.cresto.ui.theme.glasense.AppColors
+import com.nevoit.cresto.ui.theme.glasense.AppSpecs
 import com.nevoit.cresto.ui.theme.glasense.defaultEnterTransition
 import com.nevoit.cresto.ui.theme.glasense.defaultExitTransition
 import com.nevoit.cresto.ui.theme.glasense.getFlagColor
-import com.nevoit.cresto.util.g2
 import java.time.format.DateTimeFormatter
 
 /**
@@ -97,7 +96,7 @@ fun TodoItemRow(
             .fillMaxWidth()
             .background(
                 color = AppColors.cardBackground,
-                shape = ContinuousRoundedRectangle(12.dp, g2),
+                shape = AppSpecs.cardShape,
             )
             .then(modifier),
         verticalAlignment = Alignment.CenterVertically
@@ -293,7 +292,7 @@ fun TodoItemRowEditable(
             .fillMaxWidth()
             .background(
                 color = AppColors.cardBackground,
-                shape = ContinuousRoundedRectangle(12.dp, g2),
+                shape = AppSpecs.cardShape,
             )
             .then(modifier),
         verticalAlignment = Alignment.CenterVertically
@@ -392,7 +391,7 @@ fun SubTodoItemRowEditable(
             .fillMaxWidth()
             .background(
                 color = AppColors.cardBackground,
-                shape = ContinuousRoundedRectangle(12.dp, g2),
+                shape = AppSpecs.cardShape,
             )
             .then(modifier),
         verticalAlignment = Alignment.CenterVertically
@@ -505,7 +504,7 @@ fun SubTodoItemRowAdd(
             .fillMaxWidth()
             .background(
                 color = AppColors.cardBackground,
-                shape = ContinuousRoundedRectangle(12.dp, g2),
+                shape = AppSpecs.cardShape,
             )
             .then(modifier),
         verticalAlignment = Alignment.CenterVertically

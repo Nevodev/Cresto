@@ -25,8 +25,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.kyant.capsule.ContinuousRoundedRectangle
-import com.nevoit.cresto.util.g2
+import com.nevoit.cresto.ui.theme.glasense.AppSpecs
 
 /**
  * A composable function that displays a header for a configuration screen.
@@ -53,7 +52,7 @@ fun ConfigInfoHeader(
     // The main container column.
     Column(
         modifier = Modifier
-            .background(color = backgroundColor, shape = ContinuousRoundedRectangle(12.dp, g2))
+            .background(color = backgroundColor, shape = AppSpecs.cardShape)
             .fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {

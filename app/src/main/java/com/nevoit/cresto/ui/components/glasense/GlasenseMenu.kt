@@ -42,7 +42,6 @@ import com.kyant.backdrop.effects.blur
 import com.kyant.capsule.ContinuousRoundedRectangle
 import com.nevoit.cresto.ui.theme.glasense.AppColors
 import com.nevoit.cresto.ui.theme.glasense.isAppInDarkTheme
-import com.nevoit.cresto.util.g2
 
 data class MenuItemData(
     val text: String,
@@ -181,7 +180,7 @@ fun GlasenseMenu(
             // Core of the blur effect, drawing a blurred version of the content behind it.
             .drawPlainBackdrop(
                 backdrop = backdrop,
-                shape = { ContinuousRoundedRectangle(16.dp, g2) },
+                shape = { ContinuousRoundedRectangle(16.dp) },
                 layerBlock = {
                     alpha = alphaAni()
                 },
@@ -190,7 +189,7 @@ fun GlasenseMenu(
                 },
                 // Custom drawing on top of the blurred background to create stunning colors.
                 onDrawSurface = {
-                    val outline = ContinuousRoundedRectangle(16.dp, g2).createOutline(
+                    val outline = ContinuousRoundedRectangle(16.dp).createOutline(
                         size = size,
                         layoutDirection = LayoutDirection.Ltr,
                         density = density

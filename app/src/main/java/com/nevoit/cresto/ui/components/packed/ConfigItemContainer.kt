@@ -12,9 +12,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.kyant.capsule.ContinuousRoundedRectangle
 import com.nevoit.cresto.ui.theme.glasense.AppColors
-import com.nevoit.cresto.util.g2
+import com.nevoit.cresto.ui.theme.glasense.AppSpecs
 
 /**
  * A container for configuration items.
@@ -51,7 +50,7 @@ fun ConfigItemContainer(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(color = backgroundColor, shape = ContinuousRoundedRectangle(12.dp, g2))
+                .background(color = backgroundColor, shape = AppSpecs.cardShape)
         ) {
             // Inner box with padding for the content.
             Box(

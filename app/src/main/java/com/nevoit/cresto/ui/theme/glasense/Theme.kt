@@ -37,6 +37,10 @@ val AppColors: GlasenseColors
     @Composable
     get() = LocalGlasenseColors.current
 
+val AppSpecs: GlasenseSpecs
+    @Composable
+    get() = LocalGlasenseSpecs.current
+
 @Composable
 fun GlasenseTheme(
     settingsViewModel: SettingsViewModel = viewModel(),
@@ -44,6 +48,7 @@ fun GlasenseTheme(
 ) {
     val colorMode = settingsViewModel.colorMode.intValue
     val dynamicColor = settingsViewModel.isUseDynamicColor.value
+    val liquidGlass = settingsViewModel.isLiquidGlass.value
 
     val systemInDark = isSystemInDarkTheme()
 
@@ -69,6 +74,12 @@ fun GlasenseTheme(
         if (useDarkTheme) GlasenseDarkPalette else GlasenseLightPalette
     }
 
+    val glasenseSpecs = if (liquidGlass) {
+        GlasenseSpecsVariant
+    } else {
+        GlasenseSpecsStandard
+    }
+
     val view = LocalView.current
     if (!view.isInEditMode) {
         SideEffect {
@@ -85,7 +96,8 @@ fun GlasenseTheme(
         typography = Typography,
         content = {
             CompositionLocalProvider(
-                LocalGlasenseColors provides glasenseColors
+                LocalGlasenseColors provides glasenseColors,
+                LocalGlasenseSpecs provides glasenseSpecs
             ) {
                 content()
             }

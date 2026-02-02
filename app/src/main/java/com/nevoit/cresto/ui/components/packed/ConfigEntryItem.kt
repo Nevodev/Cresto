@@ -44,10 +44,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.kyant.capsule.ContinuousRoundedRectangle
 import com.nevoit.cresto.R
 import com.nevoit.cresto.ui.theme.glasense.AppColors
-import com.nevoit.cresto.util.g2
+import com.nevoit.cresto.ui.theme.glasense.AppSpecs
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -250,7 +249,7 @@ fun AboutEntryItem(
         Box(
             modifier = Modifier
                 .size(48.dp)
-                .clip(ContinuousRoundedRectangle(12.dp, g2))
+                .clip(AppSpecs.cardShape)
         ) {
             Image(painter = icon, contentDescription = stringResource(R.string.app_icon))
         }

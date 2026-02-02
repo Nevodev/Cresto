@@ -53,15 +53,14 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.kyant.capsule.ContinuousCapsule
-import com.kyant.capsule.ContinuousRoundedRectangle
 import com.nevoit.cresto.R
 import com.nevoit.cresto.ui.components.glasense.GlasenseButton
 import com.nevoit.cresto.ui.components.glasense.GlasenseDynamicSmallTitle
 import com.nevoit.cresto.ui.components.glasense.ZeroHeightDivider
 import com.nevoit.cresto.ui.components.packed.ConfigItemContainer
 import com.nevoit.cresto.ui.theme.glasense.AppColors
+import com.nevoit.cresto.ui.theme.glasense.AppSpecs
 import com.nevoit.cresto.ui.theme.glasense.isAppInDarkTheme
-import com.nevoit.cresto.util.g2
 import dev.chrisbanes.haze.ExperimentalHazeApi
 import dev.chrisbanes.haze.hazeSource
 import dev.chrisbanes.haze.rememberHazeState
@@ -143,11 +142,12 @@ fun AboutScreen() {
             }
             // An item that displays a background image for the About screen
             item {
+                val shape = AppSpecs.cardShape
                 Column(
                     modifier = Modifier
                         .aspectRatio(3f / 4f)
                         .fillMaxWidth()
-                        .clip(ContinuousRoundedRectangle(12.dp, g2))
+                        .clip(shape)
                         .paint(
                             painter = if (darkMode) painterResource(R.drawable.about_background) else painterResource(
                                 R.drawable.about_background_light
@@ -155,7 +155,7 @@ fun AboutScreen() {
                             contentScale = ContentScale.Crop
                         )
                         .drawBehind {
-                            val outline = ContinuousRoundedRectangle(12.dp, g2).createOutline(
+                            val outline = shape.createOutline(
                                 size = size,
                                 layoutDirection = LayoutDirection.Ltr,
                                 density = density
@@ -377,7 +377,7 @@ fun AboutScreen() {
                             .fillMaxWidth()
                             .background(
                                 color = hierarchicalSurfaceColor,
-                                shape = ContinuousRoundedRectangle(12.dp, g2)
+                                shape = AppSpecs.cardShape
                             )
                     ) {
 

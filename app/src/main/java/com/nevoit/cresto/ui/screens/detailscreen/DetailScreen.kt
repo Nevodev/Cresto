@@ -94,7 +94,6 @@ import com.nevoit.cresto.ui.theme.glasense.defaultExitTransition
 import com.nevoit.cresto.ui.theme.glasense.getFlagColor
 import com.nevoit.cresto.ui.theme.glasense.isAppInDarkTheme
 import com.nevoit.cresto.util.formatRelativeTime
-import com.nevoit.cresto.util.g2
 import dev.chrisbanes.haze.ExperimentalHazeApi
 import dev.chrisbanes.haze.hazeSource
 import dev.chrisbanes.haze.rememberHazeState
@@ -339,7 +338,7 @@ fun DetailScreen(
                                 // Due date button.
                                 GlasenseButtonAlt(
                                     enabled = true,
-                                    shape = ContinuousCapsule(g2),
+                                    shape = ContinuousCapsule,
                                     onClick = {
                                         selectedButton =
                                             if (selectedButton == SelectedButton.DUE_DATE) {
@@ -396,7 +395,7 @@ fun DetailScreen(
                                 // Flag button.
                                 GlasenseButtonAlt(
                                     enabled = true,
-                                    shape = ContinuousCapsule(g2),
+                                    shape = ContinuousCapsule,
                                     onClick = {
                                         selectedButton =
                                             if (selectedButton == SelectedButton.FLAG) {
