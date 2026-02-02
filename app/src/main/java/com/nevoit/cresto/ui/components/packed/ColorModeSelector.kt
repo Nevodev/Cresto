@@ -38,6 +38,8 @@ import com.nevoit.cresto.ui.components.glasense.GlasenseCheckbox
 import com.nevoit.cresto.ui.components.glasense.GlasenseSwitch
 import com.nevoit.cresto.ui.components.glasense.ZeroHeightDivider
 import com.nevoit.cresto.ui.components.glasense.rememberCheckBoxState
+import com.nevoit.cresto.ui.screens.settings.util.SettingsManager
+import com.nevoit.cresto.ui.theme.glasense.CalculatedColor
 
 @Composable
 fun ColorModeSelector(
@@ -45,6 +47,7 @@ fun ColorModeSelector(
     currentMode: Int,
     onChange: (Int) -> Unit
 ) {
+    var isLiquidGlass by SettingsManager.isLiquidGlassState
     // 0 is light, 1 is dark, 2 is auto
     val isAutomatic = currentMode == 2
 
@@ -150,6 +153,8 @@ fun ColorModeSelector(
             Spacer(modifier = Modifier.height(8.dp))
             ConfigItem(title = stringResource(R.string.automatic)) {
                 GlasenseSwitch(
+                    liquidGlass = isLiquidGlass,
+                    backgroundColor = CalculatedColor.hierarchicalSurfaceColor,
                     enabled = true,
                     checked = isAutomatic,
                     onCheckedChange = { isChecked ->

@@ -155,6 +155,8 @@ fun AppearanceScreen(settingsViewModel: SettingsViewModel = viewModel()) {
                     Column {
                         ConfigItem(title = stringResource(R.string.custom_primary_color)) {
                             GlasenseSwitch(
+                                liquidGlass = isLiquidGlass,
+                                backgroundColor = CalculatedColor.hierarchicalSurfaceColor,
                                 checked = isCustomPrimaryColor,
                                 onCheckedChange = { settingsViewModel.onCustomPrimaryColorChanged(it) })
                         }
@@ -175,6 +177,8 @@ fun AppearanceScreen(settingsViewModel: SettingsViewModel = viewModel()) {
                         Spacer(modifier = Modifier.height(8.dp))
                         ConfigItem(title = stringResource(R.string.use_dynamic_color_scheme)) {
                             GlasenseSwitch(
+                                liquidGlass = isLiquidGlass,
+                                backgroundColor = CalculatedColor.hierarchicalSurfaceColor,
                                 checked = isUseDynamicColorScheme,
                                 onCheckedChange = { settingsViewModel.onUseDynamicColorChanged(it) })
                         }
@@ -191,6 +195,8 @@ fun AppearanceScreen(settingsViewModel: SettingsViewModel = viewModel()) {
                     Column {
                         ConfigItem(title = stringResource(R.string.lite_mode)) {
                             GlasenseSwitch(
+                                liquidGlass = isLiquidGlass,
+                                backgroundColor = CalculatedColor.hierarchicalSurfaceColor,
                                 checked = isLiteMode,
                                 onCheckedChange = { settingsViewModel.onLiteModeChanged(it) })
                         }
@@ -211,6 +217,8 @@ fun AppearanceScreen(settingsViewModel: SettingsViewModel = viewModel()) {
                         Spacer(modifier = Modifier.height(8.dp))
                         ConfigItem(title = stringResource(R.string.liquid_glass)) {
                             GlasenseSwitch(
+                                liquidGlass = true,
+                                backgroundColor = CalculatedColor.hierarchicalSurfaceColor,
                                 checked = isLiquidGlass,
                                 onCheckedChange = { settingsViewModel.onLiquidGlassChanged(it) })
                         }
