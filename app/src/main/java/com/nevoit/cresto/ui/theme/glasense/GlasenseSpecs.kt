@@ -13,21 +13,33 @@ data class GlasenseSpecs(
     val cardCorner: Dp,
     val cardShape: Shape,
     val buttonCorner: Dp,
-    val buttonShape: Shape
+    val buttonShape: Shape,
+    val textFieldCorner: Dp,
+    val textFieldShape: Shape,
+    val dialogCorner: Dp,
+    val dialogShape: Shape
 )
 
 val GlasenseSpecsStandard = GlasenseSpecs(
     cardCorner = 12.dp,
     cardShape = ContinuousRoundedRectangle(12.dp),
     buttonCorner = 12.dp,
-    buttonShape = ContinuousRoundedRectangle(12.dp)
+    buttonShape = ContinuousRoundedRectangle(12.dp),
+    textFieldCorner = 12.dp,
+    textFieldShape = ContinuousRoundedRectangle(12.dp),
+    dialogCorner = 24.dp,
+    dialogShape = ContinuousRoundedRectangle(24.dp)
 )
 
 val GlasenseSpecsVariant = GlasenseSpecs(
     cardCorner = 16.dp,
     cardShape = ContinuousRoundedRectangle(16.dp),
     buttonCorner = 1000000.dp,
-    buttonShape = ContinuousCapsule
+    buttonShape = ContinuousCapsule,
+    textFieldCorner = 16.dp,
+    textFieldShape = ContinuousRoundedRectangle(16.dp),
+    dialogCorner = 24.dp,
+    dialogShape = ContinuousRoundedRectangle(24.dp)
 )
 
 val LocalGlasenseSpecs = staticCompositionLocalOf { GlasenseSpecsStandard }

@@ -4,7 +4,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyListState
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -32,23 +31,24 @@ fun LazyListScope.overscrollSpacer(state: LazyListState) {
                     return@derivedStateOf with(density) { lastHeightPx.toDp() }
                 }
 
+                var contentHeight = 0
                 val visibleItems = layoutInfo.visibleItemsInfo
-                    .filter { it.key != OVERSCROLL_SPACER_KEY }
+                val itemsCount = visibleItems.size
 
-                val contentHeight = visibleItems.sumOf { it.size }
+                for (i in 0 until itemsCount) {
+                    val item = visibleItems[i]
+                    if (item.key != OVERSCROLL_SPACER_KEY) {
+                        contentHeight += item.size
+                    }
+                }
 
                 if (contentHeight < viewportHeight) {
-                    val neededHeightPx = viewportHeight - contentHeight
+                    val neededHeightPx = (viewportHeight - contentHeight).toFloat()
+                    lastHeightPx = neededHeightPx
                     with(density) { neededHeightPx.toDp() }
                 } else {
                     0.dp
                 }
-            }
-        }
-        
-        LaunchedEffect(spacerHeight) {
-            with(density) {
-                lastHeightPx = spacerHeight.toPx()
             }
         }
 

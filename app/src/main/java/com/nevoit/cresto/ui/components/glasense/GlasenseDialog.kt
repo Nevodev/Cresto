@@ -1,5 +1,6 @@
 package com.nevoit.cresto.ui.components.glasense
 
+import android.graphics.BlurMaskFilter
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.spring
@@ -18,7 +19,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -31,15 +31,19 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.dropShadow
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.TileMode
+import androidx.compose.ui.graphics.asAndroidPath
 import androidx.compose.ui.graphics.drawscope.Fill
+import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.painter.Painter
-import androidx.compose.ui.graphics.shadow.Shadow
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
@@ -47,13 +51,14 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Density
-import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.kyant.backdrop.backdrops.LayerBackdrop
-import com.kyant.backdrop.drawPlainBackdrop
+import com.kyant.backdrop.drawBackdrop
 import com.kyant.backdrop.effects.blur
-import com.kyant.capsule.ContinuousRoundedRectangle
+import com.kyant.backdrop.effects.lens
+import com.kyant.backdrop.highlight.Highlight
+import com.nevoit.cresto.ui.screens.settings.util.SettingsManager
 import com.nevoit.cresto.ui.theme.glasense.AppButtonColors
 import com.nevoit.cresto.ui.theme.glasense.AppColors
 import com.nevoit.cresto.ui.theme.glasense.AppSpecs
@@ -139,6 +144,20 @@ fun GlasenseDialog(
     val alphaAni = remember { Animatable(0f) }
     val alphaAni2 = remember { Animatable(0f) }
 
+    val shadowBaseColor =
+        if (darkTheme) Color.Black.copy(alpha = 0.2f) else Color.Black.copy(alpha = 0.1f)
+    val dialogShape = AppSpecs.dialogShape
+
+    val shadowRadiusPx = with(LocalDensity.current) { 32.dp.toPx() }
+    val shadowDyPx = with(LocalDensity.current) { 16.dp.toPx() }
+
+    val shadowPaint = remember {
+        Paint().asFrameworkPaint().apply {
+            isAntiAlias = true
+            maskFilter = BlurMaskFilter(shadowRadiusPx, BlurMaskFilter.Blur.NORMAL)
+        }
+    }
+
     val scope = rememberCoroutineScope()
     val haptic = LocalHapticFeedback.current
 
@@ -151,6 +170,8 @@ fun GlasenseDialog(
     }
     val interactionSource = remember { MutableInteractionSource() }
     val surfaceColor = AppColors.cardBackground
+
+    var liquidGlass by SettingsManager.isLiquidGlassState
 
     BackHandler() { }
     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -167,27 +188,71 @@ fun GlasenseDialog(
             contentAlignment = Alignment.Center,
         ) {}
 
-
         Box(
             modifier = modifier
                 .width(screenWidth - 48.dp * 2)
-                .dropShadow(
-                    RoundedCornerShape(24.dp),
-                    shadow = Shadow(
-                        radius = 32.dp,
-                        color = if (darkTheme) Color.Black.copy(alpha = 0.2f) else Color.Black.copy(
-                            alpha = 0.1f
-                        ),
-                        offset = DpOffset(0.dp, 16.dp),
-                        alpha = alphaAni.value
-                    )
-                )
-                .drawPlainBackdrop(
+                .drawBehind {
+                    val currentAlpha = alphaAni.value
+
+                    if (currentAlpha > 0f) {
+                        val paintColor =
+                            shadowBaseColor.copy(alpha = shadowBaseColor.alpha * currentAlpha)
+                        shadowPaint.color = paintColor.toArgb()
+
+                        drawIntoCanvas { canvas ->
+                            canvas.save()
+                            canvas.translate(0f, shadowDyPx)
+
+                            val outline = dialogShape.createOutline(size, layoutDirection, this)
+
+                            when (outline) {
+                                is androidx.compose.ui.graphics.Outline.Rectangle -> {
+                                    canvas.nativeCanvas.drawRect(
+                                        outline.rect.left,
+                                        outline.rect.top,
+                                        outline.rect.right,
+                                        outline.rect.bottom,
+                                        shadowPaint
+                                    )
+                                }
+
+                                is androidx.compose.ui.graphics.Outline.Rounded -> {
+                                    canvas.nativeCanvas.drawRoundRect(
+                                        outline.roundRect.left, outline.roundRect.top,
+                                        outline.roundRect.right, outline.roundRect.bottom,
+                                        outline.roundRect.bottomLeftCornerRadius.x,
+                                        outline.roundRect.bottomLeftCornerRadius.y,
+                                        shadowPaint
+                                    )
+                                }
+
+                                is androidx.compose.ui.graphics.Outline.Generic -> {
+                                    canvas.nativeCanvas.drawPath(
+                                        outline.path.asAndroidPath(),
+                                        shadowPaint
+                                    )
+                                }
+                            }
+
+                            canvas.restore()
+                        }
+                    }
+                }
+                .drawBackdrop(
                     backdrop = backdrop,
-                    shape = { ContinuousRoundedRectangle(24.dp) },
+                    shape = { dialogShape },
                     effects = {
-                        if (blur) blur(64f.dp.toPx(), TileMode.Mirror)
+                        if (blur && !liquidGlass) blur(
+                            64f.dp.toPx(),
+                            TileMode.Mirror
+                        ) else if (blur) {
+                            blur(16f.dp.toPx(), TileMode.Mirror)
+                            lens(24f.dp.toPx(), 48f.dp.toPx(), depthEffect = true)
+                        }
                     },
+                    highlight = { if (liquidGlass) Highlight.Default else null },
+                    shadow = null,
+                    innerShadow = null,
                     // Custom drawing on top of the blurred background to create stunning colors.
                     onDrawSurface = {
                         if (!blur) drawRect(
@@ -244,7 +309,7 @@ fun GlasenseDialog(
                         scaleY = scaleAni.value
                         alpha = alphaAni.value
                     })
-                .glasenseHighlight(24.dp)
+                .then(if (!liquidGlass) Modifier.glasenseHighlight(AppSpecs.dialogCorner) else Modifier)
                 .onGloballyPositioned { isVisible = true }
         ) {
             Column(

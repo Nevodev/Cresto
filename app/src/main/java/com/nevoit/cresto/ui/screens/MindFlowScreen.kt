@@ -406,7 +406,7 @@ fun BoxScope.MindFlowScreen(
                                     modifier = Modifier
                                         .height(48.dp)
                                         .width(96.dp)
-                                        .glasenseHighlight(AppSpecs.buttonCorner, 3.dp),
+                                        .glasenseHighlight(AppSpecs.buttonCorner),
                                     colors = AppButtonColors.primary()
                                 ) {
                                     Row(
@@ -459,7 +459,7 @@ fun BoxScope.MindFlowScreen(
                                         modifier = Modifier
                                             .height(48.dp)
                                             .width(48.dp)
-                                            .glasenseHighlight(24.dp, 3.dp),
+                                            .glasenseHighlight(24.dp),
                                         colors = AppButtonColors.primary()
                                             .copy(
                                                 containerColor = AppColors.error,
@@ -482,7 +482,7 @@ fun BoxScope.MindFlowScreen(
                                         modifier = Modifier
                                             .height(48.dp)
                                             .width(48.dp)
-                                            .glasenseHighlight(24.dp, 3.dp),
+                                            .glasenseHighlight(24.dp),
                                         colors = AppButtonColors.primary()
                                     ) {
                                         Box(modifier = Modifier.size(24.dp)) {

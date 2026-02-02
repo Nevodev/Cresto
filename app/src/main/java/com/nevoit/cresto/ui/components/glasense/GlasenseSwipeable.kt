@@ -28,6 +28,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -68,23 +69,18 @@ enum class SwipeState {
 }
 
 class SwipeableListState {
-    // 保存当前展开的 Item 的唯一标识符 (Key)
-    // 如果为 null，表示没有 Item 展开
     var currentOpenKey: Any? by mutableStateOf(null)
         private set
 
-    // 当某个 Item 准备展开时调用此方法
     fun setOpen(key: Any) {
         currentOpenKey = key
     }
 
-    // 关闭所有（或者特定的）
     fun close() {
         currentOpenKey = null
     }
 }
 
-// 2. 提供一个 remember 函数方便使用
 @Composable
 fun rememberSwipeableListState(): SwipeableListState {
     return remember { SwipeableListState() }
@@ -222,7 +218,9 @@ fun SwipeableContainer(
                     val revealThreshold =
                         gapPx + actionButtonWidthPx * trueIndex + actionButtonWidthPx / 2
 
-                    val isVisible = abs(flingOffset.value) >= revealThreshold
+                    val isVisible by remember(action.index, revealThreshold) {
+                        derivedStateOf { abs(flingOffset.value) >= revealThreshold }
+                    }
 
                     CustomAnimatedVisibility(
                         visible = isVisible,
@@ -278,8 +276,10 @@ fun SwipeableContainer(
             }
         }
 
-        val currentOffset = flingOffset.value
-        val isDeepSwipe = currentOffset < -deepSwipeThresholdPx
+        val isDeepSwipe by remember {
+            derivedStateOf { flingOffset.value < -deepSwipeThresholdPx }
+        }
+
         LaunchedEffect(isDeepSwipe) {
             if (isDeepSwipe && initialSwipeState == SwipeState.REVEALED) haptic.performHapticFeedback(
                 HapticFeedbackType.GestureThresholdActivate
@@ -307,7 +307,7 @@ fun SwipeableContainer(
                     },
                     onDragStopped = { velocity ->
                         coroutineScope.launch {
-
+                            val currentOffset = flingOffset.value
                             val isFastSwipe = velocity < -velocityThreshold
                             if (actions.isNotEmpty() && ((isDeepSwipe && initialSwipeState == SwipeState.REVEALED) || (isFastSwipe && initialSwipeState == SwipeState.REVEALED))) {
                                 executeAction(actions.last())

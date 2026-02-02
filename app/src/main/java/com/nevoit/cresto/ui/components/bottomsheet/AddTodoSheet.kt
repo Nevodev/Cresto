@@ -172,7 +172,7 @@ fun AddTodoSheet(
                 .height(48.dp)
                 .background(
                     AppColors.content.copy(alpha = 0.05F),
-                    AppSpecs.cardShape
+                    AppSpecs.textFieldShape
                 ),
             contentAlignment = Alignment.CenterStart
         ) {

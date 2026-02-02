@@ -48,12 +48,12 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.BlurredEdgeTreatment
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.BlurEffect
+import androidx.compose.ui.graphics.TileMode
 import androidx.compose.ui.graphics.drawOutline
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.translate
@@ -163,47 +163,77 @@ fun BoxScope.HomeScreen(
     val isSmallTitleVisible by remember(thresholdPx) { derivedStateOf { ((lazyListState.firstVisibleItemIndex == 0) && (lazyListState.firstVisibleItemScrollOffset > thresholdPx)) || lazyListState.firstVisibleItemIndex > 0 } }
     val interactionSource = remember { MutableInteractionSource() }
 
-    val dialogItems = listOf(
-        DialogItemData(
-            stringResource(R.string.cancel),
-            onClick = {},
-            isPrimary = false
-        ),
-        DialogItemData(
-            stringResource(R.string.delete),
-            icon = painterResource(R.drawable.ic_trash),
-            onClick = { viewModel.deleteSelectedItems() },
-            isPrimary = true,
-            isDestructive = true
-        )
-    )
+    val cancelText = stringResource(R.string.cancel)
+    val deleteText = stringResource(R.string.delete)
+    val deleteIcon = painterResource(R.drawable.ic_trash)
 
-    val menuItemsFilter = listOf(
-        MenuItemData(
-            stringResource(R.string.filter_default),
-            painterResource(R.drawable.ic_rank),
-            onClick = {}
-        ),
-        MenuItemData(
-            stringResource(R.string.due_date),
-            painterResource(R.drawable.ic_calendar_alt),
-            onClick = {}
-        ),
-        MenuItemData(
-            stringResource(R.string.flag),
-            painterResource(R.drawable.ic_flag),
-            onClick = {}
-        ),
-        MenuItemData(
-            stringResource(R.string.title),
-            painterResource(R.drawable.ic_character),
-            onClick = {}
+    val dialogItems = remember(cancelText, deleteText, deleteIcon, viewModel) {
+        listOf(
+            DialogItemData(
+                text = cancelText,
+                onClick = {},
+                isPrimary = false
+            ),
+            DialogItemData(
+                text = deleteText,
+                icon = deleteIcon,
+                onClick = { viewModel.deleteSelectedItems() },
+                isPrimary = true,
+                isDestructive = true
+            )
         )
-    )
+    }
+
+    val defaultText = stringResource(R.string.filter_default)
+    val dueDateText = stringResource(R.string.due_date)
+    val flagText = stringResource(R.string.flag)
+    val titleText = stringResource(R.string.title)
+
+    val rankIcon = painterResource(R.drawable.ic_rank)
+    val calendarAltIcon = painterResource(R.drawable.ic_calendar_alt)
+    val flagIcon = painterResource(R.drawable.ic_flag)
+    val characterIcon = painterResource(R.drawable.ic_character)
+
+    val menuItemsFilter = remember(
+        defaultText,
+        rankIcon,
+        calendarAltIcon,
+        flagIcon,
+        characterIcon,
+        dueDateText,
+        flagText,
+        titleText
+    ) {
+        listOf(
+            MenuItemData(
+                defaultText,
+                rankIcon,
+                onClick = {}
+            ),
+            MenuItemData(
+                dueDateText,
+                calendarAltIcon,
+                onClick = {}
+            ),
+            MenuItemData(
+                flagText,
+                flagIcon,
+                onClick = {}
+            ),
+            MenuItemData(
+                titleText,
+                characterIcon,
+                onClick = {}
+            )
+        )
+    }
     var isComposed by remember { mutableStateOf(isSelectionModeActive) }
     var isGone by remember { mutableStateOf(isSelectionModeActive) }
-    val targetBlurRadius = 16f
+    val targetBlurRadius = with(density) {
+        16.dp.toPx()
+    }
     val topBarAlphaAnimation = remember { Animatable(if (isSelectionModeActive) 1f else 0f) }
+
     val topBarBlurAnimation =
         remember { Animatable(if (isSelectionModeActive) 0f else targetBlurRadius) }
 
@@ -311,8 +341,8 @@ fun BoxScope.HomeScreen(
                         viewModel.update(item.todoItem.copy(isCompleted = isChecked))
                     },
                     onDelete = { viewModel.delete(item.todoItem) },
-                    modifier = Modifier
-                        .then(if (isComposed) Modifier.drawBehind {
+                    modifier = Modifier.drawBehind {
+                        if (isComposed) {
                             val outline =
                                 ContinuousRoundedRectangle(cardCorner - 3.dp / 2).createOutline(
                                     size = Size(
@@ -330,7 +360,8 @@ fun BoxScope.HomeScreen(
                                     style = Stroke(width = 3.dp.toPx()),
                                 )
                             }
-                        } else Modifier),
+                        }
+                    },
                     listState = swipeListState
                 )
                 // Selection mode selector box
@@ -448,8 +479,8 @@ fun BoxScope.HomeScreen(
                                 viewModel.update(item.todoItem.copy(isCompleted = isChecked))
                             },
                             onDelete = { viewModel.delete(item.todoItem) },
-                            modifier = Modifier
-                                .then(if (isComposed) Modifier.drawBehind {
+                            modifier = Modifier.drawBehind {
+                                if (isComposed) {
                                     val outline =
                                         ContinuousRoundedRectangle(cardCorner - 3.dp / 2).createOutline(
                                             size = Size(
@@ -467,7 +498,8 @@ fun BoxScope.HomeScreen(
                                             style = Stroke(width = 3.dp.toPx()),
                                         )
                                     }
-                                } else Modifier),
+                                }
+                            },
                             listState = swipeListState
                         )
                         if (isSelectionModeActive) {
@@ -511,12 +543,18 @@ fun BoxScope.HomeScreen(
                 shape = ContinuousCapsule,
                 onClick = {},
                 modifier = Modifier
-                    .blur(
-                        targetBlurRadius.dp - topBarBlurAnimation.value.dp,
-                        BlurredEdgeTreatment.Unbounded
-                    )
                     .graphicsLayer {
                         alpha = 1 - topBarAlphaAnimation.value
+                        val blurRadius = targetBlurRadius - topBarBlurAnimation.value
+                        renderEffect = if (blurRadius > 0f) {
+                            BlurEffect(
+                                radiusX = blurRadius,
+                                radiusY = blurRadius,
+                                edgeTreatment = TileMode.Decal
+                            )
+                        } else {
+                            null
+                        }
                     }
                     .padding(top = statusBarHeight, start = 12.dp)
                     .align(Alignment.TopStart),
@@ -578,12 +616,18 @@ fun BoxScope.HomeScreen(
                 shape = CircleShape,
                 onClick = { viewModel.showBottomSheet() },
                 modifier = Modifier
-                    .blur(
-                        targetBlurRadius.dp - topBarBlurAnimation.value.dp,
-                        BlurredEdgeTreatment.Unbounded
-                    )
                     .graphicsLayer {
                         alpha = 1 - topBarAlphaAnimation.value
+                        val blurRadius = targetBlurRadius - topBarBlurAnimation.value
+                        renderEffect = if (blurRadius > 0f) {
+                            BlurEffect(
+                                radiusX = blurRadius,
+                                radiusY = blurRadius,
+                                edgeTreatment = TileMode.Decal
+                            )
+                        } else {
+                            null
+                        }
                     }
                     .padding(top = statusBarHeight, end = 12.dp)
                     .size(48.dp)
@@ -617,9 +661,17 @@ fun BoxScope.HomeScreen(
                 )
             },
             modifier = Modifier
-                .blur(topBarBlurAnimation.value.dp, BlurredEdgeTreatment.Unbounded)
                 .graphicsLayer {
                     alpha = topBarAlphaAnimation.value
+                    renderEffect = if (topBarBlurAnimation.value > 0f) {
+                        BlurEffect(
+                            radiusX = topBarBlurAnimation.value,
+                            radiusY = topBarBlurAnimation.value,
+                            edgeTreatment = TileMode.Decal
+                        )
+                    } else {
+                        null
+                    }
                 }
                 .align(Alignment.TopStart),
             colors = ButtonDefaults.buttonColors(
@@ -641,12 +693,17 @@ fun BoxScope.HomeScreen(
             shape = CircleShape,
             onClick = { viewModel.clearSelections() },
             modifier = Modifier
-                .blur(
-                    topBarBlurAnimation.value.dp,
-                    BlurredEdgeTreatment.Unbounded
-                )
                 .graphicsLayer {
                     alpha = topBarAlphaAnimation.value
+                    renderEffect = if (topBarBlurAnimation.value > 0f) {
+                        BlurEffect(
+                            radiusX = topBarBlurAnimation.value,
+                            radiusY = topBarBlurAnimation.value,
+                            edgeTreatment = TileMode.Decal
+                        )
+                    } else {
+                        null
+                    }
                 }
                 .align(Alignment.TopEnd),
             colors = ButtonDefaults.buttonColors(
