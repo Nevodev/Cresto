@@ -19,9 +19,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.text.input.TextFieldLineLimits
 import androidx.compose.foundation.text.input.delete
 import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material3.Icon
@@ -41,12 +39,10 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.Lifecycle
@@ -61,6 +57,8 @@ import com.nevoit.cresto.ui.components.glasense.GlasenseCheckbox
 import com.nevoit.cresto.ui.components.glasense.SwipeableActionButton
 import com.nevoit.cresto.ui.components.glasense.SwipeableContainer
 import com.nevoit.cresto.ui.components.glasense.SwipeableListState
+import com.nevoit.cresto.ui.components.glasense.extend.LineThroughBasicTextField
+import com.nevoit.cresto.ui.components.glasense.extend.LineThroughText
 import com.nevoit.cresto.ui.theme.glasense.AppColors
 import com.nevoit.cresto.ui.theme.glasense.AppSpecs
 import com.nevoit.cresto.ui.theme.glasense.defaultEnterTransition
@@ -115,10 +113,10 @@ fun TodoItemRow(
                         .weight(1f)
                         .padding(vertical = 12.dp)
                 ) {
-                    Text(
+                    LineThroughText(
                         text = item.title,
-                        textDecoration = if (item.isCompleted) TextDecoration.LineThrough else TextDecoration.None,
                         style = MaterialTheme.typography.bodyMedium,
+                        lineThrough = item.isCompleted
                     )
                     Row {
                         Text(
@@ -136,10 +134,10 @@ fun TodoItemRow(
                     }
                 }
             } else {
-                Text(
+                LineThroughText(
                     text = item.title,
-                    textDecoration = if (item.isCompleted) TextDecoration.LineThrough else TextDecoration.None,
                     style = MaterialTheme.typography.bodyMedium,
+                    lineThrough = item.isCompleted,
                     modifier = Modifier
                         .weight(1f)
                         .padding(vertical = 12.dp)
@@ -152,10 +150,10 @@ fun TodoItemRow(
                     .weight(1f)
                     .padding(vertical = 12.dp)
             ) {
-                Text(
+                LineThroughText(
                     text = item.title,
-                    textDecoration = if (item.isCompleted) TextDecoration.LineThrough else TextDecoration.None,
-                    style = MaterialTheme.typography.bodyMedium
+                    style = MaterialTheme.typography.bodyMedium,
+                    lineThrough = item.isCompleted
                 )
                 if (hasTasks) {
                     Row {
@@ -308,7 +306,8 @@ fun TodoItemRowEditable(
                 .weight(1f)
                 .padding(vertical = 12.dp)
         ) {
-            BasicTextField(
+            LineThroughBasicTextField(
+                lineThrough = item.isCompleted,
                 state = state,
                 modifier = Modifier
                     .focusRequester(focusRequester)
@@ -327,9 +326,7 @@ fun TodoItemRowEditable(
                 },
                 textStyle = MaterialTheme.typography.bodyMedium.copy(
                     color = AppColors.content,
-                    textDecoration = if (item.isCompleted) TextDecoration.LineThrough else TextDecoration.None,
-                ),
-                cursorBrush = SolidColor(AppColors.primary)
+                )
             )
             if (!isFocused) {
                 Box(
@@ -410,7 +407,7 @@ fun SubTodoItemRowEditable(
                 .weight(1f)
                 .padding(vertical = 12.dp)
         ) {
-            BasicTextField(
+            LineThroughBasicTextField(
                 state = state,
                 modifier = Modifier
                     .focusRequester(focusRequester)
@@ -428,14 +425,9 @@ fun SubTodoItemRowEditable(
                     focusManager.clearFocus()
                 },
                 textStyle = MaterialTheme.typography.bodyMedium.copy(
-                    color = AppColors.content,
-                    textDecoration = if (subTodo.isCompleted) TextDecoration.LineThrough else TextDecoration.None,
+                    color = AppColors.content
                 ),
-                cursorBrush = SolidColor(AppColors.primary),
-                lineLimits = TextFieldLineLimits.MultiLine(
-                    minHeightInLines = 1,
-                    maxHeightInLines = Int.MAX_VALUE
-                )
+                lineThrough = subTodo.isCompleted
             )
             if (!isFocused) {
                 Box(
@@ -543,7 +535,7 @@ fun SubTodoItemRowAdd(
                 .weight(1f)
                 .padding(vertical = 12.dp)
         ) {
-            BasicTextField(
+            LineThroughBasicTextField(
                 state = state,
                 modifier = Modifier
                     .focusRequester(focusRequester)
@@ -559,17 +551,14 @@ fun SubTodoItemRowAdd(
                     focusManager.clearFocus()
                 },
                 textStyle = MaterialTheme.typography.bodyMedium.copy(
-                    color = AppColors.content,
-                    textDecoration = if (checked) TextDecoration.LineThrough else TextDecoration.None,
+                    color = AppColors.content
                 ),
-                cursorBrush = SolidColor(AppColors.primary),
                 decorator = { innerTextField ->
                     if (state.text.isEmpty() && !isFocused) {
                         Text(
                             text = addTaskText,
                             style = MaterialTheme.typography.bodyMedium.copy(
-                                color = AppColors.content,
-                                textDecoration = if (checked) TextDecoration.LineThrough else TextDecoration.None,
+                                color = AppColors.content
                             ),
                             color = AppColors.primary,
                             modifier = Modifier
@@ -579,10 +568,7 @@ fun SubTodoItemRowAdd(
                     }
                     innerTextField()
                 },
-                lineLimits = TextFieldLineLimits.MultiLine(
-                    minHeightInLines = 1,
-                    maxHeightInLines = Int.MAX_VALUE
-                )
+                lineThrough = checked
             )
             if (!isFocused) {
                 Box(

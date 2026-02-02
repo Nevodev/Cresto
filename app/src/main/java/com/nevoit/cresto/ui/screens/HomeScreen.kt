@@ -444,7 +444,7 @@ fun BoxScope.HomeScreen(
                 ) { item ->
                     val isSelected = item.todoItem.id in selectedItemIds
                     val alpha = remember { Animatable(if (isSelected) 1f else 0f) }
-                    
+
                     LaunchedEffect(isSelected) {
                         if (isSelected) {
                             alpha.animateTo(1f, tween(100))
