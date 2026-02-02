@@ -31,16 +31,12 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.dropShadow
 import androidx.compose.ui.graphics.BlendMode
-import androidx.compose.ui.graphics.Brush.Companion.verticalGradient
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.TileMode
-import androidx.compose.ui.graphics.drawOutline
 import androidx.compose.ui.graphics.drawscope.Fill
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.shadow.Shadow
@@ -52,7 +48,6 @@ import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.DpOffset
-import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.kyant.backdrop.backdrops.LayerBackdrop
@@ -62,6 +57,7 @@ import com.kyant.capsule.ContinuousRoundedRectangle
 import com.nevoit.cresto.ui.theme.glasense.AppButtonColors
 import com.nevoit.cresto.ui.theme.glasense.AppColors
 import com.nevoit.cresto.ui.theme.glasense.AppSpecs
+import com.nevoit.cresto.ui.theme.glasense.glasenseHighlight
 import com.nevoit.cresto.ui.theme.glasense.isAppInDarkTheme
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
@@ -94,6 +90,7 @@ fun GlasenseDialogButton(
 ) {
     val density = LocalDensity.current
     val shape = AppSpecs.buttonShape
+    val corner = AppSpecs.buttonCorner
     GlasenseButtonAlt(
         enabled = true,
         shape = shape,
@@ -101,25 +98,7 @@ fun GlasenseDialogButton(
         modifier = Modifier
             .height(48.dp)
             .then(modifier)
-            .then(if (isPrimary) Modifier.drawBehind {
-                val outline = shape.createOutline(
-                    size,
-                    LayoutDirection.Ltr,
-                    density
-                )
-                val gradientBrush = verticalGradient(
-                    colorStops = arrayOf(
-                        0.0f to Color.White.copy(alpha = 0.2f),
-                        1.0f to Color.White.copy(alpha = 0.02f)
-                    )
-                )
-                drawOutline(
-                    outline = outline,
-                    brush = gradientBrush,
-                    style = Stroke(width = 3.dp.toPx()),
-                    blendMode = BlendMode.Plus
-                )
-            } else Modifier),
+            .then(if (isPrimary) Modifier.glasenseHighlight(corner) else Modifier),
         colors = if (isPrimary && !isDestructive) AppButtonColors.primary()
         else if (isPrimary) AppButtonColors.primary()
             .copy(containerColor = AppColors.error, contentColor = AppColors.onError)
@@ -211,17 +190,6 @@ fun GlasenseDialog(
                     },
                     // Custom drawing on top of the blurred background to create stunning colors.
                     onDrawSurface = {
-                        val outline = ContinuousRoundedRectangle(24.dp).createOutline(
-                            size = size,
-                            layoutDirection = LayoutDirection.Ltr,
-                            density = density
-                        )
-                        val gradientBrush = verticalGradient(
-                            colorStops = arrayOf(
-                                0.0f to Color.White.copy(alpha = 1f),
-                                1.0f to Color.White.copy(alpha = 0.2f)
-                            )
-                        )
                         if (!blur) drawRect(
                             brush = SolidColor(surfaceColor),
                             style = Fill
@@ -248,13 +216,6 @@ fun GlasenseDialog(
                                 style = Fill,
                                 blendMode = BlendMode.SrcOver,
                             )
-                            drawOutline(
-                                outline = outline,
-                                brush = gradientBrush,
-                                style = Stroke(width = 3.dp.toPx()),
-                                blendMode = BlendMode.Plus,
-                                alpha = 0.08f
-                            )
                         } else {
                             drawRect(
                                 brush = SolidColor(Color(0xFF000000).copy(alpha = 0.4f)),
@@ -276,13 +237,6 @@ fun GlasenseDialog(
                                 style = Fill,
                                 blendMode = BlendMode.SrcOver,
                             )
-                            drawOutline(
-                                outline = outline,
-                                brush = gradientBrush,
-                                style = Stroke(width = 3.dp.toPx()),
-                                blendMode = BlendMode.Plus,
-                                alpha = 0.08f
-                            )
                         }
                     },
                     layerBlock = {
@@ -290,6 +244,7 @@ fun GlasenseDialog(
                         scaleY = scaleAni.value
                         alpha = alphaAni.value
                     })
+                .glasenseHighlight(24.dp)
                 .onGloballyPositioned { isVisible = true }
         ) {
             Column(

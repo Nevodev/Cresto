@@ -44,16 +44,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.BlendMode
-import androidx.compose.ui.graphics.Brush.Companion.verticalGradient
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.TileMode
-import androidx.compose.ui.graphics.drawOutline
 import androidx.compose.ui.graphics.drawscope.Fill
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
@@ -62,7 +58,6 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.kyant.backdrop.backdrops.rememberLayerBackdrop
@@ -86,6 +81,7 @@ import com.nevoit.cresto.ui.theme.glasense.AppButtonColors
 import com.nevoit.cresto.ui.theme.glasense.AppColors
 import com.nevoit.cresto.ui.theme.glasense.defaultEnterTransition
 import com.nevoit.cresto.ui.theme.glasense.defaultExitTransition
+import com.nevoit.cresto.ui.theme.glasense.glasenseHighlight
 import com.nevoit.cresto.ui.theme.glasense.gradientColorsDark
 import com.nevoit.cresto.ui.theme.glasense.gradientColorsLight
 import com.nevoit.cresto.ui.theme.glasense.highlightColorsDark
@@ -337,17 +333,6 @@ fun BottomSheet(
                                 blur(64f.dp.toPx(), TileMode.Clamp)
                                 colorControls(saturation = 1.1f)
                             }, onDrawSurface = {
-                                val outline = ContinuousCapsule.createOutline(
-                                    size = size,
-                                    layoutDirection = LayoutDirection.Ltr,
-                                    density = density
-                                )
-                                val gradientBrush = verticalGradient(
-                                    colorStops = arrayOf(
-                                        0.0f to Color.White.copy(alpha = 1f),
-                                        1.0f to Color.White.copy(alpha = 0.2f)
-                                    )
-                                )
                                 // The drawing logic is different for light and dark themes.
                                 if (!darkTheme) {
                                     drawRect(
@@ -370,13 +355,6 @@ fun BottomSheet(
                                         style = Fill,
                                         blendMode = BlendMode.SrcOver,
                                     )
-                                    drawOutline(
-                                        outline = outline,
-                                        brush = gradientBrush,
-                                        style = Stroke(width = 3.dp.toPx()),
-                                        blendMode = BlendMode.Plus,
-                                        alpha = 0.08f
-                                    )
                                 } else {
                                     drawRect(
                                         brush = SolidColor(Color(0xFF000000).copy(alpha = 0.5f)),
@@ -393,15 +371,9 @@ fun BottomSheet(
                                         style = Fill,
                                         blendMode = BlendMode.ColorDodge,
                                     )
-                                    drawOutline(
-                                        outline = outline,
-                                        brush = gradientBrush,
-                                        style = Stroke(width = 3.dp.toPx()),
-                                        blendMode = BlendMode.Plus,
-                                        alpha = 0.08f
-                                    )
                                 }
                             })
+                        .glasenseHighlight(56.dp)
                         .clip(ContinuousCapsule)
                 ) {
                     RotatingGlowBorder(
@@ -484,25 +456,8 @@ fun BottomSheet(
                                         Box(
                                             modifier = Modifier
                                                 .fillMaxSize()
-                                                .drawBehind {
-                                                    val outline = CircleShape.createOutline(
-                                                        size = this.size,
-                                                        layoutDirection = this.layoutDirection,
-                                                        density = this,
-                                                    )
-                                                    val gradientBrush = verticalGradient(
-                                                        colorStops = arrayOf(
-                                                            0.0f to Color.White.copy(alpha = 0.2f),
-                                                            1.0f to Color.White.copy(alpha = 0.02f)
-                                                        )
-                                                    )
-                                                    drawOutline(
-                                                        outline = outline,
-                                                        brush = gradientBrush,
-                                                        style = Stroke(width = 3.dp.toPx()),
-                                                        blendMode = BlendMode.Plus
-                                                    )
-                                                }, contentAlignment = Alignment.Center
+                                                .glasenseHighlight(40.dp),
+                                            contentAlignment = Alignment.Center
                                         ) {
                                             Icon(
                                                 painter = painterResource(id = R.drawable.ic_arrow_up),

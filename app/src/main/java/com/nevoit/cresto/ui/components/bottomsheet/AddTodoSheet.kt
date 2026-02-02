@@ -34,15 +34,10 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.graphics.BlendMode
-import androidx.compose.ui.graphics.Brush.Companion.verticalGradient
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.graphics.drawOutline
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -63,6 +58,7 @@ import com.nevoit.cresto.ui.theme.glasense.AppSpecs
 import com.nevoit.cresto.ui.theme.glasense.defaultEnterTransition
 import com.nevoit.cresto.ui.theme.glasense.defaultExitTransition
 import com.nevoit.cresto.ui.theme.glasense.getFlagColor
+import com.nevoit.cresto.ui.theme.glasense.glasenseHighlight
 import java.time.LocalDate
 
 /**
@@ -158,25 +154,7 @@ fun AddTodoSheet(
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
-                        .drawBehind {
-                            val outline = CircleShape.createOutline(
-                                size = this.size,
-                                layoutDirection = this.layoutDirection,
-                                density = this,
-                            )
-                            val gradientBrush = verticalGradient(
-                                colorStops = arrayOf(
-                                    0.0f to Color.White.copy(alpha = 0.2f),
-                                    1.0f to Color.White.copy(alpha = 0.02f)
-                                )
-                            )
-                            drawOutline(
-                                outline = outline,
-                                brush = gradientBrush,
-                                style = Stroke(width = 3.dp.toPx()),
-                                blendMode = BlendMode.Plus
-                            )
-                        }, contentAlignment = Alignment.Center
+                        .glasenseHighlight(48.dp), contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         painter = painterResource(id = R.drawable.ic_checkmark),

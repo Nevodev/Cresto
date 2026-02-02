@@ -6,18 +6,12 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.dropShadow
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.BlendMode
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.TileMode
-import androidx.compose.ui.graphics.drawOutline
 import androidx.compose.ui.graphics.drawscope.Fill
-import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.graphics.shadow.Shadow
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
@@ -29,6 +23,7 @@ import com.kyant.backdrop.highlight.Highlight
 import com.kyant.capsule.ContinuousCapsule
 import com.nevoit.cresto.ui.theme.glasense.NavigationButtonActiveColors
 import com.nevoit.cresto.ui.theme.glasense.NavigationButtonNormalColors
+import com.nevoit.cresto.ui.theme.glasense.glasenseHighlight
 import com.nevoit.cresto.ui.theme.glasense.isAppInDarkTheme
 
 /**
@@ -55,30 +50,7 @@ fun GlasenseNavigationButton(
         // Active state: draw a simple gradient outline.
         Modifier
             .fillMaxSize()
-            .drawBehind {
-                val outline = ContinuousCapsule.createOutline(
-                    size = Size(
-                        this.size.width - 1.5.dp.toPx(),
-                        this.size.height - 1.5.dp.toPx()
-                    ),
-                    layoutDirection = this.layoutDirection,
-                    density = this
-                )
-                val gradientBrush = Brush.verticalGradient(
-                    colorStops = arrayOf(
-                        0.0f to Color.White.copy(alpha = 0.2f),
-                        1.0f to Color.White.copy(alpha = 0.02f)
-                    )
-                )
-                translate(0.75.dp.toPx(), 0.75.dp.toPx()) {
-                    drawOutline(
-                        outline = outline,
-                        brush = gradientBrush,
-                        style = Stroke(width = 1.5.dp.toPx()),
-                        blendMode = BlendMode.Plus
-                    )
-                }
-            }
+            .glasenseHighlight(100.dp)
     } else {
         // Inactive state: draw a blurred backdrop with different effects for light/dark theme.
         Modifier
@@ -94,20 +66,6 @@ fun GlasenseNavigationButton(
                     if (liquidGlass) lens(16f.dp.toPx(), 32f.dp.toPx())
                 },
                 onDrawSurface = {
-                    val outline = ContinuousCapsule.createOutline(
-                        size = Size(
-                            this.size.width - 1.5.dp.toPx(),
-                            this.size.height - 1.5.dp.toPx()
-                        ),
-                        layoutDirection = this.layoutDirection,
-                        density = this
-                    )
-                    val gradientBrush = Brush.verticalGradient(
-                        colorStops = arrayOf(
-                            0.0f to Color.White.copy(alpha = 0.2f),
-                            1.0f to Color.White.copy(alpha = 0.02f)
-                        )
-                    )
                     // Light theme inactive style.
                     if (!darkTheme && !isActive) {
                         drawRect(
@@ -130,16 +88,6 @@ fun GlasenseNavigationButton(
                             style = Fill,
                             blendMode = BlendMode.SrcOver
                         )
-                        if (!liquidGlass) {
-                            translate(0.75.dp.toPx(), 0.75.dp.toPx()) {
-                                drawOutline(
-                                    outline = outline,
-                                    brush = gradientBrush,
-                                    style = Stroke(width = 1.5.dp.toPx()),
-                                    blendMode = BlendMode.Plus
-                                )
-                            }
-                        }
                         // Dark theme inactive style.
                     } else if (darkTheme && !isActive) {
                         drawRect(
@@ -166,19 +114,10 @@ fun GlasenseNavigationButton(
                             style = Fill,
                             blendMode = BlendMode.Luminosity
                         )
-                        if (!liquidGlass) {
-                            translate(0.75.dp.toPx(), 0.75.dp.toPx()) {
-                                drawOutline(
-                                    outline = outline,
-                                    brush = gradientBrush,
-                                    style = Stroke(width = 1.5.dp.toPx()),
-                                    blendMode = BlendMode.Plus
-                                )
-                            }
-                        }
                     }
                 }
             )
+            .then(if (!liquidGlass) Modifier.glasenseHighlight(100.dp) else Modifier)
     }
 
     // The base button with shape, click handling, shadow, and colors.

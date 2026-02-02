@@ -21,18 +21,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.dropShadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.BlendMode
-import androidx.compose.ui.graphics.Brush.Companion.verticalGradient
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.TileMode
-import androidx.compose.ui.graphics.drawOutline
 import androidx.compose.ui.graphics.drawscope.Fill
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.shadow.Shadow
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.DpOffset
-import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
@@ -41,6 +37,7 @@ import com.kyant.backdrop.drawPlainBackdrop
 import com.kyant.backdrop.effects.blur
 import com.kyant.capsule.ContinuousRoundedRectangle
 import com.nevoit.cresto.ui.theme.glasense.AppColors
+import com.nevoit.cresto.ui.theme.glasense.glasenseHighlight
 import com.nevoit.cresto.ui.theme.glasense.isAppInDarkTheme
 
 data class MenuItemData(
@@ -189,17 +186,6 @@ fun GlasenseMenu(
                 },
                 // Custom drawing on top of the blurred background to create stunning colors.
                 onDrawSurface = {
-                    val outline = ContinuousRoundedRectangle(16.dp).createOutline(
-                        size = size,
-                        layoutDirection = LayoutDirection.Ltr,
-                        density = density
-                    )
-                    val gradientBrush = verticalGradient(
-                        colorStops = arrayOf(
-                            0.0f to Color.White.copy(alpha = 1f),
-                            1.0f to Color.White.copy(alpha = 0.2f)
-                        )
-                    )
                     // The drawing logic is different for light and dark themes.
                     if (!darkTheme) {
                         drawRect(
@@ -222,13 +208,6 @@ fun GlasenseMenu(
                             style = Fill,
                             blendMode = BlendMode.SrcOver,
                         )
-                        drawOutline(
-                            outline = outline,
-                            brush = gradientBrush,
-                            style = Stroke(width = 3.dp.toPx()),
-                            blendMode = BlendMode.Plus,
-                            alpha = 0.08f
-                        )
                     } else {
                         drawRect(
                             brush = SolidColor(Color(0xFF000000).copy(alpha = 0.5f)),
@@ -250,16 +229,10 @@ fun GlasenseMenu(
                             style = Fill,
                             blendMode = BlendMode.SrcOver,
                         )
-                        drawOutline(
-                            outline = outline,
-                            brush = gradientBrush,
-                            style = Stroke(width = 3.dp.toPx()),
-                            blendMode = BlendMode.Plus,
-                            alpha = 0.08f
-                        )
                     }
                 }
             )
+            .glasenseHighlight(16.dp)
     ) {
         // Display the actual menu items.
         CustomMenuContent(items = menuState.items, onDismiss = onDismiss)

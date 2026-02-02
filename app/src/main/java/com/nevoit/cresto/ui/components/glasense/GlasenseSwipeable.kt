@@ -35,11 +35,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.graphics.BlendMode
-import androidx.compose.ui.graphics.Brush.Companion.verticalGradient
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
@@ -52,6 +48,7 @@ import com.nevoit.cresto.ui.components.myFadeIn
 import com.nevoit.cresto.ui.components.myFadeOut
 import com.nevoit.cresto.ui.components.myScaleIn
 import com.nevoit.cresto.ui.components.myScaleOut
+import com.nevoit.cresto.ui.theme.glasense.glasenseHighlight
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
@@ -264,21 +261,9 @@ fun SwipeableContainer(
                         ) {
                             Box(
                                 modifier = Modifier
-                                    .drawBehind {
-                                        // Draw a gradient border around the delete button.
-                                        val gradientBrush = verticalGradient(
-                                            colorStops = arrayOf(
-                                                0.0f to Color.White.copy(alpha = 0.2f),
-                                                1.0f to Color.White.copy(alpha = 0.02f)
-                                            )
-                                        )
-                                        drawCircle(
-                                            brush = gradientBrush,
-                                            style = Stroke(width = 3.dp.toPx()),
-                                            blendMode = BlendMode.Plus
-                                        )
-                                    }
-                                    .fillMaxSize(), contentAlignment = Alignment.Center) {
+                                    .glasenseHighlight(100.dp)
+                                    .fillMaxSize(), contentAlignment = Alignment.Center
+                            ) {
                                 Icon(
                                     painter = action.icon,
                                     contentDescription = action.contentDescription,
