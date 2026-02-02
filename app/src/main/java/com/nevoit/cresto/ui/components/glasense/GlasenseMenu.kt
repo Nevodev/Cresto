@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -41,7 +40,7 @@ import com.kyant.backdrop.backdrops.LayerBackdrop
 import com.kyant.backdrop.drawPlainBackdrop
 import com.kyant.backdrop.effects.blur
 import com.kyant.capsule.ContinuousRoundedRectangle
-import com.nevoit.cresto.ui.theme.glasense.Red500
+import com.nevoit.cresto.ui.theme.glasense.AppColors
 import com.nevoit.cresto.ui.theme.glasense.isAppInDarkTheme
 import com.nevoit.cresto.util.g2
 
@@ -109,7 +108,7 @@ private fun CustomMenuItem(
     onClick: () -> Unit
 ) {
     // Determine the content color based on whether the action is destructive.
-    val contentColor = if (isDestructive) Red500 else MaterialTheme.colorScheme.onBackground
+    val contentColor = if (isDestructive) AppColors.error else AppColors.content
     val interactionSource = remember { MutableInteractionSource() }
     Row(
         modifier = Modifier

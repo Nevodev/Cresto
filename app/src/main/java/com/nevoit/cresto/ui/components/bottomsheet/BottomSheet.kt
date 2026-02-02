@@ -83,6 +83,7 @@ import com.nevoit.cresto.ui.components.glasense.RotatingGlowBorder
 import com.nevoit.cresto.ui.components.myFadeIn
 import com.nevoit.cresto.ui.components.myFadeOut
 import com.nevoit.cresto.ui.theme.glasense.AppButtonColors
+import com.nevoit.cresto.ui.theme.glasense.AppColors
 import com.nevoit.cresto.ui.theme.glasense.defaultEnterTransition
 import com.nevoit.cresto.ui.theme.glasense.defaultExitTransition
 import com.nevoit.cresto.ui.theme.glasense.gradientColorsDark
@@ -435,9 +436,9 @@ fun BottomSheet(
                                             )
                                         },
                                         textStyle = MaterialTheme.typography.bodyLarge.copy(
-                                            color = MaterialTheme.colorScheme.onSurface
+                                            color = AppColors.content
                                         ),
-                                        cursorBrush = SolidColor(MaterialTheme.colorScheme.primary)
+                                        cursorBrush = SolidColor(AppColors.primary)
                                     )
                                     if (state.text.isBlank()) {
                                         Text(
@@ -526,7 +527,7 @@ fun BottomSheet(
                                             .align(Alignment.Center),
                                         colors = AppButtonColors.primary().copy(
                                             containerColor = Color.Transparent,
-                                            contentColor = MaterialTheme.colorScheme.onBackground
+                                            contentColor = AppColors.content
                                         )
                                     ) {
                                         Icon(

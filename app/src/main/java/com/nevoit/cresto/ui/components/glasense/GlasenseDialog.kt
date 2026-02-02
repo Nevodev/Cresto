@@ -60,8 +60,7 @@ import com.kyant.backdrop.drawPlainBackdrop
 import com.kyant.backdrop.effects.blur
 import com.kyant.capsule.ContinuousRoundedRectangle
 import com.nevoit.cresto.ui.theme.glasense.AppButtonColors
-import com.nevoit.cresto.ui.theme.glasense.CalculatedColor
-import com.nevoit.cresto.ui.theme.glasense.Red500
+import com.nevoit.cresto.ui.theme.glasense.AppColors
 import com.nevoit.cresto.ui.theme.glasense.isAppInDarkTheme
 import com.nevoit.cresto.util.g2
 import kotlinx.coroutines.coroutineScope
@@ -121,8 +120,9 @@ fun GlasenseDialogButton(
                 )
             } else Modifier),
         colors = if (isPrimary && !isDestructive) AppButtonColors.primary()
-        else if (isPrimary) AppButtonColors.primary().copy(containerColor = Red500)
-        else if (isDestructive) AppButtonColors.secondary().copy(contentColor = Red500)
+        else if (isPrimary) AppButtonColors.primary()
+            .copy(containerColor = AppColors.error, contentColor = AppColors.onError)
+        else if (isDestructive) AppButtonColors.secondary().copy(contentColor = AppColors.error)
         else AppButtonColors.secondary()
             .copy(contentColor = AppButtonColors.secondary().contentColor.copy(1f))
     ) {
@@ -170,7 +170,7 @@ fun GlasenseDialog(
         }
     }
     val interactionSource = remember { MutableInteractionSource() }
-    val surfaceColor = CalculatedColor.hierarchicalSurfaceColor
+    val surfaceColor = AppColors.cardBackground
 
     BackHandler() { }
     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {

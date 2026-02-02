@@ -27,7 +27,6 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
@@ -60,7 +59,7 @@ import com.nevoit.cresto.ui.components.glasense.GlasenseButton
 import com.nevoit.cresto.ui.components.glasense.GlasenseDynamicSmallTitle
 import com.nevoit.cresto.ui.components.glasense.ZeroHeightDivider
 import com.nevoit.cresto.ui.components.packed.ConfigItemContainer
-import com.nevoit.cresto.ui.theme.glasense.CalculatedColor
+import com.nevoit.cresto.ui.theme.glasense.AppColors
 import com.nevoit.cresto.ui.theme.glasense.isAppInDarkTheme
 import com.nevoit.cresto.util.g2
 import dev.chrisbanes.haze.ExperimentalHazeApi
@@ -92,10 +91,10 @@ fun AboutScreen() {
     val hazeState = rememberHazeState()
 
     // Get colors from the app's custom theme
-    val onSurfaceContainer = CalculatedColor.onSurfaceContainer
-    val onBackground = MaterialTheme.colorScheme.onBackground
-    val surfaceColor = CalculatedColor.hierarchicalBackgroundColor
-    val hierarchicalSurfaceColor = CalculatedColor.hierarchicalSurfaceColor
+    val onSurfaceContainer = AppColors.scrimNormal
+    val onBackground = AppColors.content
+    val surfaceColor = AppColors.pageBackground
+    val hierarchicalSurfaceColor = AppColors.cardBackground
 
     // Remember the state for the lazy list to control scrolling
     val lazyListState = rememberLazyListState()
@@ -208,14 +207,14 @@ fun AboutScreen() {
                                     fontSize = 20.sp,
                                     lineHeight = 20.sp,
                                     fontWeight = FontWeight.W500,
-                                    color = MaterialTheme.colorScheme.onBackground,
+                                    color = AppColors.content,
                                 )
                                 Text(
                                     text = "Create awesome.",
                                     fontSize = 12.sp,
                                     lineHeight = 12.sp,
                                     fontWeight = FontWeight.W400,
-                                    color = MaterialTheme.colorScheme.onBackground.copy(.5f),
+                                    color = AppColors.contentVariant,
                                 )
                                 // Row for displaying developer roles/tags
                                 Row(
@@ -227,7 +226,7 @@ fun AboutScreen() {
                                         modifier = Modifier
                                             .padding(end = 4.dp)
                                             .background(
-                                                MaterialTheme.colorScheme.onBackground.copy(.1f),
+                                                AppColors.content.copy(.1f),
                                                 ContinuousCapsule
                                             )
                                     ) {
@@ -236,7 +235,7 @@ fun AboutScreen() {
                                             fontSize = 10.sp,
                                             lineHeight = 10.sp,
                                             fontWeight = FontWeight.W400,
-                                            color = MaterialTheme.colorScheme.onBackground.copy(.5f),
+                                            color = AppColors.contentVariant,
                                             modifier = Modifier
                                                 .padding(vertical = 2.dp, horizontal = 8.dp)
                                         )
@@ -244,7 +243,7 @@ fun AboutScreen() {
                                     Box(
                                         modifier = Modifier
                                             .background(
-                                                MaterialTheme.colorScheme.onBackground.copy(.1f),
+                                                AppColors.content.copy(.1f),
                                                 ContinuousCapsule
                                             )
                                     ) {
@@ -253,7 +252,7 @@ fun AboutScreen() {
                                             fontSize = 10.sp,
                                             lineHeight = 10.sp,
                                             fontWeight = FontWeight.W400,
-                                            color = MaterialTheme.colorScheme.onBackground.copy(.5f),
+                                            color = AppColors.contentVariant,
                                             modifier = Modifier
                                                 .padding(vertical = 2.dp, horizontal = 8.dp)
                                         )
@@ -264,7 +263,7 @@ fun AboutScreen() {
                             Spacer(modifier = Modifier.width(12.dp))
                             Icon(
                                 painter = painterResource(R.drawable.ic_forward),
-                                tint = MaterialTheme.colorScheme.onBackground.copy(.2f),
+                                tint = AppColors.content.copy(.2f),
                                 contentDescription = stringResource(R.string.enter_icon),
                                 modifier = Modifier
                                     .align(Alignment.CenterVertically)
@@ -305,14 +304,14 @@ fun AboutScreen() {
                                     fontSize = 20.sp,
                                     lineHeight = 20.sp,
                                     fontWeight = FontWeight.W500,
-                                    color = MaterialTheme.colorScheme.onBackground,
+                                    color = AppColors.content,
                                 )
                                 Text(
                                     text = "Create rubbish.",
                                     fontSize = 12.sp,
                                     lineHeight = 12.sp,
                                     fontWeight = FontWeight.W400,
-                                    color = MaterialTheme.colorScheme.onBackground.copy(.5f),
+                                    color = AppColors.contentVariant,
                                 )
                                 Row(
                                     modifier = Modifier
@@ -323,7 +322,7 @@ fun AboutScreen() {
                                         modifier = Modifier
                                             .padding(end = 6.dp)
                                             .background(
-                                                MaterialTheme.colorScheme.onBackground.copy(.1f),
+                                                AppColors.content.copy(.1f),
                                                 ContinuousCapsule
                                             )
                                     ) {
@@ -332,7 +331,7 @@ fun AboutScreen() {
                                             fontSize = 10.sp,
                                             lineHeight = 10.sp,
                                             fontWeight = FontWeight.W400,
-                                            color = MaterialTheme.colorScheme.onBackground.copy(.5f),
+                                            color = AppColors.contentVariant,
                                             modifier = Modifier
                                                 .padding(vertical = 2.dp, horizontal = 8.dp)
 
@@ -343,7 +342,7 @@ fun AboutScreen() {
                             Spacer(modifier = Modifier.width(12.dp))
                             Icon(
                                 painter = painterResource(R.drawable.ic_forward),
-                                tint = MaterialTheme.colorScheme.onBackground.copy(.2f),
+                                tint = AppColors.content.copy(.2f),
                                 contentDescription = stringResource(R.string.enter_icon),
                                 modifier = Modifier
                                     .align(Alignment.CenterVertically)
@@ -363,7 +362,7 @@ fun AboutScreen() {
                         text = stringResource(R.string.version_info),
                         fontSize = 14.sp,
                         lineHeight = 14.sp,
-                        color = MaterialTheme.colorScheme.onBackground.copy(.5f),
+                        color = AppColors.contentVariant,
                         modifier = Modifier
                             .padding(
                                 start = 12.dp,
@@ -478,7 +477,7 @@ fun AboutScreen() {
                 .align(Alignment.TopStart),
             colors = ButtonDefaults.buttonColors(
                 containerColor = onSurfaceContainer,
-                contentColor = MaterialTheme.colorScheme.primary
+                contentColor = AppColors.primary
             )
         ) {
             Icon(

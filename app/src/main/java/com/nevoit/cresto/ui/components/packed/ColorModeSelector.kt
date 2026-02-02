@@ -15,7 +15,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -39,7 +38,7 @@ import com.nevoit.cresto.ui.components.glasense.GlasenseSwitch
 import com.nevoit.cresto.ui.components.glasense.ZeroHeightDivider
 import com.nevoit.cresto.ui.components.glasense.rememberCheckBoxState
 import com.nevoit.cresto.ui.screens.settings.util.SettingsManager
-import com.nevoit.cresto.ui.theme.glasense.CalculatedColor
+import com.nevoit.cresto.ui.theme.glasense.AppColors
 
 @Composable
 fun ColorModeSelector(
@@ -51,7 +50,7 @@ fun ColorModeSelector(
     // 0 is light, 1 is dark, 2 is auto
     val isAutomatic = currentMode == 2
 
-    val onBackground = MaterialTheme.colorScheme.onBackground
+    val onBackground = AppColors.content
     var returnMode by remember { mutableIntStateOf(0) }
     val transparency by animateFloatAsState(
         targetValue = if (isAutomatic) .6f else 1f,
@@ -154,7 +153,7 @@ fun ColorModeSelector(
             ConfigItem(title = stringResource(R.string.automatic)) {
                 GlasenseSwitch(
                     liquidGlass = isLiquidGlass,
-                    backgroundColor = CalculatedColor.hierarchicalSurfaceColor,
+                    backgroundColor = AppColors.cardBackground,
                     enabled = true,
                     checked = isAutomatic,
                     onCheckedChange = { isChecked ->

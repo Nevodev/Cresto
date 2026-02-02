@@ -33,6 +33,10 @@ private val LightColorScheme = lightColorScheme(
     surface = Color(0xFFF3F4F6)
 )
 
+val AppColors: GlasenseColors
+    @Composable
+    get() = LocalGlasenseColors.current
+
 @Composable
 fun GlasenseTheme(
     settingsViewModel: SettingsViewModel = viewModel(),
@@ -60,7 +64,7 @@ fun GlasenseTheme(
     }
 
     val glasenseColors = if (dynamicColor) {
-        glasenseColorsFromScheme(colorScheme)
+        glasenseColorsFromScheme(colorScheme, useDarkTheme)
     } else {
         if (useDarkTheme) GlasenseDarkPalette else GlasenseLightPalette
     }
@@ -75,6 +79,7 @@ fun GlasenseTheme(
             windowInsetsController.isAppearanceLightStatusBars = !useDarkTheme
         }
     }
+
     MaterialTheme(
         colorScheme = colorScheme,
         typography = Typography,

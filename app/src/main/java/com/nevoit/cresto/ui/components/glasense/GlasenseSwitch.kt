@@ -51,8 +51,8 @@ import com.kyant.backdrop.highlight.Highlight
 import com.kyant.backdrop.shadow.InnerShadow
 import com.kyant.backdrop.shadow.Shadow
 import com.kyant.capsule.ContinuousCapsule
+import com.nevoit.cresto.ui.theme.glasense.AppColors
 import com.nevoit.cresto.ui.theme.glasense.GlasenseColors
-import com.nevoit.cresto.ui.theme.glasense.LocalGlasenseColors
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.android.awaitFrame
 import kotlinx.coroutines.flow.filter
@@ -71,7 +71,7 @@ import kotlin.math.abs
 fun GlasenseSwitch(
     enabled: Boolean = true,
     checked: Boolean,
-    colors: GlasenseColors = LocalGlasenseColors.current,
+    colors: GlasenseColors = AppColors,
     onCheckedChange: (Boolean) -> Unit
 ) {
     val density = LocalDensity.current
@@ -209,7 +209,7 @@ fun GlasenseSwitch(
     backgroundColor: Color,
     enabled: Boolean = true,
     checked: Boolean,
-    colors: GlasenseColors = LocalGlasenseColors.current,
+    colors: GlasenseColors = AppColors,
     onCheckedChange: (Boolean) -> Unit
 ) {
     if (liquidGlass) {

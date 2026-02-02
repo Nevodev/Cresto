@@ -17,7 +17,7 @@ import com.nevoit.cresto.CrestoApplication
 import com.nevoit.cresto.data.todo.TodoViewModel
 import com.nevoit.cresto.data.todo.TodoViewModelFactory
 import com.nevoit.cresto.toolkit.overscroll.OffsetOverscrollFactory
-import com.nevoit.cresto.ui.theme.glasense.CalculatedColor
+import com.nevoit.cresto.ui.theme.glasense.AppColors
 import com.nevoit.cresto.ui.theme.glasense.GlasenseTheme
 
 class DetailActivity : ComponentActivity() {
@@ -44,7 +44,7 @@ class DetailActivity : ComponentActivity() {
                 }
                 CompositionLocalProvider(
                     LocalOverscrollFactory provides overscrollFactory,
-                    LocalContentColor provides contentColorFor(CalculatedColor.hierarchicalBackgroundColor),
+                    LocalContentColor provides contentColorFor(AppColors.pageBackground),
                 ) {
                     DetailScreen(todoId = todoId, viewModel = todoViewModel)
                 }

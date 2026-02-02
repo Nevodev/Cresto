@@ -7,14 +7,13 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.LocalOverscrollFactory
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.material3.LocalContentColor
-import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.core.view.WindowCompat
 import com.nevoit.cresto.toolkit.overscroll.OffsetOverscrollFactory
 import com.nevoit.cresto.ui.MainScreen
-import com.nevoit.cresto.ui.theme.glasense.CalculatedColor
+import com.nevoit.cresto.ui.theme.glasense.AppColors
 import com.nevoit.cresto.ui.theme.glasense.GlasenseTheme
 
 /**
@@ -40,7 +39,7 @@ class MainActivity : ComponentActivity() {
                 // Provide the custom overscroll factory to the composable tree.
                 CompositionLocalProvider(
                     LocalOverscrollFactory provides overscrollFactory,
-                    LocalContentColor provides contentColorFor(CalculatedColor.hierarchicalBackgroundColor),
+                    LocalContentColor provides AppColors.content,
                 ) {
                     // Display the main screen of the application.
                     MainScreen()

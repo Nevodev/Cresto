@@ -56,7 +56,7 @@ import com.nevoit.cresto.ui.components.glasense.GlasenseNavigationButton
 import com.nevoit.cresto.ui.components.glasense.MenuItemData
 import com.nevoit.cresto.ui.components.glasense.MenuState
 import com.nevoit.cresto.ui.screens.settings.util.SettingsManager
-import com.nevoit.cresto.ui.theme.glasense.CalculatedColor
+import com.nevoit.cresto.ui.theme.glasense.AppColors
 import com.nevoit.cresto.ui.theme.glasense.linearGradientMaskB2T70
 import com.nevoit.cresto.ui.theme.glasense.linearGradientMaskB2T90
 import dev.chrisbanes.haze.ExperimentalHazeApi
@@ -79,7 +79,7 @@ sealed class Screen(val route: String) {
 @OptIn(ExperimentalHazeApi::class)
 @Composable
 fun MainScreen() {
-    val surfaceColor = CalculatedColor.hierarchicalBackgroundColor
+    val surfaceColor = AppColors.pageBackground
     var currentRoute by remember { mutableStateOf(Screen.Home.route) }
     val liteMode by SettingsManager.isLiteModeState
     val liquidGlass by SettingsManager.isLiquidGlassState

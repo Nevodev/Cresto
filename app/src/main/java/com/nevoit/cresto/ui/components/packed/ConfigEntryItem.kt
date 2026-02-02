@@ -46,6 +46,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.kyant.capsule.ContinuousRoundedRectangle
 import com.nevoit.cresto.R
+import com.nevoit.cresto.ui.theme.glasense.AppColors
 import com.nevoit.cresto.util.g2
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -166,7 +167,7 @@ fun ConfigEntryItem(
 
             Icon(
                 painter = painterResource(R.drawable.ic_forward),
-                tint = MaterialTheme.colorScheme.onBackground.copy(.2f),
+                tint = AppColors.content.copy(.2f),
                 contentDescription = enterIconText,
                 modifier = Modifier
                     .align(Alignment.CenterVertically)
@@ -264,28 +265,28 @@ fun AboutEntryItem(
                 fontSize = 20.sp,
                 lineHeight = 20.sp,
                 fontWeight = FontWeight.W500,
-                color = MaterialTheme.colorScheme.onBackground,
+                color = AppColors.content,
             )
             Text(
                 text = stringResource(R.string.developed_by_nevoit),
                 fontSize = 12.sp,
                 lineHeight = 12.sp,
                 fontWeight = FontWeight.W400,
-                color = MaterialTheme.colorScheme.onBackground.copy(.5f),
+                color = AppColors.contentVariant,
             )
             Text(
                 text = "$versionText ${packageInfo?.versionName}",
                 fontSize = 12.sp,
                 lineHeight = 12.sp,
                 fontWeight = FontWeight.W400,
-                color = MaterialTheme.colorScheme.onBackground.copy(.5f),
+                color = AppColors.contentVariant,
             )
         }
         Spacer(modifier = Modifier.width(12.dp))
         // Forward arrow icon.
         Icon(
             painter = painterResource(R.drawable.ic_forward),
-            tint = MaterialTheme.colorScheme.onBackground.copy(.2f),
+            tint = AppColors.content.copy(.2f),
             contentDescription = enterIconText,
             modifier = Modifier
                 .align(Alignment.CenterVertically)

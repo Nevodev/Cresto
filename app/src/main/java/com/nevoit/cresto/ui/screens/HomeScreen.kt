@@ -35,7 +35,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -92,9 +91,7 @@ import com.nevoit.cresto.ui.components.glasense.rememberSwipeableListState
 import com.nevoit.cresto.ui.components.packed.SwipeableTodoItem
 import com.nevoit.cresto.ui.screens.detailscreen.DetailActivity
 import com.nevoit.cresto.ui.screens.settings.util.SettingsManager
-import com.nevoit.cresto.ui.theme.glasense.Blue500
-import com.nevoit.cresto.ui.theme.glasense.CalculatedColor
-import com.nevoit.cresto.ui.theme.glasense.Red500
+import com.nevoit.cresto.ui.theme.glasense.AppColors
 import com.nevoit.cresto.util.g2
 import dev.chrisbanes.haze.ExperimentalHazeApi
 import dev.chrisbanes.haze.hazeSource
@@ -151,9 +148,9 @@ fun BoxScope.HomeScreen(
 
     // val colorMode = if (MaterialTheme.colorScheme.background == Color.White) true else false
 
-    val onSurfaceContainer = CalculatedColor.onSurfaceContainer
+    val onSurfaceContainer = AppColors.scrimNormal
 
-    val surfaceColor = CalculatedColor.hierarchicalBackgroundColor
+    val surfaceColor = AppColors.pageBackground
 
     val lazyListState = rememberLazyListState()
     LaunchedEffect(lazyListState.isScrollInProgress, revealedItemId) {
@@ -245,6 +242,7 @@ fun BoxScope.HomeScreen(
         BackHandler { viewModel.clearSelections() }
     }
 
+    val selectionOutline = AppColors.primary
     LazyColumn(
         state = lazyListState,
         modifier = Modifier
@@ -325,7 +323,7 @@ fun BoxScope.HomeScreen(
                             translate(1.5.dp.toPx(), 1.5.dp.toPx()) {
                                 drawOutline(
                                     outline = outline,
-                                    color = Blue500,
+                                    color = selectionOutline,
                                     alpha = alpha.value,
                                     style = Stroke(width = 3.dp.toPx()),
                                 )
@@ -381,7 +379,7 @@ fun BoxScope.HomeScreen(
                         fontSize = 14.sp,
                         lineHeight = 14.sp,
                         fontWeight = FontWeight.Normal,
-                        color = MaterialTheme.colorScheme.onBackground.copy(.5f)
+                        color = AppColors.contentVariant
                     )
                     Icon(
                         painter = painterResource(R.drawable.ic_forward_nav),
@@ -465,7 +463,7 @@ fun BoxScope.HomeScreen(
                                     translate(1.5.dp.toPx(), 1.5.dp.toPx()) {
                                         drawOutline(
                                             outline = outline,
-                                            color = Blue500,
+                                            color = selectionOutline,
                                             alpha = alpha.value,
                                             style = Stroke(width = 3.dp.toPx()),
                                         )
@@ -525,7 +523,7 @@ fun BoxScope.HomeScreen(
                     .align(Alignment.TopStart),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = onSurfaceContainer,
-                    contentColor = MaterialTheme.colorScheme.primary
+                    contentColor = AppColors.primary
                 )
             ) {
                 Row(
@@ -542,7 +540,7 @@ fun BoxScope.HomeScreen(
                             painter = painterResource(id = R.drawable.ic_magnifying_glass),
                             contentDescription = stringResource(R.string.search_all_todos),
                             modifier = Modifier.width(32.dp),
-                            tint = MaterialTheme.colorScheme.primary
+                            tint = AppColors.primary
                         )
                     }
                     Box(
@@ -571,7 +569,7 @@ fun BoxScope.HomeScreen(
                             painter = painterResource(id = R.drawable.ic_funnel),
                             contentDescription = stringResource(R.string.filter),
                             modifier = Modifier.width(32.dp),
-                            tint = MaterialTheme.colorScheme.primary
+                            tint = AppColors.primary
                         )
                     }
                 }
@@ -593,7 +591,7 @@ fun BoxScope.HomeScreen(
                     .align(Alignment.TopEnd),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = onSurfaceContainer,
-                    contentColor = MaterialTheme.colorScheme.primary
+                    contentColor = AppColors.primary
                 )
             ) {
                 Icon(
@@ -609,7 +607,7 @@ fun BoxScope.HomeScreen(
             width = { 48.dp },
             height = { 48.dp },
             padding = PaddingValues(top = statusBarHeight, start = 12.dp),
-            tint = Red500,
+            tint = AppColors.error,
             enabled = true,
             shape = ContinuousCapsule,
             onClick = {
@@ -627,7 +625,7 @@ fun BoxScope.HomeScreen(
                 .align(Alignment.TopStart),
             colors = ButtonDefaults.buttonColors(
                 containerColor = onSurfaceContainer,
-                contentColor = MaterialTheme.colorScheme.primary
+                contentColor = AppColors.primary
             )
         ) {
             Icon(
@@ -654,7 +652,7 @@ fun BoxScope.HomeScreen(
                 .align(Alignment.TopEnd),
             colors = ButtonDefaults.buttonColors(
                 containerColor = onSurfaceContainer,
-                contentColor = MaterialTheme.colorScheme.primary
+                contentColor = AppColors.primary
             )
         ) {
             Icon(

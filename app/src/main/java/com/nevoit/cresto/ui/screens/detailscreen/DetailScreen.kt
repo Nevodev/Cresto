@@ -88,8 +88,7 @@ import com.nevoit.cresto.ui.components.packed.SwipeableSubTodoItemRowEditable
 import com.nevoit.cresto.ui.components.packed.TodoItemRowEditable
 import com.nevoit.cresto.ui.screens.settings.util.SettingsManager
 import com.nevoit.cresto.ui.theme.glasense.AppButtonColors
-import com.nevoit.cresto.ui.theme.glasense.CalculatedColor
-import com.nevoit.cresto.ui.theme.glasense.Red500
+import com.nevoit.cresto.ui.theme.glasense.AppColors
 import com.nevoit.cresto.ui.theme.glasense.defaultEnterTransition
 import com.nevoit.cresto.ui.theme.glasense.defaultExitTransition
 import com.nevoit.cresto.ui.theme.glasense.getFlagColor
@@ -127,8 +126,8 @@ fun DetailScreen(
 
     val hazeState = rememberHazeState()
 
-    val onSurfaceContainer = CalculatedColor.onSurfaceContainer
-    val surfaceColor = CalculatedColor.hierarchicalBackgroundColor
+    val onSurfaceContainer = AppColors.scrimNormal
+    val surfaceColor = AppColors.pageBackground
 
     val backdrop = rememberLayerBackdrop {
         drawRect(surfaceColor)
@@ -435,7 +434,7 @@ fun DetailScreen(
                                                 contentDescription = stringResource(R.string.flag),
                                                 modifier = Modifier.width(28.dp),
                                                 tint = if (displayColor == Color.Transparent) {
-                                                    MaterialTheme.colorScheme.onSurface.copy(
+                                                    AppColors.content.copy(
                                                         alpha = 0.5F
                                                     )
                                                 } else {
@@ -471,7 +470,7 @@ fun DetailScreen(
                         fontSize = 14.sp,
                         lineHeight = 14.sp,
                         fontWeight = FontWeight.Normal,
-                        color = MaterialTheme.colorScheme.onBackground.copy(.5f),
+                        color = AppColors.contentVariant,
                         modifier = Modifier
                             .animateItem(placementSpec = spring(0.9f, 400f))
                             .fillMaxWidth()
@@ -548,7 +547,7 @@ fun DetailScreen(
                 .align(Alignment.TopStart),
             colors = ButtonDefaults.buttonColors(
                 containerColor = onSurfaceContainer,
-                contentColor = MaterialTheme.colorScheme.primary
+                contentColor = AppColors.primary
             )
         ) {
             Icon(
@@ -619,14 +618,14 @@ fun DetailScreen(
                         .size(48.dp),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = onSurfaceContainer,
-                        contentColor = MaterialTheme.colorScheme.primary
+                        contentColor = AppColors.primary
                     )
                 ) {
                     Icon(
                         painter = painterResource(id = R.drawable.ic_trash),
                         contentDescription = stringResource(R.string.delete_current_todo),
                         modifier = Modifier.width(32.dp),
-                        tint = Red500
+                        tint = AppColors.error
                     )
                 }
             }

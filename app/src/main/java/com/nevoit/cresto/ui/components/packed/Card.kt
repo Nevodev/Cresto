@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -25,7 +24,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.kyant.capsule.ContinuousRoundedRectangle
-import com.nevoit.cresto.ui.theme.glasense.CalculatedColor
+import com.nevoit.cresto.ui.theme.glasense.AppColors
 import com.nevoit.cresto.util.g2
 
 @Composable
@@ -35,7 +34,7 @@ fun CardWithTitle(
     title: String,
     content: @Composable () -> Unit,
 ) {
-    val hierarchicalSurfaceColor = CalculatedColor.hierarchicalSurfaceColor
+    val hierarchicalSurfaceColor = AppColors.cardBackground
 
     Column(
         modifier = modifier
@@ -61,7 +60,7 @@ fun CardWithTitle(
                     painter = icon,
                     contentDescription = null,
                     modifier = Modifier.requiredSize(24.dp),
-                    tint = MaterialTheme.colorScheme.onBackground.copy(.5f)
+                    tint = AppColors.contentVariant
                 )
                 Spacer(Modifier.width(4.dp))
             }
@@ -69,7 +68,7 @@ fun CardWithTitle(
                 text = title,
                 fontSize = 14.sp,
                 lineHeight = 14.sp,
-                color = MaterialTheme.colorScheme.onBackground.copy(.5f),
+                color = AppColors.contentVariant,
                 modifier = Modifier
                     .weight(1f)
                     .requiredHeight(48.dp)
@@ -91,7 +90,7 @@ fun CardWithoutTitle(
     modifier: Modifier = Modifier,
     content: @Composable () -> Unit,
 ) {
-    val hierarchicalSurfaceColor = CalculatedColor.hierarchicalSurfaceColor
+    val hierarchicalSurfaceColor = AppColors.cardBackground
     Box(
         modifier = modifier
             .background(

@@ -62,8 +62,7 @@ import com.nevoit.cresto.ui.components.glasense.GlasenseCheckbox
 import com.nevoit.cresto.ui.components.glasense.SwipeableActionButton
 import com.nevoit.cresto.ui.components.glasense.SwipeableContainer
 import com.nevoit.cresto.ui.components.glasense.SwipeableListState
-import com.nevoit.cresto.ui.theme.glasense.CalculatedColor
-import com.nevoit.cresto.ui.theme.glasense.Red500
+import com.nevoit.cresto.ui.theme.glasense.AppColors
 import com.nevoit.cresto.ui.theme.glasense.defaultEnterTransition
 import com.nevoit.cresto.ui.theme.glasense.defaultExitTransition
 import com.nevoit.cresto.ui.theme.glasense.getFlagColor
@@ -97,7 +96,7 @@ fun TodoItemRow(
             .defaultMinSize(minHeight = 68.dp)
             .fillMaxWidth()
             .background(
-                color = CalculatedColor.hierarchicalSurfaceColor,
+                color = AppColors.cardBackground,
                 shape = ContinuousRoundedRectangle(12.dp, g2),
             )
             .then(modifier),
@@ -212,9 +211,9 @@ fun TodoItemRow(
         Box(
             modifier = Modifier
                 .height(32.dp)
-                .background(MaterialTheme.colorScheme.onBackground.copy(alpha = 0.05f))
+                .background(AppColors.content.copy(alpha = 0.05f))
         ) {
-            item.hashtag?.let { Text(text = it, color = MaterialTheme.colorScheme.onBackground) }
+            item.hashtag?.let { Text(text = it, color = AppColors.content) }
         }
     }
 }
@@ -231,7 +230,7 @@ fun SwipeableTodoItem(
     val actions = listOf(
         SwipeableActionButton(
             index = 0,
-            color = Red500,
+            color = AppColors.error,
             icon = painterResource(id = R.drawable.ic_trash),
             isDestructive = true
         )
@@ -293,7 +292,7 @@ fun TodoItemRowEditable(
             .defaultMinSize(minHeight = 68.dp)
             .fillMaxWidth()
             .background(
-                color = CalculatedColor.hierarchicalSurfaceColor,
+                color = AppColors.cardBackground,
                 shape = ContinuousRoundedRectangle(12.dp, g2),
             )
             .then(modifier),
@@ -328,10 +327,10 @@ fun TodoItemRowEditable(
                     focusManager.clearFocus()
                 },
                 textStyle = MaterialTheme.typography.bodyMedium.copy(
-                    color = MaterialTheme.colorScheme.onSurface,
+                    color = AppColors.content,
                     textDecoration = if (item.isCompleted) TextDecoration.LineThrough else TextDecoration.None,
                 ),
-                cursorBrush = SolidColor(MaterialTheme.colorScheme.primary)
+                cursorBrush = SolidColor(AppColors.primary)
             )
             if (!isFocused) {
                 Box(
@@ -392,7 +391,7 @@ fun SubTodoItemRowEditable(
             .defaultMinSize(minHeight = 68.dp)
             .fillMaxWidth()
             .background(
-                color = CalculatedColor.hierarchicalSurfaceColor,
+                color = AppColors.cardBackground,
                 shape = ContinuousRoundedRectangle(12.dp, g2),
             )
             .then(modifier),
@@ -430,10 +429,10 @@ fun SubTodoItemRowEditable(
                     focusManager.clearFocus()
                 },
                 textStyle = MaterialTheme.typography.bodyMedium.copy(
-                    color = MaterialTheme.colorScheme.onSurface,
+                    color = AppColors.content,
                     textDecoration = if (subTodo.isCompleted) TextDecoration.LineThrough else TextDecoration.None,
                 ),
-                cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
+                cursorBrush = SolidColor(AppColors.primary),
                 lineLimits = TextFieldLineLimits.MultiLine(
                     minHeightInLines = 1,
                     maxHeightInLines = Int.MAX_VALUE
@@ -494,7 +493,7 @@ fun SubTodoItemRowAdd(
     }
 
 
-    BackHandler(isFocused){
+    BackHandler(isFocused) {
         focusManager.clearFocus()
     }
 
@@ -505,7 +504,7 @@ fun SubTodoItemRowAdd(
             .defaultMinSize(minHeight = 68.dp)
             .fillMaxWidth()
             .background(
-                color = CalculatedColor.hierarchicalSurfaceColor,
+                color = AppColors.cardBackground,
                 shape = ContinuousRoundedRectangle(12.dp, g2),
             )
             .then(modifier),
@@ -534,7 +533,7 @@ fun SubTodoItemRowAdd(
                         .requiredSize(32.dp),
                     painter = painterResource(id = R.drawable.ic_add),
                     contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary
+                    tint = AppColors.primary
                 )
             }
         }
@@ -561,19 +560,19 @@ fun SubTodoItemRowAdd(
                     focusManager.clearFocus()
                 },
                 textStyle = MaterialTheme.typography.bodyMedium.copy(
-                    color = MaterialTheme.colorScheme.onSurface,
+                    color = AppColors.content,
                     textDecoration = if (checked) TextDecoration.LineThrough else TextDecoration.None,
                 ),
-                cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
+                cursorBrush = SolidColor(AppColors.primary),
                 decorator = { innerTextField ->
                     if (state.text.isEmpty() && !isFocused) {
                         Text(
                             text = addTaskText,
                             style = MaterialTheme.typography.bodyMedium.copy(
-                                color = MaterialTheme.colorScheme.onSurface,
+                                color = AppColors.content,
                                 textDecoration = if (checked) TextDecoration.LineThrough else TextDecoration.None,
                             ),
-                            color = MaterialTheme.colorScheme.primary,
+                            color = AppColors.primary,
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .align(Alignment.Center)
@@ -615,13 +614,13 @@ fun SwipeableSubTodoItemRowEditable(
     val actions = listOf(
         SwipeableActionButton(
             index = 0,
-            color = MaterialTheme.colorScheme.primary,
+            color = AppColors.primary,
             icon = painterResource(id = R.drawable.ic_duplicate),
             isDestructive = false
         ),
         SwipeableActionButton(
             index = 1,
-            color = Red500,
+            color = AppColors.error,
             icon = painterResource(id = R.drawable.ic_trash),
             isDestructive = true
         )

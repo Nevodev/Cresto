@@ -59,6 +59,7 @@ import com.nevoit.cresto.ui.components.glasense.GlasenseButtonAlt
 import com.nevoit.cresto.ui.components.packed.HorizontalFlagPicker
 import com.nevoit.cresto.ui.components.packed.HorizontalPresetDatePicker
 import com.nevoit.cresto.ui.theme.glasense.AppButtonColors
+import com.nevoit.cresto.ui.theme.glasense.AppColors
 import com.nevoit.cresto.ui.theme.glasense.defaultEnterTransition
 import com.nevoit.cresto.ui.theme.glasense.defaultExitTransition
 import com.nevoit.cresto.ui.theme.glasense.getFlagColor
@@ -193,7 +194,7 @@ fun AddTodoSheet(
             modifier = Modifier
                 .height(48.dp)
                 .background(
-                    MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05F),
+                    AppColors.content.copy(alpha = 0.05F),
                     ContinuousRoundedRectangle(12.dp)
                 ),
             contentAlignment = Alignment.CenterStart
@@ -206,8 +207,8 @@ fun AddTodoSheet(
                     .focusRequester(focusRequester),
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                 onKeyboardAction = { onAdd() },
-                textStyle = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onSurface),
-                cursorBrush = SolidColor(MaterialTheme.colorScheme.primary)
+                textStyle = MaterialTheme.typography.bodyLarge.copy(color = AppColors.content),
+                cursorBrush = SolidColor(AppColors.primary)
             )
         }
         Spacer(modifier = Modifier.height(12.dp))
@@ -359,7 +360,7 @@ fun AddTodoSheet(
                                     contentDescription = stringResource(R.string.flag),
                                     modifier = Modifier.width(28.dp),
                                     tint = if (displayColor == Color.Transparent) {
-                                        MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5F)
+                                        AppColors.content.copy(alpha = 0.5F)
                                     } else {
                                         displayColor
                                     }

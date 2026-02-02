@@ -23,7 +23,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -44,8 +43,8 @@ import com.nevoit.cresto.ui.components.glasense.GlasenseSwitch
 import com.nevoit.cresto.ui.components.packed.ConfigInfoHeader
 import com.nevoit.cresto.ui.components.packed.ConfigItem
 import com.nevoit.cresto.ui.components.packed.ConfigItemContainer
+import com.nevoit.cresto.ui.theme.glasense.AppColors
 import com.nevoit.cresto.ui.theme.glasense.Blue500
-import com.nevoit.cresto.ui.theme.glasense.CalculatedColor
 import com.nevoit.cresto.ui.theme.glasense.Pink400
 import com.nevoit.cresto.ui.theme.glasense.Purple500
 import dev.chrisbanes.haze.ExperimentalHazeApi
@@ -77,10 +76,10 @@ fun AIScreen() {
     val hazeState = rememberHazeState()
 
     // Get colors from the app's custom theme
-    val onSurfaceContainer = CalculatedColor.onSurfaceContainer
-    val onBackground = MaterialTheme.colorScheme.onBackground
-    val surfaceColor = CalculatedColor.hierarchicalBackgroundColor
-    val hierarchicalSurfaceColor = CalculatedColor.hierarchicalSurfaceColor
+    val onSurfaceContainer = AppColors.scrimNormal
+    val onBackground = AppColors.content
+    val surfaceColor = AppColors.pageBackground
+    val hierarchicalSurfaceColor = AppColors.cardBackground
 
     // Remember the state for the lazy list to control scrolling
     val lazyListState = rememberLazyListState()
@@ -229,7 +228,7 @@ fun AIScreen() {
                 .align(Alignment.TopStart),
             colors = ButtonDefaults.buttonColors(
                 containerColor = onSurfaceContainer,
-                contentColor = MaterialTheme.colorScheme.primary
+                contentColor = AppColors.primary
             )
         ) {
             Icon(

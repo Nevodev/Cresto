@@ -43,6 +43,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.nevoit.cresto.R
+import com.nevoit.cresto.ui.theme.glasense.AppColors
 import com.nevoit.cresto.ui.theme.glasense.Blue500
 import com.nevoit.cresto.ui.theme.glasense.Gray500
 import com.nevoit.cresto.ui.theme.glasense.Green500
@@ -127,7 +128,7 @@ fun ColorCircle(
 
     var isPressed by remember { mutableStateOf(false) }
 
-    val onSurfaceColor = MaterialTheme.colorScheme.onSurface
+    val onSurfaceColor = AppColors.content
 
     val strokeColor =
         if (onSurfaceColor == Color.Black) onSurfaceColor.copy(alpha = 0.2F) else onSurfaceColor.copy(
@@ -290,7 +291,7 @@ fun HorizontalPresetDatePicker(
                         .width(1.5.dp)
                         .height(20.dp)
                         .background(
-                            MaterialTheme.colorScheme.onBackground.copy(alpha = 0.2f),
+                            AppColors.content.copy(alpha = 0.2f),
                             RoundedCornerShape(1.dp)
                         )
                 )
@@ -418,7 +419,7 @@ private fun SelectorBox(
     ) {
         Text(
             text = text,
-            color = MaterialTheme.colorScheme.onBackground,
+            color = AppColors.content,
             style = MaterialTheme.typography.bodyMedium
         )
     }
@@ -478,7 +479,7 @@ private fun DateSelectorBox(
     ) {
         Text(
             text = text,
-            color = MaterialTheme.colorScheme.onBackground,
+            color = AppColors.content,
             style = MaterialTheme.typography.bodyMedium
         )
     }

@@ -23,7 +23,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -47,8 +46,8 @@ import com.nevoit.cresto.ui.components.packed.ConfigInfoHeader
 import com.nevoit.cresto.ui.components.packed.ConfigItem
 import com.nevoit.cresto.ui.components.packed.ConfigItemContainer
 import com.nevoit.cresto.ui.screens.settings.util.SettingsViewModel
+import com.nevoit.cresto.ui.theme.glasense.AppColors
 import com.nevoit.cresto.ui.theme.glasense.Blue500
-import com.nevoit.cresto.ui.theme.glasense.CalculatedColor
 import dev.chrisbanes.haze.ExperimentalHazeApi
 import dev.chrisbanes.haze.hazeSource
 import dev.chrisbanes.haze.rememberHazeState
@@ -78,10 +77,10 @@ fun AppearanceScreen(settingsViewModel: SettingsViewModel = viewModel()) {
     val hazeState = rememberHazeState()
 
     // Get colors from the app's custom theme
-    val onSurfaceContainer = CalculatedColor.onSurfaceContainer
-    val onBackground = MaterialTheme.colorScheme.onBackground
-    val surfaceColor = CalculatedColor.hierarchicalBackgroundColor
-    val hierarchicalSurfaceColor = CalculatedColor.hierarchicalSurfaceColor
+    val onSurfaceContainer = AppColors.scrimNormal
+    val onBackground = AppColors.content
+    val surfaceColor = AppColors.pageBackground
+    val hierarchicalSurfaceColor = AppColors.cardBackground
 
     // Remember the state for the lazy list to control scrolling
     val lazyListState = rememberLazyListState()
@@ -156,7 +155,7 @@ fun AppearanceScreen(settingsViewModel: SettingsViewModel = viewModel()) {
                         ConfigItem(title = stringResource(R.string.custom_primary_color)) {
                             GlasenseSwitch(
                                 liquidGlass = isLiquidGlass,
-                                backgroundColor = CalculatedColor.hierarchicalSurfaceColor,
+                                backgroundColor = AppColors.cardBackground,
                                 checked = isCustomPrimaryColor,
                                 onCheckedChange = { settingsViewModel.onCustomPrimaryColorChanged(it) })
                         }
@@ -178,7 +177,7 @@ fun AppearanceScreen(settingsViewModel: SettingsViewModel = viewModel()) {
                         ConfigItem(title = stringResource(R.string.use_dynamic_color_scheme)) {
                             GlasenseSwitch(
                                 liquidGlass = isLiquidGlass,
-                                backgroundColor = CalculatedColor.hierarchicalSurfaceColor,
+                                backgroundColor = AppColors.cardBackground,
                                 checked = isUseDynamicColorScheme,
                                 onCheckedChange = { settingsViewModel.onUseDynamicColorChanged(it) })
                         }
@@ -196,7 +195,7 @@ fun AppearanceScreen(settingsViewModel: SettingsViewModel = viewModel()) {
                         ConfigItem(title = stringResource(R.string.lite_mode)) {
                             GlasenseSwitch(
                                 liquidGlass = isLiquidGlass,
-                                backgroundColor = CalculatedColor.hierarchicalSurfaceColor,
+                                backgroundColor = AppColors.cardBackground,
                                 checked = isLiteMode,
                                 onCheckedChange = { settingsViewModel.onLiteModeChanged(it) })
                         }
@@ -218,7 +217,7 @@ fun AppearanceScreen(settingsViewModel: SettingsViewModel = viewModel()) {
                         ConfigItem(title = stringResource(R.string.liquid_glass)) {
                             GlasenseSwitch(
                                 liquidGlass = true,
-                                backgroundColor = CalculatedColor.hierarchicalSurfaceColor,
+                                backgroundColor = AppColors.cardBackground,
                                 checked = isLiquidGlass,
                                 onCheckedChange = { settingsViewModel.onLiquidGlassChanged(it) })
                         }
@@ -249,7 +248,7 @@ fun AppearanceScreen(settingsViewModel: SettingsViewModel = viewModel()) {
                 .align(Alignment.TopStart),
             colors = ButtonDefaults.buttonColors(
                 containerColor = onSurfaceContainer,
-                contentColor = MaterialTheme.colorScheme.primary
+                contentColor = AppColors.primary
             )
         ) {
             Icon(

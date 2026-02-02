@@ -71,11 +71,10 @@ import com.nevoit.cresto.ui.components.packed.StrictText
 import com.nevoit.cresto.ui.components.packed.ZenCirclesBreathing
 import com.nevoit.cresto.ui.screens.settings.util.SettingsManager
 import com.nevoit.cresto.ui.theme.glasense.AppButtonColors
+import com.nevoit.cresto.ui.theme.glasense.AppColors
 import com.nevoit.cresto.ui.theme.glasense.Blue600
-import com.nevoit.cresto.ui.theme.glasense.CalculatedColor
 import com.nevoit.cresto.ui.theme.glasense.Cyan500
 import com.nevoit.cresto.ui.theme.glasense.Green500
-import com.nevoit.cresto.ui.theme.glasense.Red500
 import com.nevoit.cresto.ui.theme.glasense.Rose500
 import com.nevoit.cresto.ui.theme.glasense.Yellow500
 import com.nevoit.cresto.ui.theme.glasense.defaultEnterTransition
@@ -113,8 +112,8 @@ fun BoxScope.MindFlowScreen(
 
     val liteMode by SettingsManager.isLiteModeState
 
-    val backgroundColor = CalculatedColor.hierarchicalBackgroundColor
-    val surfaceColor = CalculatedColor.hierarchicalSurfaceColor
+    val backgroundColor = AppColors.pageBackground
+    val surfaceColor = AppColors.cardBackground
 
     val lazyListState = rememberLazyListState()
 
@@ -294,8 +293,8 @@ fun BoxScope.MindFlowScreen(
                                     thumbWidth = 36.dp,
                                     progressColor = surfaceColor,
                                     trackColor = backgroundColor,
-                                    iconColor = MaterialTheme.colorScheme.primary,
-                                    contentColor = MaterialTheme.colorScheme.onBackground,
+                                    iconColor = AppColors.primary,
+                                    contentColor = AppColors.content,
                                     innerIconSize = 24.dp
                                 )
                             }
@@ -462,7 +461,10 @@ fun BoxScope.MindFlowScreen(
                                             .width(48.dp)
                                             .glasenseHighlight(24.dp, 3.dp),
                                         colors = AppButtonColors.primary()
-                                            .copy(containerColor = Red500)
+                                            .copy(
+                                                containerColor = AppColors.error,
+                                                contentColor = AppColors.onError
+                                            )
                                     ) {
                                         Box(modifier = Modifier.size(24.dp)) {
                                             Icon(
@@ -567,7 +569,7 @@ fun BoxScope.MindFlowScreen(
                                     text = stringResource(R.string.completed),
                                     fontSize = 14.sp,
                                     lineHeight = 14.sp,
-                                    color = MaterialTheme.colorScheme.onBackground.copy(.5f),
+                                    color = AppColors.contentVariant,
                                     modifier = Modifier.padding(top = 4.dp)
                                 )
                             }
@@ -575,7 +577,7 @@ fun BoxScope.MindFlowScreen(
                                 text = "Great!",
                                 fontSize = 14.sp,
                                 lineHeight = 14.sp,
-                                color = MaterialTheme.colorScheme.onBackground.copy(.5f)
+                                color = AppColors.contentVariant
                             )
                         }
                     }

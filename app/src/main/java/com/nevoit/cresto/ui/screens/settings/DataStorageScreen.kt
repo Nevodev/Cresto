@@ -69,9 +69,8 @@ import com.nevoit.cresto.ui.components.packed.ConfigInfoHeader
 import com.nevoit.cresto.ui.components.packed.ConfigItem
 import com.nevoit.cresto.ui.components.packed.ConfigItemContainer
 import com.nevoit.cresto.ui.theme.glasense.Amber400
-import com.nevoit.cresto.ui.theme.glasense.CalculatedColor
+import com.nevoit.cresto.ui.theme.glasense.AppColors
 import com.nevoit.cresto.ui.theme.glasense.Emerald400
-import com.nevoit.cresto.ui.theme.glasense.Red500
 import com.nevoit.cresto.ui.theme.glasense.Slate500
 import com.nevoit.cresto.util.g2
 import com.tencent.mmkv.MMKV
@@ -160,10 +159,10 @@ fun DataStorageScreen() {
     val hazeState = rememberHazeState()
 
     // Get colors from the app's custom theme
-    val onSurfaceContainer = CalculatedColor.onSurfaceContainer
-    val onBackground = MaterialTheme.colorScheme.onBackground
-    val surfaceColor = CalculatedColor.hierarchicalBackgroundColor
-    val hierarchicalSurfaceColor = CalculatedColor.hierarchicalSurfaceColor
+    val onSurfaceContainer = AppColors.scrimNormal
+    val onBackground = AppColors.content
+    val surfaceColor = AppColors.pageBackground
+    val hierarchicalSurfaceColor = AppColors.cardBackground
 
     // Remember the state for the lazy list to control scrolling
     val lazyListState = rememberLazyListState()
@@ -284,7 +283,7 @@ fun DataStorageScreen() {
                         text = stringResource(R.string.storage_usage),
                         fontSize = 14.sp,
                         lineHeight = 14.sp,
-                        color = MaterialTheme.colorScheme.onBackground.copy(.5f),
+                        color = AppColors.contentVariant,
                         modifier = Modifier
                             .padding(
                                 start = 12.dp,
@@ -380,7 +379,7 @@ fun DataStorageScreen() {
                     Column {
                         ConfigItem(
                             title = stringResource(R.string.reset_all_settings),
-                            color = Red500,
+                            color = AppColors.error,
                             clickable = true,
                             indication = true,
                             onClick = {
@@ -408,7 +407,7 @@ fun DataStorageScreen() {
                         Spacer(modifier = Modifier.height(8.dp))
                         ConfigItem(
                             title = stringResource(R.string.clear_all_data),
-                            color = Red500,
+                            color = AppColors.error,
                             clickable = true,
                             indication = true,
                             onClick = {
@@ -447,7 +446,7 @@ fun DataStorageScreen() {
                 .align(Alignment.TopStart),
             colors = ButtonDefaults.buttonColors(
                 containerColor = onSurfaceContainer,
-                contentColor = MaterialTheme.colorScheme.primary
+                contentColor = AppColors.primary
             )
         ) {
             Icon(
@@ -471,7 +470,7 @@ fun DataStorageScreen() {
 
 @Composable
 private fun StorageInfoRow(label: String, value: String, icon: Painter, isTotal: Boolean = false) {
-    val onBackground = MaterialTheme.colorScheme.onBackground
+    val onBackground = AppColors.content
     Row(
         modifier = Modifier.height(32.dp),
         verticalAlignment = Alignment.CenterVertically
@@ -516,11 +515,11 @@ private fun StorageChart(appSize: Long, dataSize: Long, cacheSize: Long) {
 
     var totalWidth by remember { mutableStateOf(0.dp) }
 
-    val appColor = MaterialTheme.colorScheme.primary
+    val appColor = AppColors.primary
     val dataColor = Amber400
     val cacheColor = Emerald400
 
-    val hierarchicalSurfaceColor = CalculatedColor.hierarchicalSurfaceColor
+    val hierarchicalSurfaceColor = AppColors.cardBackground
 
 
     Column(
@@ -603,7 +602,7 @@ private fun LegendItem(color: Color, text: String) {
         Text(
             text = text,
             style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f)
+            color = AppColors.content.copy(alpha = 0.5f)
         )
     }
 }

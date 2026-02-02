@@ -13,7 +13,6 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.selection.toggleable
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
@@ -29,6 +28,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter.Companion.tint
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalDensity
@@ -37,7 +37,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import com.nevoit.cresto.R
-import com.nevoit.cresto.ui.theme.glasense.CalculatedColor
+import com.nevoit.cresto.ui.theme.glasense.AppColors
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -65,8 +65,9 @@ fun GlasenseCheckbox(
         )
     }
 
-    val primaryColor = MaterialTheme.colorScheme.primary
-    val strokeColor = CalculatedColor.onSurfaceContainerBold
+    val primaryColor = AppColors.primary
+    val strokeColor = AppColors.scrimBold
+    val onPrimary = AppColors.onPrimary
 
     val sizeAnim =
         remember { Animatable(if (checked) dimensions.checkedRadius else dimensions.uncheckedRadius) }
@@ -140,7 +141,8 @@ fun GlasenseCheckbox(
     ) {
         CheckmarkContent(
             iconRes = currentIconRes,
-            shouldShowStatic = previousChecked.value
+            shouldShowStatic = previousChecked.value,
+            color = onPrimary
         )
     }
 }
@@ -149,7 +151,8 @@ fun GlasenseCheckbox(
 @Composable
 private fun CheckmarkContent(
     @DrawableRes iconRes: Int?,
-    shouldShowStatic: Boolean
+    shouldShowStatic: Boolean,
+    color: Color
 ) {
     if (iconRes != null) {
         key(iconRes) {
@@ -157,14 +160,19 @@ private fun CheckmarkContent(
             var atEnd by remember { mutableStateOf(false) }
             val painter = rememberAnimatedVectorPainter(animatedImageVector = avd, atEnd = atEnd)
             LaunchedEffect(Unit) { atEnd = true }
-            Image(painter = painter, contentDescription = null)
+            Image(
+                painter = painter,
+                contentDescription = null,
+                colorFilter = tint(color)
+            )
         }
     } else {
         if (shouldShowStatic) {
             Image(
                 modifier = Modifier.scale(1.1f),
                 painter = painterResource(id = R.drawable.ic_checkbox_checkmark_animation_ready),
-                contentDescription = null
+                contentDescription = null,
+                colorFilter = tint(color)
             )
         }
     }
