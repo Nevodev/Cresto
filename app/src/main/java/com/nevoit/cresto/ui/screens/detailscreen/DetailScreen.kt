@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
@@ -26,7 +25,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
@@ -38,7 +36,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -51,7 +48,6 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
@@ -80,9 +76,11 @@ import com.nevoit.cresto.ui.components.glasense.GlasenseDialog
 import com.nevoit.cresto.ui.components.glasense.GlasenseDynamicSmallTitle
 import com.nevoit.cresto.ui.components.glasense.GlasenseLoadingIndicator
 import com.nevoit.cresto.ui.components.glasense.extend.overscrollSpacer
+import com.nevoit.cresto.ui.components.glasense.isScrolledPast
 import com.nevoit.cresto.ui.components.glasense.rememberSwipeableListState
 import com.nevoit.cresto.ui.components.packed.HorizontalFlagPicker
 import com.nevoit.cresto.ui.components.packed.HorizontalPresetDatePicker
+import com.nevoit.cresto.ui.components.packed.PageContent
 import com.nevoit.cresto.ui.components.packed.SubTodoItemRowAdd
 import com.nevoit.cresto.ui.components.packed.SwipeableSubTodoItemRowEditable
 import com.nevoit.cresto.ui.components.packed.TodoItemRowEditable
@@ -115,13 +113,6 @@ fun DetailScreen(
     val statusBarHeight = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
     val navigationBarHeight = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
 
-    val density = LocalDensity.current
-    val thresholdPx = if (statusBarHeight > 0.dp) {
-        with(density) {
-            (statusBarHeight + 24.dp).toPx()
-        }
-    } else 0f
-
     val hazeState = rememberHazeState()
 
     val onSurfaceContainer = AppColors.scrimNormal
@@ -135,7 +126,7 @@ fun DetailScreen(
     val lazyListState = rememberLazyListState()
     val swipeListState = rememberSwipeableListState()
 
-    val isSmallTitleVisible by remember(thresholdPx) { derivedStateOf { ((lazyListState.firstVisibleItemIndex == 0) && (lazyListState.firstVisibleItemScrollOffset > thresholdPx)) || lazyListState.firstVisibleItemIndex > 0 } }
+    val isSmallTitleVisible by lazyListState.isScrolledPast(statusBarHeight + 24.dp)
 
     val darkMode = isAppInDarkTheme()
 
@@ -236,19 +227,13 @@ fun DetailScreen(
                 GlasenseLoadingIndicator(modifier = Modifier.fillMaxSize())
             }
         } else {
-            LazyColumn(
+            PageContent(
                 state = lazyListState,
                 modifier = Modifier
                     .hazeSource(hazeState, 0f)
-                    .fillMaxSize()
-                    .padding(0.dp)
                     .imePadding(),
-                contentPadding = PaddingValues(
-                    start = 12.dp,
-                    top = 0.dp,
-                    end = 12.dp,
-                    bottom = 64.dp + navigationBarHeight * 2
-                )
+                tabPadding = false,
+                bottomPadding = 64.dp + navigationBarHeight * 2
             ) {
                 item(key = "status_bar") {
                     Box(

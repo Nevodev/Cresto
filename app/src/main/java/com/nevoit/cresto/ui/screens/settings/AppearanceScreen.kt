@@ -6,7 +6,6 @@ import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
@@ -17,7 +16,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.ButtonDefaults
@@ -25,9 +23,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -43,10 +39,12 @@ import com.nevoit.cresto.ui.components.glasense.GlasenseButton
 import com.nevoit.cresto.ui.components.glasense.GlasenseDynamicSmallTitle
 import com.nevoit.cresto.ui.components.glasense.GlasenseSwitch
 import com.nevoit.cresto.ui.components.glasense.extend.overscrollSpacer
+import com.nevoit.cresto.ui.components.glasense.isScrolledPast
 import com.nevoit.cresto.ui.components.packed.ColorModeSelector
 import com.nevoit.cresto.ui.components.packed.ConfigInfoHeader
 import com.nevoit.cresto.ui.components.packed.ConfigItem
 import com.nevoit.cresto.ui.components.packed.ConfigItemContainer
+import com.nevoit.cresto.ui.components.packed.PageContent
 import com.nevoit.cresto.ui.screens.settings.util.SettingsViewModel
 import com.nevoit.cresto.ui.theme.glasense.AppColors
 import com.nevoit.cresto.ui.theme.glasense.Blue500
@@ -70,11 +68,6 @@ fun AppearanceScreen(settingsViewModel: SettingsViewModel = viewModel()) {
     val statusBarHeight = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
     val density = LocalDensity.current
     // Calculate the scroll threshold in pixels for showing/hiding the small title
-    val thresholdPx = if (statusBarHeight > 0.dp) {
-        with(density) {
-            (statusBarHeight + 24.dp).toPx()
-        }
-    } else 0f
 
     // Remember the state for the Haze effect, a library for blurring content behind a surface
     val hazeState = rememberHazeState()
@@ -89,7 +82,7 @@ fun AppearanceScreen(settingsViewModel: SettingsViewModel = viewModel()) {
     val lazyListState = rememberLazyListState()
 
     // Determine if the small title should be visible based on the scroll position
-    val isSmallTitleVisible by remember(thresholdPx) { derivedStateOf { ((lazyListState.firstVisibleItemIndex == 0) && (lazyListState.firstVisibleItemScrollOffset > thresholdPx)) || lazyListState.firstVisibleItemIndex > 0 } }
+    val isSmallTitleVisible by lazyListState.isScrolledPast(statusBarHeight + 24.dp)
 
     // Get the pixel value for 1dp, used for drawing divider lines
     val dp = with(density) {
@@ -110,19 +103,11 @@ fun AppearanceScreen(settingsViewModel: SettingsViewModel = viewModel()) {
             .background(surfaceColor)
     ) {
         // A vertically scrolling list that only composes and lays out the currently visible items
-        LazyColumn(
+        PageContent(
             state = lazyListState,
             modifier = Modifier
-                .hazeSource(hazeState, 0f) // This view is the source for the Haze effect
-                .fillMaxSize()
-                .padding(0.dp)
-                .background(surfaceColor),
-            contentPadding = PaddingValues(
-                start = 12.dp,
-                top = 0.dp,
-                end = 12.dp,
-                bottom = 136.dp
-            )
+                .hazeSource(hazeState, 0f),
+            tabPadding = false
         ) {
             // Spacer item at the top of the list to push content below the top bar and back button
             item {

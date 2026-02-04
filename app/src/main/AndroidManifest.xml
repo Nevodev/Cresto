@@ -51,6 +51,12 @@
             android:parentActivityName=".MainActivity"
             android:theme="@style/Theme.Cresto"
             android:windowSoftInputMode="adjustNothing" />
+        <activity
+            android:name=".ui.screens.guidescreen.GuideActivity"
+            android:exported="false"
+            android:parentActivityName=".MainActivity"
+            android:theme="@style/Theme.Cresto"
+            android:windowSoftInputMode="adjustNothing" />
     </application>
 
 </manifest>

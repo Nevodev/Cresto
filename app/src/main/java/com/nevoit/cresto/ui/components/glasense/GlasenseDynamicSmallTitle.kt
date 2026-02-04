@@ -7,12 +7,16 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
@@ -117,6 +121,21 @@ fun GlasenseDynamicSmallTitle(
                 modifier = Modifier.padding(horizontal = 80.dp),
                 overflow = TextOverflow.Ellipsis,
             )
+        }
+    }
+}
+
+@Composable
+fun LazyListState.isScrolledPast(threshold: Dp): androidx.compose.runtime.State<Boolean> {
+    val density = LocalDensity.current
+
+    val thresholdPx = remember(threshold, density) {
+        with(density) { threshold.toPx() }
+    }
+
+    return remember(this, thresholdPx) {
+        derivedStateOf {
+            firstVisibleItemIndex > 0 || firstVisibleItemScrollOffset > thresholdPx
         }
     }
 }

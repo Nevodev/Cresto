@@ -16,5 +16,7 @@ class CrestoApplication : Application() {
         super.onCreate()
         // Initialize the MMKV key-value storage library.
         MMKV.initialize(this)
+
+        
     }
 }

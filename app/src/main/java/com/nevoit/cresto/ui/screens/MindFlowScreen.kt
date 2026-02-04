@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
@@ -18,12 +17,10 @@ import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -32,7 +29,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -46,7 +42,6 @@ import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -64,9 +59,11 @@ import com.nevoit.cresto.ui.components.glasense.GlasenseDynamicSmallTitle
 import com.nevoit.cresto.ui.components.glasense.GlasenseLoadingIndicator
 import com.nevoit.cresto.ui.components.glasense.GlasensePageHeader
 import com.nevoit.cresto.ui.components.glasense.extend.overscrollSpacer
+import com.nevoit.cresto.ui.components.glasense.isScrolledPast
 import com.nevoit.cresto.ui.components.packed.CardWithTitle
 import com.nevoit.cresto.ui.components.packed.CardWithoutTitle
 import com.nevoit.cresto.ui.components.packed.CircularTimer
+import com.nevoit.cresto.ui.components.packed.PageContent
 import com.nevoit.cresto.ui.components.packed.StrictText
 import com.nevoit.cresto.ui.components.packed.ZenCirclesBreathing
 import com.nevoit.cresto.ui.theme.glasense.AppButtonColors
@@ -98,14 +95,6 @@ fun BoxScope.MindFlowScreen(
     timerViewModel: ModeTimerViewModel = viewModel()
 ) {
     val statusBarHeight = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
-    val navigationBarHeight = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
-
-    val density = LocalDensity.current
-    val thresholdPx = if (statusBarHeight > 0.dp) {
-        with(density) {
-            (statusBarHeight + 24.dp).toPx()
-        }
-    } else 0f
 
     val hazeState = rememberHazeState()
 
@@ -115,7 +104,7 @@ fun BoxScope.MindFlowScreen(
 
     val lazyListState = rememberLazyListState()
 
-    val isSmallTitleVisible by remember(thresholdPx) { derivedStateOf { ((lazyListState.firstVisibleItemIndex == 0) && (lazyListState.firstVisibleItemScrollOffset > thresholdPx)) || lazyListState.firstVisibleItemIndex > 0 } }
+    val isSmallTitleVisible by lazyListState.isScrolledPast(statusBarHeight + 24.dp)
 
     val stats by viewModel.statistics.collectAsStateWithLifecycle()
     val dailyStats by viewModel.dailyStats.collectAsStateWithLifecycle()
@@ -193,18 +182,11 @@ fun BoxScope.MindFlowScreen(
         }
     }
 
-    LazyColumn(
+    PageContent(
         state = lazyListState,
         modifier = Modifier
-            .hazeSource(hazeState, 0f)
-            .fillMaxSize()
-            .padding(0.dp),
-        contentPadding = PaddingValues(
-            start = 12.dp,
-            top = 0.dp,
-            end = 12.dp,
-            bottom = 120.dp + navigationBarHeight
-        )
+            .hazeSource(hazeState, 0f),
+        tabPadding = true
     ) {
         item {
             GlasensePageHeader(

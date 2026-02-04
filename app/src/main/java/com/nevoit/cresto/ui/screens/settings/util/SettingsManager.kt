@@ -19,6 +19,8 @@ object SettingsManager {
     private const val KEY_LITE_MODE = "lite_mode_enabled"
     private const val KEY_LIQUID_GLASS = "liquid_glass_enabled"
     private const val KEY_COLOR_MODE = "color_mode"
+    private const val KEY_IS_FIRST_RUN = "is_first_run"
+
     const val MODE_LIGHT = 0
     const val MODE_DARK = 1
     const val MODE_SYSTEM = 2
@@ -63,5 +65,11 @@ object SettingsManager {
         set(value) {
             mmkv.encode(KEY_COLOR_MODE, value)
             colorModeState.intValue = value
+        }
+
+    var isFirstRun: Boolean
+        get() = mmkv.decodeBool(KEY_IS_FIRST_RUN, false)
+        set(value) {
+            mmkv.encode(KEY_IS_FIRST_RUN, value)
         }
 }
