@@ -130,8 +130,8 @@ fun GuideScreen(onFinish: () -> Unit) {
                 modifier = Modifier
                     .weight(1f),
                 contentPadding = PaddingValues(),
-
-                ) { page ->
+                userScrollEnabled = false
+            ) { page ->
                 when (page) {
                     0 -> WelcomePage()
                     1 -> InformationPage()
