@@ -68,7 +68,7 @@ object SettingsManager {
         }
 
     var isFirstRun: Boolean
-        get() = mmkv.decodeBool(KEY_IS_FIRST_RUN, false)
+        get() = mmkv.decodeBool(KEY_IS_FIRST_RUN, true)
         set(value) {
             mmkv.encode(KEY_IS_FIRST_RUN, value)
         }

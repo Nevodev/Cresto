@@ -138,19 +138,18 @@ fun GlasenseButtonAlt(
     val interactionSource = remember { MutableInteractionSource() }
 
     Box(
-        modifier = Modifier
+        modifier = modifier
             // Handle click events.
             .clip(shape)
+            .defaultMinSize(minHeight = 48.dp)
+            .background(color = backgroundColor, shape = shape)
             .clickable(
                 interactionSource = interactionSource,
                 onClick = { onClick() },
                 indication = if (indication) DimIndication() else null,
                 enabled = enabled,
                 role = Role.Button
-            )
-            .defaultMinSize(minHeight = 48.dp)
-            .background(color = backgroundColor, shape = shape)
-            .then(modifier),
+            ),
         contentAlignment = Alignment.Center
     ) {
         CompositionLocalProvider(LocalContentColor provides contentColor) {
