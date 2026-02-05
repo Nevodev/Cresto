@@ -111,4 +111,12 @@
     <string name="paused">已暂停</string>
     <string name="finished">已结束</string>
     <string name="brain_dump">闪念</string>
+    <string name="welcome_to_cresto">欢迎使用Cresto</string>
+    <string name="introduction_title_1">极简待办记录</string>
+    <string name="introduction_1">清爽无扰的界面，快速添加、标记完成，让你的每日规划一目了然。</string>
+    <string name="introduction_title_2">截图智能识别</string>
+    <string name="introduction_2">自动提取关键信息并生成实时待办，信息收集从未如此高效。</string>
+    <string name="introduction_title_3">高效计时管理</string>
+    <string name="introduction_3">番茄钟、倒计时一键开启，帮你专注当下，掌控时间节奏。</string>
+    <string name="cresto_can_do">Cresto可以</string>
 </resources>

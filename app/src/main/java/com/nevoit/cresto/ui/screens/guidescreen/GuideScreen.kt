@@ -3,6 +3,8 @@ package com.nevoit.cresto.ui.screens.guidescreen
 import android.graphics.BlurMaskFilter
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.CubicBezierEasing
+import androidx.compose.animation.core.EaseInOutSine
+import androidx.compose.animation.core.EaseOutSine
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.StartOffset
@@ -59,6 +61,7 @@ import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -69,6 +72,7 @@ import com.kyant.backdrop.highlight.Highlight
 import com.kyant.backdrop.highlight.HighlightStyle
 import com.kyant.capsule.ContinuousRoundedRectangle
 import com.nevoit.cresto.R
+import com.nevoit.cresto.toolkit.gradientmapping.GradientMappedImage
 import com.nevoit.cresto.ui.components.CustomAnimatedVisibility
 import com.nevoit.cresto.ui.components.glasense.GlasenseButtonAlt
 import com.nevoit.cresto.ui.components.glasense.isScrolledPast
@@ -78,6 +82,7 @@ import com.nevoit.cresto.ui.theme.glasense.AppSpecs
 import com.nevoit.cresto.ui.theme.glasense.Blue500
 import com.nevoit.cresto.ui.theme.glasense.Indigo500
 import com.nevoit.cresto.ui.theme.glasense.Pink400
+import com.nevoit.cresto.ui.theme.glasense.Pink500
 import com.nevoit.cresto.ui.theme.glasense.Purple500
 import com.nevoit.cresto.ui.theme.glasense.defaultEnterTransition
 import com.nevoit.cresto.ui.theme.glasense.defaultExitTransition
@@ -173,14 +178,14 @@ fun GuideScreen(onFinish: () -> Unit) {
                             enter = defaultEnterTransition,
                             exit = defaultExitTransition
                         ) {
-                            Text(text = "开始")
+                            Text(text = stringResource(R.string.start))
                         }
                         CustomAnimatedVisibility(
                             visible = pagerState.currentPage == 1,
                             enter = defaultEnterTransition,
                             exit = defaultExitTransition
                         ) {
-                            Text(text = "完成")
+                            Text(text = stringResource(R.string.done))
                         }
                     }
                 }
@@ -195,7 +200,9 @@ fun WelcomePage() {
     val density = LocalDensity.current
 
     LazyColumn(
-        horizontalAlignment = Alignment.CenterHorizontally
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.Center
     ) {
         item {
             val highlightBlurRadius = with(density) {
@@ -256,8 +263,8 @@ fun WelcomePage() {
                 alpha.animateTo(
                     targetValue = 1f,
                     animationSpec = tween(
-                        durationMillis = 2000,
-                        delayMillis = 500
+                        durationMillis = 1500,
+                        delayMillis = 300
                     )
                 )
             }
@@ -274,7 +281,15 @@ fun WelcomePage() {
             val innerRadius = with(density) {
                 16.dp.toPx()
             }
-
+            val innerRadius2 = with(density) {
+                8.dp.toPx()
+            }
+            val borderBlurRadius = with(density) {
+                1.dp.toPx()
+            }
+            val width = with(density) {
+                1.dp.toPx()
+            }
             val innerPaint = remember {
                 Paint().apply {
                     blendMode = BlendMode.DstOut
@@ -283,107 +298,201 @@ fun WelcomePage() {
                         BlurMaskFilter(innerRadius, BlurMaskFilter.Blur.INNER)
                 }
             }
+            val innerPaint2 = remember {
+                Paint().apply {
+                    blendMode = BlendMode.DstOut
+                    color = Color.Red
+                    asFrameworkPaint().maskFilter =
+                        BlurMaskFilter(innerRadius2, BlurMaskFilter.Blur.INNER)
+                }
+            }
+            val colorLightAlpha = remember { Animatable(0f) }
+            val scope = rememberCoroutineScope()
+            LaunchedEffect(Unit) {
+                scope.launch {
+                    colorLightAlpha.animateTo(
+                        targetValue = 1f,
+                        animationSpec = tween(
+                            durationMillis = 2000,
+                            delayMillis = 500,
+                            easing = EaseOutSine
+                        )
+                    )
+                    colorLightAlpha.animateTo(
+                        targetValue = 0f,
+                        animationSpec = tween(
+                            durationMillis = 500,
+                            easing = EaseInOutSine
+                        )
+                    )
+                }
+            }
+            val mappingColors = listOf(
+                Blue500,
+                Purple500,
+                Pink500,
+                Indigo500,
+                Blue500
+            )
 
-            Image(
-                painter = painterResource(R.drawable.cresto),
-                contentDescription = "App Icon",
+            val infiniteTransition = rememberInfiniteTransition(label = "color_cycle")
+            val offset by infiniteTransition.animateFloat(
+                initialValue = 0f,
+                targetValue = 1f,
+                animationSpec = infiniteRepeatable(
+                    animation = tween(2000, easing = LinearEasing),
+                    repeatMode = RepeatMode.Restart
+                )
+            )
+
+            Box(
                 modifier = Modifier
                     .size(96.dp)
                     .clip(ContinuousRoundedRectangle(24.dp))
-                    .drawBackdrop(
-                        backdrop = rememberLayerBackdrop(),
-                        shape = { ContinuousRoundedRectangle(24.dp) },
-                        effects = {},
-                        highlight = {
-                            Highlight.Default.copy(
-                                width = 1.dp,
-                                blurRadius = 1.dp,
-                                style = HighlightStyle.Default(angle = -45f),
-                                alpha = alpha.value
+            ) {
+                val backdrop = rememberLayerBackdrop()
+                GradientMappedImage(
+                    id = R.drawable.perlin,
+                    gradientColors = mappingColors,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .graphicsLayer {
+                            this.alpha = colorLightAlpha.value
+                        }
+                        .drawWithContent() {
+                            val outline = ContinuousRoundedRectangle(24.dp).createOutline(
+                                size = size,
+                                layoutDirection,
+                                density
                             )
-                        })
-                    .drawWithContent() {
-                        val outline = ContinuousRoundedRectangle(24.dp).createOutline(
-                            size = size,
-                            layoutDirection,
-                            density
+                            drawIntoCanvas { canvas ->
+                                canvas.saveLayer(size.toRect(), Paint())
+                                canvas.saveLayer(size.toRect(), Paint())
+                                drawContent()
+                                canvas.drawOutline(outline = outline, paint = innerPaint)
+                                canvas.restore()
+                                canvas.saveLayer(size.toRect(), Paint().apply {
+                                    blendMode = BlendMode.Hardlight
+                                })
+                                drawContent()
+                                canvas.drawRect(rect = size.toRect(), paint = Paint().apply {
+                                    blendMode = BlendMode.Plus
+                                    color = Color.White
+                                    this.alpha = 0.1f
+                                })
+                                canvas.drawOutline(outline = outline, paint = innerPaint2)
+                                canvas.restore()
+                                canvas.restore()
+                            }
+                        },
+                    offset = offset
+                )
+                Image(
+                    painter = painterResource(R.drawable.cresto),
+                    contentDescription = stringResource(R.string.app_icon),
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .drawWithContent() {
+                            val outline = ContinuousRoundedRectangle(24.dp).createOutline(
+                                size = size,
+                                layoutDirection,
+                                density
+                            )
+                            val diagonal = sqrt(size.width * size.width + size.height * size.height)
+
+                            drawIntoCanvas { canvas ->
+                                canvas.saveLayer(size.toRect(), Paint())
+
+                                val totalDistance = diagonal + revealBlurRadius * 2
+                                val currentPos =
+                                    (revealProgress2.value * totalDistance) - revealBlurRadius
+
+                                drawContent()
+                                canvas.save()
+                                canvas.translate(0f, size.height)
+                                canvas.rotate(-45f)
+                                canvas.drawRect(
+                                    left = currentPos,
+                                    top = -diagonal * 2,
+                                    right = diagonal * 2,
+                                    bottom = diagonal * 2,
+                                    paint = blurPaint
+                                )
+                                canvas.restore()
+                                canvas.drawOutline(outline = outline, paint = innerPaint)
+                                canvas.restore()
+                            }
+
+                            drawIntoCanvas { canvas ->
+                                canvas.saveLayer(size.toRect(), Paint())
+
+                                val totalDistance = diagonal + revealBlurRadius * 2
+                                val currentPos =
+                                    (revealProgress.value * totalDistance) - revealBlurRadius
+
+                                drawContent()
+                                canvas.save()
+                                canvas.translate(0f, size.height)
+                                canvas.rotate(-45f)
+                                canvas.drawRect(
+                                    left = currentPos,
+                                    top = -diagonal * 2,
+                                    right = diagonal * 2,
+                                    bottom = diagonal * 2,
+                                    paint = blurPaint
+                                )
+                                canvas.restore()
+                            }
+
+                            drawIntoCanvas { canvas ->
+                                val lightWidth = size.width / 2
+                                val barWidth = lightWidth + highlightBlurRadius * 2
+
+                                canvas.save()
+
+                                canvas.translate(size.width / 2, size.height / 2)
+                                canvas.rotate(-45f)
+
+                                val totalDistance = barWidth + diagonal + highlightBlurRadius * 2
+                                val current =
+                                    totalDistance * highlightProgress - barWidth - highlightBlurRadius - diagonal / 2
+
+                                canvas.drawRect(
+                                    left = current,
+                                    top = -diagonal,
+                                    right = current + lightWidth,
+                                    bottom = diagonal,
+                                    paint = highlightPaint
+                                )
+
+                                canvas.restore()
+                            }
+                        }
+                )
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .drawBackdrop(
+                            backdrop = backdrop,
+                            shape = { ContinuousRoundedRectangle(24.dp) },
+                            effects = {},
+                            highlight = {
+                                Highlight.Default.copy(
+                                    width = 1.dp,
+                                    blurRadius = 1.dp,
+                                    style = HighlightStyle.Default(angle = -45f),
+                                    alpha = alpha.value
+                                )
+                            },
+                            shadow = null
                         )
-                        val diagonal = sqrt(size.width * size.width + size.height * size.height)
-
-                        drawIntoCanvas { canvas ->
-                            canvas.saveLayer(size.toRect(), Paint())
-
-                            val totalDistance = diagonal + revealBlurRadius * 2
-                            val currentPos =
-                                (revealProgress2.value * totalDistance) - revealBlurRadius
-
-                            drawContent()
-                            canvas.save()
-                            canvas.translate(0f, size.height)
-                            canvas.rotate(-45f)
-                            canvas.drawRect(
-                                left = currentPos,
-                                top = -diagonal * 2,
-                                right = diagonal * 2,
-                                bottom = diagonal * 2,
-                                paint = blurPaint
-                            )
-                            canvas.restore()
-                            canvas.drawOutline(outline = outline, paint = innerPaint)
-                            canvas.restore()
-                        }
-
-                        drawIntoCanvas { canvas ->
-                            canvas.saveLayer(size.toRect(), Paint())
-
-                            val totalDistance = diagonal + revealBlurRadius * 2
-                            val currentPos =
-                                (revealProgress.value * totalDistance) - revealBlurRadius
-
-                            drawContent()
-                            canvas.save()
-                            canvas.translate(0f, size.height)
-                            canvas.rotate(-45f)
-                            canvas.drawRect(
-                                left = currentPos,
-                                top = -diagonal * 2,
-                                right = diagonal * 2,
-                                bottom = diagonal * 2,
-                                paint = blurPaint
-                            )
-                            canvas.restore()
-                        }
-
-                        drawIntoCanvas { canvas ->
-                            val lightWidth = size.width / 2
-                            val barWidth = lightWidth + highlightBlurRadius * 2
-
-                            canvas.save()
-
-                            canvas.translate(size.width / 2, size.height / 2)
-                            canvas.rotate(-45f)
-
-                            val totalDistance = barWidth + diagonal + highlightBlurRadius * 2
-                            val current =
-                                totalDistance * highlightProgress - barWidth - highlightBlurRadius - diagonal / 2
-
-                            canvas.drawRect(
-                                left = current,
-                                top = -diagonal,
-                                right = current + lightWidth,
-                                bottom = diagonal,
-                                paint = highlightPaint
-                            )
-
-                            canvas.restore()
-                        }
-                    }
-            )
+                )
+            }
             Spacer(modifier = Modifier.height(24.dp))
         }
         item {
             Text(
-                text = "欢迎使用Cresto",
+                text = stringResource(R.string.welcome_to_cresto),
                 modifier = Modifier.fillMaxWidth(),
                 fontSize = 24.sp,
                 textAlign = TextAlign.Center,
@@ -402,7 +511,7 @@ fun InformationPage() {
         item { Spacer(modifier = Modifier.height(96.dp)) }
         item {
             Text(
-                text = "Cresto可以",
+                text = stringResource(R.string.cresto_can_do),
                 modifier = Modifier.fillMaxWidth(),
                 fontSize = 24.sp,
                 textAlign = TextAlign.Center,
@@ -435,12 +544,12 @@ fun InformationPage() {
                 }
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = "极简待办记录",
+                        text = stringResource(R.string.introduction_title_1),
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Medium
                     )
                     Text(
-                        text = "清爽无扰的界面，快速添加、标记完成，让你的每日规划一目了然。",
+                        text = stringResource(R.string.introduction_1),
                         fontSize = 14.sp,
                         lineHeight = 18.sp,
                         modifier = Modifier.alpha(.5f)
@@ -465,10 +574,10 @@ fun InformationPage() {
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
-                        painter = painterResource(R.drawable.ic_sparkles),
+                        painter = painterResource(R.drawable.ic_sparkle_viewfinder),
                         contentDescription = null,
                         modifier = Modifier
-                            .size(36.dp)
+                            .size(32.dp)
                             .graphicsLayer {
                                 compositingStrategy = CompositingStrategy.Offscreen
                             }
@@ -476,8 +585,9 @@ fun InformationPage() {
                                 val brush = Brush.sweepGradient(
                                     colorStops = arrayOf(
                                         0f to Pink400,
-                                        0.33f / 2 to Purple500,
-                                        0.66f / 2 to Blue500,
+                                        0.25f / 2 to Purple500,
+                                        0.5f / 2 to Blue500,
+                                        0.7f / 2 to Indigo500,
                                         1f / 2 to Pink400
                                     ),
                                     center = Offset(size.width / 2, 0f)
@@ -493,12 +603,12 @@ fun InformationPage() {
                 }
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = "截图智能识别",
+                        text = stringResource(R.string.introduction_title_2),
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Medium
                     )
                     Text(
-                        text = "自动提取关键信息并生成实时待办，信息收集从未如此高效。",
+                        text = stringResource(R.string.introduction_2),
                         fontSize = 14.sp,
                         lineHeight = 18.sp,
                         modifier = Modifier.alpha(.5f)
@@ -532,12 +642,12 @@ fun InformationPage() {
                 }
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = "高效计时管理",
+                        text = stringResource(R.string.introduction_title_3),
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Medium
                     )
                     Text(
-                        text = "番茄钟、倒计时一键开启，帮你专注当下，掌控时间节奏。",
+                        text = stringResource(R.string.introduction_3),
                         fontSize = 14.sp,
                         lineHeight = 18.sp,
                         modifier = Modifier.alpha(.5f)
