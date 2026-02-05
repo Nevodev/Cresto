@@ -55,7 +55,7 @@ import com.kyant.backdrop.backdrops.layerBackdrop
 import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import com.kyant.capsule.ContinuousCapsule
 import com.nevoit.cresto.R
-import com.nevoit.cresto.data.todo.TodoDatabase
+import com.nevoit.cresto.data.todo.TodoViewModel
 import com.nevoit.cresto.ui.components.glasense.DialogItemData
 import com.nevoit.cresto.ui.components.glasense.DialogState
 import com.nevoit.cresto.ui.components.glasense.GlasenseButton
@@ -79,6 +79,7 @@ import dev.chrisbanes.haze.rememberHazeState
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.koin.androidx.compose.koinViewModel
 import java.io.File
 
 /**
@@ -88,7 +89,8 @@ import java.io.File
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalHazeApi::class)
 @Composable
 fun DataStorageScreen() {
-
+    val viewModel: TodoViewModel = koinViewModel()
+    
     // Get the current activity instance to allow finishing the screen
     val activity = LocalActivity.current
     val context = LocalContext.current
@@ -195,8 +197,7 @@ fun DataStorageScreen() {
             stringResource(R.string.clear),
             onClick = {
                 scope.launch {
-                    TodoDatabase.getDatabase(context).todoDao().deleteAllTodos()
-                    MMKV.defaultMMKV().clearAll()
+                    viewModel.clearAllData()
                 }
                 dismissDialog()
                 activity?.finish()

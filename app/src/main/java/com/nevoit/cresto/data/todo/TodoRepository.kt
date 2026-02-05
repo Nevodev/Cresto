@@ -111,4 +111,8 @@ class TodoRepository(private val todoDao: TodoDao) {
     fun getDailyStatistics(): Flow<List<DailyStat>> {
         return todoDao.getDailyStats()
     }
+
+    suspend fun deleteAll() {
+        todoDao.deleteAllTodos()
+    }
 }

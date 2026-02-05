@@ -18,6 +18,7 @@ composeBom = "2026.01.01"
 mmkv = "2.3.0"
 navigationCompose = "2.9.7"
 roomRuntime = "2.8.4"
+koin-bom = "4.1.1"
 
 
 [libraries]
@@ -59,6 +60,9 @@ capsule = { module = "io.github.kyant0:capsule", version.ref = "capsule" }
 generativeai = { module = "com.google.ai.client.generativeai:generativeai", version.ref = "generativeai" }
 haze = { module = "dev.chrisbanes.haze:haze", version.ref = "haze" }
 mmkv = { module = "com.tencent:mmkv", version.ref = "mmkv" }
+
+koin-bom = { module = "io.insert-koin:koin-bom", version.ref = "koin-bom" }
+koin-androidx-compose = { module = "io.insert-koin:koin-androidx-compose" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

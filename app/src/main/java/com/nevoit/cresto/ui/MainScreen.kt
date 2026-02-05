@@ -32,19 +32,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.kyant.backdrop.backdrops.layerBackdrop
 import com.kyant.backdrop.backdrops.rememberLayerBackdrop
-import com.nevoit.cresto.CrestoApplication
 import com.nevoit.cresto.R
 import com.nevoit.cresto.data.todo.TodoItem
 import com.nevoit.cresto.data.todo.TodoViewModel
-import com.nevoit.cresto.data.todo.TodoViewModelFactory
+import com.nevoit.cresto.data.todo.liveactivity.LiveActivityViewModel
 import com.nevoit.cresto.toolkit.gaussiangradient.smoothGradientMask
 import com.nevoit.cresto.toolkit.gaussiangradient.smoothGradientMaskFallback
 import com.nevoit.cresto.ui.components.bottomsheet.BottomSheet
@@ -70,6 +67,7 @@ import dev.chrisbanes.haze.rememberHazeState
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import org.koin.androidx.compose.koinViewModel
 
 sealed class Screen(val route: String) {
     object Home : Screen("home")
@@ -118,11 +116,8 @@ fun MainScreen() {
     val density = LocalDensity.current
     val interactionSource = remember { MutableInteractionSource() }
 
-
-    val application = LocalContext.current.applicationContext as CrestoApplication
-    val viewModel: TodoViewModel = viewModel(
-        factory = TodoViewModelFactory(application.repository)
-    )
+    val viewModel: TodoViewModel = koinViewModel()
+    val liveActivityViewModel: LiveActivityViewModel = koinViewModel()
 
     val bottomSheetState by viewModel.bottomSheetState.collectAsState()
 
@@ -146,6 +141,7 @@ fun MainScreen() {
                 currentRoute = currentRoute,
                 showMenu = showMenu,
                 viewModel = viewModel,
+                liveActivityViewModel = liveActivityViewModel,
                 showDialog = showDialog
             )
         }

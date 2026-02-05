@@ -114,6 +114,9 @@ dependencies {
     implementation(libs.mmkv)
     implementation(libs.capsule)
     implementation(libs.backdrop)
+
+    implementation(platform(libs.koin.bom))
+    implementation(libs.koin.androidx.compose)
 }
 
 tasks.register("incrementVersionCode") {

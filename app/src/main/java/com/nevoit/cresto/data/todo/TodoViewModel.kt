@@ -1,11 +1,11 @@
 package com.nevoit.cresto.data.todo
 
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.nevoit.cresto.data.statistics.DailyStat
 import com.nevoit.cresto.data.statistics.TodoStat
 import com.nevoit.cresto.data.utils.EventItem
+import com.tencent.mmkv.MMKV
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -205,14 +205,12 @@ class TodoViewModel(private val repository: TodoRepository) : ViewModel() {
             started = SharingStarted.WhileSubscribed(5000),
             initialValue = emptyList()
         )
-}
 
-class TodoViewModelFactory(private val repository: TodoRepository) : ViewModelProvider.Factory {
-    override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        if (modelClass.isAssignableFrom(TodoViewModel::class.java)) {
-            @Suppress("UNCHECKED_CAST")
-            return TodoViewModel(repository) as T
+    fun clearAllData() {
+        viewModelScope.launch {
+            repository.deleteAll()
+            // clear settings
+            MMKV.defaultMMKV().clearAll()
         }
-        throw IllegalArgumentException("Unknown ViewModel class")
     }
 }

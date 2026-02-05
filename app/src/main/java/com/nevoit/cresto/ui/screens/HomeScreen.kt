@@ -75,6 +75,7 @@ import com.kyant.capsule.ContinuousRoundedRectangle
 import com.nevoit.cresto.R
 import com.nevoit.cresto.data.todo.EXTRA_TODO_ID
 import com.nevoit.cresto.data.todo.TodoViewModel
+import com.nevoit.cresto.data.todo.liveactivity.LiveActivityViewModel
 import com.nevoit.cresto.ui.components.glasense.DialogItemData
 import com.nevoit.cresto.ui.components.glasense.DimIndication
 import com.nevoit.cresto.ui.components.glasense.GlasenseButton
@@ -101,7 +102,8 @@ import kotlinx.coroutines.launch
 fun BoxScope.HomeScreen(
     showMenu: (anchorPosition: Offset, items: List<MenuItemData>) -> Unit,
     showDialog: (items: List<DialogItemData>, title: String, message: String?) -> Unit,
-    viewModel: TodoViewModel
+    viewModel: TodoViewModel,
+    liveActivityViewModel: LiveActivityViewModel
 ) {
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
@@ -264,6 +266,8 @@ fun BoxScope.HomeScreen(
 
     val selectionOutline = AppColors.primary
     val cardCorner = AppSpecs.cardCorner
+
+    val laViewModel = liveActivityViewModel
 
     PageContent(
         state = lazyListState,

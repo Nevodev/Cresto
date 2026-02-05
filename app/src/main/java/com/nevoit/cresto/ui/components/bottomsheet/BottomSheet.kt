@@ -52,7 +52,6 @@ import androidx.compose.ui.graphics.TileMode
 import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.onSizeChanged
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
@@ -65,10 +64,8 @@ import com.kyant.backdrop.drawPlainBackdrop
 import com.kyant.backdrop.effects.blur
 import com.kyant.backdrop.effects.colorControls
 import com.kyant.capsule.ContinuousCapsule
-import com.nevoit.cresto.CrestoApplication
 import com.nevoit.cresto.R
 import com.nevoit.cresto.data.todo.TodoViewModel
-import com.nevoit.cresto.data.todo.TodoViewModelFactory
 import com.nevoit.cresto.secrets.ApiKey
 import com.nevoit.cresto.ui.components.CustomAnimatedVisibility
 import com.nevoit.cresto.ui.components.glasense.DialogItemData
@@ -93,6 +90,7 @@ import com.nevoit.cresto.ui.viewmodel.UiState
 import com.nevoit.cresto.util.deviceCornerShape
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import org.koin.androidx.compose.koinViewModel
 import java.time.LocalDate
 
 /**
@@ -147,11 +145,7 @@ fun BottomSheet(
     }
     val density = LocalDensity.current
     val state = rememberTextFieldState()
-    // Trigger the enter animation when the composable is first composed.
-    val application = LocalContext.current.applicationContext as CrestoApplication
-    val viewModel: TodoViewModel = viewModel(
-        factory = TodoViewModelFactory(application.repository)
-    )
+    val viewModel: TodoViewModel = koinViewModel()
 
     val errorDialogItems = listOf(
         DialogItemData(
