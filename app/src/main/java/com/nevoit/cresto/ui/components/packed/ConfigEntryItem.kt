@@ -33,20 +33,24 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawOutline
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.kyant.capsule.ContinuousRoundedRectangle
 import com.nevoit.cresto.R
 import com.nevoit.cresto.ui.theme.glasense.AppColors
-import com.nevoit.cresto.ui.theme.glasense.AppSpecs
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -249,9 +253,25 @@ fun AboutEntryItem(
         Box(
             modifier = Modifier
                 .size(48.dp)
-                .clip(AppSpecs.cardShape)
+                .clip(ContinuousRoundedRectangle(12.dp))
         ) {
-            Image(painter = icon, contentDescription = stringResource(R.string.app_icon))
+            val density = LocalDensity.current
+            Image(
+                painter = icon,
+                contentDescription = stringResource(R.string.app_icon),
+                modifier = Modifier.drawWithContent {
+                    val outline = ContinuousRoundedRectangle(12.dp).createOutline(
+                        size = size,
+                        layoutDirection,
+                        density
+                    )
+                    drawContent()
+                    drawOutline(
+                        outline = outline,
+                        color = Color.Black.copy(.05f),
+                        style = Stroke(width = with(density) { 2.dp.toPx() })
+                    )
+                })
         }
         Spacer(modifier = Modifier.width(12.dp))
         // Column for the app information text.
