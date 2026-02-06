@@ -1,11 +1,13 @@
 package com.nevoit.cresto.ui.components.glasense
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
@@ -25,6 +27,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.TileMode
 import androidx.compose.ui.graphics.drawscope.Fill
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.shadow.Shadow
 import androidx.compose.ui.unit.Density
@@ -44,7 +47,8 @@ data class MenuItemData(
     val text: String,
     val icon: Painter,
     val isDestructive: Boolean = false,
-    val onClick: () -> Unit
+    val onClick: () -> Unit,
+    val isDivider: Boolean = false
 )
 
 data class MenuState(
@@ -67,21 +71,34 @@ fun CustomMenuContent(items: List<MenuItemData>, onDismiss: () -> Unit) {
 
     Column {
         items.forEachIndexed { index, item ->
-            CustomMenuItem(
-                text = item.text,
-                icon = item.icon,
-                isDestructive = item.isDestructive,
-                onClick = {
-                    onDismiss()
-                    item.onClick()
+            if (!item.isDivider) {
+                CustomMenuItem(
+                    text = item.text,
+                    icon = item.icon,
+                    isDestructive = item.isDestructive,
+                    onClick = {
+                        onDismiss()
+                        item.onClick()
+                    }
+                )
+                // Add a divider between items, but not after the last one.
+                if (index < items.size - 1 && !items[index + 1].isDivider) {
+                    ZeroHeightDivider(
+                        color = dividerColor,
+                        width = 1.dp,
+                        blendMode = BlendMode.Luminosity
+                    )
                 }
-            )
-            // Add a divider between items, but not after the last one.
-            if (index < items.size - 1) {
-                ZeroHeightDivider(
-                    color = dividerColor,
-                    width = 1.dp,
-                    blendMode = BlendMode.Luminosity
+            } else {
+                Spacer(
+                    modifier = Modifier
+                        .graphicsLayer {
+                            blendMode = BlendMode.Luminosity
+                            alpha = 0.5f
+                        }
+                        .fillMaxWidth()
+                        .height(12.dp)
+                        .background(color = dividerColor)
                 )
             }
         }

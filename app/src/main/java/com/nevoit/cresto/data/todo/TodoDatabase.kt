@@ -10,7 +10,7 @@ import com.nevoit.cresto.data.utils.Converters
 
 @Database(
     entities = [TodoItem::class, SubTodoItem::class, LiveActivityEntity::class],
-    version = 13,
+    version = 15,
     exportSchema = false
 )
 

@@ -22,7 +22,8 @@ class LiveActivityViewModel(
             val payload = FoodPickupPayload(
                 storeName = "喜茶",
                 pickupCode = "8237",
-                foodName = "多肉葡萄"
+                foodName = "多肉葡萄",
+                foodType = FoodPickupType.la_iced_grape
             )
 
             activityDao.insertActivity(LiveActivityEntity(content = payload))

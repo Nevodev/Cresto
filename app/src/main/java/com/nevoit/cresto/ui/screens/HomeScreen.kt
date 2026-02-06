@@ -100,6 +100,18 @@ import dev.chrisbanes.haze.rememberHazeState
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
+enum class SortOption {
+    DEFAULT,
+    DUE_DATE,
+    FLAG,
+    TITLE
+}
+
+enum class SortOrder {
+    ASCENDING,
+    DESCENDING
+}
+
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalHazeApi::class)
 @Composable
 fun BoxScope.HomeScreen(
@@ -117,6 +129,8 @@ fun BoxScope.HomeScreen(
     val isSelectionModeActive by viewModel.isSelectionModeActive.collectAsState()
     val selectedItemCount by viewModel.selectedItemCount.collectAsState()
 
+    var currentSortOption by remember { mutableStateOf(SortOption.DEFAULT) }
+    var currentSortOrder by remember { mutableStateOf(SortOrder.DESCENDING) }
 
     var lastNonZeroSelected by remember { mutableIntStateOf(1) }
 
@@ -183,6 +197,9 @@ fun BoxScope.HomeScreen(
     val dueDateText = stringResource(R.string.due_date)
     val flagText = stringResource(R.string.flag)
     val titleText = stringResource(R.string.title)
+    val ascText = stringResource(R.string.ascending)
+    val descText = stringResource(R.string.descending)
+
 
     val rankIcon = painterResource(R.drawable.ic_rank)
     val calendarAltIcon = painterResource(R.drawable.ic_calendar_alt)
@@ -197,28 +214,48 @@ fun BoxScope.HomeScreen(
         characterIcon,
         dueDateText,
         flagText,
-        titleText
+        titleText,
+        ascText,
+        descText,
+        currentSortOption,
+        currentSortOrder
     ) {
         listOf(
             MenuItemData(
                 defaultText,
                 rankIcon,
-                onClick = {}
+                onClick = { currentSortOption = SortOption.DEFAULT }
             ),
             MenuItemData(
                 dueDateText,
                 calendarAltIcon,
-                onClick = {}
+                onClick = { currentSortOption = SortOption.DUE_DATE }
             ),
             MenuItemData(
                 flagText,
                 flagIcon,
-                onClick = {}
+                onClick = { currentSortOption = SortOption.FLAG }
             ),
             MenuItemData(
                 titleText,
                 characterIcon,
-                onClick = {}
+                onClick = { currentSortOption = SortOption.TITLE }
+            ),
+            MenuItemData(
+                "",
+                characterIcon,
+                onClick = {},
+                isDivider = true
+            ),
+            MenuItemData(
+                ascText,
+                characterIcon,
+                onClick = { currentSortOrder = SortOrder.ASCENDING }
+            ),
+            MenuItemData(
+                descText,
+                characterIcon,
+                onClick = { currentSortOrder = SortOrder.DESCENDING }
             )
         )
     }
@@ -247,7 +284,74 @@ fun BoxScope.HomeScreen(
     }
     val dpPx = with(density) { 1.dp.toPx() }
 
-    val (incompleteTodos, completeTodos) = todoList.partition { !it.todoItem.isCompleted }
+    val sortedTodoList = remember(todoList, currentSortOption, currentSortOrder) {
+        val collator = java.text.Collator.getInstance()
+        val comparator = Comparator<com.nevoit.cresto.data.todo.TodoItemWithSubTodos> { a, b ->
+            val itemA = a.todoItem
+            val itemB = b.todoItem
+
+            when (currentSortOption) {
+                SortOption.DEFAULT -> {
+                    if (currentSortOrder == SortOrder.ASCENDING) {
+                        itemA.id.compareTo(itemB.id)
+                    } else {
+                        itemB.id.compareTo(itemA.id)
+                    }
+                }
+
+                SortOption.DUE_DATE -> {
+                    val dateA = itemA.dueDate
+                    val dateB = itemB.dueDate
+
+                    if (dateA == null && dateB == null) {
+                        itemA.id.compareTo(itemB.id)
+                    } else if (dateA == null) {
+                        1
+                    } else if (dateB == null) {
+                        -1
+                    } else {
+                        if (currentSortOrder == SortOrder.ASCENDING) {
+                            dateA.compareTo(dateB)
+                        } else {
+                            dateB.compareTo(dateA)
+                        }
+                    }
+                }
+
+                SortOption.FLAG -> {
+                    val flagA = itemA.flag
+                    val flagB = itemB.flag
+                    val isAEmpty = flagA == 0
+                    val isBEmpty = flagB == 0
+
+                    if (isAEmpty && isBEmpty) {
+                        itemA.id.compareTo(itemB.id)
+                    } else if (isAEmpty) {
+                        1
+                    } else if (isBEmpty) {
+                        -1
+                    } else {
+                        if (currentSortOrder == SortOrder.ASCENDING) {
+                            flagA.compareTo(flagB)
+                        } else {
+                            flagB.compareTo(flagA)
+                        }
+                    }
+                }
+
+                SortOption.TITLE -> {
+                    if (currentSortOrder == SortOrder.ASCENDING) {
+                        collator.compare(itemA.title, itemB.title)
+                    } else {
+                        collator.compare(itemB.title, itemA.title)
+                    }
+                }
+            }
+        }
+        todoList.sortedWith(comparator)
+    }
+
+    val (incompleteTodos, completeTodos) = sortedTodoList.partition { !it.todoItem.isCompleted }
     var completedVisible by remember { mutableStateOf(true) }
 
     val launcher = rememberLauncherForActivityResult(
@@ -272,6 +376,10 @@ fun BoxScope.HomeScreen(
 
     val liveActivities by liveActivityViewModel.activities.collectAsStateWithLifecycle()
 
+    LaunchedEffect(Unit) {
+        liveActivityViewModel.addMockFoodPickup()
+    }
+
     PageContent(
         state = lazyListState,
         modifier = Modifier
@@ -290,7 +398,9 @@ fun BoxScope.HomeScreen(
         ) { item ->
             LiveActivityItem(
                 entity = item,
-                onDone = { liveActivityViewModel.deleteActivity(item.id) })
+                onDone = { liveActivityViewModel.deleteActivity(item.id) },
+                modifier = Modifier.animateItem(placementSpec = spring(0.9f, 400f))
+            )
             VGap()
         }
 
@@ -603,7 +713,7 @@ fun BoxScope.HomeScreen(
                                         coordinatesCaptured?.let {
                                             val position = Offset(
                                                 x = it.positionOnScreen().x,
-                                                y = it.positionOnScreen().y + it.size.height + 8 * dpPx
+                                                y = it.positionOnScreen().y + it.positionOnScreen().y + 8 * dpPx
                                             )
                                             showMenu(position, menuItemsFilter)
                                         }

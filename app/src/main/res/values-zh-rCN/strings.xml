@@ -119,4 +119,6 @@
     <string name="introduction_title_3">高效计时管理</string>
     <string name="introduction_3">番茄钟、倒计时一键开启，帮你专注当下，掌控时间节奏。</string>
     <string name="cresto_can_do">Cresto可以</string>
+    <string name="ascending">升序</string>
+    <string name="descending">降序</string>
 </resources>

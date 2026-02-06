@@ -1,5 +1,6 @@
 package com.nevoit.cresto.ui.components.packed
 
+import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -27,6 +28,7 @@ import androidx.compose.ui.unit.sp
 import com.kyant.capsule.ContinuousRoundedRectangle
 import com.nevoit.cresto.R
 import com.nevoit.cresto.data.todo.liveactivity.FoodPickupPayload
+import com.nevoit.cresto.data.todo.liveactivity.FoodPickupType
 import com.nevoit.cresto.data.todo.liveactivity.LiveActivityEntity
 import com.nevoit.cresto.data.todo.liveactivity.ParcelPickupPayload
 import com.nevoit.cresto.ui.components.glasense.GlasenseButtonCompact
@@ -38,6 +40,25 @@ import com.nevoit.cresto.util.formatRelativeRealTime
 import kotlinx.coroutines.delay
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
+
+val FoodPickupType.iconResId: Int
+    @DrawableRes
+    get() = when (this) {
+        FoodPickupType.la_unspecified -> R.drawable.la_unspecified
+        FoodPickupType.la_takeaway -> R.drawable.la_takeaway
+        FoodPickupType.la_hot -> R.drawable.la_hot
+        FoodPickupType.la_lemonade -> R.drawable.la_lemonade
+        FoodPickupType.la_iced_ganlu -> R.drawable.la_iced_ganlu
+        FoodPickupType.la_iced_grape -> R.drawable.la_iced_grape
+        FoodPickupType.la_iced_mango -> R.drawable.la_iced_mango
+        FoodPickupType.la_iced_americano -> R.drawable.la_iced_americano
+        FoodPickupType.la_iced_latte -> R.drawable.la_iced_latte
+        FoodPickupType.la_iced_tea -> R.drawable.la_iced_tea
+        FoodPickupType.la_iced_milktea -> R.drawable.la_iced_milktea
+        FoodPickupType.la_iced_lemon_tea -> R.drawable.la_iced_lemon_tea
+        FoodPickupType.la_iced_matcha_latte -> R.drawable.la_iced_matcha_latte
+        FoodPickupType.la_iced_bubble_tea -> R.drawable.la_iced_bubble_tea
+    }
 
 @Composable
 fun LiveActivityItem(
@@ -102,7 +123,7 @@ private fun FoodPickupItem(
         verticalAlignment = Alignment.CenterVertically
     ) {
         Image(
-            painter = painterResource(R.drawable.avatar),
+            painter = painterResource(payload.foodType.iconResId),
             contentDescription = null,
             modifier = Modifier.size(64.dp)
         )
@@ -131,7 +152,7 @@ private fun FoodPickupItem(
                     padding = PaddingValues(vertical = 8.dp, horizontal = 12.dp)
                 ) {
                     Text(
-                        text = "已取餐",
+                        text = "确认取餐",
                         fontSize = 14.sp,
                         lineHeight = 16.sp,
                         fontWeight = FontWeight.Medium,

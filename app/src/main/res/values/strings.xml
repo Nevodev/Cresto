@@ -129,4 +129,6 @@
     <string name="introduction_title_3">Focus &amp; Timers</string>
     <string name="introduction_3">One-tap Pomodoro and countdowns. Stay in the zone and master your rhythm.</string>
     <string name="cresto_can_do">Cresto Can Do</string>
+    <string name="ascending">Ascending</string>
+    <string name="descending">Descending</string>
 </resources>
