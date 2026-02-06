@@ -20,6 +20,8 @@ object SettingsManager {
     private const val KEY_LIQUID_GLASS = "liquid_glass_enabled"
     private const val KEY_COLOR_MODE = "color_mode"
     private const val KEY_IS_FIRST_RUN = "is_first_run"
+    private const val KEY_SORT_OPTION = "sort_option"
+    private const val KEY_SORT_ORDER = "sort_order"
 
     const val MODE_LIGHT = 0
     const val MODE_DARK = 1
@@ -31,6 +33,10 @@ object SettingsManager {
     val isUseDynamicColorState = mutableStateOf(mmkv.decodeBool(KEY_USE_DYNAMIC_COLOR, false))
     val isLiteModeState = mutableStateOf(mmkv.decodeBool(KEY_LITE_MODE, false))
     val isLiquidGlassState = mutableStateOf(mmkv.decodeBool(KEY_LIQUID_GLASS, false))
+    val sortOptionState =
+        mutableIntStateOf(mmkv.decodeInt(KEY_SORT_OPTION, SortOption.DEFAULT.ordinal))
+    val sortOrderState =
+        mutableIntStateOf(mmkv.decodeInt(KEY_SORT_ORDER, SortOrder.DESCENDING.ordinal))
 
     var isCustomPrimaryColorEnabled: Boolean
         get() = mmkv.decodeBool(KEY_CUSTOM_PRIMARY_COLOR_ENABLED, false)
@@ -72,4 +78,36 @@ object SettingsManager {
         set(value) {
             mmkv.encode(KEY_IS_FIRST_RUN, value)
         }
+
+    var sortOption: SortOption
+        get() {
+            val ordinal = mmkv.decodeInt(KEY_SORT_OPTION, SortOption.DEFAULT.ordinal)
+            return SortOption.entries.getOrElse(ordinal) { SortOption.DEFAULT }
+        }
+        set(value) {
+            mmkv.encode(KEY_SORT_OPTION, value.ordinal)
+            sortOptionState.intValue = value.ordinal
+        }
+
+    var sortOrder: SortOrder
+        get() {
+            val ordinal = mmkv.decodeInt(KEY_SORT_ORDER, SortOrder.DESCENDING.ordinal)
+            return SortOrder.entries.getOrElse(ordinal) { SortOrder.DESCENDING }
+        }
+        set(value) {
+            mmkv.encode(KEY_SORT_ORDER, value.ordinal)
+            sortOrderState.intValue = value.ordinal
+        }
+}
+
+enum class SortOption {
+    DEFAULT,
+    DUE_DATE,
+    FLAG,
+    TITLE
+}
+
+enum class SortOrder {
+    ASCENDING,
+    DESCENDING
 }

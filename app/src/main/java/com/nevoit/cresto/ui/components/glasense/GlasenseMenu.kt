@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -30,6 +31,7 @@ import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.shadow.Shadow
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
@@ -39,6 +41,7 @@ import com.kyant.backdrop.backdrops.LayerBackdrop
 import com.kyant.backdrop.drawPlainBackdrop
 import com.kyant.backdrop.effects.blur
 import com.kyant.capsule.ContinuousRoundedRectangle
+import com.nevoit.cresto.R
 import com.nevoit.cresto.ui.theme.glasense.AppColors
 import com.nevoit.cresto.ui.theme.glasense.glasenseHighlight
 import com.nevoit.cresto.ui.theme.glasense.isAppInDarkTheme
@@ -47,14 +50,24 @@ data class MenuItemData(
     val text: String,
     val icon: Painter,
     val isDestructive: Boolean = false,
-    val onClick: () -> Unit,
-    val isDivider: Boolean = false
-)
+    val onClick: () -> Unit
+) : GlasenseMenuItem
+
+object MenuDivider : GlasenseMenuItem
+
+data class SelectiveMenuItemData(
+    val text: String,
+    val icon: Painter,
+    val isSelected: () -> Boolean,
+    val onClick: () -> Unit
+) : GlasenseMenuItem
+
+sealed interface GlasenseMenuItem
 
 data class MenuState(
     val isVisible: Boolean = false,
     val anchorPosition: Offset = Offset.Zero,
-    val items: List<MenuItemData> = emptyList()
+    val items: List<GlasenseMenuItem> = emptyList()
 )
 
 /**
@@ -64,42 +77,65 @@ data class MenuState(
  * @param onDismiss Lambda to be called when a menu item is clicked, typically to close the menu.
  */
 @Composable
-fun CustomMenuContent(items: List<MenuItemData>, onDismiss: () -> Unit) {
+fun CustomMenuContent(items: List<GlasenseMenuItem>, onDismiss: () -> Unit) {
     val darkTheme = isAppInDarkTheme()
     // Define divider color based on the current theme.
     val dividerColor = if (darkTheme) Color.White.copy(.1f) else Color.Black.copy(.1f)
 
     Column {
         items.forEachIndexed { index, item ->
-            if (!item.isDivider) {
-                CustomMenuItem(
-                    text = item.text,
-                    icon = item.icon,
-                    isDestructive = item.isDestructive,
-                    onClick = {
-                        onDismiss()
-                        item.onClick()
+            when (item) {
+                is MenuItemData -> {
+                    CustomMenuItem(
+                        text = item.text,
+                        icon = item.icon,
+                        isDestructive = item.isDestructive,
+                        onClick = {
+                            onDismiss()
+                            item.onClick()
+                        }
+                    )
+                    // Add a divider between items, but not after the last one.
+                    if (index < items.size - 1 && items[index + 1] !is MenuDivider) {
+                        ZeroHeightDivider(
+                            color = dividerColor,
+                            width = 1.dp,
+                            blendMode = BlendMode.Luminosity
+                        )
                     }
-                )
-                // Add a divider between items, but not after the last one.
-                if (index < items.size - 1 && !items[index + 1].isDivider) {
-                    ZeroHeightDivider(
-                        color = dividerColor,
-                        width = 1.dp,
-                        blendMode = BlendMode.Luminosity
+                }
+
+                is MenuDivider -> {
+                    Spacer(
+                        modifier = Modifier
+                            .graphicsLayer {
+                                blendMode = BlendMode.Luminosity
+                                alpha = 0.5f
+                            }
+                            .fillMaxWidth()
+                            .height(12.dp)
+                            .background(color = dividerColor)
                     )
                 }
-            } else {
-                Spacer(
-                    modifier = Modifier
-                        .graphicsLayer {
-                            blendMode = BlendMode.Luminosity
-                            alpha = 0.5f
+
+                is SelectiveMenuItemData -> {
+                    CustomSelectiveMenuItem(
+                        text = item.text,
+                        icon = item.icon,
+                        isSelected = item.isSelected,
+                        onClick = {
+                            onDismiss()
+                            item.onClick()
                         }
-                        .fillMaxWidth()
-                        .height(12.dp)
-                        .background(color = dividerColor)
-                )
+                    )
+                    if (index < items.size - 1 && items[index + 1] !is MenuDivider) {
+                        ZeroHeightDivider(
+                            color = dividerColor,
+                            width = 1.dp,
+                            blendMode = BlendMode.Luminosity
+                        )
+                    }
+                }
             }
         }
     }
@@ -253,5 +289,56 @@ fun GlasenseMenu(
     ) {
         // Display the actual menu items.
         CustomMenuContent(items = menuState.items, onDismiss = onDismiss)
+    }
+}
+
+@Composable
+private fun CustomSelectiveMenuItem(
+    text: String,
+    icon: Painter,
+    isSelected: () -> Boolean,
+    onClick: () -> Unit
+) {
+    val contentColor = AppColors.content
+    val interactionSource = remember { MutableInteractionSource() }
+    Row(
+        modifier = Modifier
+            .height(48.dp)
+            .fillMaxWidth()
+            .clickable(
+                interactionSource = interactionSource,
+                onClick = onClick,
+                indication = DimIndication()
+            )
+            .padding(horizontal = 16.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        if (isSelected()) {
+            Icon(
+                painter = painterResource(R.drawable.ic_checkmark),
+                contentDescription = text,
+                tint = AppColors.primary,
+                modifier = Modifier
+                    .size(24.dp)
+                    .offset(x = (-4).dp)
+            )
+        } else {
+            Spacer(modifier = Modifier.size(24.dp))
+        }
+        Spacer(modifier = Modifier.width(4.dp))
+        Text(
+            text = text,
+            color = contentColor,
+            fontSize = 16.sp,
+            lineHeight = 16.sp,
+            modifier = Modifier.weight(1f)
+        )
+        Icon(
+            painter = icon,
+            contentDescription = text,
+            tint = contentColor,
+            modifier = Modifier.size(24.dp)
+        )
     }
 }

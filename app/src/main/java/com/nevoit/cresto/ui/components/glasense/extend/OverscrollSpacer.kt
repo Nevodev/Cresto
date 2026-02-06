@@ -32,14 +32,17 @@ fun LazyListScope.overscrollSpacer(state: LazyListState) {
                     return@derivedStateOf with(density) { lastHeightPx.toDp() }
                 }
 
-                if (state.firstVisibleItemIndex > 0) {
-                    return@derivedStateOf with(density) { lastHeightPx.toDp() }
-                }
-
                 val visibleItems = layoutInfo.visibleItemsInfo
                     .filter { it.key != OVERSCROLL_SPACER_KEY }
 
                 val contentHeight = visibleItems.sumOf { it.size }
+
+                if (state.firstVisibleItemIndex > 0) {
+                    if (contentHeight >= viewportHeight) {
+                        return@derivedStateOf 0.dp
+                    }
+                    return@derivedStateOf with(density) { lastHeightPx.toDp() }
+                }
 
                 if (contentHeight < viewportHeight) {
                     val neededHeightPx = viewportHeight - contentHeight

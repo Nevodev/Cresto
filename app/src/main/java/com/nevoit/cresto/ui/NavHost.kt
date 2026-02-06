@@ -16,7 +16,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import com.nevoit.cresto.data.todo.TodoViewModel
 import com.nevoit.cresto.data.todo.liveactivity.LiveActivityViewModel
 import com.nevoit.cresto.ui.components.glasense.DialogItemData
-import com.nevoit.cresto.ui.components.glasense.MenuItemData
+import com.nevoit.cresto.ui.components.glasense.GlasenseMenuItem
 import com.nevoit.cresto.ui.screens.HomeScreen
 import com.nevoit.cresto.ui.screens.MindFlowScreen
 import com.nevoit.cresto.ui.screens.SettingsScreen
@@ -26,7 +26,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun BoxScope.NavContainer(
     currentRoute: String,
-    showMenu: (anchorPosition: androidx.compose.ui.geometry.Offset, items: List<MenuItemData>) -> Unit,
+    showMenu: (anchorPosition: androidx.compose.ui.geometry.Offset, items: List<GlasenseMenuItem>) -> Unit,
     showDialog: (items: List<DialogItemData>, title: String, message: String?) -> Unit,
     viewModel: TodoViewModel,
     liveActivityViewModel: LiveActivityViewModel

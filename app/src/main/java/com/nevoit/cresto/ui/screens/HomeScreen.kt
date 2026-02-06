@@ -81,8 +81,10 @@ import com.nevoit.cresto.ui.components.glasense.DimIndication
 import com.nevoit.cresto.ui.components.glasense.GlasenseButton
 import com.nevoit.cresto.ui.components.glasense.GlasenseButtonAdaptable
 import com.nevoit.cresto.ui.components.glasense.GlasenseDynamicSmallTitle
+import com.nevoit.cresto.ui.components.glasense.GlasenseMenuItem
 import com.nevoit.cresto.ui.components.glasense.GlasensePageHeader
-import com.nevoit.cresto.ui.components.glasense.MenuItemData
+import com.nevoit.cresto.ui.components.glasense.MenuDivider
+import com.nevoit.cresto.ui.components.glasense.SelectiveMenuItemData
 import com.nevoit.cresto.ui.components.glasense.extend.overscrollSpacer
 import com.nevoit.cresto.ui.components.glasense.isScrolledPast
 import com.nevoit.cresto.ui.components.glasense.rememberSwipeableListState
@@ -91,6 +93,9 @@ import com.nevoit.cresto.ui.components.packed.PageContent
 import com.nevoit.cresto.ui.components.packed.SwipeableTodoItem
 import com.nevoit.cresto.ui.components.packed.VGap
 import com.nevoit.cresto.ui.screens.detailscreen.DetailActivity
+import com.nevoit.cresto.ui.screens.settings.util.SettingsManager
+import com.nevoit.cresto.ui.screens.settings.util.SortOption
+import com.nevoit.cresto.ui.screens.settings.util.SortOrder
 import com.nevoit.cresto.ui.theme.glasense.AppButtonColors
 import com.nevoit.cresto.ui.theme.glasense.AppColors
 import com.nevoit.cresto.ui.theme.glasense.AppSpecs
@@ -100,22 +105,11 @@ import dev.chrisbanes.haze.rememberHazeState
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-enum class SortOption {
-    DEFAULT,
-    DUE_DATE,
-    FLAG,
-    TITLE
-}
-
-enum class SortOrder {
-    ASCENDING,
-    DESCENDING
-}
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalHazeApi::class)
 @Composable
 fun BoxScope.HomeScreen(
-    showMenu: (anchorPosition: Offset, items: List<MenuItemData>) -> Unit,
+    showMenu: (anchorPosition: Offset, items: List<GlasenseMenuItem>) -> Unit,
     showDialog: (items: List<DialogItemData>, title: String, message: String?) -> Unit,
     viewModel: TodoViewModel,
     liveActivityViewModel: LiveActivityViewModel
@@ -129,8 +123,8 @@ fun BoxScope.HomeScreen(
     val isSelectionModeActive by viewModel.isSelectionModeActive.collectAsState()
     val selectedItemCount by viewModel.selectedItemCount.collectAsState()
 
-    var currentSortOption by remember { mutableStateOf(SortOption.DEFAULT) }
-    var currentSortOrder by remember { mutableStateOf(SortOrder.DESCENDING) }
+    val sortOptionOrdinal by SettingsManager.sortOptionState
+    val sortOrderOrdinal by SettingsManager.sortOrderState
 
     var lastNonZeroSelected by remember { mutableIntStateOf(1) }
 
@@ -205,6 +199,9 @@ fun BoxScope.HomeScreen(
     val calendarAltIcon = painterResource(R.drawable.ic_calendar_alt)
     val flagIcon = painterResource(R.drawable.ic_flag)
     val characterIcon = painterResource(R.drawable.ic_character)
+    val ascIcon = painterResource(R.drawable.ic_chevron_up)
+    val descIcon = painterResource(R.drawable.ic_chevron_down)
+
 
     val menuItemsFilter = remember(
         defaultText,
@@ -217,45 +214,46 @@ fun BoxScope.HomeScreen(
         titleText,
         ascText,
         descText,
-        currentSortOption,
-        currentSortOrder
+        ascIcon,
+        descIcon
     ) {
         listOf(
-            MenuItemData(
+            SelectiveMenuItemData(
                 defaultText,
                 rankIcon,
-                onClick = { currentSortOption = SortOption.DEFAULT }
+                isSelected = { SettingsManager.sortOptionState.intValue == SortOption.DEFAULT.ordinal },
+                onClick = { SettingsManager.sortOption = SortOption.DEFAULT }
             ),
-            MenuItemData(
+            SelectiveMenuItemData(
                 dueDateText,
                 calendarAltIcon,
-                onClick = { currentSortOption = SortOption.DUE_DATE }
+                isSelected = { SettingsManager.sortOptionState.intValue == SortOption.DUE_DATE.ordinal },
+                onClick = { SettingsManager.sortOption = SortOption.DUE_DATE }
             ),
-            MenuItemData(
+            SelectiveMenuItemData(
                 flagText,
                 flagIcon,
-                onClick = { currentSortOption = SortOption.FLAG }
+                isSelected = { SettingsManager.sortOptionState.intValue == SortOption.FLAG.ordinal },
+                onClick = { SettingsManager.sortOption = SortOption.FLAG }
             ),
-            MenuItemData(
+            SelectiveMenuItemData(
                 titleText,
                 characterIcon,
-                onClick = { currentSortOption = SortOption.TITLE }
+                isSelected = { SettingsManager.sortOptionState.intValue == SortOption.TITLE.ordinal },
+                onClick = { SettingsManager.sortOption = SortOption.TITLE }
             ),
-            MenuItemData(
-                "",
-                characterIcon,
-                onClick = {},
-                isDivider = true
-            ),
-            MenuItemData(
+            MenuDivider,
+            SelectiveMenuItemData(
                 ascText,
-                characterIcon,
-                onClick = { currentSortOrder = SortOrder.ASCENDING }
+                ascIcon,
+                isSelected = { SettingsManager.sortOrderState.intValue == SortOrder.ASCENDING.ordinal },
+                onClick = { SettingsManager.sortOrder = SortOrder.ASCENDING }
             ),
-            MenuItemData(
+            SelectiveMenuItemData(
                 descText,
-                characterIcon,
-                onClick = { currentSortOrder = SortOrder.DESCENDING }
+                descIcon,
+                isSelected = { SettingsManager.sortOrderState.intValue == SortOrder.DESCENDING.ordinal },
+                onClick = { SettingsManager.sortOrder = SortOrder.DESCENDING }
             )
         )
     }
@@ -284,27 +282,26 @@ fun BoxScope.HomeScreen(
     }
     val dpPx = with(density) { 1.dp.toPx() }
 
-    val sortedTodoList = remember(todoList, currentSortOption, currentSortOrder) {
+    val sortedTodoList = remember(todoList, sortOptionOrdinal, sortOrderOrdinal) {
+        val currentSortOption =
+            SortOption.entries.getOrElse(sortOptionOrdinal) { SortOption.DEFAULT }
+        val currentSortOrder =
+            SortOrder.entries.getOrElse(sortOrderOrdinal) { SortOrder.DESCENDING }
+
         val collator = java.text.Collator.getInstance()
         val comparator = Comparator<com.nevoit.cresto.data.todo.TodoItemWithSubTodos> { a, b ->
             val itemA = a.todoItem
             val itemB = b.todoItem
 
-            when (currentSortOption) {
-                SortOption.DEFAULT -> {
-                    if (currentSortOrder == SortOrder.ASCENDING) {
-                        itemA.id.compareTo(itemB.id)
-                    } else {
-                        itemB.id.compareTo(itemA.id)
-                    }
-                }
+            val compareResult = when (currentSortOption) {
+                SortOption.DEFAULT -> 0
 
                 SortOption.DUE_DATE -> {
                     val dateA = itemA.dueDate
                     val dateB = itemB.dueDate
 
                     if (dateA == null && dateB == null) {
-                        itemA.id.compareTo(itemB.id)
+                        0
                     } else if (dateA == null) {
                         1
                     } else if (dateB == null) {
@@ -325,7 +322,7 @@ fun BoxScope.HomeScreen(
                     val isBEmpty = flagB == 0
 
                     if (isAEmpty && isBEmpty) {
-                        itemA.id.compareTo(itemB.id)
+                        0
                     } else if (isAEmpty) {
                         1
                     } else if (isBEmpty) {
@@ -345,6 +342,16 @@ fun BoxScope.HomeScreen(
                     } else {
                         collator.compare(itemB.title, itemA.title)
                     }
+                }
+            }
+
+            if (compareResult != 0) {
+                compareResult
+            } else {
+                if (currentSortOrder == SortOrder.ASCENDING) {
+                    itemA.id.compareTo(itemB.id)
+                } else {
+                    itemB.id.compareTo(itemA.id)
                 }
             }
         }
@@ -392,6 +399,28 @@ fun BoxScope.HomeScreen(
             )
         }
 
+        if (liveActivities.isNotEmpty()) {
+            item(key = "live_activity_title") {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    modifier = Modifier
+                        .zIndex(-1f)
+                        .animateItem(placementSpec = spring(0.9f, 400f))
+                        .fillMaxWidth()
+                        .padding(top = 8.dp, bottom = 8.dp, start = 12.dp)
+                ) {
+                    Text(
+                        text = "实时活动",
+                        fontSize = 14.sp,
+                        lineHeight = 14.sp,
+                        fontWeight = FontWeight.Normal,
+                        color = AppColors.contentVariant
+                    )
+                }
+            }
+        }
+
         items(
             items = liveActivities,
             key = { it.id }
@@ -402,6 +431,28 @@ fun BoxScope.HomeScreen(
                 modifier = Modifier.animateItem(placementSpec = spring(0.9f, 400f))
             )
             VGap()
+        }
+
+        if (liveActivities.isNotEmpty() && incompleteTodos.isNotEmpty()) {
+            item(key = "todo_title") {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    modifier = Modifier
+                        .zIndex(-1f)
+                        .animateItem(placementSpec = spring(0.9f, 400f))
+                        .fillMaxWidth()
+                        .padding(top = 8.dp, bottom = 8.dp, start = 12.dp)
+                ) {
+                    Text(
+                        text = stringResource(R.string.all_todos),
+                        fontSize = 14.sp,
+                        lineHeight = 14.sp,
+                        fontWeight = FontWeight.Normal,
+                        color = AppColors.contentVariant
+                    )
+                }
+            }
         }
 
         items(

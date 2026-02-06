@@ -49,8 +49,8 @@ import com.nevoit.cresto.ui.components.glasense.DialogItemData
 import com.nevoit.cresto.ui.components.glasense.DialogState
 import com.nevoit.cresto.ui.components.glasense.GlasenseDialog
 import com.nevoit.cresto.ui.components.glasense.GlasenseMenu
+import com.nevoit.cresto.ui.components.glasense.GlasenseMenuItem
 import com.nevoit.cresto.ui.components.glasense.GlasenseNavigationButton
-import com.nevoit.cresto.ui.components.glasense.MenuItemData
 import com.nevoit.cresto.ui.components.glasense.MenuState
 import com.nevoit.cresto.ui.screens.settings.util.SettingsManager
 import com.nevoit.cresto.ui.theme.glasense.AppColors
@@ -91,7 +91,7 @@ fun MainScreen() {
 
     var menuState by remember { mutableStateOf(MenuState()) }
 
-    val showMenu: (anchorPosition: androidx.compose.ui.geometry.Offset, items: List<MenuItemData>) -> Unit =
+    val showMenu: (anchorPosition: androidx.compose.ui.geometry.Offset, items: List<GlasenseMenuItem>) -> Unit =
         { position, items ->
             menuState = MenuState(isVisible = true, anchorPosition = position, items = items)
         }
