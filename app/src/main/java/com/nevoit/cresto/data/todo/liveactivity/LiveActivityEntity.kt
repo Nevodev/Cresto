@@ -9,5 +9,6 @@ import java.util.UUID
 data class LiveActivityEntity(
     @PrimaryKey val id: String = UUID.randomUUID().toString(),
     val createTime: LocalDateTime = LocalDateTime.now(),
-    val content: ActivityPayload
+    val content: ActivityPayload,
+    val isDone: Boolean = false
 )

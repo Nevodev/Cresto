@@ -131,7 +131,7 @@ fun BoxScope.SettingsScreen() {
         item {
             ConfigContainer(backgroundColor = hierarchicalSurfaceColor) {
                 AboutEntryItem(
-                    icon = painterResource(R.drawable.cresto_foreground),
+                    icon = painterResource(R.drawable.cresto),
                     onClick = {
                         val intent = Intent(context, AboutActivity::class.java)
                         context.startActivity(intent)

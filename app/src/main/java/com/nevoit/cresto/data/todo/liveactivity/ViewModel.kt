@@ -20,10 +20,9 @@ class LiveActivityViewModel(
     fun addMockFoodPickup() {
         viewModelScope.launch {
             val payload = FoodPickupPayload(
-                platform = "饿了么",
-                storeName = "茶颜悦色",
-                pickupCode = "C-120",
-                state = "MAKING"
+                storeName = "喜茶",
+                pickupCode = "8237",
+                foodName = "多肉葡萄"
             )
 
             activityDao.insertActivity(LiveActivityEntity(content = payload))

@@ -21,7 +21,6 @@ import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -68,6 +67,7 @@ import com.nevoit.cresto.ui.components.packed.ConfigItem
 import com.nevoit.cresto.ui.components.packed.ConfigItemContainer
 import com.nevoit.cresto.ui.components.packed.PageContent
 import com.nevoit.cresto.ui.theme.glasense.Amber400
+import com.nevoit.cresto.ui.theme.glasense.AppButtonColors
 import com.nevoit.cresto.ui.theme.glasense.AppColors
 import com.nevoit.cresto.ui.theme.glasense.AppSpecs
 import com.nevoit.cresto.ui.theme.glasense.Emerald400
@@ -90,7 +90,7 @@ import java.io.File
 @Composable
 fun DataStorageScreen() {
     val viewModel: TodoViewModel = koinViewModel()
-    
+
     // Get the current activity instance to allow finishing the screen
     val activity = LocalActivity.current
     val context = LocalContext.current
@@ -430,10 +430,7 @@ fun DataStorageScreen() {
                 .padding(top = statusBarHeight, start = 12.dp)
                 .size(48.dp)
                 .align(Alignment.TopStart),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = onSurfaceContainer,
-                contentColor = AppColors.primary
-            )
+            colors = AppButtonColors.action()
         ) {
             Icon(
                 painter = painterResource(id = R.drawable.ic_forward_nav),

@@ -5,19 +5,22 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.IndicationNodeFactory
 import androidx.compose.foundation.interaction.InteractionSource
 import androidx.compose.foundation.interaction.PressInteraction
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.drawOutline
 import androidx.compose.ui.graphics.drawscope.ContentDrawScope
+import androidx.compose.ui.node.CompositionLocalConsumerModifierNode
 import androidx.compose.ui.node.DelegatableNode
 import androidx.compose.ui.node.DrawModifierNode
+import androidx.compose.ui.node.currentValueOf
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
 data class DimIndication(
-    val color: Color = Color.Black,
+    val color: Color = Color.Unspecified,
     val maxAlpha: Float = 0.1f,
     val shape: Shape = RectangleShape,
 ) : IndicationNodeFactory {
@@ -31,7 +34,7 @@ private class DimIndicationNode(
     private val color: Color,
     private val maxAlpha: Float,
     private val shape: Shape,
-) : Modifier.Node(), DrawModifierNode {
+) : Modifier.Node(), DrawModifierNode, CompositionLocalConsumerModifierNode {
 
     private val alphaAnimatable = Animatable(0f)
 
@@ -65,8 +68,14 @@ private class DimIndicationNode(
     override fun ContentDrawScope.draw() {
         drawContent()
         if (alphaAnimatable.value > 0f) {
+            val targetColor = if (color != Color.Unspecified) {
+                color
+            } else {
+                currentValueOf(LocalContentColor)
+            }
+
             val outline = shape.createOutline(size, layoutDirection, this)
-            drawOutline(outline, color = color.copy(alpha = alphaAnimatable.value))
+            drawOutline(outline, color = targetColor.copy(alpha = alphaAnimatable.value))
         }
     }
 }

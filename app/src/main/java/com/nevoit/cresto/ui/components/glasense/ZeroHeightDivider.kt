@@ -11,6 +11,7 @@ import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.nevoit.cresto.ui.theme.glasense.AppColors
 
 /**
  * A composable that draws a horizontal line with zero height.
@@ -23,10 +24,10 @@ import androidx.compose.ui.unit.dp
  */
 @Composable
 fun ZeroHeightDivider(
-    color: Color,
-    width: Dp,
     modifier: Modifier = Modifier,
-    blendMode: BlendMode
+    color: Color = AppColors.content.copy(.1f),
+    width: Dp = 1.dp,
+    blendMode: BlendMode = BlendMode.SrcOver
 ) {
     Spacer(
         modifier = Modifier

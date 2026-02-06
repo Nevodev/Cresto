@@ -24,7 +24,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -49,6 +48,7 @@ import com.nevoit.cresto.ui.components.myFadeIn
 import com.nevoit.cresto.ui.components.myFadeOut
 import com.nevoit.cresto.ui.components.myScaleIn
 import com.nevoit.cresto.ui.components.myScaleOut
+import com.nevoit.cresto.ui.theme.glasense.AppButtonColors
 import com.nevoit.cresto.ui.theme.glasense.glasenseHighlight
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.joinAll
@@ -251,8 +251,8 @@ fun SwipeableContainer(
                                     alpha = alphaAni.value
                                 }
                                 .size(48.dp),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = action.color,
+                            colors = AppButtonColors.solid(
+                                color = action.color,
                                 contentColor = Color.White
                             ),
                             animated = true

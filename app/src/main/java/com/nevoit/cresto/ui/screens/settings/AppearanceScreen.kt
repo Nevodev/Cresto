@@ -18,7 +18,6 @@ import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
@@ -46,6 +45,7 @@ import com.nevoit.cresto.ui.components.packed.ConfigItem
 import com.nevoit.cresto.ui.components.packed.ConfigItemContainer
 import com.nevoit.cresto.ui.components.packed.PageContent
 import com.nevoit.cresto.ui.screens.settings.util.SettingsViewModel
+import com.nevoit.cresto.ui.theme.glasense.AppButtonColors
 import com.nevoit.cresto.ui.theme.glasense.AppColors
 import com.nevoit.cresto.ui.theme.glasense.Blue500
 import com.nevoit.cresto.ui.theme.glasense.LocalGlasenseSettings
@@ -236,10 +236,7 @@ fun AppearanceScreen(settingsViewModel: SettingsViewModel = viewModel()) {
                 .padding(top = statusBarHeight, start = 12.dp)
                 .size(48.dp)
                 .align(Alignment.TopStart),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = onSurfaceContainer,
-                contentColor = AppColors.primary
-            )
+            colors = AppButtonColors.action()
         ) {
             Icon(
                 painter = painterResource(id = R.drawable.ic_forward_nav),

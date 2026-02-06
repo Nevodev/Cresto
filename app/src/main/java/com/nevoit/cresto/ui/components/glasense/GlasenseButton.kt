@@ -16,6 +16,7 @@ import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -32,6 +33,14 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.kyant.capsule.ContinuousCapsule
 
+@Immutable
+data class GlasenseButtonColors(
+    val containerColor: Color,
+    val contentColor: Color,
+    val disabledContainerColor: Color,
+    val disabledContentColor: Color,
+)
+
 /**
  * A custom button with press animations.
  *
@@ -45,11 +54,11 @@ import com.kyant.capsule.ContinuousCapsule
  */
 @Composable
 fun GlasenseButton(
+    modifier: Modifier = Modifier,
     enabled: Boolean = true,
     shape: Shape = ContinuousCapsule,
     onClick: () -> Unit,
-    modifier: Modifier,
-    colors: ButtonColors,
+    colors: GlasenseButtonColors,
     animated: Boolean = true,
     content: @Composable () -> Unit,
 ) {
@@ -68,8 +77,7 @@ fun GlasenseButton(
         animationSpec = spring(0.5f, 300f, 0.001f)
     )
     Box(
-        modifier = Modifier
-            .then(modifier)
+        modifier = modifier
             // Apply scale animation for press effect.
             .then(
                 if (animated) Modifier.graphicsLayer {
@@ -125,11 +133,11 @@ fun GlasenseButton(
  */
 @Composable
 fun GlasenseButtonAlt(
+    modifier: Modifier = Modifier,
     enabled: Boolean = true,
     shape: Shape = ContinuousCapsule,
     onClick: () -> Unit,
-    modifier: Modifier,
-    colors: ButtonColors,
+    colors: GlasenseButtonColors,
     indication: Boolean = true,
     content: @Composable () -> Unit,
 ) {
@@ -175,6 +183,7 @@ fun GlasenseButtonAlt(
  */
 @Composable
 fun GlasenseButtonAdaptable(
+    modifier: Modifier,
     width: () -> Dp,
     height: () -> Dp,
     padding: PaddingValues,
@@ -182,7 +191,6 @@ fun GlasenseButtonAdaptable(
     enabled: Boolean = true,
     shape: Shape = ContinuousCapsule,
     onClick: () -> Unit,
-    modifier: Modifier,
     colors: ButtonColors,
     animated: Boolean = true,
     content: @Composable () -> Unit,
@@ -241,6 +249,42 @@ fun GlasenseButtonAdaptable(
                     Modifier
                 }
             ),
+        contentAlignment = Alignment.Center
+    ) {
+        CompositionLocalProvider(LocalContentColor provides contentColor) {
+            content()
+        }
+    }
+}
+
+@Composable
+fun GlasenseButtonCompact(
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    shape: Shape = ContinuousCapsule,
+    onClick: () -> Unit,
+    colors: GlasenseButtonColors,
+    indication: Boolean = true,
+    padding: PaddingValues = PaddingValues(vertical = 8.dp, horizontal = 16.dp),
+    content: @Composable () -> Unit
+) {
+    val contentColor = if (enabled) colors.contentColor else colors.disabledContentColor
+    val backgroundColor = if (enabled) colors.containerColor else colors.disabledContainerColor
+    val interactionSource = remember { MutableInteractionSource() }
+
+    Box(
+        modifier = modifier
+            // Handle click events.
+            .clip(shape)
+            .background(color = backgroundColor, shape = shape)
+            .clickable(
+                interactionSource = interactionSource,
+                onClick = { onClick() },
+                indication = if (indication) DimIndication() else null,
+                enabled = enabled,
+                role = Role.Button
+            )
+            .padding(padding),
         contentAlignment = Alignment.Center
     ) {
         CompositionLocalProvider(LocalContentColor provides contentColor) {

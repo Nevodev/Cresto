@@ -28,7 +28,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -527,10 +526,7 @@ fun DetailScreen(
                 .padding(top = statusBarHeight, start = 12.dp)
                 .size(48.dp)
                 .align(Alignment.TopStart),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = onSurfaceContainer,
-                contentColor = AppColors.primary
-            )
+            colors = AppButtonColors.action()
         ) {
             Icon(
                 painter = painterResource(id = R.drawable.ic_forward_nav),
@@ -597,10 +593,7 @@ fun DetailScreen(
                     },
                     modifier = Modifier
                         .size(48.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = onSurfaceContainer,
-                        contentColor = AppColors.primary
-                    )
+                    colors = AppButtonColors.action()
                 ) {
                     Icon(
                         painter = painterResource(id = R.drawable.ic_trash),

@@ -13,10 +13,9 @@ sealed interface ActivityPayload
 @Serializable
 @SerialName("food_pickup")
 data class FoodPickupPayload(
-    val platform: String,
     val storeName: String,
     val pickupCode: String,
-    val state: String = "PENDING"
+    val foodName: String
 ) : ActivityPayload
 
 @Serializable

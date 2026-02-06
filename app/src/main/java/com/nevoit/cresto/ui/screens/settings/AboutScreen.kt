@@ -23,7 +23,6 @@ import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -58,6 +57,7 @@ import com.nevoit.cresto.ui.components.glasense.extend.overscrollSpacer
 import com.nevoit.cresto.ui.components.glasense.isScrolledPast
 import com.nevoit.cresto.ui.components.packed.ConfigItemContainer
 import com.nevoit.cresto.ui.components.packed.PageContent
+import com.nevoit.cresto.ui.theme.glasense.AppButtonColors
 import com.nevoit.cresto.ui.theme.glasense.AppColors
 import com.nevoit.cresto.ui.theme.glasense.AppSpecs
 import com.nevoit.cresto.ui.theme.glasense.isAppInDarkTheme
@@ -466,10 +466,7 @@ fun AboutScreen() {
                 .padding(top = statusBarHeight, start = 12.dp)
                 .size(48.dp)
                 .align(Alignment.TopStart),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = onSurfaceContainer,
-                contentColor = AppColors.primary
-            )
+            colors = AppButtonColors.action()
         ) {
             Icon(
                 painter = painterResource(id = R.drawable.ic_forward_nav),

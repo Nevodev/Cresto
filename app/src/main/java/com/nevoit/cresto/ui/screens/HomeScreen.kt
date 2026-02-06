@@ -86,9 +86,12 @@ import com.nevoit.cresto.ui.components.glasense.MenuItemData
 import com.nevoit.cresto.ui.components.glasense.extend.overscrollSpacer
 import com.nevoit.cresto.ui.components.glasense.isScrolledPast
 import com.nevoit.cresto.ui.components.glasense.rememberSwipeableListState
+import com.nevoit.cresto.ui.components.packed.LiveActivityItem
 import com.nevoit.cresto.ui.components.packed.PageContent
 import com.nevoit.cresto.ui.components.packed.SwipeableTodoItem
+import com.nevoit.cresto.ui.components.packed.VGap
 import com.nevoit.cresto.ui.screens.detailscreen.DetailActivity
+import com.nevoit.cresto.ui.theme.glasense.AppButtonColors
 import com.nevoit.cresto.ui.theme.glasense.AppColors
 import com.nevoit.cresto.ui.theme.glasense.AppSpecs
 import dev.chrisbanes.haze.ExperimentalHazeApi
@@ -267,7 +270,7 @@ fun BoxScope.HomeScreen(
     val selectionOutline = AppColors.primary
     val cardCorner = AppSpecs.cardCorner
 
-    val laViewModel = liveActivityViewModel
+    val liveActivities by liveActivityViewModel.activities.collectAsStateWithLifecycle()
 
     PageContent(
         state = lazyListState,
@@ -280,6 +283,17 @@ fun BoxScope.HomeScreen(
                 title = stringResource(R.string.all_todos)
             )
         }
+
+        items(
+            items = liveActivities,
+            key = { it.id }
+        ) { item ->
+            LiveActivityItem(
+                entity = item,
+                onDone = { liveActivityViewModel.deleteActivity(item.id) })
+            VGap()
+        }
+
         items(
             items = incompleteTodos,
             key = { it.todoItem.id },
@@ -557,10 +571,7 @@ fun BoxScope.HomeScreen(
                     }
                     .padding(top = statusBarHeight, start = 12.dp)
                     .align(Alignment.TopStart),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = onSurfaceContainer,
-                    contentColor = AppColors.primary
-                )
+                colors = AppButtonColors.action()
             ) {
                 Row(
                     modifier = Modifier
@@ -631,10 +642,7 @@ fun BoxScope.HomeScreen(
                     .padding(top = statusBarHeight, end = 12.dp)
                     .size(48.dp)
                     .align(Alignment.TopEnd),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = onSurfaceContainer,
-                    contentColor = AppColors.primary
-                )
+                colors = AppButtonColors.action()
             ) {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_add_large),
