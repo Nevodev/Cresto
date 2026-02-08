@@ -14,16 +14,17 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.exclude
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.isImeVisible
 import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
@@ -120,7 +121,7 @@ fun BottomSheet(
     // Coroutine scope for launching animations.
     val scope = rememberCoroutineScope()
 
-    var navigationBarHeight by remember { mutableIntStateOf(0) }
+    val density = LocalDensity.current
 
     val keyboardController = LocalSoftwareKeyboardController.current
 
@@ -143,7 +144,6 @@ fun BottomSheet(
     val backdrop = rememberLayerBackdrop {
         drawContent()
     }
-    val density = LocalDensity.current
     val state = rememberTextFieldState()
     val viewModel: TodoViewModel = koinViewModel()
 
@@ -159,6 +159,8 @@ fun BottomSheet(
     val apikey = ApiKey
 
     val errorTitle = stringResource(R.string.error)
+
+    val imeHeight = WindowInsets.ime.exclude(WindowInsets.navigationBars).getBottom(density)
 
     LaunchedEffect(true) {
         aiViewModel.sideEffect.collect { effect ->
@@ -187,7 +189,7 @@ fun BottomSheet(
             isVisible = true
             scope.launch {
                 // Snap to the initial off-screen position.
-                offset.snapTo(targetValue = (columnHeightPx + navigationBarHeight).toFloat())
+                offset.snapTo(targetValue = columnHeightPx.toFloat())
                 // Animate to the on-screen position.
                 offset.animateTo(
                     targetValue = 0f,
@@ -219,7 +221,7 @@ fun BottomSheet(
                 )
             }
             offset.animateTo(
-                targetValue = (columnHeightPx + navigationBarHeight).toFloat(),
+                targetValue = columnHeightPx.toFloat(),
                 animationSpec = tween(
                     durationMillis = 200,
                     easing = FastOutSlowInEasing
@@ -260,7 +262,7 @@ fun BottomSheet(
                                         aiViewModel.clearState()
                                     }
                                     offset.animateTo(
-                                        targetValue = (columnHeightPx + navigationBarHeight).toFloat(),
+                                        targetValue = columnHeightPx.toFloat(),
                                         animationSpec = tween(
                                             durationMillis = 200,
                                             delayMillis = if (isImeVisible) 100 else 0,
@@ -290,7 +292,7 @@ fun BottomSheet(
                 .align(alignment = Alignment.BottomCenter)
                 // Apply the vertical offset animation.
                 .graphicsLayer {
-                    translationY = offset.value
+                    translationY = offset.value - imeHeight
                 }
         ) {
             Box(
@@ -535,6 +537,7 @@ fun BottomSheet(
                         ),
                         color = MaterialTheme.colorScheme.surface
                     )
+                    .navigationBarsPadding()
                     .fillMaxWidth()
             ) {
                 // The actual sheet content.
@@ -551,7 +554,7 @@ fun BottomSheet(
                             aiViewModel.clearState()
                         }
                         offset.animateTo(
-                            targetValue = (columnHeightPx + navigationBarHeight).toFloat(),
+                            targetValue = columnHeightPx.toFloat(),
                             animationSpec = tween(
                                 durationMillis = 200,
                                 delayMillis = if (isImeVisible) 100 else 0, // If the keyboard is visible, animating the bottom sheet too quick can feel jarring and unsmooth.
@@ -575,7 +578,7 @@ fun BottomSheet(
                             aiViewModel.clearState()
                         }
                         offset.animateTo(
-                            targetValue = (columnHeightPx + navigationBarHeight).toFloat(),
+                            targetValue = columnHeightPx.toFloat(),
                             animationSpec = tween(
                                 durationMillis = 200,
                                 delayMillis = if (isImeVisible) 100 else 0,
@@ -586,18 +589,6 @@ fun BottomSheet(
                     }
                 })
             }
-            // Spacer to account for navigation bar and IME padding.
-            Box(
-                modifier = Modifier
-                    .onSizeChanged { size ->
-                        // Measure the height of the navigation bar area.
-                        navigationBarHeight = size.height
-                    }
-                    .background(color = MaterialTheme.colorScheme.surface)
-                    .windowInsetsPadding(WindowInsets.navigationBars)
-                    .imePadding()
-                    .fillMaxWidth()
-            )
         }
     }
 }
