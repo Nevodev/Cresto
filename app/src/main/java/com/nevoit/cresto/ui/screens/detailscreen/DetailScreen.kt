@@ -57,7 +57,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.kyant.backdrop.backdrops.layerBackdrop
 import com.kyant.backdrop.backdrops.rememberLayerBackdrop
-import com.kyant.capsule.ContinuousCapsule
+import com.kyant.shapes.Capsule
 import com.nevoit.cresto.R
 import com.nevoit.cresto.data.todo.EXTRA_DELETE_ID
 import com.nevoit.cresto.data.todo.SubTodoItem
@@ -321,7 +321,7 @@ fun DetailScreen(
                                 // Due date button.
                                 GlasenseButtonAlt(
                                     enabled = true,
-                                    shape = ContinuousCapsule,
+                                    shape = Capsule(),
                                     onClick = {
                                         selectedButton =
                                             if (selectedButton == SelectedButton.DUE_DATE) {
@@ -378,7 +378,7 @@ fun DetailScreen(
                                 // Flag button.
                                 GlasenseButtonAlt(
                                     enabled = true,
-                                    shape = ContinuousCapsule,
+                                    shape = Capsule(),
                                     onClick = {
                                         selectedButton =
                                             if (selectedButton == SelectedButton.FLAG) {

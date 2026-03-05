@@ -3,7 +3,6 @@ package com.nevoit.cresto.ui.components.packed
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
@@ -55,7 +54,6 @@ fun ConfigItemContainer(
             // Inner box with padding for the content.
             Box(
                 modifier = Modifier
-                    .fillMaxSize()
                     .padding(horizontal = 16.dp, vertical = 8.dp)
             ) {
                 content()

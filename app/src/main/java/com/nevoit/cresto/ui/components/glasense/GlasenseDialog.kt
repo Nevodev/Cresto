@@ -42,6 +42,7 @@ import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.nativeCanvas
+import androidx.compose.ui.graphics.nativePaint
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
@@ -150,7 +151,7 @@ fun GlasenseDialog(
     val shadowDyPx = with(LocalDensity.current) { 16.dp.toPx() }
 
     val shadowPaint = remember {
-        Paint().asFrameworkPaint().apply {
+        Paint().nativePaint.apply {
             isAntiAlias = true
             maskFilter = BlurMaskFilter(shadowRadiusPx, BlurMaskFilter.Blur.NORMAL)
         }

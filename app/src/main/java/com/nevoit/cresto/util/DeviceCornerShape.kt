@@ -7,8 +7,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.kyant.capsule.AbsoluteContinuousRoundedRectangle
-import com.kyant.capsule.concentricInset
+import com.kyant.shapes.UnevenRoundedRectangle
 
 /**
  * Creates a shape that mirrors the device's physical screen corners.
@@ -18,7 +17,7 @@ import com.kyant.capsule.concentricInset
  * @param topRight Whether to round the top-right corner.
  * @param bottomRight Whether to round the bottom-right corner.
  * @param bottomLeft Whether to round the bottom-left corner.
- * @return An [AbsoluteContinuousRoundedRectangle] that can be used as a shape in Composables.
+ * @return An [UnevenRoundedRectangle] that can be used as a shape in Composables.
  */
 @Composable
 fun deviceCornerShape(
@@ -27,7 +26,7 @@ fun deviceCornerShape(
     topRight: Boolean = true,
     bottomRight: Boolean = true,
     bottomLeft: Boolean = true
-): AbsoluteContinuousRoundedRectangle {
+): UnevenRoundedRectangle {
     val view = LocalView.current
 
     val density = LocalDensity.current
@@ -36,14 +35,15 @@ fun deviceCornerShape(
         1.dp.toPx()
     }
 
-    fun getCornerRadius(position: Int, status: Boolean): Float {
+    fun getCornerRadius(position: Int, status: Boolean): Dp {
         val insets = view.rootWindowInsets
         return if (!status) {
-            0f
+            0f.dp
         } else {
-            val radius = insets.getRoundedCorner(position)?.radius?.toFloat()
+            val radius =
+                with(density) { insets.getRoundedCorner(position)?.radius?.toFloat()?.toDp() }
             // Provide a default radius if the system doesn't report one or it's too small.
-            if (radius == null || radius <= 16 * dp) 16 * dp else radius
+            if (radius == null || radius <= 16f.dp) 16f.dp else radius
         }
     }
 
@@ -55,11 +55,11 @@ fun deviceCornerShape(
         val bottomLeftRadius = getCornerRadius(RoundedCorner.POSITION_BOTTOM_LEFT, bottomLeft)
 
         // Create the shape with the determined corner radii.
-        AbsoluteContinuousRoundedRectangle(
-            topLeft = topLeftRadius,
-            topRight = topRightRadius,
-            bottomRight = bottomRightRadius,
-            bottomLeft = bottomLeftRadius
-        ).concentricInset(padding) // Apply padding to the shape.
+        UnevenRoundedRectangle(
+            topStart = topLeftRadius - padding,
+            topEnd = topRightRadius - padding,
+            bottomEnd = bottomRightRadius - padding,
+            bottomStart = bottomLeftRadius - padding
+        )// Apply padding to the shape.
     }
 }

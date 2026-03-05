@@ -18,7 +18,7 @@ import androidx.compose.ui.platform.InspectorInfo
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
-import com.kyant.capsule.ContinuousRoundedRectangle
+import com.kyant.shapes.RoundedRectangle
 
 fun Modifier.glasenseHighlight(
     cornerRadius: Dp,
@@ -55,7 +55,7 @@ private class GlasenseHighlightNode(
         1.0f to Color.White.copy(alpha = 0.02f)
     )
 
-    private var shape = ContinuousRoundedRectangle(cornerRadius)
+    private var shape = RoundedRectangle(cornerRadius)
 
     private var cachedOutline: Outline? = null
 
@@ -69,7 +69,7 @@ private class GlasenseHighlightNode(
 
         if (cornerRadius != newCornerRadius) {
             cornerRadius = newCornerRadius
-            shape = ContinuousRoundedRectangle(newCornerRadius)
+            shape = RoundedRectangle(newCornerRadius)
             cachedOutline = null
             cachedClipPath = null
             needsInvalidate = true

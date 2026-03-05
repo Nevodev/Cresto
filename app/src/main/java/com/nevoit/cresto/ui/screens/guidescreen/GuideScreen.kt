@@ -59,6 +59,7 @@ import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.drawOutline
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.nativePaint
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -70,7 +71,7 @@ import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import com.kyant.backdrop.drawBackdrop
 import com.kyant.backdrop.highlight.Highlight
 import com.kyant.backdrop.highlight.HighlightStyle
-import com.kyant.capsule.ContinuousRoundedRectangle
+import com.kyant.shapes.RoundedRectangle
 import com.nevoit.cresto.R
 import com.nevoit.cresto.toolkit.gradientmapping.GradientMappedImage
 import com.nevoit.cresto.ui.components.CustomAnimatedVisibility
@@ -223,7 +224,7 @@ fun WelcomePage() {
                 Paint().apply {
                     color = Color.Gray.copy(.8f)
                     blendMode = BlendMode.ColorDodge
-                    asFrameworkPaint().maskFilter = BlurMaskFilter(
+                    nativePaint.maskFilter = BlurMaskFilter(
                         highlightBlurRadius,
                         BlurMaskFilter.Blur.NORMAL
                     )
@@ -272,7 +273,7 @@ fun WelcomePage() {
                 Paint().apply {
                     color = Color.Black
                     blendMode = BlendMode.DstOut
-                    asFrameworkPaint().apply {
+                    nativePaint.apply {
                         maskFilter = BlurMaskFilter(revealBlurRadius, BlurMaskFilter.Blur.NORMAL)
                     }
                 }
@@ -294,7 +295,7 @@ fun WelcomePage() {
                 Paint().apply {
                     blendMode = BlendMode.DstOut
                     color = Color.Red
-                    asFrameworkPaint().maskFilter =
+                    nativePaint.maskFilter =
                         BlurMaskFilter(innerRadius, BlurMaskFilter.Blur.INNER)
                 }
             }
@@ -302,7 +303,7 @@ fun WelcomePage() {
                 Paint().apply {
                     blendMode = BlendMode.DstOut
                     color = Color.Red
-                    asFrameworkPaint().maskFilter =
+                    nativePaint.maskFilter =
                         BlurMaskFilter(innerRadius2, BlurMaskFilter.Blur.INNER)
                 }
             }
@@ -348,7 +349,7 @@ fun WelcomePage() {
             Box(
                 modifier = Modifier
                     .size(96.dp)
-                    .clip(ContinuousRoundedRectangle(24.dp))
+                    .clip(RoundedRectangle(24.dp))
             ) {
                 val backdrop = rememberLayerBackdrop()
                 GradientMappedImage(
@@ -360,7 +361,7 @@ fun WelcomePage() {
                             this.alpha = colorLightAlpha.value
                         }
                         .drawWithContent() {
-                            val outline = ContinuousRoundedRectangle(24.dp).createOutline(
+                            val outline = RoundedRectangle(24.dp).createOutline(
                                 size = size,
                                 layoutDirection,
                                 density
@@ -393,7 +394,7 @@ fun WelcomePage() {
                     modifier = Modifier
                         .fillMaxSize()
                         .drawWithContent() {
-                            val outline = ContinuousRoundedRectangle(24.dp).createOutline(
+                            val outline = RoundedRectangle(24.dp).createOutline(
                                 size = size,
                                 layoutDirection,
                                 density
@@ -474,7 +475,7 @@ fun WelcomePage() {
                         .fillMaxSize()
                         .drawBackdrop(
                             backdrop = backdrop,
-                            shape = { ContinuousRoundedRectangle(24.dp) },
+                            shape = { RoundedRectangle(24.dp) },
                             effects = {},
                             highlight = {
                                 Highlight.Default.copy(

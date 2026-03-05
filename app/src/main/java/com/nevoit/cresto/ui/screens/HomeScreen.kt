@@ -70,8 +70,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.kyant.capsule.ContinuousCapsule
-import com.kyant.capsule.ContinuousRoundedRectangle
+import com.kyant.shapes.Capsule
+import com.kyant.shapes.RoundedRectangle
 import com.nevoit.cresto.R
 import com.nevoit.cresto.data.todo.EXTRA_TODO_ID
 import com.nevoit.cresto.data.todo.TodoViewModel
@@ -518,7 +518,7 @@ fun BoxScope.HomeScreen(
                     modifier = Modifier.drawBehind {
                         if (isComposed) {
                             val outline =
-                                ContinuousRoundedRectangle(cardCorner - 3.dp / 2).createOutline(
+                                RoundedRectangle(cardCorner - 3.dp / 2).createOutline(
                                     size = Size(
                                         this.size.width - 3.dp.toPx(),
                                         this.size.height - 3.dp.toPx()
@@ -657,7 +657,7 @@ fun BoxScope.HomeScreen(
                             modifier = Modifier.drawBehind {
                                 if (isComposed) {
                                     val outline =
-                                        ContinuousRoundedRectangle(cardCorner - 3.dp / 2).createOutline(
+                                        RoundedRectangle(cardCorner - 3.dp / 2).createOutline(
                                             size = Size(
                                                 this.size.width - 3.dp.toPx(),
                                                 this.size.height - 3.dp.toPx()
@@ -714,7 +714,7 @@ fun BoxScope.HomeScreen(
         if (!isGone) {
             GlasenseButton(
                 enabled = true,
-                shape = ContinuousCapsule,
+                shape = Capsule(),
                 onClick = {},
                 modifier = Modifier
                     .graphicsLayer {
@@ -820,7 +820,7 @@ fun BoxScope.HomeScreen(
             padding = PaddingValues(top = statusBarHeight, start = 12.dp),
             tint = AppColors.error,
             enabled = true,
-            shape = ContinuousCapsule,
+            shape = Capsule(),
             onClick = {
                 showDialog(
                     dialogItems,

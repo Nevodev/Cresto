@@ -48,7 +48,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.kyant.capsule.ContinuousCapsule
+import com.kyant.shapes.Capsule
 import com.nevoit.cresto.R
 import com.nevoit.cresto.ui.components.glasense.GlasenseButton
 import com.nevoit.cresto.ui.components.glasense.GlasenseDynamicSmallTitle
@@ -89,8 +89,6 @@ fun AboutScreen() {
     // Remember the state for the Haze effect, a library for blurring content behind a surface
     val hazeState = rememberHazeState()
 
-    // Get colors from the app's custom theme
-    val onSurfaceContainer = AppColors.scrimNormal
     val onBackground = AppColors.content
     val surfaceColor = AppColors.pageBackground
     val hierarchicalSurfaceColor = AppColors.cardBackground
@@ -218,7 +216,7 @@ fun AboutScreen() {
                                             .padding(end = 4.dp)
                                             .background(
                                                 AppColors.content.copy(.1f),
-                                                ContinuousCapsule
+                                                Capsule()
                                             )
                                     ) {
                                         Text(
@@ -235,7 +233,7 @@ fun AboutScreen() {
                                         modifier = Modifier
                                             .background(
                                                 AppColors.content.copy(.1f),
-                                                ContinuousCapsule
+                                                Capsule()
                                             )
                                     ) {
                                         Text(
@@ -265,11 +263,7 @@ fun AboutScreen() {
                         }
                         Spacer(modifier = Modifier.height(8.dp))
                         // Visual divider line
-                        ZeroHeightDivider(
-                            color = onBackground.copy(.1f), width = 1.dp,
-                            modifier = Modifier,
-                            blendMode = BlendMode.SrcOver
-                        )
+                        ZeroHeightDivider()
                         Spacer(modifier = Modifier.height(8.dp))
                         // Row for the overscroll animation developer's information
                         Row(
@@ -314,7 +308,7 @@ fun AboutScreen() {
                                             .padding(end = 6.dp)
                                             .background(
                                                 AppColors.content.copy(.1f),
-                                                ContinuousCapsule
+                                                Capsule()
                                             )
                                     ) {
                                         Text(

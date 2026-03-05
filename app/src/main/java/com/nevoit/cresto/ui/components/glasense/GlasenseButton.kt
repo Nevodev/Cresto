@@ -31,7 +31,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.kyant.capsule.ContinuousCapsule
+import com.kyant.shapes.Capsule
 
 @Immutable
 data class GlasenseButtonColors(
@@ -56,7 +56,7 @@ data class GlasenseButtonColors(
 fun GlasenseButton(
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
-    shape: Shape = ContinuousCapsule,
+    shape: Shape = Capsule(),
     onClick: () -> Unit,
     colors: GlasenseButtonColors,
     animated: Boolean = true,
@@ -135,7 +135,7 @@ fun GlasenseButton(
 fun GlasenseButtonAlt(
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
-    shape: Shape = ContinuousCapsule,
+    shape: Shape = Capsule(),
     onClick: () -> Unit,
     colors: GlasenseButtonColors,
     indication: Boolean = true,
@@ -189,7 +189,7 @@ fun GlasenseButtonAdaptable(
     padding: PaddingValues,
     tint: Color? = null,
     enabled: Boolean = true,
-    shape: Shape = ContinuousCapsule,
+    shape: Shape = Capsule(),
     onClick: () -> Unit,
     colors: ButtonColors,
     animated: Boolean = true,
@@ -261,7 +261,7 @@ fun GlasenseButtonAdaptable(
 fun GlasenseButtonCompact(
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
-    shape: Shape = ContinuousCapsule,
+    shape: Shape = Capsule(),
     onClick: () -> Unit,
     colors: GlasenseButtonColors,
     indication: Boolean = true,

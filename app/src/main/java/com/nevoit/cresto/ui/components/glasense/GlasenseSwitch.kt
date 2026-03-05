@@ -50,7 +50,7 @@ import com.kyant.backdrop.effects.lens
 import com.kyant.backdrop.highlight.Highlight
 import com.kyant.backdrop.shadow.InnerShadow
 import com.kyant.backdrop.shadow.Shadow
-import com.kyant.capsule.ContinuousCapsule
+import com.kyant.shapes.Capsule
 import com.nevoit.cresto.ui.theme.glasense.AppColors
 import com.nevoit.cresto.ui.theme.glasense.GlasenseColors
 import com.nevoit.cresto.ui.theme.glasense.LocalGlasenseSettings
@@ -194,7 +194,7 @@ private fun DrawScope.drawTrack(
 ) {
     drawContext.canvas.nativeCanvas.apply {
         val size = Size(width, height)
-        val outline = ContinuousCapsule.createOutline(
+        val outline = Capsule().createOutline(
             size = size,
             layoutDirection = LayoutDirection.Ltr,
             density = density

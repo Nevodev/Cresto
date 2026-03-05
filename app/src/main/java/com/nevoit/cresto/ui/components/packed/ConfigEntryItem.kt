@@ -48,7 +48,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.kyant.capsule.ContinuousRoundedRectangle
+import com.kyant.shapes.RoundedRectangle
 import com.nevoit.cresto.R
 import com.nevoit.cresto.ui.theme.glasense.AppColors
 import kotlinx.coroutines.delay
@@ -253,14 +253,14 @@ fun AboutEntryItem(
         Box(
             modifier = Modifier
                 .size(48.dp)
-                .clip(ContinuousRoundedRectangle(12.dp))
+                .clip(RoundedRectangle(12.dp))
         ) {
             val density = LocalDensity.current
             Image(
                 painter = icon,
                 contentDescription = stringResource(R.string.app_icon),
                 modifier = Modifier.drawWithContent {
-                    val outline = ContinuousRoundedRectangle(12.dp).createOutline(
+                    val outline = RoundedRectangle(12.dp).createOutline(
                         size = size,
                         layoutDirection,
                         density

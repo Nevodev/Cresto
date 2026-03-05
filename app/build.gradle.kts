@@ -112,7 +112,7 @@ dependencies {
     implementation(libs.generativeai)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.mmkv)
-    implementation(libs.capsule)
+    implementation(libs.shapes)
     implementation(libs.backdrop)
 
     implementation(platform(libs.koin.bom))

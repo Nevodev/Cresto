@@ -4,39 +4,64 @@ package com.nevoit.cresto.ui.screens.settings
 // Import necessary libraries and components
 import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.draw.dropShadow
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.shadow.Shadow
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.kyant.shapes.RoundedRectangle
+import com.kyant.shapes.UnevenRoundedRectangle
 import com.nevoit.cresto.R
+import com.nevoit.cresto.ui.components.glasense.DimIndication
 import com.nevoit.cresto.ui.components.glasense.GlasenseButton
 import com.nevoit.cresto.ui.components.glasense.GlasenseDynamicSmallTitle
 import com.nevoit.cresto.ui.components.glasense.GlasenseSwitch
+import com.nevoit.cresto.ui.components.glasense.ZeroHeightDivider
 import com.nevoit.cresto.ui.components.glasense.extend.overscrollSpacer
 import com.nevoit.cresto.ui.components.glasense.isScrolledPast
 import com.nevoit.cresto.ui.components.packed.ColorModeSelector
@@ -44,11 +69,30 @@ import com.nevoit.cresto.ui.components.packed.ConfigInfoHeader
 import com.nevoit.cresto.ui.components.packed.ConfigItem
 import com.nevoit.cresto.ui.components.packed.ConfigItemContainer
 import com.nevoit.cresto.ui.components.packed.PageContent
+import com.nevoit.cresto.ui.components.packed.VGap
 import com.nevoit.cresto.ui.screens.settings.util.SettingsViewModel
+import com.nevoit.cresto.ui.theme.glasense.Amber500
 import com.nevoit.cresto.ui.theme.glasense.AppButtonColors
 import com.nevoit.cresto.ui.theme.glasense.AppColors
+import com.nevoit.cresto.ui.theme.glasense.AppSpecs
 import com.nevoit.cresto.ui.theme.glasense.Blue500
+import com.nevoit.cresto.ui.theme.glasense.Cyan500
+import com.nevoit.cresto.ui.theme.glasense.Emerald500
+import com.nevoit.cresto.ui.theme.glasense.Fuchsia500
+import com.nevoit.cresto.ui.theme.glasense.Green500
+import com.nevoit.cresto.ui.theme.glasense.Indigo500
+import com.nevoit.cresto.ui.theme.glasense.Lime500
 import com.nevoit.cresto.ui.theme.glasense.LocalGlasenseSettings
+import com.nevoit.cresto.ui.theme.glasense.Orange500
+import com.nevoit.cresto.ui.theme.glasense.Pink500
+import com.nevoit.cresto.ui.theme.glasense.Purple500
+import com.nevoit.cresto.ui.theme.glasense.Red500
+import com.nevoit.cresto.ui.theme.glasense.Rose500
+import com.nevoit.cresto.ui.theme.glasense.Sky500
+import com.nevoit.cresto.ui.theme.glasense.Teal500
+import com.nevoit.cresto.ui.theme.glasense.Violet500
+import com.nevoit.cresto.ui.theme.glasense.Yellow500
+import com.nevoit.cresto.ui.theme.glasense.isAppInDarkTheme
 import dev.chrisbanes.haze.ExperimentalHazeApi
 import dev.chrisbanes.haze.hazeSource
 import dev.chrisbanes.haze.rememberHazeState
@@ -135,12 +179,32 @@ fun AppearanceScreen(settingsViewModel: SettingsViewModel = viewModel()) {
             }
             // Item container for color-related settings
             item {
+                val scrim = AppColors.scrimMedium
+                val stroke = with(density) { 2.dp.toPx() }
+                val primary = AppColors.primary
+
                 ConfigItemContainer(
                     title = stringResource(R.string.color),
                     backgroundColor = hierarchicalSurfaceColor
                 ) {
                     Column {
                         ConfigItem(title = stringResource(R.string.custom_primary_color)) {
+                            Box(
+                                modifier = Modifier
+                                    .size(28.dp)
+                                    .drawBehind {
+                                        drawCircle(
+                                            color = scrim,
+                                            style = Stroke(width = stroke),
+                                            radius = (size.minDimension - stroke) / 2
+                                        )
+                                        drawCircle(
+                                            color = primary,
+                                            radius = (size.minDimension - stroke * 4) / 2
+                                        )
+                                    }
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
                             GlasenseSwitch(
                                 backgroundColor = AppColors.cardBackground,
                                 checked = isCustomPrimaryColor,
@@ -148,18 +212,7 @@ fun AppearanceScreen(settingsViewModel: SettingsViewModel = viewModel()) {
                         }
                         Spacer(modifier = Modifier.height(8.dp))
                         // Visual divider line
-                        Spacer(
-                            modifier = Modifier
-                                .drawBehind {
-                                    drawLine(
-                                        color = onBackground.copy(.1f),
-                                        start = Offset(x = 0f, y = 0f),
-                                        end = Offset(this.size.width, y = 0f),
-                                        strokeWidth = dp
-                                    )
-                                }
-                                .fillMaxWidth()
-                                .height(0.dp))
+                        ZeroHeightDivider()
                         Spacer(modifier = Modifier.height(8.dp))
                         ConfigItem(title = stringResource(R.string.use_dynamic_color_scheme)) {
                             GlasenseSwitch(
@@ -186,18 +239,7 @@ fun AppearanceScreen(settingsViewModel: SettingsViewModel = viewModel()) {
                         }
                         Spacer(modifier = Modifier.height(8.dp))
                         // Visual divider line
-                        Spacer(
-                            modifier = Modifier
-                                .drawBehind {
-                                    drawLine(
-                                        color = onBackground.copy(.1f),
-                                        start = Offset(x = 0f, y = 0f),
-                                        end = Offset(this.size.width, y = 0f),
-                                        strokeWidth = dp
-                                    )
-                                }
-                                .fillMaxWidth()
-                                .height(0.dp))
+                        ZeroHeightDivider()
                         Spacer(modifier = Modifier.height(8.dp))
                         ConfigItem(title = stringResource(R.string.liquid_glass)) {
                             CompositionLocalProvider(
@@ -243,6 +285,158 @@ fun AppearanceScreen(settingsViewModel: SettingsViewModel = viewModel()) {
                 contentDescription = stringResource(R.string.back),
                 modifier = Modifier.width(32.dp)
             )
+        }
+
+        val shadowBaseColor =
+            if (isAppInDarkTheme()) Color.Black.copy(alpha = 0.2f) else Color.Black.copy(alpha = 0.1f)
+
+        Column(
+            modifier = Modifier
+                .statusBarsPadding()
+                .padding(horizontal = 12.dp)
+                .dropShadow(
+                    shape = AppSpecs.dialogShape,
+                    shadow = Shadow(
+                        radius = 32.dp,
+                        offset = DpOffset(0.dp, 16.dp),
+                        color = shadowBaseColor
+                    )
+                )
+                .background(color = AppColors.pageBackground, shape = AppSpecs.dialogShape)
+                .padding(12.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                GlasenseButton(
+                    enabled = true,
+                    shape = CircleShape,
+                    onClick = { },
+                    modifier = Modifier
+                        .width(48.dp)
+                        .height(48.dp),
+                    colors = AppButtonColors.secondary(),
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_cross),
+                        contentDescription = stringResource(R.string.cancel),
+                        modifier = Modifier.width(28.dp)
+                    )
+                }
+                Text(
+                    text = stringResource(R.string.custom_primary_color),
+                    modifier = Modifier.weight(1f),
+                    textAlign = TextAlign.Center,
+                    style = MaterialTheme.typography.headlineSmall
+                )
+                GlasenseButton(
+                    enabled = true,
+                    shape = CircleShape,
+                    onClick = {},
+                    modifier = Modifier
+                        .width(48.dp)
+                        .height(48.dp),
+                    colors = AppButtonColors.primary()
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize(), contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_checkmark),
+                            contentDescription = stringResource(R.string.done),
+                            modifier = Modifier.width(28.dp)
+                        )
+                    }
+                }
+            }
+            VGap()
+            Text(
+                text = "颜色",
+                fontSize = 14.sp,
+                lineHeight = 14.sp,
+                color = AppColors.contentVariant,
+                modifier = Modifier
+                    .padding(
+                        start = 12.dp,
+                        top = 0.dp,
+                        end = 12.dp,
+                        bottom = 12.dp
+                    )
+                    .fillMaxWidth()
+            )
+            val colorList = remember {
+                listOf(
+                    Rose500, Red500, Orange500, Amber500,
+                    Yellow500, Lime500, Green500, Emerald500,
+                    Teal500, Cyan500, Sky500, Blue500,
+                    Indigo500, Violet500, Purple500, Fuchsia500,
+                    Pink500,
+                )
+            }
+
+            LazyVerticalGrid(
+                columns = GridCells.Adaptive(minSize = 32.dp),
+                contentPadding = PaddingValues(0.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                items(colorList) { color ->
+                    Box(
+                        modifier = Modifier
+                            .aspectRatio(1f)
+                            .background(color = color, shape = CircleShape)
+                    )
+                }
+            }
+            VGap()
+            ConfigItemContainer(title = "调整", backgroundColor = AppColors.cardBackground) {
+                ConfigItem(title = "亮度增益") {
+                    Row(modifier = Modifier.height(32.dp)) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxHeight()
+                                .width(32.dp)
+                                .clip(shape = UnevenRoundedRectangle(16.dp, 4.dp, 4.dp, 16.dp))
+                                .background(color = AppColors.inactiveTrack)
+                                .clickable(
+                                    interactionSource = remember { MutableInteractionSource() },
+                                    indication = DimIndication(),
+                                    onClick = {}),
+                            contentAlignment = Alignment.Center
+                        ) {
+
+                        }
+                        Box(
+                            modifier = Modifier
+                                .padding(horizontal = 4.dp)
+                                .fillMaxHeight()
+                                .width(32.dp)
+                                .clip(shape = RoundedRectangle(4.dp))
+                                .background(color = AppColors.inactiveTrack),
+                            contentAlignment = Alignment.Center
+                        ) {
+
+                        }
+                        Box(
+                            modifier = Modifier
+                                .fillMaxHeight()
+                                .width(32.dp)
+                                .clip(shape = UnevenRoundedRectangle(4.dp, 16.dp, 16.dp, 4.dp))
+                                .background(color = AppColors.inactiveTrack)
+                                .clickable(
+                                    interactionSource = remember { MutableInteractionSource() },
+                                    indication = DimIndication(),
+                                    onClick = {}),
+                            contentAlignment = Alignment.Center
+                        ) {
+
+                        }
+                    }
+                }
+            }
         }
     }
 }

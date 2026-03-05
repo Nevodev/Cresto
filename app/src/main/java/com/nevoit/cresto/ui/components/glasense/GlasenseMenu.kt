@@ -1,5 +1,6 @@
 package com.nevoit.cresto.ui.components.glasense
 
+import android.graphics.BlurMaskFilter
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -21,26 +22,31 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.dropShadow
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.TileMode
+import androidx.compose.ui.graphics.asAndroidPath
 import androidx.compose.ui.graphics.drawscope.Fill
+import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.nativeCanvas
+import androidx.compose.ui.graphics.nativePaint
 import androidx.compose.ui.graphics.painter.Painter
-import androidx.compose.ui.graphics.shadow.Shadow
+import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Density
-import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import com.kyant.backdrop.backdrops.LayerBackdrop
 import com.kyant.backdrop.drawPlainBackdrop
 import com.kyant.backdrop.effects.blur
-import com.kyant.capsule.ContinuousRoundedRectangle
+import com.kyant.shapes.RoundedRectangle
 import com.nevoit.cresto.R
 import com.nevoit.cresto.ui.theme.glasense.AppColors
 import com.nevoit.cresto.ui.theme.glasense.glasenseHighlight
@@ -207,30 +213,74 @@ fun GlasenseMenu(
     alphaAni: () -> Float
 ) {
     val darkTheme = isAppInDarkTheme()
+
+    val shadowRadiusPx = with(LocalDensity.current) { 32.dp.toPx() }
+    val shadowDyPx = with(LocalDensity.current) { 16.dp.toPx() }
+
+    val shadowPaint = remember {
+        Paint().nativePaint.apply {
+            isAntiAlias = true
+            maskFilter = BlurMaskFilter(shadowRadiusPx, BlurMaskFilter.Blur.NORMAL)
+        }
+    }
+    val shadowBaseColor = if (darkTheme) Color.Black.copy(alpha = 0.4f) else Color.Black.copy(
+        alpha = 0.1f
+    )
+
+    val shape = RoundedCornerShape(16.dp)
+
     Box(
-        modifier = Modifier
-            // Position the menu at the anchor point defined in menuState.
-            .offset(
-                x = with(density) { menuState.anchorPosition.x.toDp() },
-                y = with(density) { menuState.anchorPosition.y.toDp() }
-            )
+        modifier = modifier
             .zIndex(99f) // Ensure the menu appears above other content.
-            .then(modifier)
-            .dropShadow(
-                RoundedCornerShape(16.dp),
-                shadow = Shadow(
-                    radius = 32.dp,
-                    color = if (darkTheme) Color.Black.copy(alpha = 0.4f) else Color.Black.copy(
-                        alpha = 0.1f
-                    ),
-                    offset = DpOffset(0.dp, 16.dp),
-                    alpha = alphaAni()
-                )
-            )
+            .drawBehind {
+                val currentAlpha = alphaAni()
+
+                if (currentAlpha > 0f) {
+                    val paintColor =
+                        shadowBaseColor.copy(alpha = shadowBaseColor.alpha * currentAlpha)
+                    shadowPaint.color = paintColor.toArgb()
+
+                    drawIntoCanvas { canvas ->
+                        canvas.save()
+                        canvas.translate(0f, shadowDyPx)
+
+                        when (val outline = shape.createOutline(size, layoutDirection, this)) {
+                            is androidx.compose.ui.graphics.Outline.Rectangle -> {
+                                canvas.nativeCanvas.drawRect(
+                                    outline.rect.left,
+                                    outline.rect.top,
+                                    outline.rect.right,
+                                    outline.rect.bottom,
+                                    shadowPaint
+                                )
+                            }
+
+                            is androidx.compose.ui.graphics.Outline.Rounded -> {
+                                canvas.nativeCanvas.drawRoundRect(
+                                    outline.roundRect.left, outline.roundRect.top,
+                                    outline.roundRect.right, outline.roundRect.bottom,
+                                    outline.roundRect.bottomLeftCornerRadius.x,
+                                    outline.roundRect.bottomLeftCornerRadius.y,
+                                    shadowPaint
+                                )
+                            }
+
+                            is androidx.compose.ui.graphics.Outline.Generic -> {
+                                canvas.nativeCanvas.drawPath(
+                                    outline.path.asAndroidPath(),
+                                    shadowPaint
+                                )
+                            }
+                        }
+
+                        canvas.restore()
+                    }
+                }
+            }
             // Core of the blur effect, drawing a blurred version of the content behind it.
             .drawPlainBackdrop(
                 backdrop = backdrop,
-                shape = { ContinuousRoundedRectangle(16.dp) },
+                shape = { RoundedRectangle(16.dp) },
                 layerBlock = {
                     alpha = alphaAni()
                 },

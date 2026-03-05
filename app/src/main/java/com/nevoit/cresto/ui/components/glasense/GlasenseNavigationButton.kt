@@ -20,7 +20,7 @@ import com.kyant.backdrop.drawBackdrop
 import com.kyant.backdrop.effects.blur
 import com.kyant.backdrop.effects.lens
 import com.kyant.backdrop.highlight.Highlight
-import com.kyant.capsule.ContinuousCapsule
+import com.kyant.shapes.Capsule
 import com.nevoit.cresto.ui.theme.glasense.AppColors
 import com.nevoit.cresto.ui.theme.glasense.NavigationButtonActiveColors
 import com.nevoit.cresto.ui.theme.glasense.NavigationButtonNormalColors
@@ -57,7 +57,7 @@ fun GlasenseNavigationButton(
             .fillMaxSize()
             .drawBackdrop(
                 backdrop = backdrop,
-                shape = { ContinuousCapsule },
+                shape = { Capsule() },
                 shadow = null,
                 innerShadow = null,
                 highlight = { if (liquidGlass) Highlight.Default else null },
@@ -127,12 +127,12 @@ fun GlasenseNavigationButton(
 
     // The base button with shape, click handling, shadow, and colors.
     GlasenseButton(
-        shape = ContinuousCapsule,
+        shape = Capsule(),
         onClick = onClick,
         modifier = modifier
             .fillMaxHeight()
             .dropShadow(
-                ContinuousCapsule,
+                Capsule(),
                 Shadow(
                     radius = 24.dp,
                     color = Color.Black.copy(alpha = 0.08f),

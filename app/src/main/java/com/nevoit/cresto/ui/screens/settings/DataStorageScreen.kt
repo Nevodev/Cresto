@@ -36,8 +36,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.painter.Painter
@@ -52,7 +50,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.times
 import com.kyant.backdrop.backdrops.layerBackdrop
 import com.kyant.backdrop.backdrops.rememberLayerBackdrop
-import com.kyant.capsule.ContinuousCapsule
+import com.kyant.shapes.Capsule
 import com.nevoit.cresto.R
 import com.nevoit.cresto.data.todo.TodoViewModel
 import com.nevoit.cresto.ui.components.glasense.DialogItemData
@@ -60,6 +58,7 @@ import com.nevoit.cresto.ui.components.glasense.DialogState
 import com.nevoit.cresto.ui.components.glasense.GlasenseButton
 import com.nevoit.cresto.ui.components.glasense.GlasenseDialog
 import com.nevoit.cresto.ui.components.glasense.GlasenseDynamicSmallTitle
+import com.nevoit.cresto.ui.components.glasense.ZeroHeightDivider
 import com.nevoit.cresto.ui.components.glasense.extend.overscrollSpacer
 import com.nevoit.cresto.ui.components.glasense.isScrolledPast
 import com.nevoit.cresto.ui.components.packed.ConfigInfoHeader
@@ -336,18 +335,7 @@ fun DataStorageScreen() {
                         }
                         Spacer(modifier = Modifier.height(8.dp))
                         // Visual divider line
-                        Spacer(
-                            modifier = Modifier
-                                .drawBehind {
-                                    drawLine(
-                                        color = onBackground.copy(.1f),
-                                        start = Offset(x = 0f, y = 0f),
-                                        end = Offset(this.size.width, y = 0f),
-                                        strokeWidth = dp
-                                    )
-                                }
-                                .fillMaxWidth()
-                                .height(0.dp))
+                        ZeroHeightDivider()
                         Spacer(modifier = Modifier.height(8.dp))
                         ConfigItem(title = stringResource(R.string.import_database)) {
                             // TODO: Implement database import functionality
@@ -377,19 +365,7 @@ fun DataStorageScreen() {
                             }
                         ) {}
                         Spacer(modifier = Modifier.height(8.dp))
-                        // Visual divider line
-                        Spacer(
-                            modifier = Modifier
-                                .drawBehind {
-                                    drawLine(
-                                        color = onBackground.copy(.1f),
-                                        start = Offset(x = 0f, y = 0f),
-                                        end = Offset(this.size.width, y = 0f),
-                                        strokeWidth = dp
-                                    )
-                                }
-                                .fillMaxWidth()
-                                .height(0.dp))
+                        ZeroHeightDivider()
                         Spacer(modifier = Modifier.height(8.dp))
                         ConfigItem(
                             title = stringResource(R.string.clear_all_data),
@@ -513,7 +489,7 @@ private fun StorageChart(appSize: Long, dataSize: Long, cacheSize: Long) {
             modifier = Modifier
                 .fillMaxWidth()
                 .height(16.dp)
-                .clip(ContinuousCapsule)
+                .clip(Capsule())
                 .onGloballyPositioned { coordinates ->
                     totalWidth = coordinates.size.width.dp
                 }

@@ -15,6 +15,7 @@ data class GlasenseColors(
 
     // scrim
     val scrimNormal: Color,
+    val scrimMedium: Color,
     val scrimBold: Color,
 
     // for hierarchical cards
@@ -39,6 +40,7 @@ val GlasenseLightPalette = GlasenseColors(
     pageBackground = Color(0xFFF3F4F6),
     cardBackground = Color.White,
     scrimNormal = Color.Black.copy(alpha = 0.05f),
+    scrimMedium = Color.Black.copy(alpha = 0.1f),
     scrimBold = Color.Black.copy(alpha = 0.2f),
     primary = Blue500,
     onPrimary = Color.White,
@@ -56,6 +58,7 @@ val GlasenseDarkPalette = GlasenseColors(
     pageBackground = Color.Black,
     cardBackground = Color(0xFF1B1C1D),
     scrimNormal = Color.White.copy(alpha = 0.1f),
+    scrimMedium = Color.White.copy(alpha = 0.2f),
     scrimBold = Color.White.copy(alpha = 0.4f),
     primary = Blue500,
     onPrimary = Color.White,
@@ -72,6 +75,7 @@ fun glasenseColorsFromScheme(scheme: ColorScheme, isDark: Boolean): GlasenseColo
     val contentColor = if (isDark) Color.White else Color.Black
 
     val scrimNormal = contentColor.copy(alpha = if (isDark) 0.1f else 0.05f)
+    val scrimMedium = contentColor.copy(alpha = if (isDark) 0.2f else 0.1f)
     val scrimBold = contentColor.copy(alpha = if (isDark) 0.4f else 0.2f)
 
     return GlasenseColors(
@@ -82,6 +86,7 @@ fun glasenseColorsFromScheme(scheme: ColorScheme, isDark: Boolean): GlasenseColo
         pageBackground = pageBackground,
         cardBackground = cardBackground,
         scrimNormal = scrimNormal,
+        scrimMedium = scrimMedium,
         scrimBold = scrimBold,
         primary = scheme.primary,
         onPrimary = scheme.onPrimary,

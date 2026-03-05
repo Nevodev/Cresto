@@ -44,7 +44,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.kyant.capsule.ContinuousCapsule
+import com.kyant.shapes.Capsule
 import com.nevoit.cresto.R
 import com.nevoit.cresto.toolkit.overscroll.OffsetOverscrollFactory
 import com.nevoit.cresto.ui.components.CustomAnimatedVisibility
@@ -252,7 +252,7 @@ fun AddTodoSheet(
                     // Due date button.
                     GlasenseButtonAlt(
                         enabled = true,
-                        shape = ContinuousCapsule,
+                        shape = Capsule(),
                         onClick = {
                             selectedButton = if (selectedButton == SelectedButton.DUE_DATE) {
                                 SelectedButton.NONE
@@ -304,7 +304,7 @@ fun AddTodoSheet(
                     // Flag button.
                     GlasenseButtonAlt(
                         enabled = true,
-                        shape = ContinuousCapsule,
+                        shape = Capsule(),
                         onClick = {
                             selectedButton = if (selectedButton == SelectedButton.FLAG) {
                                 SelectedButton.NONE
@@ -363,7 +363,7 @@ fun AddTodoSheet(
                     /*pacer(modifier = Modifier.width(12.dp))
                     Button(
                         enabled = true,
-                        shape = ContinuousCapsule(g2),
+                        shape = Capsule()(g2),
                         onClick = {
                             selectedButton = if (selectedButton == SelectedButton.HASHTAG) {
                                 SelectedButton.NONE

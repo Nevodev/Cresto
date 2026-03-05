@@ -21,7 +21,7 @@ import androidx.compose.ui.graphics.drawOutline
 import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.unit.dp
-import com.kyant.capsule.ContinuousCapsule
+import com.kyant.shapes.Capsule
 import com.nevoit.cresto.ui.theme.glasense.isAppInDarkTheme
 
 @Composable
@@ -29,7 +29,7 @@ fun GlasenseLoadingIndicator(
     modifier: Modifier = Modifier,
     size: androidx.compose.ui.unit.Dp = 32.dp,
     durationMillis: Int = 1000,
-    tickShape: Shape = ContinuousCapsule
+    tickShape: Shape = Capsule()
 ) {
     val color = when (isAppInDarkTheme()) {
         true -> Color.White.copy(.8f)

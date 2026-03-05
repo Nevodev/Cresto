@@ -64,7 +64,7 @@ import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import com.kyant.backdrop.drawPlainBackdrop
 import com.kyant.backdrop.effects.blur
 import com.kyant.backdrop.effects.colorControls
-import com.kyant.capsule.ContinuousCapsule
+import com.kyant.shapes.Capsule
 import com.nevoit.cresto.R
 import com.nevoit.cresto.data.todo.TodoViewModel
 import com.nevoit.cresto.secrets.ApiKey
@@ -324,7 +324,7 @@ fun BottomSheet(
                         .fillMaxWidth()
                         .drawPlainBackdrop(
                             backdrop = backdrop,
-                            shape = { ContinuousCapsule },
+                            shape = { Capsule() },
                             effects = {
                                 blur(64f.dp.toPx(), TileMode.Clamp)
                                 colorControls(saturation = 1.1f)
@@ -370,13 +370,13 @@ fun BottomSheet(
                                 }
                             })
                         .glasenseHighlight(56.dp)
-                        .clip(ContinuousCapsule)
+                        .clip(Capsule())
                 ) {
                     RotatingGlowBorder(
                         modifier = Modifier.fillMaxSize(),
                         strokeWidth = 4.dp,
                         blurRadius = 4.dp,
-                        shape = ContinuousCapsule,
+                        shape = Capsule(),
                         colors = highlightColors,
                         timeMillis = 3000
                     )
@@ -503,7 +503,7 @@ fun BottomSheet(
                                 modifier = Modifier.fillMaxSize(),
                                 strokeWidth = 8.dp,
                                 blurRadius = 8.dp,
-                                shape = ContinuousCapsule,
+                                shape = Capsule(),
                                 colors = highlightColors,
                                 timeMillis = 3000
                             )

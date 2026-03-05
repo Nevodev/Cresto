@@ -25,7 +25,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.kyant.capsule.ContinuousRoundedRectangle
+import com.kyant.shapes.RoundedRectangle
 import com.nevoit.cresto.R
 import com.nevoit.cresto.data.todo.liveactivity.FoodPickupPayload
 import com.nevoit.cresto.data.todo.liveactivity.FoodPickupType
@@ -71,7 +71,7 @@ fun LiveActivityItem(
             .fillMaxWidth()
             .background(
                 color = AppColors.cardBackground,
-                shape = ContinuousRoundedRectangle(AppSpecs.cardCorner * 2)
+                shape = RoundedRectangle(AppSpecs.cardCorner * 2)
             )
             .padding(12.dp)
     ) {

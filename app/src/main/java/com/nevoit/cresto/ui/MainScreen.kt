@@ -282,6 +282,8 @@ fun MainScreen() {
                 modifier = Modifier
                     .width(228.dp)
                     .graphicsLayer {
+                        translationX = menuState.anchorPosition.x
+                        translationY = menuState.anchorPosition.y
                         scaleX = scaleAni.value
                         scaleY = scaleAni.value
                         transformOrigin = TransformOrigin(0f, 0f)
