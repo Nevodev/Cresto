@@ -20,8 +20,8 @@ val vName = versionProps["VERSION_NAME"].toString()
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
-    id("com.google.devtools.ksp")
-    id("org.jetbrains.kotlin.plugin.serialization")
+    alias(libs.plugins.ksp)
+    alias(libs.plugins.kotlin.serialization)
 }
 
 configure<ApplicationExtension> {
