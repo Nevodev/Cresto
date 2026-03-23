@@ -7,6 +7,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.LocalOverscrollFactory
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
@@ -32,7 +33,8 @@ class AppearanceActivity : ComponentActivity() {
                     )
                 }
                 CompositionLocalProvider(
-                    LocalOverscrollFactory provides overscrollFactory
+                    LocalOverscrollFactory provides overscrollFactory,
+                    LocalContentColor provides AppColors.content
                 ) {
                     Surface(
                         modifier = Modifier.fillMaxSize(),
