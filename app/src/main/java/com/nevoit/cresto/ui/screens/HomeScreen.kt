@@ -75,7 +75,6 @@ import com.kyant.shapes.RoundedRectangle
 import com.nevoit.cresto.R
 import com.nevoit.cresto.data.todo.EXTRA_TODO_ID
 import com.nevoit.cresto.data.todo.TodoViewModel
-import com.nevoit.cresto.data.todo.liveactivity.LiveActivityViewModel
 import com.nevoit.cresto.ui.components.glasense.DialogItemData
 import com.nevoit.cresto.ui.components.glasense.DimIndication
 import com.nevoit.cresto.ui.components.glasense.GlasenseButton
@@ -88,10 +87,8 @@ import com.nevoit.cresto.ui.components.glasense.SelectiveMenuItemData
 import com.nevoit.cresto.ui.components.glasense.extend.overscrollSpacer
 import com.nevoit.cresto.ui.components.glasense.isScrolledPast
 import com.nevoit.cresto.ui.components.glasense.rememberSwipeableListState
-import com.nevoit.cresto.ui.components.packed.LiveActivityItem
 import com.nevoit.cresto.ui.components.packed.PageContent
 import com.nevoit.cresto.ui.components.packed.SwipeableTodoItem
-import com.nevoit.cresto.ui.components.packed.VGap
 import com.nevoit.cresto.ui.screens.detailscreen.DetailActivity
 import com.nevoit.cresto.ui.screens.settings.util.SettingsManager
 import com.nevoit.cresto.ui.screens.settings.util.SortOption
@@ -111,8 +108,7 @@ import kotlinx.coroutines.launch
 fun BoxScope.HomeScreen(
     showMenu: (anchorPosition: Offset, items: List<GlasenseMenuItem>) -> Unit,
     showDialog: (items: List<DialogItemData>, title: String, message: String?) -> Unit,
-    viewModel: TodoViewModel,
-    liveActivityViewModel: LiveActivityViewModel
+    viewModel: TodoViewModel
 ) {
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
@@ -381,12 +377,6 @@ fun BoxScope.HomeScreen(
     val selectionOutline = AppColors.primary
     val cardCorner = AppSpecs.cardCorner
 
-    val liveActivities by liveActivityViewModel.activities.collectAsStateWithLifecycle()
-
-    LaunchedEffect(Unit) {
-        liveActivityViewModel.addMockFoodPickup()
-    }
-
     PageContent(
         state = lazyListState,
         modifier = Modifier
@@ -398,63 +388,7 @@ fun BoxScope.HomeScreen(
                 title = stringResource(R.string.all_todos)
             )
         }
-
-        if (liveActivities.isNotEmpty()) {
-            item(key = "live_activity_title") {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    modifier = Modifier
-                        .zIndex(-1f)
-                        .animateItem(placementSpec = spring(0.9f, 400f))
-                        .fillMaxWidth()
-                        .padding(top = 8.dp, bottom = 8.dp, start = 12.dp)
-                ) {
-                    Text(
-                        text = "实时活动",
-                        fontSize = 14.sp,
-                        lineHeight = 14.sp,
-                        fontWeight = FontWeight.Normal,
-                        color = AppColors.contentVariant
-                    )
-                }
-            }
-        }
-
-        items(
-            items = liveActivities,
-            key = { it.id }
-        ) { item ->
-            LiveActivityItem(
-                entity = item,
-                onDone = { liveActivityViewModel.deleteActivity(item.id) },
-                modifier = Modifier.animateItem(placementSpec = spring(0.9f, 400f))
-            )
-            VGap()
-        }
-
-        if (liveActivities.isNotEmpty() && incompleteTodos.isNotEmpty()) {
-            item(key = "todo_title") {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    modifier = Modifier
-                        .zIndex(-1f)
-                        .animateItem(placementSpec = spring(0.9f, 400f))
-                        .fillMaxWidth()
-                        .padding(top = 8.dp, bottom = 8.dp, start = 12.dp)
-                ) {
-                    Text(
-                        text = stringResource(R.string.all_todos),
-                        fontSize = 14.sp,
-                        lineHeight = 14.sp,
-                        fontWeight = FontWeight.Normal,
-                        color = AppColors.contentVariant
-                    )
-                }
-            }
-        }
-
+        
         items(
             items = incompleteTodos,
             key = { it.todoItem.id },

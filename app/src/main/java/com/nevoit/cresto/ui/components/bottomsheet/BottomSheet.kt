@@ -73,13 +73,13 @@ import com.nevoit.cresto.ui.components.glasense.DialogItemData
 import com.nevoit.cresto.ui.components.glasense.GlasenseButton
 import com.nevoit.cresto.ui.components.glasense.RotatingGlow
 import com.nevoit.cresto.ui.components.glasense.RotatingGlowBorder
+import com.nevoit.cresto.ui.components.glasense.glasenseHighlight
 import com.nevoit.cresto.ui.components.myFadeIn
 import com.nevoit.cresto.ui.components.myFadeOut
 import com.nevoit.cresto.ui.theme.glasense.AppButtonColors
 import com.nevoit.cresto.ui.theme.glasense.AppColors
 import com.nevoit.cresto.ui.theme.glasense.defaultEnterTransition
 import com.nevoit.cresto.ui.theme.glasense.defaultExitTransition
-import com.nevoit.cresto.ui.theme.glasense.glasenseHighlight
 import com.nevoit.cresto.ui.theme.glasense.gradientColorsDark
 import com.nevoit.cresto.ui.theme.glasense.gradientColorsLight
 import com.nevoit.cresto.ui.theme.glasense.highlightColorsDark

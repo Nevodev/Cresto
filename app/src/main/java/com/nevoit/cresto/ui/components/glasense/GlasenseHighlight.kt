@@ -1,4 +1,4 @@
-package com.nevoit.cresto.ui.theme.glasense
+package com.nevoit.cresto.ui.components.glasense
 
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Size

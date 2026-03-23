@@ -24,7 +24,6 @@ import com.kyant.shapes.Capsule
 import com.nevoit.cresto.ui.theme.glasense.AppColors
 import com.nevoit.cresto.ui.theme.glasense.NavigationButtonActiveColors
 import com.nevoit.cresto.ui.theme.glasense.NavigationButtonNormalColors
-import com.nevoit.cresto.ui.theme.glasense.glasenseHighlight
 import com.nevoit.cresto.ui.theme.glasense.isAppInDarkTheme
 
 /**

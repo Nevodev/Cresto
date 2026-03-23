@@ -26,6 +26,7 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Outline
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.TileMode
@@ -49,7 +50,6 @@ import com.kyant.backdrop.effects.blur
 import com.kyant.shapes.RoundedRectangle
 import com.nevoit.cresto.R
 import com.nevoit.cresto.ui.theme.glasense.AppColors
-import com.nevoit.cresto.ui.theme.glasense.glasenseHighlight
 import com.nevoit.cresto.ui.theme.glasense.isAppInDarkTheme
 
 data class MenuItemData(
@@ -245,7 +245,7 @@ fun GlasenseMenu(
                         canvas.translate(0f, shadowDyPx)
 
                         when (val outline = shape.createOutline(size, layoutDirection, this)) {
-                            is androidx.compose.ui.graphics.Outline.Rectangle -> {
+                            is Outline.Rectangle -> {
                                 canvas.nativeCanvas.drawRect(
                                     outline.rect.left,
                                     outline.rect.top,
@@ -255,7 +255,7 @@ fun GlasenseMenu(
                                 )
                             }
 
-                            is androidx.compose.ui.graphics.Outline.Rounded -> {
+                            is Outline.Rounded -> {
                                 canvas.nativeCanvas.drawRoundRect(
                                     outline.roundRect.left, outline.roundRect.top,
                                     outline.roundRect.right, outline.roundRect.bottom,
@@ -265,7 +265,7 @@ fun GlasenseMenu(
                                 )
                             }
 
-                            is androidx.compose.ui.graphics.Outline.Generic -> {
+                            is Outline.Generic -> {
                                 canvas.nativeCanvas.drawPath(
                                     outline.path.asAndroidPath(),
                                     shadowPaint

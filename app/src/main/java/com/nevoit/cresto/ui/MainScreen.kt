@@ -41,7 +41,6 @@ import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import com.nevoit.cresto.R
 import com.nevoit.cresto.data.todo.TodoItem
 import com.nevoit.cresto.data.todo.TodoViewModel
-import com.nevoit.cresto.data.todo.liveactivity.LiveActivityViewModel
 import com.nevoit.cresto.toolkit.gaussiangradient.smoothGradientMask
 import com.nevoit.cresto.toolkit.gaussiangradient.smoothGradientMaskFallback
 import com.nevoit.cresto.ui.components.bottomsheet.BottomSheet
@@ -117,7 +116,6 @@ fun MainScreen() {
     val interactionSource = remember { MutableInteractionSource() }
 
     val viewModel: TodoViewModel = koinViewModel()
-    val liveActivityViewModel: LiveActivityViewModel = koinViewModel()
 
     val bottomSheetState by viewModel.bottomSheetState.collectAsState()
 
@@ -141,7 +139,6 @@ fun MainScreen() {
                 currentRoute = currentRoute,
                 showMenu = showMenu,
                 viewModel = viewModel,
-                liveActivityViewModel = liveActivityViewModel,
                 showDialog = showDialog
             )
         }

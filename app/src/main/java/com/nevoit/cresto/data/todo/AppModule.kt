@@ -1,7 +1,6 @@
 package com.nevoit.cresto.data.todo
 
 import androidx.room.Room
-import com.nevoit.cresto.data.todo.liveactivity.LiveActivityViewModel
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.module.dsl.singleOf
 import org.koin.core.module.dsl.viewModelOf
@@ -20,10 +19,6 @@ val appModule = module {
     }
 
     single { get<TodoDatabase>().todoDao() }
-    single { get<TodoDatabase>().activityDao() }
-
     singleOf(::TodoRepository)
-
     viewModelOf(::TodoViewModel)
-    viewModelOf(::LiveActivityViewModel)
 }

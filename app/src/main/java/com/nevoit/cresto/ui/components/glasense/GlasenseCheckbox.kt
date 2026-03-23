@@ -161,6 +161,7 @@ private fun CheckmarkContent(
             val painter = rememberAnimatedVectorPainter(animatedImageVector = avd, atEnd = atEnd)
             LaunchedEffect(Unit) { atEnd = true }
             Image(
+                modifier = Modifier.scale(1.1f),
                 painter = painter,
                 contentDescription = null,
                 colorFilter = tint(color)
