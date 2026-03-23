@@ -3,6 +3,8 @@ package com.nevoit.cresto.ui.screens.settings.util
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import com.tencent.mmkv.MMKV
+import com.nevoit.cresto.ui.theme.glasense.Blue500
+import androidx.compose.ui.graphics.toArgb
 
 /**
  * A singleton object for managing app settings using MMKV.
@@ -22,6 +24,9 @@ object SettingsManager {
     private const val KEY_IS_FIRST_RUN = "is_first_run"
     private const val KEY_SORT_OPTION = "sort_option"
     private const val KEY_SORT_ORDER = "sort_order"
+    private const val KEY_THEME_PRIMARY_COLOR = "theme_primary_color"
+
+    private val defaultThemePrimaryColor = Blue500.toArgb()
 
     const val MODE_LIGHT = 0
     const val MODE_DARK = 1
@@ -37,6 +42,8 @@ object SettingsManager {
         mutableIntStateOf(mmkv.decodeInt(KEY_SORT_OPTION, SortOption.DEFAULT.ordinal))
     val sortOrderState =
         mutableIntStateOf(mmkv.decodeInt(KEY_SORT_ORDER, SortOrder.DESCENDING.ordinal))
+    val themePrimaryColorState =
+        mutableIntStateOf(mmkv.decodeInt(KEY_THEME_PRIMARY_COLOR, defaultThemePrimaryColor))
 
     var isCustomPrimaryColorEnabled: Boolean
         get() = mmkv.decodeBool(KEY_CUSTOM_PRIMARY_COLOR_ENABLED, false)
@@ -97,6 +104,13 @@ object SettingsManager {
         set(value) {
             mmkv.encode(KEY_SORT_ORDER, value.ordinal)
             sortOrderState.intValue = value.ordinal
+        }
+
+    var themePrimaryColor: Int
+        get() = mmkv.decodeInt(KEY_THEME_PRIMARY_COLOR, defaultThemePrimaryColor)
+        set(value) {
+            mmkv.encode(KEY_THEME_PRIMARY_COLOR, value)
+            themePrimaryColorState.intValue = value
         }
 }
 

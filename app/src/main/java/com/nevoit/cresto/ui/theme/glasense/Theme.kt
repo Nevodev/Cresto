@@ -50,6 +50,8 @@ fun GlasenseTheme(
 ) {
     val colorMode = settingsViewModel.colorMode.intValue
     val dynamicColor = settingsViewModel.isUseDynamicColor.value
+    val customPrimaryEnabled = settingsViewModel.isCustomPrimaryColorEnabled.value
+    val themePrimaryColorArgb = settingsViewModel.themePrimaryColor.intValue
     val liquidGlass = settingsViewModel.isLiquidGlass.value
 
     val systemInDark = isSystemInDarkTheme()
@@ -70,11 +72,19 @@ fun GlasenseTheme(
         else -> LightColorScheme
     }
 
-    val glasenseColors = if (dynamicColor) {
+    val baseGlasenseColors = if (dynamicColor) {
         glasenseColorsFromScheme(colorScheme, useDarkTheme)
     } else {
         if (useDarkTheme) GlasenseDarkPalette else GlasenseLightPalette
     }
+
+    val resolvedPrimary = when {
+        dynamicColor -> baseGlasenseColors.primary
+        customPrimaryEnabled -> Color(themePrimaryColorArgb)
+        else -> Blue500
+    }
+
+    val glasenseColors = baseGlasenseColors.copy(primary = resolvedPrimary)
 
     val glasenseSpecs = if (liquidGlass || dynamicColor) {
         GlasenseSpecsVariant

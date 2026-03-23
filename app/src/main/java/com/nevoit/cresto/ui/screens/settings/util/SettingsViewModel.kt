@@ -9,6 +9,7 @@ class SettingsViewModel : ViewModel() {
     val isUseDynamicColor = SettingsManager.isUseDynamicColorState
     val isLiteMode = SettingsManager.isLiteModeState
     val isLiquidGlass = SettingsManager.isLiquidGlassState
+    val themePrimaryColor = SettingsManager.themePrimaryColorState
 
     fun onCustomPrimaryColorChanged(isEnabled: Boolean) {
         SettingsManager.isCustomPrimaryColorEnabled = isEnabled
@@ -16,6 +17,9 @@ class SettingsViewModel : ViewModel() {
 
     fun onUseDynamicColorChanged(isEnabled: Boolean) {
         SettingsManager.isUseDynamicColor = isEnabled
+        if (isEnabled) {
+            SettingsManager.isCustomPrimaryColorEnabled = false
+        }
     }
 
     fun onLiteModeChanged(isEnabled: Boolean) {
@@ -28,5 +32,9 @@ class SettingsViewModel : ViewModel() {
 
     fun colorMode(mode: Int) {
         SettingsManager.colorMode = mode
+    }
+
+    fun onThemePrimaryColorChanged(colorArgb: Int) {
+        SettingsManager.themePrimaryColor = colorArgb
     }
 }
