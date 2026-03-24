@@ -1,5 +1,14 @@
-### Cresto
+# Cresto
 A modern, elegant and neat To-Do App
+
+## Features
+- Elegant & clean UI design.
+- Fluent UX.
+- AI powered task creating.
+- Built-in countdown & timer.
+- \[WIP\] Widgets.
+- \[WIP\] Analytics.
+
 
 ## Star History
 
