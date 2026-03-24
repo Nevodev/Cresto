@@ -57,6 +57,7 @@ import com.nevoit.cresto.ui.components.glasense.extend.overscrollSpacer
 import com.nevoit.cresto.ui.components.glasense.isScrolledPast
 import com.nevoit.cresto.ui.components.packed.ConfigItemContainer
 import com.nevoit.cresto.ui.components.packed.PageContent
+import com.nevoit.cresto.ui.components.packed.VGap
 import com.nevoit.cresto.ui.theme.glasense.AppButtonColors
 import com.nevoit.cresto.ui.theme.glasense.AppColors
 import com.nevoit.cresto.ui.theme.glasense.AppSpecs
@@ -439,6 +440,7 @@ fun AboutScreen() {
                     }
                 }
             }
+            item { VGap() }
             overscrollSpacer(lazyListState)
         }
         // A small title that dynamically appears at the top when the user scrolls down

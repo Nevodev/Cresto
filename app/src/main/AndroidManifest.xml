@@ -25,22 +25,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".ui.screens.settings.AppearanceActivity"
-            android:exported="false"
-            android:parentActivityName=".MainActivity"
-            android:theme="@style/Theme.Cresto" />
-        <activity
-            android:name=".ui.screens.settings.AIActivity"
-            android:exported="false"
-            android:parentActivityName=".MainActivity"
-            android:theme="@style/Theme.Cresto" />
-        <activity
-            android:name=".ui.screens.settings.DataStorageActivity"
-            android:exported="false"
-            android:parentActivityName=".MainActivity"
-            android:theme="@style/Theme.Cresto" />
-        <activity
-            android:name=".ui.screens.settings.AboutActivity"
+            android:name=".ui.screens.settings.SettingsActivity"
             android:exported="false"
             android:parentActivityName=".MainActivity"
             android:theme="@style/Theme.Cresto" />

@@ -24,7 +24,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -180,6 +179,7 @@ fun AppearanceScreen(settingsViewModel: SettingsViewModel = viewModel()) {
     Box(
         modifier = Modifier
             .fillMaxSize()
+            .background(surfaceColor)
     ) {
         // A vertically scrolling list that only composes and lays out the currently visible items
         PageContent(
@@ -322,6 +322,7 @@ fun AppearanceScreen(settingsViewModel: SettingsViewModel = viewModel()) {
                     color = AppColors.contentVariant.copy(alpha = .3f)
                 )
             }
+            item { VGap() }
             overscrollSpacer(lazyListState)
         }
         // A small title that dynamically appears at the top when the user scrolls down
@@ -406,8 +407,7 @@ fun AppearanceScreen(settingsViewModel: SettingsViewModel = viewModel()) {
         if (isColorPickerInComposition) {
             Column(
                 modifier = Modifier
-                    .statusBarsPadding()
-                    .padding(horizontal = 12.dp)
+                    .width(LocalWindowInfo.current.containerDpSize.width - 12.dp * 2)
                     .onGloballyPositioned {
                         if (showColorPicker && !hasCapturedPickerBoundsForOpen) {
                             // Capture once per open using layout bounds before graphicsLayer effects.
@@ -417,6 +417,7 @@ fun AppearanceScreen(settingsViewModel: SettingsViewModel = viewModel()) {
                     }
                     .graphicsLayer {
                         translationY = yTranslation
+                        translationX = 12 * dp
                         scaleX = scaleAni.value
                         scaleY = scaleAni.value
                         transformOrigin =

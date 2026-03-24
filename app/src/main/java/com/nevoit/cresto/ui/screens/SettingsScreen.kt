@@ -1,6 +1,5 @@
 package com.nevoit.cresto.ui.screens
 
-import android.content.Intent
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -29,10 +28,8 @@ import com.nevoit.cresto.ui.components.packed.AboutEntryItem
 import com.nevoit.cresto.ui.components.packed.ConfigContainer
 import com.nevoit.cresto.ui.components.packed.ConfigEntryItem
 import com.nevoit.cresto.ui.components.packed.PageContent
-import com.nevoit.cresto.ui.screens.settings.AIActivity
-import com.nevoit.cresto.ui.screens.settings.AboutActivity
-import com.nevoit.cresto.ui.screens.settings.AppearanceActivity
-import com.nevoit.cresto.ui.screens.settings.DataStorageActivity
+import com.nevoit.cresto.ui.screens.settings.SettingsActivity
+import com.nevoit.cresto.ui.screens.settings.SettingsDestination
 import com.nevoit.cresto.ui.theme.glasense.AppColors
 import com.nevoit.cresto.ui.theme.glasense.Blue500
 import com.nevoit.cresto.ui.theme.glasense.Pink400
@@ -87,8 +84,9 @@ fun BoxScope.SettingsScreen() {
                         title = stringResource(R.string.ai),
                         enableGlow = true,
                         onClick = {
-                            val intent = Intent(context, AIActivity::class.java)
-                            context.startActivity(intent)
+                            context.startActivity(
+                                SettingsActivity.createIntent(context, SettingsDestination.AI)
+                            )
                         }
                     )
                 }
@@ -103,8 +101,9 @@ fun BoxScope.SettingsScreen() {
                         icon = painterResource(R.drawable.ic_twotone_image),
                         title = stringResource(R.string.appearance),
                         onClick = {
-                            val intent = Intent(context, AppearanceActivity::class.java)
-                            context.startActivity(intent)
+                            context.startActivity(
+                                SettingsActivity.createIntent(context, SettingsDestination.APPEARANCE)
+                            )
                         }
                     )
                     Spacer(modifier = Modifier.height(16.dp))
@@ -113,8 +112,9 @@ fun BoxScope.SettingsScreen() {
                         icon = painterResource(R.drawable.ic_twotone_storage),
                         title = stringResource(R.string.data_storage),
                         onClick = {
-                            val intent = Intent(context, DataStorageActivity::class.java)
-                            context.startActivity(intent)
+                            context.startActivity(
+                                SettingsActivity.createIntent(context, SettingsDestination.DATA_STORAGE)
+                            )
                         }
                     )
                     Spacer(modifier = Modifier.height(16.dp))
@@ -133,8 +133,9 @@ fun BoxScope.SettingsScreen() {
                 AboutEntryItem(
                     icon = painterResource(R.drawable.cresto),
                     onClick = {
-                        val intent = Intent(context, AboutActivity::class.java)
-                        context.startActivity(intent)
+                        context.startActivity(
+                            SettingsActivity.createIntent(context, SettingsDestination.ABOUT)
+                        )
                     }
                 )
             }
