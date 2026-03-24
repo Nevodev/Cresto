@@ -244,7 +244,7 @@ fun GlasenseDialog(
                     effects = {
                         if (blur && !liquidGlass) blur(
                             64f.dp.toPx(),
-                            TileMode.Repeated
+                            TileMode.Mirror
                         ) else if (blur) {
                             blur(if (isDarkMode) 16f.dp.toPx() else 8f.dp.toPx(), TileMode.Mirror)
                             lens(24f.dp.toPx(), 48f.dp.toPx(), depthEffect = true)

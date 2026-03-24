@@ -11,9 +11,9 @@
       "type": "SINGLE",
       "filters": [],
       "attributes": [],
-      "versionCode": 1033,
+      "versionCode": 1034,
       "versionName": "1.0",
-      "outputFile": "cresto-alpha1033-release.apk"
+      "outputFile": "cresto-alpha1034-release.apk"
     }
   ],
   "elementType": "File",
@@ -22,14 +22,14 @@
       "minApi": 28,
       "maxApi": 30,
       "baselineProfiles": [
-        "baselineProfiles/1/cresto-alpha1033-release.dm"
+        "baselineProfiles/1/cresto-alpha1034-release.dm"
       ]
     },
     {
       "minApi": 31,
       "maxApi": 2147483647,
       "baselineProfiles": [
-        "baselineProfiles/0/cresto-alpha1033-release.dm"
+        "baselineProfiles/0/cresto-alpha1034-release.dm"
       ]
     }
   ],

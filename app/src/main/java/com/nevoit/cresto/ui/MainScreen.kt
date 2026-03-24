@@ -27,9 +27,12 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalDensity
@@ -78,13 +81,17 @@ sealed class Screen(val route: String) {
 @Composable
 fun MainScreen() {
     val surfaceColor = AppColors.pageBackground
-    var currentRoute by remember { mutableStateOf(Screen.Home.route) }
+    var currentRoute by rememberSaveable { mutableStateOf(Screen.Home.route) }
 
     val liquidGlass by SettingsManager.isLiquidGlassState
 
     val hazeState = rememberHazeState()
     val backdrop = rememberLayerBackdrop {
-        drawRect(surfaceColor)
+        drawRect(
+            color = surfaceColor,
+            size = Size(this.size.width * 3, this.size.height * 3),
+            topLeft = Offset(-this.size.width, -this.size.height)
+        )
         drawContent()
     }
 

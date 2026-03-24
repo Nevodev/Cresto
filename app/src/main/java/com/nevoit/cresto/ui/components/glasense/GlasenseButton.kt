@@ -292,3 +292,71 @@ fun GlasenseButtonCompact(
         }
     }
 }
+
+@Composable
+fun GlasenseButton(
+    modifier: Modifier = Modifier,
+    interactionSource: MutableInteractionSource,
+    enabled: Boolean = true,
+    shape: Shape = Capsule(),
+    onClick: () -> Unit,
+    colors: GlasenseButtonColors,
+    animated: Boolean = true,
+    content: @Composable () -> Unit,
+) {
+    val contentColor = if (enabled) colors.contentColor else colors.disabledContentColor
+    val backgroundColor = if (enabled) colors.containerColor else colors.disabledContainerColor
+
+    // Animate scale and alpha for press feedback.
+    val isPressed by interactionSource.collectIsPressedAsState()
+    val scale by animateFloatAsState(
+        targetValue = if (isPressed) 1.2f else 1.0f,
+        animationSpec = spring(0.5f, 300f, 0.0001f)
+    )
+    val alpha by animateFloatAsState(
+        targetValue = if (isPressed) 0.2f else 0f,
+        animationSpec = spring(0.5f, 300f, 0.001f)
+    )
+    Box(
+        modifier = modifier
+            // Apply scale animation for press effect.
+            .then(
+                if (animated) Modifier.graphicsLayer {
+                    scaleY = scale
+                    scaleX = scale
+                    transformOrigin = TransformOrigin.Center
+                } else Modifier
+            )
+            .then(if (animated) Modifier.clip(shape) else Modifier)
+            // Handle click events.
+            .clickable(
+                enabled = enabled,
+                interactionSource = interactionSource,
+                onClick = { onClick() },
+                indication = null,
+                role = Role.Button
+            )
+            .height(48.dp)
+            .background(color = backgroundColor, shape = shape)
+            // Draw a white flash overlay on press.
+            .then(
+                if (animated) {
+                    Modifier.drawBehind {
+                        drawRect(
+                            size = this.size,
+                            color = Color.White,
+                            alpha = alpha,
+                            blendMode = BlendMode.Plus
+                        )
+                    }
+                } else {
+                    Modifier
+                }
+            ),
+        contentAlignment = Alignment.Center
+    ) {
+        CompositionLocalProvider(LocalContentColor provides contentColor) {
+            content()
+        }
+    }
+}

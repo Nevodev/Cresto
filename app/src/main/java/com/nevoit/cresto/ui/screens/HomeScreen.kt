@@ -10,7 +10,6 @@ import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -54,10 +53,10 @@ import androidx.compose.ui.graphics.drawOutline
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.LayoutCoordinates
+import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.layout.positionOnScreen
+import androidx.compose.ui.layout.positionInWindow
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
@@ -388,7 +387,7 @@ fun BoxScope.HomeScreen(
                 title = stringResource(R.string.all_todos)
             )
         }
-        
+
         items(
             items = incompleteTodos,
             key = { it.todoItem.id },
@@ -645,9 +644,12 @@ fun BoxScope.HomeScreen(
         surfaceColor = surfaceColor
     ) {
         var coordinatesCaptured by remember { mutableStateOf<LayoutCoordinates?>(null) }
+        val sharedInteractionSource = remember { MutableInteractionSource() }
+
         if (!isGone) {
             GlasenseButton(
                 enabled = true,
+                interactionSource = sharedInteractionSource,
                 shape = Capsule(),
                 onClick = {},
                 modifier = Modifier
@@ -692,18 +694,17 @@ fun BoxScope.HomeScreen(
                             .onGloballyPositioned { coordinates ->
                                 coordinatesCaptured = coordinates
                             }
-                            .pointerInput(Unit) {
-                                detectTapGestures(
-                                    onTap = {
-                                        coordinatesCaptured?.let {
-                                            val position = Offset(
-                                                x = it.positionOnScreen().x,
-                                                y = it.positionOnScreen().y + it.positionOnScreen().y + 8 * dpPx
-                                            )
-                                            showMenu(position, menuItemsFilter)
-                                        }
-                                    }
-                                )
+                            .clickable(
+                                interactionSource = sharedInteractionSource,
+                                indication = null
+                            ) {
+                                coordinatesCaptured?.let {
+                                    val position = Offset(
+                                        x = it.positionInWindow().x,
+                                        y = it.positionInWindow().y + it.boundsInWindow().height + 8 * dpPx,
+                                    )
+                                    showMenu(position, menuItemsFilter)
+                                }
                             },
                         contentAlignment = Alignment.Center
                     ) {
