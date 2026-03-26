@@ -84,7 +84,10 @@ fun GlasenseTheme(
         else -> Blue500
     }
 
-    val glasenseColors = baseGlasenseColors.copy(primary = resolvedPrimary)
+    val glasenseColors = baseGlasenseColors.copy(
+        primary = resolvedPrimary,
+        activeTrack = if (customPrimaryEnabled) resolvedPrimary else baseGlasenseColors.activeTrack
+    )
 
     val glasenseSpecs = if (liquidGlass || dynamicColor) {
         GlasenseSpecsVariant

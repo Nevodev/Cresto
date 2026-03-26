@@ -3,6 +3,7 @@ package com.nevoit.cresto.ui.screens.settings
 
 // Import necessary libraries and components
 import android.graphics.BlurMaskFilter
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.LocalActivity
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.spring
@@ -403,6 +404,10 @@ fun AppearanceScreen(settingsViewModel: SettingsViewModel = viewModel()) {
                         indication = null,
                         onClick = { showColorPicker = false })
             )
+            BackHandler() {
+                pendingThemePrimaryColor = currentThemePrimaryColor
+                showColorPicker = false
+            }
         }
         if (isColorPickerInComposition) {
             Column(
