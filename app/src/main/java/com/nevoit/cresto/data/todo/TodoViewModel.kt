@@ -108,7 +108,6 @@ class TodoViewModel(private val repository: TodoRepository) : ViewModel() {
 
     fun delete(item: TodoItem) = viewModelScope.launch {
         repository.delete(item)
-        _revealedItemId.value = null
     }
 
     fun deleteById(id: Int) {
@@ -129,32 +128,6 @@ class TodoViewModel(private val repository: TodoRepository) : ViewModel() {
 
     fun deleteSubTodo(item: SubTodoItem) = viewModelScope.launch {
         repository.deleteSubTodo(item)
-    }
-
-    // Swipe to delete
-    private val _revealedItemId = MutableStateFlow<Int?>(null)
-
-    val revealedItemId: StateFlow<Int?> = _revealedItemId
-
-    fun onItemExpanded(itemId: Int) {
-        if (_revealedItemId.value == itemId) return
-        viewModelScope.launch {
-            _revealedItemId.value = itemId
-        }
-    }
-
-    fun onItemCollapsed(itemId: Int) {
-        if (_revealedItemId.value != itemId) return
-        viewModelScope.launch {
-            _revealedItemId.value = null
-        }
-    }
-
-    fun collapseRevealedItem() {
-        if (_revealedItemId.value == null) return
-        viewModelScope.launch {
-            _revealedItemId.value = null
-        }
     }
 
     fun insertAiGeneratedTodos(aiItems: List<EventItem>) {

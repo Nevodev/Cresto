@@ -19,7 +19,8 @@ import androidx.compose.ui.unit.dp
  */
 @Composable
 fun GlasensePageHeader(
-    title: String
+    title: String,
+    modifier: Modifier = Modifier
 ) {
     // A box that provides padding for the status bar and sets a fixed height.
     Box(
@@ -32,7 +33,7 @@ fun GlasensePageHeader(
         Text(
             text = title,
             style = MaterialTheme.typography.headlineLarge,
-            modifier = Modifier
+            modifier = modifier
                 .padding(start = 12.dp, bottom = 16.dp)
                 .align(Alignment.BottomStart)
         )

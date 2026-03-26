@@ -113,7 +113,6 @@ fun BoxScope.HomeScreen(
     val context = LocalContext.current
 
     val todoList by viewModel.allTodos.collectAsStateWithLifecycle()
-    val revealedItemId by viewModel.revealedItemId.collectAsState()
     val selectedItemIds by viewModel.selectedItemIds.collectAsState()
     val isSelectionModeActive by viewModel.isSelectionModeActive.collectAsState()
     val selectedItemCount by viewModel.selectedItemCount.collectAsState()
@@ -151,12 +150,13 @@ fun BoxScope.HomeScreen(
     val surfaceColor = AppColors.pageBackground
 
     val lazyListState = rememberLazyListState()
-    LaunchedEffect(lazyListState.isScrollInProgress, revealedItemId) {
-        if (lazyListState.isScrollInProgress && revealedItemId != null) {
-            viewModel.collapseRevealedItem()
+
+    val swipeListState = rememberSwipeableListState()
+    LaunchedEffect(lazyListState.isScrollInProgress) {
+        if (lazyListState.isScrollInProgress) {
+            swipeListState.close()
         }
     }
-    val swipeListState = rememberSwipeableListState()
 
     val isSmallTitleVisible by lazyListState.isScrolledPast(statusBarHeight + 24.dp)
     val interactionSource = remember { MutableInteractionSource() }

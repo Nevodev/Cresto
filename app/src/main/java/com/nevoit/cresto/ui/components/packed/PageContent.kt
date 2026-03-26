@@ -38,3 +38,29 @@ fun PageContent(
         content()
     }
 }
+
+@Composable
+fun PageContentNoPadding(
+    state: LazyListState,
+    modifier: Modifier = Modifier,
+    tabPadding: Boolean = true,
+    bottomPadding: Dp? = null,
+    content: LazyListScope.() -> Unit
+) {
+    val navigationBarHeight = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+
+    LazyColumn(
+        state = state,
+        modifier = modifier
+            .fillMaxSize(),
+        contentPadding = PaddingValues(
+            start = 0.dp,
+            top = 0.dp,
+            end = 0.dp,
+            bottom = if (tabPadding) 120.dp + navigationBarHeight else bottomPadding
+                ?: navigationBarHeight
+        )
+    ) {
+        content()
+    }
+}
