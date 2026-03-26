@@ -124,4 +124,9 @@
     <string name="when_use_dynamic_color_scheme_is_enabled_custom_primary_color_is_automatically_turned_off">启用“使用动态配色”后，“自定义主题色”将自动禁用。</string>
     <string name="enabling_liquid_glass_can_significantly_impact_performance">启用“Liquid Glass”可能会显著影响性能。</string>
     <string name="enabling_lite_mode_will_disable_some_blur_effects">启用“轻量模式”将关闭部分模糊效果。</string>
+    <string name="select_all">全选</string>
+    <string name="more">更多</string>
+    <string name="check_all">完成已选中</string>
+    <string name="set_flag">设置标记</string>
+    <string name="add_to_calendar">添加到日历</string>
 </resources>

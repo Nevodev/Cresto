@@ -11,7 +11,8 @@ enum class OverlayWeight {
     Normal,
     Medium,
     Bold,
-    Heavy
+    Heavy,
+    Float
 }
 
 fun Modifier.glasenseOverlay(
@@ -37,7 +38,8 @@ private data class LayerPalette(
     val normal: List<LayerConfig>,
     val medium: List<LayerConfig>,
     val bold: List<LayerConfig>,
-    val heavy: List<LayerConfig>
+    val heavy: List<LayerConfig>,
+    val float: List<LayerConfig>
 ) {
     operator fun get(weight: OverlayWeight): List<LayerConfig> = when (weight) {
         OverlayWeight.Light -> light
@@ -45,26 +47,27 @@ private data class LayerPalette(
         OverlayWeight.Medium -> medium
         OverlayWeight.Bold -> bold
         OverlayWeight.Heavy -> heavy
+        OverlayWeight.Float -> float
     }
 }
 
 private val LightLayers = LayerPalette(
     light = listOf(
         LayerConfig(Color(0xFF333333), 0.35f, BlendMode.Luminosity),
-        LayerConfig(Color(0xFF666666), 0.6f, BlendMode.ColorDodge),
-        LayerConfig(Color(0xFFFFFFFF), 0.2f, BlendMode.SrcOver)
+        LayerConfig(Color(0xFF666666), 0.60f, BlendMode.ColorDodge),
+        LayerConfig(Color(0xFFFFFFFF), 0.20f, BlendMode.SrcOver)
     ),
     normal = listOf(
-        LayerConfig(Color(0xFF6C6C6C), 0.7f, BlendMode.Luminosity),
-        LayerConfig(Color(0xFF252525), 1.0f, BlendMode.Plus),
-        LayerConfig(Color(0xFF555555), 0.5f, BlendMode.ColorDodge),
-        LayerConfig(Color(0xFFFFFFFF), 0.3f, BlendMode.SrcOver)
+        LayerConfig(Color(0xFF6C6C6C), 0.70f, BlendMode.Luminosity),
+        LayerConfig(Color(0xFF252525), 1.00f, BlendMode.Plus),
+        LayerConfig(Color(0xFF555555), 0.50f, BlendMode.ColorDodge),
+        LayerConfig(Color(0xFFFFFFFF), 0.30f, BlendMode.SrcOver)
     ),
     medium = listOf(
-        LayerConfig(Color(0xFF888888), 0.7f, BlendMode.Luminosity),
-        LayerConfig(Color(0xFF5F5F5F), 1.0f, BlendMode.ColorDodge),
-        LayerConfig(Color(0xFF555555), 0.5f, BlendMode.ColorDodge),
-        LayerConfig(Color(0xFFFFFFFF), 0.1f, BlendMode.SrcOver)
+        LayerConfig(Color(0xFF888888), 0.70f, BlendMode.Luminosity),
+        LayerConfig(Color(0xFF5F5F5F), 1.00f, BlendMode.ColorDodge),
+        LayerConfig(Color(0xFF555555), 0.50f, BlendMode.ColorDodge),
+        LayerConfig(Color(0xFFFFFFFF), 0.10f, BlendMode.SrcOver)
     ),
     bold = listOf(
         LayerConfig(Color(0xFF333333), 0.35f, BlendMode.Luminosity),
@@ -79,30 +82,36 @@ private val LightLayers = LayerPalette(
         LayerConfig(Color(0xFFFFFFFF), 0.50f, BlendMode.SrcOver),
         LayerConfig(Color(0xFFFFFFFF), 0.50f, BlendMode.SrcOver),
         LayerConfig(Color(0xFF000000), 0.02f, BlendMode.SrcOver)
+    ),
+    float = listOf(
+        LayerConfig(Color(0xFF888888), 0.70f, BlendMode.Luminosity),
+        LayerConfig(Color(0xFF5F5F5F), 1.00f, BlendMode.ColorDodge),
+        LayerConfig(Color(0xFF555555), 0.50f, BlendMode.ColorDodge),
+        LayerConfig(Color(0xFFFFFFFF), 0.10f, BlendMode.SrcOver)
     )
 )
 
 private val DarkLayers = LayerPalette(
     light = listOf(
-        LayerConfig(color = Color(0xFF333333), alpha = 0.35f, blendMode = BlendMode.Luminosity),
-        LayerConfig(color = Color(0xFF666666), alpha = 0.60f, blendMode = BlendMode.ColorDodge),
-        LayerConfig(color = Color(0xFF000000), alpha = 0.10f, blendMode = BlendMode.Luminosity),
-        LayerConfig(color = Color(0xFF000000), alpha = 0.20f, blendMode = BlendMode.Overlay),
-        LayerConfig(color = Color(0xFF000000), alpha = 0.10f, blendMode = BlendMode.SrcOver)
+        LayerConfig(color = Color(0xFF333333), 0.35f, BlendMode.Luminosity),
+        LayerConfig(color = Color(0xFF666666), 0.60f, BlendMode.ColorDodge),
+        LayerConfig(color = Color(0xFF000000), 0.10f, BlendMode.Luminosity),
+        LayerConfig(color = Color(0xFF000000), 0.20f, BlendMode.Overlay),
+        LayerConfig(color = Color(0xFF000000), 0.10f, BlendMode.SrcOver)
     ),
     normal = listOf(
-        LayerConfig(color = Color(0xFF1D1D1D), alpha = 0.60f, blendMode = BlendMode.Luminosity),
-        LayerConfig(color = Color(0xFF5F5F5F), alpha = 0.82f, blendMode = BlendMode.ColorDodge),
-        LayerConfig(color = Color(0xFF555555), alpha = 0.50f, blendMode = BlendMode.ColorDodge),
-        LayerConfig(color = Color(0xFFFFFFFF), alpha = 0.15f, blendMode = BlendMode.Plus),
-        LayerConfig(color = Color(0xFF000000), alpha = 0.45f, blendMode = BlendMode.SrcOver)
+        LayerConfig(color = Color(0xFF1D1D1D), 0.60f, BlendMode.Luminosity),
+        LayerConfig(color = Color(0xFF5F5F5F), 0.82f, BlendMode.ColorDodge),
+        LayerConfig(color = Color(0xFF555555), 0.50f, BlendMode.ColorDodge),
+        LayerConfig(color = Color(0xFFFFFFFF), 0.15f, BlendMode.Plus),
+        LayerConfig(color = Color(0xFF000000), 0.45f, BlendMode.SrcOver)
     ),
     medium = listOf(
-        LayerConfig(Color(0xFFFFFFFF), 0.1f, BlendMode.SrcOver),
-        LayerConfig(Color(0xFF555555), 0.5f, BlendMode.ColorDodge),
-        LayerConfig(Color(0xFF000000), 0.2f, BlendMode.Luminosity),
-        LayerConfig(Color(0xFF000000), 0.2f, BlendMode.Overlay),
-        LayerConfig(Color(0xFF595959), 0.4f, BlendMode.Luminosity)
+        LayerConfig(Color(0xFFFFFFFF), 0.10f, BlendMode.SrcOver),
+        LayerConfig(Color(0xFF555555), 0.50f, BlendMode.ColorDodge),
+        LayerConfig(Color(0xFF000000), 0.20f, BlendMode.Luminosity),
+        LayerConfig(Color(0xFF000000), 0.20f, BlendMode.Overlay),
+        LayerConfig(Color(0xFF595959), 0.40f, BlendMode.Luminosity)
     ),
     bold = listOf(
         LayerConfig(Color(0xFF000000), 0.35f, BlendMode.Luminosity),
@@ -117,6 +126,13 @@ private val DarkLayers = LayerPalette(
         LayerConfig(Color(0xFF000000), 0.50f, BlendMode.SrcOver),
         LayerConfig(Color(0xFF000000), 0.50f, BlendMode.SrcOver),
         LayerConfig(Color(0xFFFFFFFF), 0.05f, BlendMode.Plus)
+    ),
+    float = listOf(
+        LayerConfig(Color(0xFFFFFFFF), 0.1f, BlendMode.SrcOver),
+        LayerConfig(Color(0xFF555555), 0.50f, BlendMode.ColorDodge),
+        LayerConfig(Color(0xFF000000), 0.50f, BlendMode.Luminosity),
+        LayerConfig(Color(0xFF000000), 0.20f, BlendMode.Overlay),
+        LayerConfig(Color(0xFF595959), 0.40f, BlendMode.Luminosity)
     )
 )
 

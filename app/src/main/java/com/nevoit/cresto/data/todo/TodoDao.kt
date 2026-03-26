@@ -9,6 +9,7 @@ import androidx.room.Transaction
 import androidx.room.Update
 import com.nevoit.cresto.data.statistics.DailyStat
 import kotlinx.coroutines.flow.Flow
+import java.time.LocalDate
 
 // Data Access Object (DAO) for the todo_items table.
 @Dao
@@ -70,6 +71,26 @@ interface TodoDao {
 
     @Query("DELETE FROM todo_items WHERE id = :id")
     suspend fun deleteById(id: Int)
+
+    @Query("DELETE FROM todo_items WHERE id IN (:ids)")
+    suspend fun deleteByIds(ids: List<Int>)
+
+    @Query(
+        """
+        UPDATE todo_items
+        SET isCompleted = :isCompleted,
+            completedDate = CASE
+                WHEN :isCompleted = 1 THEN COALESCE(completedDate, :completedDate)
+                ELSE NULL
+            END
+        WHERE id IN (:ids)
+        """
+    )
+    suspend fun updateCompletedStatusByIds(
+        ids: List<Int>,
+        isCompleted: Boolean,
+        completedDate: LocalDate?
+    )
 
     @Query("SELECT COUNT(*) FROM todo_items")
     fun getTotalCount(): Flow<Int>

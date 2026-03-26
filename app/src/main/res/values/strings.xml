@@ -134,4 +134,9 @@
     <string name="when_use_dynamic_color_scheme_is_enabled_custom_primary_color_is_automatically_turned_off">When \"Use dynamic color scheme\" is enabled, \"Custom primary color\" is automatically turned off.</string>
     <string name="enabling_liquid_glass_can_significantly_impact_performance">Enabling \"Liquid Glass\" can significantly impact performance.</string>
     <string name="enabling_lite_mode_will_disable_some_blur_effects">Enabling \"Lite Mode\" will disable some blur effects.</string>
+    <string name="select_all">Select all</string>
+    <string name="more">More</string>
+    <string name="check_all">Complete selected</string>
+    <string name="set_flag">Set flag</string>
+    <string name="add_to_calendar">Add to calendar</string>
 </resources>

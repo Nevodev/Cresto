@@ -60,7 +60,6 @@ import androidx.compose.ui.layout.positionInWindow
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -106,7 +105,6 @@ import kotlinx.coroutines.launch
 @Composable
 fun BoxScope.HomeScreen(
     showMenu: (anchorPosition: Offset, items: List<GlasenseMenuItem>) -> Unit,
-    showDialog: (items: List<DialogItemData>, title: String, message: String?) -> Unit,
     viewModel: TodoViewModel
 ) {
     val scope = rememberCoroutineScope()
@@ -126,16 +124,6 @@ fun BoxScope.HomeScreen(
         lastNonZeroSelected = selectedItemCount
     }
 
-    val title = pluralStringResource(
-        id = R.plurals.delete_todo_dialog_title,
-        count = selectedItemCount,
-        selectedItemCount
-    )
-
-    val message = pluralStringResource(
-        id = R.plurals.delete_todo_dialog_msg,
-        count = selectedItemCount
-    )
 
     val statusBarHeight = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
 
@@ -144,10 +132,6 @@ fun BoxScope.HomeScreen(
     val hazeState = rememberHazeState()
 
     // val colorMode = if (MaterialTheme.colorScheme.background == Color.White) true else false
-
-    val onSurfaceContainer = AppColors.scrimNormal
-
-    val surfaceColor = AppColors.pageBackground
 
     val lazyListState = rememberLazyListState()
 
@@ -252,6 +236,7 @@ fun BoxScope.HomeScreen(
             )
         )
     }
+
     var isComposed by remember { mutableStateOf(isSelectionModeActive) }
     var isGone by remember { mutableStateOf(isSelectionModeActive) }
     val targetBlurRadius = with(density) {
@@ -442,8 +427,7 @@ fun BoxScope.HomeScreen(
                     onCheckedChange = { checked ->
                         isChecked = checked
                         scope.launch {
-                            delay(300) // 2. 等待动画播放
-                            // 3. 提交真实数据，触发列表重排
+                            delay(300)
                             viewModel.update(item.todoItem.copy(isCompleted = checked))
                         }
                     },
@@ -641,7 +625,7 @@ fun BoxScope.HomeScreen(
         statusBarHeight = statusBarHeight,
         isVisible = if (isSelectionModeActive) true else isSmallTitleVisible,
         hazeState = hazeState,
-        surfaceColor = surfaceColor
+        surfaceColor = AppColors.pageBackground
     ) {
         var coordinatesCaptured by remember { mutableStateOf<LayoutCoordinates?>(null) }
         val sharedInteractionSource = remember { MutableInteractionSource() }
@@ -753,45 +737,6 @@ fun BoxScope.HomeScreen(
             width = { 48.dp },
             height = { 48.dp },
             padding = PaddingValues(top = statusBarHeight, start = 12.dp),
-            tint = AppColors.error,
-            enabled = true,
-            shape = Capsule(),
-            onClick = {
-                showDialog(
-                    dialogItems,
-                    title,
-                    message
-                )
-            },
-            modifier = Modifier
-                .graphicsLayer {
-                    alpha = topBarAlphaAnimation.value
-                    renderEffect = if (topBarBlurAnimation.value > 0f) {
-                        BlurEffect(
-                            radiusX = topBarBlurAnimation.value,
-                            radiusY = topBarBlurAnimation.value,
-                            edgeTreatment = TileMode.Decal
-                        )
-                    } else {
-                        null
-                    }
-                }
-                .align(Alignment.TopStart),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = onSurfaceContainer,
-                contentColor = AppColors.primary
-            )
-        ) {
-            Icon(
-                painter = painterResource(id = R.drawable.ic_trash),
-                contentDescription = stringResource(R.string.delete_selected_todo_s),
-                modifier = Modifier.width(32.dp)
-            )
-        }
-        GlasenseButtonAdaptable(
-            width = { 48.dp },
-            height = { 48.dp },
-            padding = PaddingValues(top = statusBarHeight, end = 12.dp),
             enabled = true,
             shape = CircleShape,
             onClick = { viewModel.clearSelections() },
@@ -808,15 +753,47 @@ fun BoxScope.HomeScreen(
                         null
                     }
                 }
-                .align(Alignment.TopEnd),
+                .align(Alignment.TopStart),
             colors = ButtonDefaults.buttonColors(
-                containerColor = onSurfaceContainer,
+                containerColor = AppColors.scrimNormal,
                 contentColor = AppColors.primary
             )
         ) {
             Icon(
                 painter = painterResource(id = R.drawable.ic_cross),
                 contentDescription = stringResource(R.string.exit_selection_mode),
+                modifier = Modifier.width(32.dp)
+            )
+        }
+        GlasenseButtonAdaptable(
+            width = { 48.dp },
+            height = { 48.dp },
+            padding = PaddingValues(top = statusBarHeight, end = 12.dp),
+            enabled = true,
+            shape = CircleShape,
+            onClick = { viewModel.toggleSelectAllItems() },
+            modifier = Modifier
+                .graphicsLayer {
+                    alpha = topBarAlphaAnimation.value
+                    renderEffect = if (topBarBlurAnimation.value > 0f) {
+                        BlurEffect(
+                            radiusX = topBarBlurAnimation.value,
+                            radiusY = topBarBlurAnimation.value,
+                            edgeTreatment = TileMode.Decal
+                        )
+                    } else {
+                        null
+                    }
+                }
+                .align(Alignment.TopEnd),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = AppColors.scrimNormal,
+                contentColor = AppColors.primary
+            )
+        ) {
+            Icon(
+                painter = painterResource(id = R.drawable.ic_square_dashed),
+                contentDescription = stringResource(R.string.select_all),
                 modifier = Modifier.width(32.dp)
             )
         }

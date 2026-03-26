@@ -2,6 +2,7 @@ package com.nevoit.cresto.data.todo
 
 import com.nevoit.cresto.data.statistics.DailyStat
 import kotlinx.coroutines.flow.Flow
+import java.time.LocalDate
 
 /**
  * A repository that provides a single source of truth for all to-do data.
@@ -98,6 +99,18 @@ class TodoRepository(private val todoDao: TodoDao) {
 
     suspend fun deleteById(id: Int) {
         todoDao.deleteById(id)
+    }
+
+    suspend fun deleteByIds(ids: List<Int>) {
+        todoDao.deleteByIds(ids)
+    }
+
+    suspend fun updateCompletedStatusByIds(
+        ids: List<Int>,
+        isCompleted: Boolean,
+        completedDate: LocalDate?
+    ) {
+        todoDao.updateCompletedStatusByIds(ids, isCompleted, completedDate)
     }
 
     fun getTotalCount(): Flow<Int> {

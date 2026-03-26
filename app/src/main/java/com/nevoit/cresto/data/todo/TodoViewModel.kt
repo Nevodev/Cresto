@@ -55,21 +55,63 @@ class TodoViewModel(private val repository: TodoRepository) : ViewModel() {
         }
     }
 
+    fun toggleSelectAllItems() {
+        val allIds = allTodos.value.map { it.todoItem.id }.toSet()
+        if (allIds.isEmpty()) {
+            clearSelections()
+            return
+        }
+
+        val isAllSelected = _selectedItemIds.value.size == allIds.size &&
+                _selectedItemIds.value.containsAll(allIds)
+
+        if (isAllSelected) {
+            clearSelections()
+        } else {
+            _selectedItemIds.value = allIds
+            _isSelectionModeActive.value = true
+        }
+    }
+
+
     fun clearSelections() {
         _selectedItemIds.value = emptySet()
         _isSelectionModeActive.value = false
     }
 
-    fun deleteSelectedItems() {
-        val selectedIds = _selectedItemIds.value
-        val itemsToDelete = allTodos.value.filter { it.todoItem.id in selectedIds }
+    fun deleteSelectedItems() = viewModelScope.launch {
+        val selectedIds = _selectedItemIds.value.toList()
+        if (selectedIds.isEmpty()) return@launch
 
-        viewModelScope.launch {
-            itemsToDelete.forEach { item ->
-                delete(item.todoItem)
-            }
+        repository.deleteByIds(selectedIds)
+
+        clearSelections()
+    }
+
+    fun completeSelectedItems() = viewModelScope.launch {
+        val selectedIds = _selectedItemIds.value
+        if (selectedIds.isEmpty()) return@launch
+
+        val selectedTodos = allTodos.value.asSequence()
+            .map { it.todoItem }
+            .filter { it.id in selectedIds }
+            .toList()
+
+        if (selectedTodos.isEmpty()) {
             clearSelections()
+            return@launch
         }
+
+        val allSelectedCompleted = selectedTodos.all { it.isCompleted }
+        val targetCompletedState = !allSelectedCompleted
+
+        repository.updateCompletedStatusByIds(
+            ids = selectedTodos.map { it.id },
+            isCompleted = targetCompletedState,
+            completedDate = if (targetCompletedState) LocalDate.now() else null
+        )
+
+        clearSelections()
     }
 
     val selectedItemCount: StateFlow<Int> = selectedItemIds.map { it.size }

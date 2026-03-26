@@ -14,7 +14,6 @@ import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import com.nevoit.cresto.data.todo.TodoViewModel
-import com.nevoit.cresto.ui.components.glasense.DialogItemData
 import com.nevoit.cresto.ui.components.glasense.GlasenseMenuItem
 import com.nevoit.cresto.ui.screens.HomeScreen
 import com.nevoit.cresto.ui.screens.MindFlowScreen
@@ -26,7 +25,6 @@ import kotlinx.coroutines.launch
 fun BoxScope.NavContainer(
     currentRoute: String,
     showMenu: (anchorPosition: androidx.compose.ui.geometry.Offset, items: List<GlasenseMenuItem>) -> Unit,
-    showDialog: (items: List<DialogItemData>, title: String, message: String?) -> Unit,
     viewModel: TodoViewModel
 ) {
     val saveableStateHolder = rememberSaveableStateHolder()
@@ -37,8 +35,7 @@ fun BoxScope.NavContainer(
         saveableStateHolder.SaveableStateProvider(key = Screen.Home.route) {
             HomeScreen(
                 showMenu = showMenu,
-                viewModel = viewModel,
-                showDialog = showDialog
+                viewModel = viewModel
             )
 
         }
