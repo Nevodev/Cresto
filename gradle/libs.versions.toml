@@ -14,11 +14,12 @@ kotlinxCoroutinesCore = "1.10.2"
 kotlinxSerializationJson = "1.10.0"
 lifecycleRuntimeKtx = "2.10.0"
 activityCompose = "1.13.0"
-composeBom = "2026.03.00"
+composeBom = "2026.03.01"
 mmkv = "2.4.0"
 navigationCompose = "2.9.7"
 roomRuntime = "2.8.4"
 koin-bom = "4.2.0"
+confettiKit = "0.8.0"
 
 
 [libraries]
@@ -60,6 +61,7 @@ shapes = { module = "io.github.kyant0:shapes", version.ref = "shapes" }
 generativeai = { module = "com.google.ai.client.generativeai:generativeai", version.ref = "generativeai" }
 haze = { module = "dev.chrisbanes.haze:haze", version.ref = "haze" }
 mmkv = { module = "com.tencent:mmkv", version.ref = "mmkv" }
+confetti-kit = { module = "io.github.vinceglb:confettikit", version.ref = "confettiKit" }
 
 koin-bom = { module = "io.insert-koin:koin-bom", version.ref = "koin-bom" }
 koin-androidx-compose = { module = "io.insert-koin:koin-androidx-compose" }

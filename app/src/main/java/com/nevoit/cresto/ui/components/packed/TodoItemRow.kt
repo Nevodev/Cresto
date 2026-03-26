@@ -38,6 +38,7 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
@@ -77,6 +78,7 @@ import java.time.format.DateTimeFormatter
 fun TodoItemRow(
     item: TodoItemWithSubTodos,
     onCheckedChange: (Boolean) -> Unit,
+    onCheckboxTapPosition: (Offset) -> Unit = {},
     modifier: Modifier
 ) {
     val completedTask = item.subTodos.filter { it.isCompleted }
@@ -102,7 +104,8 @@ fun TodoItemRow(
         Spacer(modifier = Modifier.width(12.dp))
         GlasenseCheckbox(
             checked = item.isCompleted,
-            onCheckedChange = onCheckedChange
+            onCheckedChange = onCheckedChange,
+            onTapPosition = onCheckboxTapPosition
         )
         Spacer(modifier = Modifier.width(12.dp))
         // If the to-do item has no due date, display only the title.
@@ -222,7 +225,8 @@ fun SwipeableTodoItem(
     item: TodoItemWithSubTodos,
     onDelete: () -> Unit,
     modifier: Modifier,
-    onCheckedChange: (Boolean) -> Unit
+    onCheckedChange: (Boolean) -> Unit,
+    onCheckboxTapPosition: (Offset) -> Unit = {}
 ) {
     val actions = listOf(
         SwipeableActionButton(
@@ -244,7 +248,12 @@ fun SwipeableTodoItem(
             }
         }
     ) {
-        TodoItemRow(item, onCheckedChange, modifier)
+        TodoItemRow(
+            item = item,
+            onCheckedChange = onCheckedChange,
+            onCheckboxTapPosition = onCheckboxTapPosition,
+            modifier = modifier
+        )
     }
 }
 

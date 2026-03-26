@@ -27,10 +27,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter.Companion.tint
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.layout.LayoutCoordinates
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInWindow
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
@@ -51,7 +55,8 @@ fun GlasenseCheckbox(
     checked: Boolean,
     onCheckedChange: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
-    role: Role = Role.Checkbox
+    role: Role = Role.Checkbox,
+    onTapPosition: (Offset) -> Unit = {}
 ) {
     val haptic = LocalHapticFeedback.current
 
@@ -105,6 +110,7 @@ fun GlasenseCheckbox(
 
     val previousChecked = remember { mutableStateOf(checked) }
     var currentIconRes by remember { mutableStateOf<Int?>(null) }
+    var checkboxCoordinates by remember { mutableStateOf<LayoutCoordinates?>(null) }
 
     LaunchedEffect(checked) {
         if (previousChecked.value != checked) {
@@ -120,6 +126,9 @@ fun GlasenseCheckbox(
     Box(
         modifier = modifier
             .size(24.dp)
+            .onGloballyPositioned { coordinates ->
+                checkboxCoordinates = coordinates
+            }
             .backgroundAnimation(
                 sizeAnim = sizeAnim,
                 alphaAnim = alphaAnim,
@@ -131,6 +140,16 @@ fun GlasenseCheckbox(
                 value = checked,
                 onValueChange = { value ->
                     haptic.performHapticFeedback(HapticFeedbackType.ContextClick)
+                    val coordinates = checkboxCoordinates
+                    if (coordinates != null) {
+                        val topLeft = coordinates.positionInWindow()
+                        onTapPosition(
+                            Offset(
+                                x = topLeft.x + coordinates.size.width / 2f,
+                                y = topLeft.y + coordinates.size.height / 2f
+                            )
+                        )
+                    }
                     onCheckedChange(value)
                 },
                 role = role,

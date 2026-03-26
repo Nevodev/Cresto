@@ -114,6 +114,7 @@ dependencies {
     implementation(libs.mmkv)
     implementation(libs.shapes)
     implementation(libs.backdrop)
+    implementation(libs.confetti.kit)
 
     implementation(platform(libs.koin.bom))
     implementation(libs.koin.androidx.compose)

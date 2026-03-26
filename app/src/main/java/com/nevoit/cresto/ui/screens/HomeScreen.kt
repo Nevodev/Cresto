@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -37,10 +38,12 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -53,12 +56,14 @@ import androidx.compose.ui.graphics.drawOutline
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInWindow
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -73,7 +78,6 @@ import com.kyant.shapes.RoundedRectangle
 import com.nevoit.cresto.R
 import com.nevoit.cresto.data.todo.EXTRA_TODO_ID
 import com.nevoit.cresto.data.todo.TodoViewModel
-import com.nevoit.cresto.ui.components.glasense.DialogItemData
 import com.nevoit.cresto.ui.components.glasense.DimIndication
 import com.nevoit.cresto.ui.components.glasense.GlasenseButton
 import com.nevoit.cresto.ui.components.glasense.GlasenseButtonAdaptable
@@ -91,14 +95,24 @@ import com.nevoit.cresto.ui.screens.detailscreen.DetailActivity
 import com.nevoit.cresto.ui.screens.settings.util.SettingsManager
 import com.nevoit.cresto.ui.screens.settings.util.SortOption
 import com.nevoit.cresto.ui.screens.settings.util.SortOrder
+import com.nevoit.cresto.ui.theme.glasense.Amber400
 import com.nevoit.cresto.ui.theme.glasense.AppButtonColors
 import com.nevoit.cresto.ui.theme.glasense.AppColors
 import com.nevoit.cresto.ui.theme.glasense.AppSpecs
+import com.nevoit.cresto.ui.theme.glasense.Pink400
+import com.nevoit.cresto.ui.theme.glasense.Purple400
+import com.nevoit.cresto.ui.theme.glasense.Rose400
 import dev.chrisbanes.haze.ExperimentalHazeApi
 import dev.chrisbanes.haze.hazeSource
 import dev.chrisbanes.haze.rememberHazeState
+import io.github.vinceglb.confettikit.compose.ConfettiKit
+import io.github.vinceglb.confettikit.core.Party
+import io.github.vinceglb.confettikit.core.Position
+import io.github.vinceglb.confettikit.core.emitter.Emitter
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlin.time.Duration.Companion.seconds
 
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalHazeApi::class)
@@ -144,27 +158,6 @@ fun BoxScope.HomeScreen(
 
     val isSmallTitleVisible by lazyListState.isScrolledPast(statusBarHeight + 24.dp)
     val interactionSource = remember { MutableInteractionSource() }
-
-    val cancelText = stringResource(R.string.cancel)
-    val deleteText = stringResource(R.string.delete)
-    val deleteIcon = painterResource(R.drawable.ic_trash)
-
-    val dialogItems = remember(cancelText, deleteText, deleteIcon, viewModel) {
-        listOf(
-            DialogItemData(
-                text = cancelText,
-                onClick = {},
-                isPrimary = false
-            ),
-            DialogItemData(
-                text = deleteText,
-                icon = deleteIcon,
-                onClick = { viewModel.deleteSelectedItems() },
-                isPrimary = true,
-                isDestructive = true
-            )
-        )
-    }
 
     val defaultText = stringResource(R.string.filter_default)
     val dueDateText = stringResource(R.string.due_date)
@@ -340,6 +333,13 @@ fun BoxScope.HomeScreen(
 
     val (incompleteTodos, completeTodos) = sortedTodoList.partition { !it.todoItem.isCompleted }
     var completedVisible by remember { mutableStateOf(true) }
+    var showConfetti by remember { mutableStateOf(false) }
+    var confettiHideJob by remember { mutableStateOf<Job?>(null) }
+    var latestCheckboxTapPosition by remember { mutableStateOf(Offset.Unspecified) }
+    var confettiTriggerPosition by remember { mutableStateOf(Offset.Unspecified) }
+    val pendingUpdateJobs = remember { mutableStateMapOf<Int, Job>() }
+
+    val incompleteCount = incompleteTodos.size
 
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()
@@ -424,11 +424,39 @@ fun BoxScope.HomeScreen(
                     )) {
                 SwipeableTodoItem(
                     item = displayItem,
+                    onCheckboxTapPosition = { position ->
+                        latestCheckboxTapPosition = position
+                    },
                     onCheckedChange = { checked ->
+                        val todoId = item.todoItem.id
+                        if (checked && incompleteCount == 1) {
+                            confettiTriggerPosition = latestCheckboxTapPosition
+                            confettiHideJob?.cancel()
+                            scope.launch {
+                                if (showConfetti) {
+                                    showConfetti = false
+                                    withFrameNanos { }
+                                }
+                                showConfetti = true
+                                confettiHideJob = launch {
+                                    delay(2.seconds)
+                                    showConfetti = false
+                                }
+                            }
+                        }
+
+                        pendingUpdateJobs[todoId]?.cancel()
+
                         isChecked = checked
-                        scope.launch {
+                        val updateJob = scope.launch {
                             delay(300)
                             viewModel.update(item.todoItem.copy(isCompleted = checked))
+                        }
+                        pendingUpdateJobs[todoId] = updateJob
+                        updateJob.invokeOnCompletion {
+                            if (pendingUpdateJobs[todoId] === updateJob) {
+                                pendingUpdateJobs.remove(todoId)
+                            }
                         }
                     },
                     onDelete = { viewModel.delete(item.todoItem) },
@@ -614,6 +642,31 @@ fun BoxScope.HomeScreen(
             }
         }
         overscrollSpacer(lazyListState)
+    }
+    if (showConfetti) {
+        ConfettiKit(
+            modifier = Modifier.fillMaxSize(),
+            parties = listOf(
+                Party(
+                    speed = 0f,
+                    maxSpeed = 60f,
+                    damping = 0.9f,
+                    spread = 270,
+                    colors = listOf(
+                        Amber400.toArgb(),
+                        Purple400.toArgb(),
+                        Rose400.toArgb(),
+                        Pink400.toArgb()
+                    ),
+                    timeToLive = 400L,
+                    emitter = Emitter(duration = 0.2.seconds).perSecond(400),
+                    position = Position.Relative(
+                        x = (confettiTriggerPosition.x / LocalWindowInfo.current.containerSize.width).toDouble(),
+                        y = (confettiTriggerPosition.y / LocalWindowInfo.current.containerSize.height).toDouble()
+                    )
+                )
+            )
+        )
     }
     GlasenseDynamicSmallTitle(
         modifier = Modifier.align(Alignment.TopCenter),
