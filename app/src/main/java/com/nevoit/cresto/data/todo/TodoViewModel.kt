@@ -137,6 +137,10 @@ class TodoViewModel(private val repository: TodoRepository) : ViewModel() {
         clearSelections()
     }
 
+    fun duplicateById(todoId: Int) = viewModelScope.launch {
+        repository.duplicateByIds(listOf(todoId))
+    }
+
     fun mergeSelectedItems(newTodoTitle: String) = viewModelScope.launch {
         val selectedIds = _selectedItemIds.value
         if (selectedIds.size < 2) return@launch

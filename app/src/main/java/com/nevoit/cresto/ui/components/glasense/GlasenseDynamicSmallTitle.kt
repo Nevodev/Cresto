@@ -58,6 +58,7 @@ fun GlasenseDynamicSmallTitle(
     isVisible: Boolean,
     hazeState: HazeState,
     surfaceColor: Color,
+    titleHorizontalPadding: Dp = 80.dp,
     content: @Composable () -> Unit
 ) {
     val blur = !LocalGlasenseSettings.current.liteMode
@@ -118,7 +119,7 @@ fun GlasenseDynamicSmallTitle(
                 title,
                 style = MaterialTheme.typography.headlineSmall.merge(textStyle),
                 maxLines = 1,
-                modifier = Modifier.padding(horizontal = 80.dp),
+                modifier = Modifier.padding(horizontal = titleHorizontalPadding),
                 overflow = TextOverflow.Ellipsis,
             )
         }

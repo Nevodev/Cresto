@@ -7,7 +7,9 @@ import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.LocalOverscrollFactory
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -46,7 +48,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shadow
+import androidx.compose.ui.layout.LayoutCoordinates
+import androidx.compose.ui.layout.boundsInWindow
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInWindow
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
@@ -74,6 +81,9 @@ import com.nevoit.cresto.ui.components.glasense.GlasenseButtonAlt
 import com.nevoit.cresto.ui.components.glasense.GlasenseDialog
 import com.nevoit.cresto.ui.components.glasense.GlasenseDynamicSmallTitle
 import com.nevoit.cresto.ui.components.glasense.GlasenseLoadingIndicator
+import com.nevoit.cresto.ui.components.glasense.GlasenseMenu
+import com.nevoit.cresto.ui.components.glasense.GlasenseMenuItem
+import com.nevoit.cresto.ui.components.glasense.MenuState
 import com.nevoit.cresto.ui.components.glasense.extend.overscrollSpacer
 import com.nevoit.cresto.ui.components.glasense.isScrolledPast
 import com.nevoit.cresto.ui.components.glasense.rememberSwipeableListState
@@ -113,7 +123,7 @@ fun DetailScreen(
     val navigationBarHeight = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
 
     val hazeState = rememberHazeState()
-    
+
     val surfaceColor = AppColors.pageBackground
 
     val backdrop = rememberLayerBackdrop {
@@ -167,8 +177,29 @@ fun DetailScreen(
         dialogState = dialogState.copy(isVisible = false)
     }
 
-    val context = LocalContext.current
+    var menuState by remember { mutableStateOf(MenuState()) }
 
+    val showMenu: (anchorPosition: Offset, items: List<GlasenseMenuItem>) -> Unit =
+        { position, items ->
+            menuState = MenuState(isVisible = true, anchorPosition = position, items = items)
+        }
+
+    val dismissMenu = {
+        menuState = menuState.copy(isVisible = false)
+    }
+
+    val context = LocalContext.current
+    val moreMenu = rememberMoreMenuItems {
+        dismissMenu()
+        scope.launch {
+            delay(200)
+            viewModel.duplicateById(todoId).join()
+            activity?.finish()
+        }
+    }
+    var moreButtonBounds by remember { mutableStateOf<LayoutCoordinates?>(null) }
+
+    val density = LocalDensity.current
 
     LaunchedEffect(Unit) {
         while (true) {
@@ -521,6 +552,52 @@ fun DetailScreen(
                 modifier = Modifier.width(32.dp)
             )
         }
+        val sharedInteractionSource = remember { MutableInteractionSource() }
+        GlasenseButton(
+            enabled = true,
+            interactionSource = sharedInteractionSource,
+            shape = CircleShape,
+            onClick = {},
+            modifier = Modifier
+                .padding(top = statusBarHeight, end = 12.dp)
+                .size(48.dp)
+                .align(Alignment.TopEnd),
+            colors = AppButtonColors.action()
+        ) {
+            Box(
+                modifier = Modifier
+                    .onGloballyPositioned { coordinates ->
+                        moreButtonBounds = coordinates
+                    }
+                    .height(48.dp)
+                    .width(48.dp)
+                    .clickable(
+                        interactionSource = sharedInteractionSource,
+                        indication = null
+                    ) {
+                        moreButtonBounds?.let {
+                            val position = Offset(
+                                x = it.positionInWindow().x + it.boundsInWindow().width,
+                                y = it.positionInWindow().y + it.boundsInWindow().height + with(
+                                    density
+                                ) { 8.dp.toPx() },
+                            )
+                            showMenu(
+                                position,
+                                moreMenu
+                            )
+                        }
+                    },
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_ellipsis),
+                    contentDescription = stringResource(R.string.more),
+                    modifier = Modifier.width(32.dp),
+                    tint = AppColors.primary
+                )
+            }
+        }
         GlasenseBottomBar(
             modifier = Modifier.align(Alignment.BottomCenter),
             navigationBarHeight = navigationBarHeight,
@@ -599,5 +676,11 @@ fun DetailScreen(
         backdrop = backdrop,
         onDismiss = { dismissDialog() },
         modifier = Modifier
+    )
+
+    GlasenseMenu(
+        menuState = menuState,
+        backdrop = backdrop,
+        onDismiss = dismissMenu
     )
 }

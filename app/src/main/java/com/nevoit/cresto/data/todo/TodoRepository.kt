@@ -117,8 +117,7 @@ class TodoRepository(
                     source.subTodos.map { subTodo ->
                         subTodo.copy(
                             id = 0,
-                            parentId = newTodoId,
-                            isCompleted = false
+                            parentId = newTodoId
                         )
                     }
                 }
