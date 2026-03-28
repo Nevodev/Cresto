@@ -29,10 +29,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -50,6 +52,8 @@ import com.nevoit.cresto.ui.components.myScaleIn
 import com.nevoit.cresto.ui.components.myScaleOut
 import com.nevoit.cresto.ui.theme.glasense.AppButtonColors
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 import kotlin.math.abs
@@ -128,11 +132,27 @@ fun SwipeableContainer(
     )
 
     val shouldIntercept = listState.currentOpenKey != null
+    var shouldComposeActions by remember { mutableStateOf(false) }
+
+    val revealedThresholds = remember(actions, actionButtonWidthPx, gapPx) {
+        actions.indices.map { index ->
+            val trueIndex = actions.size - index - 1
+            gapPx + actionButtonWidthPx * trueIndex + actionButtonWidthPx / 2
+        }
+    }
+    var revealedCount by remember(actions) { mutableIntStateOf(0) }
+
+    LaunchedEffect(revealedThresholds) {
+        snapshotFlow { abs(flingOffset.value) }
+            .map { offset -> revealedThresholds.count { offset >= it } }
+            .distinctUntilChanged()
+            .collect { revealedCount = it }
+    }
 
     val scale = remember { Animatable(1f) }
     val alphaAni = remember { Animatable(1f) }
 
-    fun reset() {
+    /*fun reset() {
         coroutineScope.launch {
             swipeState = SwipeState.IDLE
             flingOffset.snapTo(0f)
@@ -140,8 +160,7 @@ fun SwipeableContainer(
             scale.snapTo(1f)
             alphaAni.snapTo(1f)
         }
-    }
-
+    }*/
 
     fun executeAction(action: SwipeableActionButton) {
         if (action.isDestructive) {
@@ -179,6 +198,7 @@ fun SwipeableContainer(
             coroutineScope.launch {
                 swipeState = SwipeState.IDLE
                 flingOffset.animateTo(0f)
+                shouldComposeActions = false
             }
         }
     }
@@ -188,6 +208,7 @@ fun SwipeableContainer(
             coroutineScope.launch {
                 swipeState = SwipeState.IDLE
                 flingOffset.animateTo(0f)
+                shouldComposeActions = false
             }
         }
     }
@@ -197,77 +218,74 @@ fun SwipeableContainer(
             .fillMaxWidth()
             .height(IntrinsicSize.Min)
     ) {
-        Row(
-            modifier = Modifier
-                .align(Alignment.CenterEnd)
-                .width(with(density) { totalActionsWidthPx.toDp() })
-                .padding(end = 6.dp)
-                .fillMaxHeight(),
-            horizontalArrangement = Arrangement.End,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            actions.forEachIndexed { index, action ->
-                Box(
-                    modifier = Modifier
-                        .width(actionButtonWidth)
-                        .fillMaxHeight(),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    val trueIndex = actions.size - index - 1
-                    val revealThreshold =
-                        gapPx + actionButtonWidthPx * trueIndex + actionButtonWidthPx / 2
-
-                    val isVisible by remember(action.index, revealThreshold) {
-                        derivedStateOf { abs(flingOffset.value) >= revealThreshold }
-                    }
-
-                    CustomAnimatedVisibility(
-                        visible = isVisible,
+        if (shouldComposeActions) {
+            Row(
+                modifier = Modifier
+                    .align(Alignment.CenterEnd)
+                    .width(with(density) { totalActionsWidthPx.toDp() })
+                    .padding(end = 6.dp)
+                    .fillMaxHeight(),
+                horizontalArrangement = Arrangement.End,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                actions.forEachIndexed { index, action ->
+                    Box(
                         modifier = Modifier
-                            .width(48.dp)
-                            .height(48.dp),
-                        enter = myScaleIn(
-                            tween(300, 0, LinearOutSlowInEasing),
-                            0.6f
-                        ) + myFadeIn(tween(200)),
-                        exit = myScaleOut(
-                            tween(200, 0, LinearOutSlowInEasing),
-                            0.6f
-                        ) + myFadeOut(tween(100))
+                            .width(actionButtonWidth)
+                            .fillMaxHeight(),
+                        contentAlignment = Alignment.Center,
                     ) {
-                        GlasenseButton(
-                            enabled = true,
-                            shape = CircleShape,
-                            onClick = {
-                                coroutineScope.launch {
-                                    executeAction(action)
-                                }
-                            },
+                        val trueIndex = actions.size - index - 1
+                        val isVisible = trueIndex < revealedCount
+
+                        CustomAnimatedVisibility(
+                            visible = isVisible,
                             modifier = Modifier
                                 .graphicsLayer {
                                     scaleX = scale.value
                                     scaleY = scale.value
                                     alpha = alphaAni.value
                                 }
-                                .size(48.dp),
-                            colors = AppButtonColors.solid(
-                                color = action.color,
-                                contentColor = Color.White
-                            ),
-                            animated = true
+                                .width(48.dp)
+                                .height(48.dp),
+                            enter = myScaleIn(
+                                tween(300, 0, LinearOutSlowInEasing),
+                                0.6f
+                            ) + myFadeIn(tween(200)),
+                            exit = myScaleOut(
+                                tween(200, 0, LinearOutSlowInEasing),
+                                0.6f
+                            ) + myFadeOut(tween(100))
                         ) {
-                            Box(
+                            GlasenseButton(
+                                enabled = true,
+                                shape = CircleShape,
+                                onClick = {
+                                    coroutineScope.launch {
+                                        executeAction(action)
+                                    }
+                                },
                                 modifier = Modifier
-                                    .glasenseHighlight(100.dp)
-                                    .fillMaxSize(), contentAlignment = Alignment.Center
+                                    .size(48.dp),
+                                colors = AppButtonColors.solid(
+                                    color = action.color,
+                                    contentColor = Color.White
+                                ),
+                                animated = true
                             ) {
-                                Icon(
-                                    painter = action.icon,
-                                    contentDescription = action.contentDescription,
+                                Box(
                                     modifier = Modifier
-                                        .width(28.dp)
-                                        .height(28.dp)
-                                )
+                                        .glasenseHighlight(100.dp)
+                                        .fillMaxSize(), contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        painter = action.icon,
+                                        contentDescription = action.contentDescription,
+                                        modifier = Modifier
+                                            .width(28.dp)
+                                            .height(28.dp)
+                                    )
+                                }
                             }
                         }
                     }
@@ -302,6 +320,7 @@ fun SwipeableContainer(
                     },
                     onDragStarted = {
                         initialSwipeState = swipeState
+                        shouldComposeActions = true
                         listState.setOpen(key)
                     },
                     onDragStopped = { velocity ->
@@ -335,6 +354,7 @@ fun SwipeableContainer(
                                     ),
                                     initialVelocity = finalVelocity
                                 )
+                                shouldComposeActions = false
                             }
                         }
                     }
