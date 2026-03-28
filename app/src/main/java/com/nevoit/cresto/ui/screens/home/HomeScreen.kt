@@ -1,0 +1,509 @@
+package com.nevoit.cresto.ui.screens.home
+
+import android.app.Activity
+import android.content.Intent
+import androidx.activity.compose.BackHandler
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.withFrameNanos
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.BlurEffect
+import androidx.compose.ui.graphics.TileMode
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.layout.LayoutCoordinates
+import androidx.compose.ui.layout.boundsInWindow
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInWindow
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.kyant.shapes.Capsule
+import com.nevoit.cresto.R
+import com.nevoit.cresto.data.todo.EXTRA_TODO_ID
+import com.nevoit.cresto.data.todo.TodoViewModel
+import com.nevoit.cresto.ui.components.glasense.GlasenseButton
+import com.nevoit.cresto.ui.components.glasense.GlasenseButtonAdaptable
+import com.nevoit.cresto.ui.components.glasense.GlasenseDynamicSmallTitle
+import com.nevoit.cresto.ui.components.glasense.GlasenseMenuItem
+import com.nevoit.cresto.ui.components.glasense.GlasensePageHeader
+import com.nevoit.cresto.ui.components.glasense.extend.overscrollSpacer
+import com.nevoit.cresto.ui.components.glasense.isScrolledPast
+import com.nevoit.cresto.ui.components.glasense.rememberSwipeableListState
+import com.nevoit.cresto.ui.components.packed.PageContent
+import com.nevoit.cresto.ui.screens.detailscreen.DetailActivity
+import com.nevoit.cresto.ui.screens.settings.util.SettingsManager
+import com.nevoit.cresto.ui.screens.settings.util.SortOption
+import com.nevoit.cresto.ui.screens.settings.util.SortOrder
+import com.nevoit.cresto.ui.theme.glasense.AppButtonColors
+import com.nevoit.cresto.ui.theme.glasense.AppColors
+import com.nevoit.cresto.ui.theme.glasense.AppSpecs
+import dev.chrisbanes.haze.ExperimentalHazeApi
+import dev.chrisbanes.haze.hazeSource
+import dev.chrisbanes.haze.rememberHazeState
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlin.time.Duration.Companion.seconds
+
+
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalHazeApi::class)
+@Composable
+fun BoxScope.HomeScreen(
+    showMenu: (anchorPosition: Offset, items: List<GlasenseMenuItem>) -> Unit,
+    viewModel: TodoViewModel
+) {
+    val scope = rememberCoroutineScope()
+    val context = LocalContext.current
+
+    val todoList by viewModel.allTodos.collectAsStateWithLifecycle()
+    val selectedItemIds by viewModel.selectedItemIds.collectAsState()
+    val isSelectionModeActive by viewModel.isSelectionModeActive.collectAsState()
+    val selectedItemCount by viewModel.selectedItemCount.collectAsState()
+
+    var lastNonZeroSelected by remember { mutableIntStateOf(1) }
+
+    if (selectedItemCount != 0) {
+        lastNonZeroSelected = selectedItemCount
+    }
+
+
+    val statusBarHeight = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
+
+    val density = LocalDensity.current
+
+    val hazeState = rememberHazeState()
+
+    // val colorMode = if (MaterialTheme.colorScheme.background == Color.White) true else false
+
+    val lazyListState = rememberLazyListState()
+
+    val swipeListState = rememberSwipeableListState()
+    LaunchedEffect(lazyListState.isScrollInProgress) {
+        if (lazyListState.isScrollInProgress) {
+            swipeListState.close()
+        }
+    }
+
+    val isSmallTitleVisible by lazyListState.isScrolledPast(statusBarHeight + 24.dp)
+    val interactionSource = remember { MutableInteractionSource() }
+    val menuItemsSort = rememberSortMenuItems()
+
+    var isComposed by remember { mutableStateOf(isSelectionModeActive) }
+    var isGone by remember { mutableStateOf(isSelectionModeActive) }
+    val targetBlurRadius = with(density) {
+        16.dp.toPx()
+    }
+    val topBarAlphaAnimation = remember { Animatable(if (isSelectionModeActive) 1f else 0f) }
+
+    val topBarBlurAnimation =
+        remember { Animatable(if (isSelectionModeActive) 0f else targetBlurRadius) }
+
+    LaunchedEffect(isSelectionModeActive) {
+        if (isSelectionModeActive) {
+            isComposed = true
+            scope.launch { topBarAlphaAnimation.animateTo(1f, tween(300)) }
+            topBarBlurAnimation.animateTo(0f, tween(300))
+            isGone = true
+        } else {
+            isGone = false
+            scope.launch { topBarAlphaAnimation.animateTo(0f, tween(300)) }
+            topBarBlurAnimation.animateTo(targetBlurRadius, tween(300))
+            isComposed = false
+        }
+    }
+    val dpPx = with(density) { 1.dp.toPx() }
+
+    val sortOptionOrdinal by SettingsManager.sortOptionState
+    val sortOrderOrdinal by SettingsManager.sortOrderState
+
+    val currentSortOption = remember(sortOptionOrdinal) {
+        SortOption.entries.getOrElse(sortOptionOrdinal) { SortOption.DEFAULT }
+    }
+    val currentSortOrder = remember(sortOrderOrdinal) {
+        SortOrder.entries.getOrElse(sortOrderOrdinal) { SortOrder.DESCENDING }
+    }
+
+    val sortedTodoList = remember(todoList, currentSortOption, currentSortOrder) {
+        sortTodos(todoList, currentSortOption, currentSortOrder)
+    }
+    val (incompleteTodos, completeTodos) = sortedTodoList.partition { !it.todoItem.isCompleted }
+    var completedVisible by remember { mutableStateOf(true) }
+    var showConfetti by remember { mutableStateOf(false) }
+    var confettiHideJob by remember { mutableStateOf<Job?>(null) }
+    var latestCheckboxTapPosition by remember { mutableStateOf(Offset.Unspecified) }
+    var confettiTriggerPosition by remember { mutableStateOf(Offset.Unspecified) }
+    val pendingUpdateJobs = remember { mutableStateMapOf<Int, Job>() }
+
+    val incompleteCount = incompleteTodos.size
+
+    val launcher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            val deleteId = result.data?.getIntExtra("extra_delete_id", -1) ?: -1
+            if (deleteId != -1) {
+                scope.launch {
+                    delay(300)
+                    viewModel.deleteById(deleteId)
+                }
+            }
+        }
+    }
+    if (isSelectionModeActive) {
+        BackHandler { viewModel.clearSelections() }
+    }
+
+    val selectionOutline = AppColors.primary
+    val cardCorner = AppSpecs.cardCorner
+
+    PageContent(
+        state = lazyListState,
+        modifier = Modifier
+            .hazeSource(hazeState, 0f),
+        tabPadding = true
+    ) {
+        item {
+            GlasensePageHeader(
+                title = stringResource(R.string.all_todos)
+            )
+        }
+
+        itemsIndexed(
+            items = incompleteTodos,
+            key = { _, item -> item.todoItem.id },
+        ) { index, item ->
+            var isChecked by remember(item.todoItem.id) { mutableStateOf(item.todoItem.isCompleted) }
+
+            val displayItem = remember(item, isChecked) {
+                item.copy(todoItem = item.todoItem.copy(isCompleted = isChecked))
+            }
+
+            TodoListItemRow(
+                item = item,
+                displayItem = displayItem,
+                isSelected = item.todoItem.id in selectedItemIds,
+                isSelectionModeActive = isSelectionModeActive,
+                isComposed = isComposed,
+                selectionOutline = selectionOutline,
+                cardCorner = cardCorner,
+                overlayInteractionSource = interactionSource,
+                swipeListState = swipeListState,
+                onEnterSelection = { viewModel.enterSelectionMode(item.todoItem.id) },
+                onToggleSelection = { viewModel.toggleSelection(item.todoItem.id) },
+                onOpenDetail = {
+                    val intent = Intent(context, DetailActivity::class.java).apply {
+                        putExtra(EXTRA_TODO_ID, item.todoItem.id)
+                    }
+                    launcher.launch(intent)
+                },
+                onCheckboxTapPosition = { position ->
+                    latestCheckboxTapPosition = position
+                },
+                onCheckedChange = { checked ->
+                    val todoId = item.todoItem.id
+                    if (checked && incompleteCount == 1) {
+                        confettiTriggerPosition = latestCheckboxTapPosition
+                        confettiHideJob?.cancel()
+                        scope.launch {
+                            if (showConfetti) {
+                                showConfetti = false
+                                withFrameNanos { }
+                            }
+                            showConfetti = true
+                            confettiHideJob = launch {
+                                delay(2.seconds)
+                                showConfetti = false
+                            }
+                        }
+                    }
+
+                    pendingUpdateJobs[todoId]?.cancel()
+
+                    isChecked = checked
+                    val updateJob = scope.launch {
+                        delay(300)
+                        viewModel.update(item.todoItem.copy(isCompleted = checked))
+                    }
+                    pendingUpdateJobs[todoId] = updateJob
+                    updateJob.invokeOnCompletion {
+                        if (pendingUpdateJobs[todoId] === updateJob) {
+                            pendingUpdateJobs.remove(todoId)
+                        }
+                    }
+                },
+                onDelete = { viewModel.delete(item.todoItem) }
+            )
+
+            if (completeTodos.isNotEmpty() || index != incompleteTodos.lastIndex) {
+                Spacer(modifier = Modifier.height(12.dp))
+            }
+        }
+
+        if (completeTodos.isNotEmpty()) {
+            item(key = "small_title") {
+                TodoListSectionHead(
+                    title = stringResource(R.string.completed),
+                    isExpanded = completedVisible
+                ) {
+                    completedVisible = !completedVisible
+                }
+            }
+            if (completedVisible) {
+                itemsIndexed(
+                    items = completeTodos,
+                    key = { _, item -> item.todoItem.id },
+                ) { index, item ->
+                    TodoListItemRow(
+                        item = item,
+                        isSelected = item.todoItem.id in selectedItemIds,
+                        isSelectionModeActive = isSelectionModeActive,
+                        isComposed = isComposed,
+                        selectionOutline = selectionOutline,
+                        cardCorner = cardCorner,
+                        overlayInteractionSource = interactionSource,
+                        swipeListState = swipeListState,
+                        onEnterSelection = { viewModel.enterSelectionMode(item.todoItem.id) },
+                        onToggleSelection = { viewModel.toggleSelection(item.todoItem.id) },
+                        onOpenDetail = {
+                            val intent = Intent(context, DetailActivity::class.java).apply {
+                                putExtra(EXTRA_TODO_ID, item.todoItem.id)
+                            }
+                            launcher.launch(intent)
+                        },
+                        onCheckedChange = { isChecked ->
+                            viewModel.update(item.todoItem.copy(isCompleted = isChecked))
+                        },
+                        onDelete = { viewModel.delete(item.todoItem) }
+                    )
+
+                    if (index != completeTodos.lastIndex) {
+                        Spacer(modifier = Modifier.height(12.dp))
+                    }
+                }
+            }
+        }
+        overscrollSpacer(lazyListState)
+    }
+    CompleteConfettiOverlay(visible = showConfetti, position = confettiTriggerPosition)
+    GlasenseDynamicSmallTitle(
+        modifier = Modifier.align(Alignment.TopCenter),
+        title = if (isComposed) stringResource(
+            R.string.selected_todos,
+            lastNonZeroSelected
+        ) else stringResource(R.string.all_todos),
+        textStyle = TextStyle(fontFeatureSettings = "tnum"),
+        statusBarHeight = statusBarHeight,
+        isVisible = if (isSelectionModeActive) true else isSmallTitleVisible,
+        hazeState = hazeState,
+        surfaceColor = AppColors.pageBackground
+    ) {
+        var coordinatesCaptured by remember { mutableStateOf<LayoutCoordinates?>(null) }
+        val sharedInteractionSource = remember { MutableInteractionSource() }
+
+        if (!isGone) {
+            GlasenseButton(
+                enabled = true,
+                interactionSource = sharedInteractionSource,
+                shape = Capsule(),
+                onClick = {},
+                modifier = Modifier
+                    .graphicsLayer {
+                        alpha = 1 - topBarAlphaAnimation.value
+                        val blurRadius = targetBlurRadius - topBarBlurAnimation.value
+                        renderEffect = if (blurRadius > 0f) {
+                            BlurEffect(
+                                radiusX = blurRadius,
+                                radiusY = blurRadius,
+                                edgeTreatment = TileMode.Decal
+                            )
+                        } else {
+                            null
+                        }
+                    }
+                    .padding(top = statusBarHeight, start = 12.dp)
+                    .align(Alignment.TopStart),
+                colors = AppButtonColors.action()
+            ) {
+                Row(
+                    modifier = Modifier
+                        .height(48.dp),
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .height(48.dp)
+                            .width(48.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_magnifying_glass),
+                            contentDescription = stringResource(R.string.search_all_todos),
+                            modifier = Modifier.width(32.dp),
+                            tint = AppColors.primary
+                        )
+                    }
+                    Box(
+                        modifier = Modifier
+                            .height(48.dp)
+                            .width(48.dp)
+                            .onGloballyPositioned { coordinates ->
+                                coordinatesCaptured = coordinates
+                            }
+                            .clickable(
+                                interactionSource = sharedInteractionSource,
+                                indication = null
+                            ) {
+                                coordinatesCaptured?.let {
+                                    val position = Offset(
+                                        x = it.positionInWindow().x,
+                                        y = it.positionInWindow().y + it.boundsInWindow().height + 8 * dpPx,
+                                    )
+                                    showMenu(position, menuItemsSort)
+                                }
+                            },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_funnel),
+                            contentDescription = stringResource(R.string.filter),
+                            modifier = Modifier.width(32.dp),
+                            tint = AppColors.primary
+                        )
+                    }
+                }
+            }
+            GlasenseButton(
+                enabled = true,
+                shape = CircleShape,
+                onClick = { viewModel.showBottomSheet() },
+                modifier = Modifier
+                    .graphicsLayer {
+                        alpha = 1 - topBarAlphaAnimation.value
+                        val blurRadius = targetBlurRadius - topBarBlurAnimation.value
+                        renderEffect = if (blurRadius > 0f) {
+                            BlurEffect(
+                                radiusX = blurRadius,
+                                radiusY = blurRadius,
+                                edgeTreatment = TileMode.Decal
+                            )
+                        } else {
+                            null
+                        }
+                    }
+                    .padding(top = statusBarHeight, end = 12.dp)
+                    .size(48.dp)
+                    .align(Alignment.TopEnd),
+                colors = AppButtonColors.action()
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_add_large),
+                    contentDescription = stringResource(R.string.add_new_todo),
+                    modifier = Modifier.width(32.dp)
+                )
+            }
+        }
+    }
+    if (isComposed) {
+        GlasenseButtonAdaptable(
+            width = { 48.dp },
+            height = { 48.dp },
+            padding = PaddingValues(top = statusBarHeight, start = 12.dp),
+            enabled = true,
+            shape = CircleShape,
+            onClick = { viewModel.clearSelections() },
+            modifier = Modifier
+                .graphicsLayer {
+                    alpha = topBarAlphaAnimation.value
+                    renderEffect = if (topBarBlurAnimation.value > 0f) {
+                        BlurEffect(
+                            radiusX = topBarBlurAnimation.value,
+                            radiusY = topBarBlurAnimation.value,
+                            edgeTreatment = TileMode.Decal
+                        )
+                    } else {
+                        null
+                    }
+                }
+                .align(Alignment.TopStart),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = AppColors.scrimNormal,
+                contentColor = AppColors.primary
+            )
+        ) {
+            Icon(
+                painter = painterResource(id = R.drawable.ic_cross),
+                contentDescription = stringResource(R.string.exit_selection_mode),
+                modifier = Modifier.width(32.dp)
+            )
+        }
+        GlasenseButtonAdaptable(
+            width = { 48.dp },
+            height = { 48.dp },
+            padding = PaddingValues(top = statusBarHeight, end = 12.dp),
+            enabled = true,
+            shape = CircleShape,
+            onClick = { viewModel.toggleSelectAllItems() },
+            modifier = Modifier
+                .graphicsLayer {
+                    alpha = topBarAlphaAnimation.value
+                    renderEffect = if (topBarBlurAnimation.value > 0f) {
+                        BlurEffect(
+                            radiusX = topBarBlurAnimation.value,
+                            radiusY = topBarBlurAnimation.value,
+                            edgeTreatment = TileMode.Decal
+                        )
+                    } else {
+                        null
+                    }
+                }
+                .align(Alignment.TopEnd),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = AppColors.scrimNormal,
+                contentColor = AppColors.primary
+            )
+        ) {
+            Icon(
+                painter = painterResource(id = R.drawable.ic_square_dashed),
+                contentDescription = stringResource(R.string.select_all),
+                modifier = Modifier.width(32.dp)
+            )
+        }
+    }
+}
