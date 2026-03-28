@@ -102,7 +102,10 @@ fun BoxScope.SettingsScreen() {
                         title = stringResource(R.string.appearance),
                         onClick = {
                             context.startActivity(
-                                SettingsActivity.createIntent(context, SettingsDestination.APPEARANCE)
+                                SettingsActivity.createIntent(
+                                    context,
+                                    SettingsDestination.APPEARANCE
+                                )
                             )
                         }
                     )
@@ -113,7 +116,10 @@ fun BoxScope.SettingsScreen() {
                         title = stringResource(R.string.data_storage),
                         onClick = {
                             context.startActivity(
-                                SettingsActivity.createIntent(context, SettingsDestination.DATA_STORAGE)
+                                SettingsActivity.createIntent(
+                                    context,
+                                    SettingsDestination.DATA_STORAGE
+                                )
                             )
                         }
                     )
@@ -122,7 +128,14 @@ fun BoxScope.SettingsScreen() {
                         color = Slate500,
                         icon = painterResource(R.drawable.ic_twotone_gear),
                         title = stringResource(R.string.general),
-                        onClick = {}
+                        onClick = {
+                            context.startActivity(
+                                SettingsActivity.createIntent(
+                                    context,
+                                    SettingsDestination.GENERAL
+                                )
+                            )
+                        }
                     )
                 }
             }

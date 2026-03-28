@@ -287,34 +287,41 @@ fun AppearanceScreen(settingsViewModel: SettingsViewModel = viewModel()) {
                     title = stringResource(R.string.design),
                     backgroundColor = hierarchicalSurfaceColor
                 ) {
-                    Column {
-                        ConfigItem(title = stringResource(R.string.lite_mode)) {
+                    ConfigItem(title = stringResource(R.string.lite_mode)) {
+                        GlasenseSwitch(
+                            backgroundColor = AppColors.cardBackground,
+                            checked = isLiteMode,
+                            onCheckedChange = { settingsViewModel.onLiteModeChanged(it) })
+                    }
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = stringResource(R.string.enabling_lite_mode_will_disable_some_blur_effects),
+                    fontSize = 14.sp,
+                    lineHeight = 18.sp,
+                    modifier = Modifier.padding(horizontal = 12.dp),
+                    color = AppColors.contentVariant.copy(alpha = .3f)
+                )
+                VGap()
+            }
+            item {
+                ConfigItemContainer(backgroundColor = AppColors.cardBackground) {
+                    ConfigItem(title = stringResource(R.string.liquid_glass)) {
+                        CompositionLocalProvider(
+                            LocalGlasenseSettings provides LocalGlasenseSettings.current.copy(
+                                liquidGlass = true
+                            )
+                        ) {
                             GlasenseSwitch(
                                 backgroundColor = AppColors.cardBackground,
-                                checked = isLiteMode,
-                                onCheckedChange = { settingsViewModel.onLiteModeChanged(it) })
-                        }
-                        Spacer(modifier = Modifier.height(8.dp))
-                        // Visual divider line
-                        ZeroHeightDivider()
-                        Spacer(modifier = Modifier.height(8.dp))
-                        ConfigItem(title = stringResource(R.string.liquid_glass)) {
-                            CompositionLocalProvider(
-                                LocalGlasenseSettings provides LocalGlasenseSettings.current.copy(
-                                    liquidGlass = true
-                                )
-                            ) {
-                                GlasenseSwitch(
-                                    backgroundColor = AppColors.cardBackground,
-                                    checked = isLiquidGlass,
-                                    onCheckedChange = { settingsViewModel.onLiquidGlassChanged(it) })
-                            }
+                                checked = isLiquidGlass,
+                                onCheckedChange = { settingsViewModel.onLiquidGlassChanged(it) })
                         }
                     }
                 }
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = stringResource(R.string.enabling_lite_mode_will_disable_some_blur_effects) + stringResource(
+                    text = stringResource(
                         R.string.enabling_liquid_glass_can_significantly_impact_performance
                     ),
                     fontSize = 14.sp,

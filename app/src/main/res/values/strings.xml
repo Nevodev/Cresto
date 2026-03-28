@@ -33,6 +33,23 @@
     <string name="version_code">Version Code</string>
     <string name="about">About</string>
     <string name="back">Back</string>
+    <string name="manage_startup_behavior_todo_marking_and_advanced_shortcuts">Manage startup behavior, todo markers, and advanced shortcuts.</string>
+    <string name="general_section_title">General</string>
+    <string name="check_for_updates_on_startup">Check for Updates on Startup</string>
+    <string name="completion_sound">Completion Sound</string>
+    <string name="language">Language</string>
+    <string name="chinese">Chinese</string>
+    <string name="todos">Todos</string>
+    <string name="auto_add_to_system_calendar">Auto-add to System Calendar</string>
+    <string name="automatically_add_new_todos_as_events_in_system_calendar">Automatically add new todos as events in the system calendar.</string>
+    <string name="due_today_marker">Due Today Marker</string>
+    <string name="add_a_marker_to_todos_due_today">Add a marker to todos due today.</string>
+    <string name="overdue_marker">Overdue Marker</string>
+    <string name="add_a_marker_to_overdue_todos_on_the_next_day">Add a marker to overdue todos on the next day.</string>
+    <string name="advanced">Advanced</string>
+    <string name="shizuku_permission">Shizuku Permission</string>
+    <string name="enable_extract_screen_quick_toggle">Enable "Extract Screen" Quick Toggle</string>
+    <string name="add_a_quick_toggle_to_control_center_for_one_tap_ai_screen_extraction_shizuku_required">Add a quick toggle to Control Center for one-tap AI screen extraction. Shizuku permission is required.</string>
     <string name="boost_your_experience_with_intelligent_cresto_function_calling">Boost your experience with intelligent Cresto function calling.</string>
     <string name="api" translatable="false">API</string>
     <string name="api_key" translatable="false">API Key</string>
@@ -55,8 +72,8 @@
     <string name="user_data">User Data</string>
     <string name="cache">Cache</string>
     <string name="total">Total</string>
-    <string name="export_database">Export Database</string>
-    <string name="import_database">Import Database</string>
+    <string name="export_database">Export Backup File</string>
+    <string name="import_database">Import Backup File</string>
     <string name="reset_all_settings">Reset All Settings</string>
     <string name="this_will_reset_all_settings_to_their_defaults_your_todos_will_not_be_deleted">This will reset all settings to their defaults. Your todos will not be deleted.</string>
     <string name="clear_all_data">Clear All Data</string>
@@ -139,4 +156,18 @@
     <string name="check_all">Complete selected</string>
     <string name="set_flag">Set flag</string>
     <string name="add_to_calendar">Add to calendar</string>
+    <string name="skip_duplicates">Skip Duplicates</string>
+    <string name="import_all">Import All</string>
+    <string name="export_failed">Export Failed</string>
+    <string name="import_failed">Import Failed</string>
+    <string name="calculating">Calculating…</string>
+    <string name="backup_export_stream_error">Open output stream failed.</string>
+    <string name="backup_read_file_error">Can not read backup file.</string>
+    <string name="backup_json_only_hint">Please select a .json backup file.</string>
+    <string name="backup_duplicate_detected_title">Detected %1$d Duplicate Items</string>
+    <string name="backup_duplicate_detected_message">Total %1$d items, %2$d new. Choose import mode.</string>
+    <string name="backup_precheck_failed">Precheck Failed</string>
+    <string name="backup_import_completed">Import Completed</string>
+    <string name="backup_import_result_message">Total %1$d items, imported %2$d, skipped %3$d.</string>
+    <string name="confirm_action_title">%1$s?</string>
 </resources>

@@ -23,6 +23,20 @@ data class BottomSheetUiState(
     val isVisible: Boolean = false
 )
 
+data class BackupUiState(
+    val isExporting: Boolean = false,
+    val isImporting: Boolean = false,
+    val exportedJson: String? = null,
+    val importResult: ImportResult? = null,
+    val errorMessage: String? = null
+)
+
+data class ImportPreviewUiState(
+    val isChecking: Boolean = false,
+    val result: TodoRepository.ImportPreviewResult? = null,
+    val errorMessage: String? = null
+)
+
 class TodoViewModel(private val repository: TodoRepository) : ViewModel() {
     val allTodos: StateFlow<List<TodoItemWithSubTodos>> = repository.allTodos.stateIn(
         scope = viewModelScope,
@@ -227,5 +241,106 @@ class TodoViewModel(private val repository: TodoRepository) : ViewModel() {
             // clear settings
             MMKV.defaultMMKV().clearAll()
         }
+    }
+
+    private val _backupUiState = MutableStateFlow(BackupUiState())
+    val backupUiState: StateFlow<BackupUiState> = _backupUiState.asStateFlow()
+
+    fun exportBackupToJson() = viewModelScope.launch {
+        _backupUiState.update {
+            it.copy(
+                isExporting = true,
+                errorMessage = null,
+                importResult = null
+            )
+        }
+
+        runCatching {
+            repository.exportToJson()
+        }.onSuccess { json ->
+            _backupUiState.update {
+                it.copy(
+                    isExporting = false,
+                    exportedJson = json
+                )
+            }
+        }.onFailure { e ->
+            _backupUiState.update {
+                it.copy(
+                    isExporting = false,
+                    errorMessage = e.message ?: "failed to export."
+                )
+            }
+        }
+    }
+
+    fun importBackupFromJson(
+        json: String,
+        policy: DuplicatePolicy
+    ) = viewModelScope.launch {
+        _backupUiState.update {
+            it.copy(
+                isImporting = true,
+                errorMessage = null,
+                importResult = null
+            )
+        }
+
+        runCatching {
+            repository.importFromJson(json, policy)
+        }.onSuccess { result ->
+            _backupUiState.update {
+                it.copy(
+                    isImporting = false,
+                    importResult = result
+                )
+            }
+        }.onFailure { e ->
+            _backupUiState.update {
+                it.copy(
+                    isImporting = false,
+                    errorMessage = e.message ?: "failed to import."
+                )
+            }
+        }
+    }
+
+    fun clearBackupError() {
+        _backupUiState.update { it.copy(errorMessage = null) }
+    }
+
+    fun clearExportedJson() {
+        _backupUiState.update { it.copy(exportedJson = null) }
+    }
+
+    fun clearImportResult() {
+        _backupUiState.update { it.copy(importResult = null) }
+    }
+
+    private val _importPreviewState = MutableStateFlow(ImportPreviewUiState())
+    val importPreviewState: StateFlow<ImportPreviewUiState> = _importPreviewState.asStateFlow()
+
+    fun previewImport(json: String) = viewModelScope.launch {
+        _importPreviewState.update {
+            it.copy(
+                isChecking = true,
+                errorMessage = null,
+                result = null
+            )
+        }
+
+        runCatching { repository.previewImportDuplicates(json) }
+            .onSuccess { preview ->
+                _importPreviewState.update { it.copy(isChecking = false, result = preview) }
+            }
+            .onFailure { e ->
+                _importPreviewState.update {
+                    it.copy(isChecking = false, errorMessage = e.message ?: "预检失败")
+                }
+            }
+    }
+
+    fun clearImportPreview() {
+        _importPreviewState.value = ImportPreviewUiState()
     }
 }

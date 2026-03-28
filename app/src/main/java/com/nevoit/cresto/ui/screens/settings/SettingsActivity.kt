@@ -21,11 +21,12 @@ enum class SettingsDestination(val value: String) {
     APPEARANCE("appearance"),
     AI("ai"),
     DATA_STORAGE("data_storage"),
+    GENERAL("general"),
     ABOUT("about");
 
     companion object {
         fun fromValue(value: String?): SettingsDestination {
-            return entries.firstOrNull { it.value == value } ?: APPEARANCE
+            return entries.firstOrNull { it.value == value } ?: GENERAL
         }
     }
 }
@@ -67,6 +68,7 @@ class SettingsActivity : ComponentActivity() {
                         SettingsDestination.APPEARANCE -> AppearanceScreen()
                         SettingsDestination.AI -> AIScreen()
                         SettingsDestination.DATA_STORAGE -> DataStorageScreen()
+                        SettingsDestination.GENERAL -> GeneralScreen()
                         SettingsDestination.ABOUT -> AboutScreen()
                     }
                 }

@@ -1,7 +1,10 @@
 package com.nevoit.cresto.ui.screens.settings
 
 import android.text.format.Formatter
+import android.provider.OpenableColumns
 import androidx.activity.compose.LocalActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -27,6 +30,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -52,6 +56,7 @@ import com.kyant.backdrop.backdrops.layerBackdrop
 import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import com.kyant.shapes.Capsule
 import com.nevoit.cresto.R
+import com.nevoit.cresto.data.todo.DuplicatePolicy
 import com.nevoit.cresto.data.todo.TodoViewModel
 import com.nevoit.cresto.ui.components.glasense.DialogItemData
 import com.nevoit.cresto.ui.components.glasense.DialogState
@@ -81,6 +86,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.koin.androidx.compose.koinViewModel
 import java.io.File
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 /**
  * This composable function defines the Data & Storage screen.
@@ -97,10 +104,11 @@ fun DataStorageScreen() {
     val scope = rememberCoroutineScope()
 
     // State variables to hold storage information
-    var appSize by remember { mutableStateOf("Calculating...") }
-    var dataSize by remember { mutableStateOf("Calculating...") }
-    var cacheSize by remember { mutableStateOf("Calculating...") }
-    var totalSize by remember { mutableStateOf("Calculating...") }
+    val calculatingText = stringResource(R.string.calculating)
+    var appSize by remember { mutableStateOf(calculatingText) }
+    var dataSize by remember { mutableStateOf(calculatingText) }
+    var cacheSize by remember { mutableStateOf(calculatingText) }
+    var totalSize by remember { mutableStateOf(calculatingText) }
     var appSizeLong by remember { mutableLongStateOf(0L) }
     var dataSizeLong by remember { mutableLongStateOf(0L) }
     var cacheSizeLong by remember { mutableLongStateOf(0L) }
@@ -177,11 +185,18 @@ fun DataStorageScreen() {
 
     var dialogState by remember { mutableStateOf(DialogState()) }
 
-    val showDialog: (items: List<DialogItemData>, title: String, message: String?) -> Unit =
-        { items, title, message ->
-            dialogState =
-                DialogState(isVisible = true, items = items, title = title, message = message)
-        }
+    fun showDialog(
+        items: List<DialogItemData>,
+        title: String,
+        message: String? = null
+    ) {
+        dialogState = DialogState(
+            isVisible = true,
+            items = items,
+            title = title,
+            message = message
+        )
+    }
 
     val dismissDialog = {
         dialogState = dialogState.copy(isVisible = false)
@@ -224,6 +239,199 @@ fun DataStorageScreen() {
             isDestructive = true
         )
     )
+
+    var pendingImportJson by remember { mutableStateOf<String?>(null) }
+    val importPreviewState by viewModel.importPreviewState.collectAsState()
+
+    val importDialogItems = listOf(
+        DialogItemData(
+            stringResource(R.string.skip_duplicates),
+            onClick = {
+                val json = pendingImportJson
+                if (json != null) {
+                    viewModel.importBackupFromJson(json, DuplicatePolicy.SKIP_DUPLICATES)
+                }
+                dismissDialog()
+                pendingImportJson = null
+            },
+            isPrimary = false
+        ),
+        DialogItemData(
+            stringResource(R.string.import_all),
+            onClick = {
+                val json = pendingImportJson
+                if (json != null) {
+                    viewModel.importBackupFromJson(json, DuplicatePolicy.IMPORT_ALL)
+                }
+                dismissDialog()
+                pendingImportJson = null
+            },
+            isPrimary = false
+        )
+    )
+
+    val backupUiState by viewModel.backupUiState.collectAsState()
+    var pendingExportJson by remember { mutableStateOf<String?>(null) }
+
+    val cancelText = stringResource(R.string.cancel)
+    val okText = stringResource(R.string.ok)
+
+    val exportFailedText = stringResource(R.string.export_failed)
+    val importFailedText = stringResource(R.string.import_failed)
+    val openOutputStreamFailedText = stringResource(R.string.backup_export_stream_error)
+    val readBackupFileFailedText = stringResource(R.string.backup_read_file_error)
+    val jsonOnlyFileHintText = stringResource(R.string.backup_json_only_hint)
+    val duplicateDetectedTitle = stringResource(R.string.backup_duplicate_detected_title)
+    val duplicateDetectedMessage = stringResource(R.string.backup_duplicate_detected_message)
+    val precheckFailedText = stringResource(R.string.backup_precheck_failed)
+    val importCompletedText = stringResource(R.string.backup_import_completed)
+    val importResultMessage = stringResource(R.string.backup_import_result_message)
+    val confirmActionTitle = stringResource(R.string.confirm_action_title)
+
+    val createBackupFileLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.CreateDocument("application/json")
+    ) { uri ->
+        val json = pendingExportJson
+        if (uri != null && json != null) {
+            runCatching<Unit> {
+                context.contentResolver.openOutputStream(uri)?.bufferedWriter()?.use { writer ->
+                    writer.write(json)
+                } ?: error(openOutputStreamFailedText)
+            }.onFailure { e ->
+                showDialog(
+                    items = listOf(
+                        DialogItemData(
+                            cancelText,
+                            onClick = { dismissDialog() },
+                            isPrimary = true
+                        )
+                    ),
+                    title = exportFailedText,
+                    message = e.message
+                )
+            }
+        }
+        pendingExportJson = null
+        viewModel.clearExportedJson()
+    }
+
+    LaunchedEffect(backupUiState.exportedJson) {
+        val json = backupUiState.exportedJson ?: return@LaunchedEffect
+
+        pendingExportJson = json
+        val ts = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"))
+        createBackupFileLauncher.launch("cresto_backup_$ts.json")
+    }
+
+    LaunchedEffect(backupUiState.errorMessage) {
+        backupUiState.errorMessage?.let { msg ->
+            showDialog(
+                items = listOf(
+                    DialogItemData(okText, onClick = { dismissDialog() }, isPrimary = true)
+                ),
+                title = exportFailedText,
+                message = msg
+            )
+            viewModel.clearBackupError()
+        }
+    }
+
+    val openBackupFileLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.OpenDocument()
+    ) { uri ->
+        if (uri == null) return@rememberLauncherForActivityResult
+
+        val selectedMimeType = context.contentResolver.getType(uri)
+        val selectedName = context.contentResolver.query(
+            uri,
+            arrayOf(OpenableColumns.DISPLAY_NAME),
+            null,
+            null,
+            null
+        )?.use { cursor ->
+            val nameIndex = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+            if (nameIndex >= 0 && cursor.moveToFirst()) cursor.getString(nameIndex) else null
+        }
+        val isJsonFile = selectedMimeType == "application/json" ||
+                selectedName?.lowercase()?.endsWith(".json") == true
+
+        if (!isJsonFile) {
+            showDialog(
+                items = listOf(
+                    DialogItemData(okText, onClick = { dismissDialog() }, isPrimary = true)
+                ),
+                title = importFailedText,
+                message = jsonOnlyFileHintText
+            )
+            return@rememberLauncherForActivityResult
+        }
+
+        runCatching {
+            context.contentResolver.openInputStream(uri)?.bufferedReader()?.use { it.readText() }
+                ?: error(readBackupFileFailedText)
+        }.onSuccess { json ->
+            pendingImportJson = json
+            viewModel.previewImport(json)
+        }.onFailure { e ->
+            showDialog(
+                items = listOf(
+                    DialogItemData(okText, onClick = { dismissDialog() }, isPrimary = true)
+                ),
+                title = importFailedText,
+                message = e.message
+            )
+        }
+    }
+
+    LaunchedEffect(importPreviewState.result) {
+        val preview = importPreviewState.result ?: return@LaunchedEffect
+        val json = pendingImportJson ?: return@LaunchedEffect
+
+        if (preview.duplicate == 0) {
+            viewModel.importBackupFromJson(json, DuplicatePolicy.SKIP_DUPLICATES)
+        } else {
+            showDialog(
+                importDialogItems,
+                String.format(duplicateDetectedTitle, preview.duplicate),
+                String.format(duplicateDetectedMessage, preview.total, preview.unique)
+            )
+        }
+
+        viewModel.clearImportPreview()
+    }
+
+
+    LaunchedEffect(importPreviewState.errorMessage) {
+        importPreviewState.errorMessage?.let { msg ->
+            showDialog(
+                items = listOf(
+                    DialogItemData(okText, onClick = { dismissDialog() }, isPrimary = true)
+                ),
+                title = precheckFailedText,
+                message = msg
+            )
+            viewModel.clearImportPreview()
+        }
+    }
+
+    LaunchedEffect(backupUiState.importResult) {
+        backupUiState.importResult?.let { result ->
+            showDialog(
+                items = listOf(
+                    DialogItemData(okText, onClick = { dismissDialog() }, isPrimary = true)
+                ),
+                title = importCompletedText,
+                message = String.format(
+                    importResultMessage,
+                    result.total,
+                    result.imported,
+                    result.skipped
+                )
+            )
+            pendingImportJson = null
+            viewModel.clearImportResult()
+        }
+    }
 
     val resetAllSettingsText = stringResource(R.string.reset_all_settings)
     val resetContentText =
@@ -331,15 +539,31 @@ fun DataStorageScreen() {
                     backgroundColor = hierarchicalSurfaceColor
                 ) {
                     Column {
-                        ConfigItem(title = stringResource(R.string.export_database)) {
-                            // TODO: Implement database export functionality
-                        }
+                        ConfigItem(
+                            title = stringResource(R.string.export_database),
+                            clickable = true,
+                            indication = true,
+                            onClick = {
+                                viewModel.exportBackupToJson()
+                            }
+                        ) {}
                         Spacer(modifier = Modifier.height(8.dp))
                         // Visual divider line
                         ZeroHeightDivider()
                         Spacer(modifier = Modifier.height(8.dp))
-                        ConfigItem(title = stringResource(R.string.import_database)) {
-                            // TODO: Implement database import functionality
+                        ConfigItem(
+                            title = stringResource(R.string.import_database),
+                            clickable = true,
+                            indication = true,
+                            onClick = {
+                                viewModel.clearImportPreview()
+                                openBackupFileLauncher.launch(
+                                    arrayOf(
+                                        "application/json"
+                                    )
+                                )
+                            }
+                        ) {
                         }
                     }
                 }
@@ -360,7 +584,7 @@ fun DataStorageScreen() {
                             onClick = {
                                 showDialog(
                                     dialogItems2,
-                                    "$resetAllSettingsText?",
+                                    String.format(confirmActionTitle, resetAllSettingsText),
                                     resetContentText
                                 )
                             }
@@ -376,7 +600,7 @@ fun DataStorageScreen() {
                             onClick = {
                                 showDialog(
                                     dialogItems,
-                                    "$clearAllDataText?",
+                                    String.format(confirmActionTitle, clearAllDataText),
                                     clearContentText
                                 )
                             }

@@ -34,14 +34,6 @@ interface TodoDao {
     @Query("DELETE FROM todo_items")
     suspend fun deleteAllTodos()
 
-    // Fetches all todo items from the table, ordered by ID in descending order.
-    @Query("SELECT * FROM todo_items ORDER BY id DESC")
-    fun getAllTodos(): Flow<List<TodoItem>>
-
-    // Fetches all todo items, ordered by due date. Items with no due date are last.
-    @Query("SELECT * FROM todo_items ORDER BY dueDate IS NULL, dueDate ASC")
-    fun getAllTodosSortedByDueDate(): Flow<List<TodoItem>>
-
     // --- New operations for SubTodoItem ---
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertSubTodo(item: SubTodoItem)
@@ -108,4 +100,22 @@ interface TodoDao {
     """
     )
     fun getDailyStats(): Flow<List<DailyStat>>
+
+
+    @Insert(onConflict = OnConflictStrategy.ABORT)
+    suspend fun insertTodoForImport(item: TodoItem): Long
+
+    @Insert(onConflict = OnConflictStrategy.ABORT)
+    suspend fun insertSubTodoForImport(item: SubTodoItem): Long
+
+    @Query("SELECT * FROM todo_items ORDER BY id ASC")
+    suspend fun getAllTodosSnapshot(): List<TodoItem>
+
+    @Transaction
+    @Query("SELECT * FROM todo_items ORDER BY id ASC")
+    suspend fun getAllTodosWithSubTodosSnapshot(): List<TodoItemWithSubTodos>
+
+    @Query("SELECT * FROM sub_todo_items ORDER BY id ASC")
+    suspend fun getAllSubTodosSnapshot(): List<SubTodoItem>
+
 }

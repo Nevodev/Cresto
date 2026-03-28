@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -100,7 +101,7 @@ fun GlasenseDialogButton(
         shape = shape,
         onClick = { onDismiss() },
         modifier = Modifier
-            .height(48.dp)
+            .defaultMinSize(minHeight = 48.dp)
             .then(modifier)
             .then(if (isPrimary) Modifier.glasenseHighlight(corner) else Modifier),
         colors = if (isPrimary && !isDestructive) AppButtonColors.primary()
@@ -111,7 +112,9 @@ fun GlasenseDialogButton(
             .copy(contentColor = AppButtonColors.secondary().contentColor.copy(1f))
     ) {
         Row(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 8.dp, vertical = 4.dp),
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -119,7 +122,11 @@ fun GlasenseDialogButton(
                 Icon(painter = icon, contentDescription = null, modifier = Modifier.size(24.dp))
                 Spacer(modifier = Modifier.width(4.dp))
             }
-            Text(text = text, style = MaterialTheme.typography.bodyMedium)
+            Text(
+                text = text,
+                style = MaterialTheme.typography.bodyMedium,
+                textAlign = TextAlign.Center
+            )
         }
     }
 }
