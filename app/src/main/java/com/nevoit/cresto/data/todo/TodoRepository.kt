@@ -208,6 +208,7 @@ class TodoRepository(
         val creationDateTime: String,
         val isCompleted: Boolean,
         val hashtag: String?,
+        val tag: String?,
         val flag: Int,
         val completedDateTime: String?,
         val subTodos: List<SubTodoFingerprint>
@@ -233,6 +234,7 @@ class TodoRepository(
                     creationDateTime = it.creationDateTime.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME),
                     isCompleted = it.isCompleted,
                     hashtag = it.hashtag,
+                    tag = it.tag,
                     flag = it.flag,
                     completedDateTime = it.completedDateTime?.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)
                 )
@@ -282,6 +284,7 @@ class TodoRepository(
                     creationDateTime = LocalDateTime.parse(todoDto.creationDateTime),
                     isCompleted = todoDto.isCompleted,
                     hashtag = todoDto.hashtag,
+                    tag = todoDto.tag,
                     flag = todoDto.flag,
                     completedDateTime = todoDto.completedDateTime?.let(LocalDateTime::parse)
                 )
@@ -318,6 +321,7 @@ class TodoRepository(
             creationDateTime = todoItem.creationDateTime.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME),
             isCompleted = todoItem.isCompleted,
             hashtag = todoItem.hashtag,
+            tag = todoItem.tag,
             flag = todoItem.flag,
             completedDateTime = todoItem.completedDateTime?.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME),
             subTodos = subTodos
@@ -342,6 +346,7 @@ class TodoRepository(
             creationDateTime = todo.creationDateTime,
             isCompleted = todo.isCompleted,
             hashtag = todo.hashtag,
+            tag = todo.tag,
             flag = todo.flag,
             completedDateTime = todo.completedDateTime,
             subTodos = subTodos

@@ -53,6 +53,7 @@ import com.nevoit.cresto.ui.components.glasense.GlasenseButtonAlt
 import com.nevoit.cresto.ui.components.glasense.glasenseHighlight
 import com.nevoit.cresto.ui.components.packed.HorizontalFlagPicker
 import com.nevoit.cresto.ui.components.packed.HorizontalPresetDatePicker
+import com.nevoit.cresto.ui.components.packed.VGap
 import com.nevoit.cresto.ui.theme.glasense.AppButtonColors
 import com.nevoit.cresto.ui.theme.glasense.AppColors
 import com.nevoit.cresto.ui.theme.glasense.AppSpecs
@@ -115,7 +116,7 @@ fun AddTodoSheet(
             .padding(12.dp, 0.dp, 12.dp, 12.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Spacer(modifier = Modifier.height(12.dp))
+        VGap()
         // Header row with close, title, and add buttons.
         Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             // Close button.
@@ -165,7 +166,7 @@ fun AddTodoSheet(
 
             }
         }
-        Spacer(modifier = Modifier.height(12.dp))
+        VGap()
         // Text field
         Box(
             modifier = Modifier
@@ -188,7 +189,7 @@ fun AddTodoSheet(
                 cursorBrush = SolidColor(AppColors.primary)
             )
         }
-        Spacer(modifier = Modifier.height(12.dp))
+        VGap()
         // Provide the custom overscroll factory to the composable tree.
         CompositionLocalProvider(
             LocalOverscrollFactory provides overscrollFactory
@@ -231,18 +232,7 @@ fun AddTodoSheet(
                         stiffness = 300f
                     )
                 )
-                // Animate the width of the hashtag button.
-                val hashtagWidth by animateDpAsState(
-                    targetValue = when (selectedButton) {
-                        SelectedButton.HASHTAG -> expandedWidth
-                        SelectedButton.NONE -> defaultWidth
-                        else -> collapsedSize
-                    },
-                    animationSpec = spring(
-                        dampingRatio = 0.7f,
-                        stiffness = 300f
-                    )
-                )
+
                 Row(
                     modifier = Modifier
                         .width(totalWidth)
@@ -359,31 +349,6 @@ fun AddTodoSheet(
                             }
                         }
                     }
-
-                    /*pacer(modifier = Modifier.width(12.dp))
-                    Button(
-                        enabled = true,
-                        shape = Capsule()(g2),
-                        onClick = {
-                            selectedButton = if (selectedButton == SelectedButton.HASHTAG) {
-                                SelectedButton.NONE
-                            } else {
-                                SelectedButton.HASHTAG
-                            }
-                        },
-                        modifier = Modifier
-                            .height(48.dp)
-                            .width(hashtagWidth),
-                        colors = AppButtonColors.secondary(),
-                        contentPadding = PaddingValues(0.dp)
-                    ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_hashtag),
-                            contentDescription = "Tag",
-                            modifier = Modifier.width(28.dp)
-                        )
-                    }*/
-
                 }
 
             }

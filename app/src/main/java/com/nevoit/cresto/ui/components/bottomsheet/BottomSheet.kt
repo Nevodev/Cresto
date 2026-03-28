@@ -283,12 +283,6 @@ fun BottomSheet(
         Column(
             modifier = Modifier
                 // Empty clickable to prevent clicks from passing through to the scrim.
-                .clickable(
-                    interactionSource = remember { MutableInteractionSource() },
-                    indication = null,
-                    enabled = true,
-                    onClick = {}
-                )
                 .align(alignment = Alignment.BottomCenter)
                 // Apply the vertical offset animation.
                 .graphicsLayer {
@@ -530,6 +524,12 @@ fun BottomSheet(
                         // Measure the height of the content.
                         columnHeightPx = size.height
                     }
+                    .clickable(
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = null,
+                        enabled = true,
+                        onClick = {}
+                    )
                     .background(
                         shape = deviceCornerShape(
                             bottomLeft = false,
