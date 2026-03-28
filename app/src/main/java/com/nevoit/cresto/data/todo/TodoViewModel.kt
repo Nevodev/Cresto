@@ -17,6 +17,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 data class BottomSheetUiState(
@@ -103,27 +104,27 @@ class TodoViewModel(private val repository: TodoRepository) : ViewModel() {
     }
 
     fun completeSelectedItems() = viewModelScope.launch {
-        val selectedIds = _selectedItemIds.value
+        val selectedIds = _selectedItemIds.value.toList()
         if (selectedIds.isEmpty()) return@launch
 
-        val selectedTodos = allTodos.value.asSequence()
-            .map { it.todoItem }
-            .filter { it.id in selectedIds }
-            .toList()
-
-        if (selectedTodos.isEmpty()) {
-            clearSelections()
-            return@launch
-        }
-
-        val allSelectedCompleted = selectedTodos.all { it.isCompleted }
+        val completedCount = repository.getCompletedCountByIds(selectedIds)
+        val allSelectedCompleted = completedCount == selectedIds.size
         val targetCompletedState = !allSelectedCompleted
 
         repository.updateCompletedStatusByIds(
-            ids = selectedTodos.map { it.id },
+            ids = selectedIds,
             isCompleted = targetCompletedState,
-            completedDate = if (targetCompletedState) LocalDate.now() else null
+            completedDateTime = if (targetCompletedState) LocalDateTime.now() else null
         )
+
+        clearSelections()
+    }
+
+    fun flagSelectedItems(flag: Int) = viewModelScope.launch {
+        val selectedIds = _selectedItemIds.value
+        if (selectedIds.isEmpty()) return@launch
+
+        repository.updateFlagByIds(selectedIds.toList(), flag)
 
         clearSelections()
     }
@@ -143,15 +144,15 @@ class TodoViewModel(private val repository: TodoRepository) : ViewModel() {
     fun update(item: TodoItem) = viewModelScope.launch {
         viewModelScope.launch {
             val itemToPersist = when {
-                item.isCompleted && item.completedDate == null -> {
+                item.isCompleted && item.completedDateTime == null -> {
                     item.copy(
-                        completedDate = LocalDate.now()
+                        completedDateTime = LocalDateTime.now()
                     )
                 }
 
                 !item.isCompleted -> {
                     item.copy(
-                        completedDate = null
+                        completedDateTime = null
                     )
                 }
 

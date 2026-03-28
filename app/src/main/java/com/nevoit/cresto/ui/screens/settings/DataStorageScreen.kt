@@ -1,7 +1,7 @@
 package com.nevoit.cresto.ui.screens.settings
 
-import android.text.format.Formatter
 import android.provider.OpenableColumns
+import android.text.format.Formatter
 import androidx.activity.compose.LocalActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -642,14 +642,12 @@ fun DataStorageScreen() {
         }
     }
 
-    if (dialogState.isVisible) {
-        GlasenseDialog(
-            dialogState = dialogState,
-            backdrop = backdrop,
-            onDismiss = { dismissDialog() },
-            modifier = Modifier
-        )
-    }
+    GlasenseDialog(
+        dialogState = dialogState,
+        backdrop = backdrop,
+        onDismiss = { dismissDialog() },
+        modifier = Modifier
+    )
 }
 
 @Composable

@@ -6,7 +6,6 @@ import com.nevoit.cresto.data.todo.backup.TodoBackupDto
 import com.nevoit.cresto.data.todo.backup.TodoBackupFile
 import kotlinx.coroutines.flow.Flow
 import kotlinx.serialization.json.Json
-import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
@@ -30,9 +29,6 @@ data class ImportResult(
 class TodoRepository(private val todoDao: TodoDao) {
 
     val allTodos: Flow<List<TodoItemWithSubTodos>> = todoDao.getAllTodosWithSubTodos()
-
-    val allTodosSortedByDueDate: Flow<List<TodoItemWithSubTodos>> =
-        todoDao.getAllTodosWithSubTodosSortedByDueDate()
 
     fun getTodoById(id: Int): Flow<TodoItemWithSubTodos?> {
         return todoDao.getTodoWithSubTodosById(id)
@@ -77,9 +73,17 @@ class TodoRepository(private val todoDao: TodoDao) {
     suspend fun updateCompletedStatusByIds(
         ids: List<Int>,
         isCompleted: Boolean,
-        completedDate: LocalDate?
+        completedDateTime: LocalDateTime?
     ) {
-        todoDao.updateCompletedStatusByIds(ids, isCompleted, completedDate)
+        todoDao.updateCompletedStatusByIds(ids, isCompleted, completedDateTime)
+    }
+
+    suspend fun getCompletedCountByIds(ids: List<Int>): Int {
+        return todoDao.getCompletedCountByIds(ids)
+    }
+
+    suspend fun updateFlagByIds(ids: List<Int>, flag: Int) {
+        todoDao.updateFlagByIds(ids, flag)
     }
 
     fun getTotalCount(): Flow<Int> {
@@ -106,11 +110,11 @@ class TodoRepository(private val todoDao: TodoDao) {
     private data class TodoFingerprint(
         val title: String,
         val dueDate: String?,
-        val creationDate: String,
+        val creationDateTime: String,
         val isCompleted: Boolean,
         val hashtag: String?,
         val flag: Int,
-        val completedDate: String?,
+        val completedDateTime: String?,
         val subTodos: List<SubTodoFingerprint>
     )
 
@@ -131,11 +135,11 @@ class TodoRepository(private val todoDao: TodoDao) {
                     id = it.id,
                     title = it.title,
                     dueDate = it.dueDate?.toString(),
-                    creationDate = it.creationDate.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME),
+                    creationDateTime = it.creationDateTime.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME),
                     isCompleted = it.isCompleted,
                     hashtag = it.hashtag,
                     flag = it.flag,
-                    completedDate = it.completedDate?.toString()
+                    completedDateTime = it.completedDateTime?.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)
                 )
             },
             subTodos = subTodos.map {
@@ -179,12 +183,12 @@ class TodoRepository(private val todoDao: TodoDao) {
                 TodoItem(
                     id = 0, // 强制新 id，避免与现有冲突
                     title = todoDto.title,
-                    dueDate = todoDto.dueDate?.let(LocalDate::parse),
-                    creationDate = LocalDateTime.parse(todoDto.creationDate),
+                    dueDate = todoDto.dueDate?.let(java.time.LocalDate::parse),
+                    creationDateTime = LocalDateTime.parse(todoDto.creationDateTime),
                     isCompleted = todoDto.isCompleted,
                     hashtag = todoDto.hashtag,
                     flag = todoDto.flag,
-                    completedDate = todoDto.completedDate?.let(LocalDate::parse)
+                    completedDateTime = todoDto.completedDateTime?.let(LocalDateTime::parse)
                 )
             ).toInt()
 
@@ -216,11 +220,11 @@ class TodoRepository(private val todoDao: TodoDao) {
         return TodoFingerprint(
             title = todoItem.title,
             dueDate = todoItem.dueDate?.toString(),
-            creationDate = todoItem.creationDate.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME),
+            creationDateTime = todoItem.creationDateTime.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME),
             isCompleted = todoItem.isCompleted,
             hashtag = todoItem.hashtag,
             flag = todoItem.flag,
-            completedDate = todoItem.completedDate?.toString(),
+            completedDateTime = todoItem.completedDateTime?.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME),
             subTodos = subTodos
                 .map { SubTodoFingerprint(it.description, it.isCompleted) }
                 .sortedWith(
@@ -232,6 +236,7 @@ class TodoRepository(private val todoDao: TodoDao) {
         )
     }
 
+
     private fun buildFingerprint(
         todo: TodoBackupDto,
         subTodos: List<SubTodoBackupDto>
@@ -239,11 +244,11 @@ class TodoRepository(private val todoDao: TodoDao) {
         return TodoFingerprint(
             title = todo.title,
             dueDate = todo.dueDate,
-            creationDate = todo.creationDate,
+            creationDateTime = todo.creationDateTime,
             isCompleted = todo.isCompleted,
             hashtag = todo.hashtag,
             flag = todo.flag,
-            completedDate = todo.completedDate,
+            completedDateTime = todo.completedDateTime,
             subTodos = subTodos
                 .map { SubTodoFingerprint(it.description, it.isCompleted) }
                 .sortedWith(

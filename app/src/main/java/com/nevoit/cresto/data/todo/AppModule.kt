@@ -14,7 +14,7 @@ val appModule = module {
             TodoDatabase::class.java,
             "todo_database"
         )
-            .fallbackToDestructiveMigration(false)
+            .fallbackToDestructiveMigration(true)
             .build()
     }
 

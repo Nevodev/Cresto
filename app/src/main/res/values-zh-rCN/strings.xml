@@ -145,6 +145,13 @@
     <string name="more">更多</string>
     <string name="check_all">完成已选中</string>
     <string name="set_flag">设置标记</string>
+    <string name="flag_red">红色</string>
+    <string name="flag_orange">橙色</string>
+    <string name="flag_yellow">黄色</string>
+    <string name="flag_green">绿色</string>
+    <string name="flag_blue">蓝色</string>
+    <string name="flag_purple">紫色</string>
+    <string name="flag_gray">灰色</string>
     <string name="add_to_calendar">添加到日历</string>
     <string name="skip_duplicates">跳过重复</string>
     <string name="import_all">导入全部</string>

@@ -21,9 +21,9 @@ fun sortTodos(
         val itemB = b.todoItem
 
         val compareByCreationDate = if (currentSortOrder == SortOrder.ASCENDING) {
-            itemA.creationDate.compareTo(itemB.creationDate)
+            itemA.creationDateTime.compareTo(itemB.creationDateTime)
         } else {
-            itemB.creationDate.compareTo(itemA.creationDate)
+            itemB.creationDateTime.compareTo(itemA.creationDateTime)
         }
 
         val compareResult = when (currentSortOption) {

@@ -1,6 +1,7 @@
 package com.nevoit.cresto.ui.components.glasense
 
 import android.graphics.BlurMaskFilter
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
@@ -68,6 +69,7 @@ import kotlinx.coroutines.launch
 data class MenuItemData(
     val text: String,
     val icon: Painter,
+    val iconColor: Color = Color.Unspecified,
     val isDestructive: Boolean = false,
     val onClick: () -> Unit
 ) : GlasenseMenuItem
@@ -211,6 +213,7 @@ fun GlasenseMenu(
     val shape = RoundedCornerShape(16.dp)
 
     if (menuState.isVisible) {
+        BackHandler() { onDismiss() }
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -365,6 +368,7 @@ fun CustomMenuContent(items: List<GlasenseMenuItem>, onDismiss: () -> Unit) {
                     CustomMenuItem(
                         text = item.text,
                         icon = item.icon,
+                        iconColor = item.iconColor,
                         isDestructive = item.isDestructive,
                         onClick = {
                             onDismiss()
@@ -429,6 +433,7 @@ fun CustomMenuContent(items: List<GlasenseMenuItem>, onDismiss: () -> Unit) {
 private fun CustomMenuItem(
     text: String,
     icon: Painter,
+    iconColor: Color,
     isDestructive: Boolean,
     onClick: () -> Unit
 ) {
@@ -457,8 +462,8 @@ private fun CustomMenuItem(
         Icon(
             painter = icon,
             contentDescription = text,
-            tint = contentColor,
-            modifier = Modifier.size(24.dp)
+            tint = if (isDestructive) contentColor else iconColor,
+            modifier = Modifier.size(24.dp),
         )
     }
 }

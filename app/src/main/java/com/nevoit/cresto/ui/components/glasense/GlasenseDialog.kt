@@ -172,10 +172,12 @@ fun GlasenseDialog(
         val alphaAni2 = remember { Animatable(0f) }
 
         LaunchedEffect(isVisible) {
-            coroutineScope {
-                launch { scaleAni.animateTo(1f, spring(1.3f, 1000f, .0001f)) }
-                launch { alphaAni.animateTo(1f, tween(300, 0)) }
-                launch { alphaAni2.animateTo(1f, tween(200, 0)) }
+            if (isVisible) {
+                coroutineScope {
+                    launch { scaleAni.animateTo(1f, spring(1.3f, 1000f, .0001f)) }
+                    launch { alphaAni.animateTo(1f, tween(300, 0)) }
+                    launch { alphaAni2.animateTo(1f, tween(200, 0)) }
+                }
             }
         }
 

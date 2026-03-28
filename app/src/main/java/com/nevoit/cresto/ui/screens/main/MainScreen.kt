@@ -39,6 +39,9 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.BlurEffect
 import androidx.compose.ui.graphics.TileMode
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.layout.LayoutCoordinates
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInWindow
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
@@ -131,7 +134,6 @@ fun MainScreen() {
 
 
     val density = LocalDensity.current
-    val interactionSource = remember { MutableInteractionSource() }
 
     val viewModel: TodoViewModel = koinViewModel()
 
@@ -209,6 +211,12 @@ fun MainScreen() {
     }
 
     val floatingBarColor = AppColors.pageBackground.copy(.5f)
+
+    val moreMenu = rememberMoreMenuItems()
+    var moreButtonBounds by remember { mutableStateOf<LayoutCoordinates?>(null) }
+
+    val flagMenu = rememberFlagMenuItems(onFlagSelected = viewModel::flagSelectedItems)
+    var flagButtonBounds by remember { mutableStateOf<LayoutCoordinates?>(null) }
 
     BackHandler(enabled = currentRoute != Screen.Home.route) {
         currentRoute = Screen.Home.route
@@ -294,9 +302,21 @@ fun MainScreen() {
                         enabled = true,
                         shape = Capsule(),
                         onClick = {
-
+                            moreButtonBounds?.let {
+                                val position = Offset(
+                                    x = it.positionInWindow().x,
+                                    y = it.positionInWindow().y - with(density) { 8.dp.toPx() },
+                                )
+                                showMenu(
+                                    position,
+                                    moreMenu
+                                )
+                            }
                         },
                         modifier = Modifier
+                            .onGloballyPositioned { coordinates ->
+                                moreButtonBounds = coordinates
+                            }
                             .drawBackdrop(
                                 backdrop = backdrop,
                                 shape = { Capsule() },
@@ -356,8 +376,26 @@ fun MainScreen() {
                         ) {
                             Box(
                                 modifier = Modifier
+                                    .onGloballyPositioned { coordinates ->
+                                        flagButtonBounds = coordinates
+                                    }
                                     .height(48.dp)
-                                    .width(48.dp),
+                                    .width(48.dp)
+                                    .clickable(
+                                        interactionSource = sharedInteractionSource,
+                                        indication = null
+                                    ) {
+                                        flagButtonBounds?.let {
+                                            val position = Offset(
+                                                x = it.positionInWindow().x,
+                                                y = it.positionInWindow().y - with(density) { 8.dp.toPx() },
+                                            )
+                                            showMenu(
+                                                position,
+                                                flagMenu
+                                            )
+                                        }
+                                    },
                                 contentAlignment = Alignment.Center
                             ) {
                                 Icon(

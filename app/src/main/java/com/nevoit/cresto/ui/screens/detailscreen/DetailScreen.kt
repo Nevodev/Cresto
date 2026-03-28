@@ -550,7 +550,7 @@ fun DetailScreen(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 val creationTime = remember(itemWithSubTodos, ticker) {
-                    itemWithSubTodos?.todoItem?.creationDate?.let {
+                    itemWithSubTodos?.todoItem?.creationDateTime?.let {
                         formatRelativeTime(it, context)
                     } ?: ""
                 }
@@ -607,12 +607,10 @@ fun DetailScreen(
         }
     }
 
-    if (dialogState.isVisible) {
-        GlasenseDialog(
-            dialogState = dialogState,
-            backdrop = backdrop,
-            onDismiss = { dismissDialog() },
-            modifier = Modifier
-        )
-    }
+    GlasenseDialog(
+        dialogState = dialogState,
+        backdrop = backdrop,
+        onDismiss = { dismissDialog() },
+        modifier = Modifier
+    )
 }

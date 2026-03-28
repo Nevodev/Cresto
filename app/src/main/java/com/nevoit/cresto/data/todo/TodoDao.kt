@@ -9,7 +9,7 @@ import androidx.room.Transaction
 import androidx.room.Update
 import com.nevoit.cresto.data.statistics.DailyStat
 import kotlinx.coroutines.flow.Flow
-import java.time.LocalDate
+import java.time.LocalDateTime
 
 // Data Access Object (DAO) for the todo_items table.
 @Dao
@@ -71,8 +71,8 @@ interface TodoDao {
         """
         UPDATE todo_items
         SET isCompleted = :isCompleted,
-            completedDate = CASE
-                WHEN :isCompleted = 1 THEN COALESCE(completedDate, :completedDate)
+            completedDateTime = CASE
+                WHEN :isCompleted = 1 THEN COALESCE(completedDateTime, :completedDateTime)
                 ELSE NULL
             END
         WHERE id IN (:ids)
@@ -81,8 +81,20 @@ interface TodoDao {
     suspend fun updateCompletedStatusByIds(
         ids: List<Int>,
         isCompleted: Boolean,
-        completedDate: LocalDate?
+        completedDateTime: LocalDateTime?
     )
+
+    @Query("SELECT COUNT(*) FROM todo_items WHERE id IN (:ids) AND isCompleted = 1")
+    suspend fun getCompletedCountByIds(ids: List<Int>): Int
+
+    @Query(
+        """
+        UPDATE todo_items
+        SET flag = :flag
+        WHERE id IN (:ids)
+        """
+    )
+    suspend fun updateFlagByIds(ids: List<Int>, flag: Int)
 
     @Query("SELECT COUNT(*) FROM todo_items")
     fun getTotalCount(): Flow<Int>
@@ -92,11 +104,11 @@ interface TodoDao {
 
     @Query(
         """
-        SELECT completedDate as date, COUNT(*) as count 
+        SELECT substr(completedDateTime, 1, 10) as date, COUNT(*) as count 
         FROM todo_items 
-        WHERE isCompleted = 1 AND completedDate IS NOT NULL 
-        GROUP BY completedDate 
-        ORDER BY completedDate DESC
+        WHERE isCompleted = 1 AND completedDateTime IS NOT NULL 
+        GROUP BY substr(completedDateTime, 1, 10) 
+        ORDER BY date DESC
     """
     )
     fun getDailyStats(): Flow<List<DailyStat>>
