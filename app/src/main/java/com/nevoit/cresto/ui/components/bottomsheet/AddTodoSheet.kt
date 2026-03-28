@@ -66,7 +66,7 @@ import java.time.LocalDate
  * Enum to represent the currently selected button in the AddTodoSheet.
  */
 enum class SelectedButton {
-    DUE_DATE, FLAG, HASHTAG, NONE
+    DUE_DATE, FLAG, NONE
 }
 
 /**
@@ -194,7 +194,7 @@ fun AddTodoSheet(
         CompositionLocalProvider(
             LocalOverscrollFactory provides overscrollFactory
         ) {
-            // Buttons for due date, flag, and hashtag.
+            // Buttons for due date and flag.
             BoxWithConstraints(
                 modifier = Modifier
                     .fillMaxWidth()

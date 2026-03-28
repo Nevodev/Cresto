@@ -18,10 +18,8 @@ fun rememberMoreMenuItems(
 ): List<GlasenseMenuItem> {
     val combineIcon = painterResource(R.drawable.ic_combine_as_one)
     val shareIcon = painterResource(R.drawable.ic_share)
-    val tagIcon = painterResource(R.drawable.ic_tag)
     val duplicateIcon = painterResource(R.drawable.ic_duplicate)
     val duplicateText = stringResource(R.string.duplicate_todo)
-    val setTagText = stringResource(R.string.set_tag)
     val mergeTodosText = stringResource(R.string.merge_todos)
     val shareText = stringResource(R.string.share)
 
@@ -30,7 +28,6 @@ fun rememberMoreMenuItems(
         onMergeSelected,
         canMerge,
         duplicateText,
-        setTagText,
         mergeTodosText,
         shareText
     ) {
@@ -40,13 +37,6 @@ fun rememberMoreMenuItems(
                     duplicateText,
                     duplicateIcon,
                     onClick = onDuplicateSelected
-                )
-            )
-            add(
-                MenuItemData(
-                    setTagText,
-                    tagIcon,
-                    onClick = { }
                 )
             )
             if (canMerge) {

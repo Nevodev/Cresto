@@ -14,7 +14,6 @@ import java.time.LocalDateTime
  * @property dueDate The optional due date for the to-do item.
  * @property creationDateTime The creation date and time of the to-do item.
  * @property isCompleted A boolean flag indicating whether the to-do item has been completed.
- * @property hashtag An optional string for tagging or categorizing the to-do item.
  * @property flag An optional integer flag, can be used for priority or other categorizations.
  */
 @Entity(
@@ -28,8 +27,6 @@ data class TodoItem(
     val dueDate: LocalDate? = null,
     val creationDateTime: LocalDateTime = LocalDateTime.now(),
     val isCompleted: Boolean = false,
-    val hashtag: String? = null,
-    val tag: String? = null,
     val flag: Int = 0,
     val completedDateTime: LocalDateTime? = null
 )

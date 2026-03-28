@@ -113,8 +113,7 @@ fun DetailScreen(
     val navigationBarHeight = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
 
     val hazeState = rememberHazeState()
-
-    val onSurfaceContainer = AppColors.scrimNormal
+    
     val surfaceColor = AppColors.pageBackground
 
     val backdrop = rememberLayerBackdrop {
@@ -292,18 +291,6 @@ fun DetailScreen(
                             val flagWidth by animateDpAsState(
                                 targetValue = when (selectedButton) {
                                     SelectedButton.FLAG -> expandedWidth
-                                    SelectedButton.NONE -> defaultWidth
-                                    else -> collapsedSize
-                                },
-                                animationSpec = spring(
-                                    dampingRatio = 0.7f,
-                                    stiffness = 300f
-                                )
-                            )
-                            // Animate the width of the hashtag button.
-                            val hashtagWidth by animateDpAsState(
-                                targetValue = when (selectedButton) {
-                                    SelectedButton.HASHTAG -> expandedWidth
                                     SelectedButton.NONE -> defaultWidth
                                     else -> collapsedSize
                                 },

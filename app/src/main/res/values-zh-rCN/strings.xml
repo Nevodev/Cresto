@@ -145,7 +145,6 @@
     <string name="more">更多</string>
     <string name="check_all">完成已选中</string>
     <string name="set_flag">设置标记</string>
-    <string name="set_tag">设置标签</string>
     <string name="duplicate_todo">创建副本</string>
     <string name="merge_todos">合并待办事项</string>
     <string name="link_main_todo">关联主待办事项</string>

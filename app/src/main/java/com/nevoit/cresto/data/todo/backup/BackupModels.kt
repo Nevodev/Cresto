@@ -17,8 +17,6 @@ data class TodoBackupDto(
     val dueDate: String?,       // ISO_LOCAL_DATE
     val creationDateTime: String,   // ISO_LOCAL_DATE_TIME
     val isCompleted: Boolean,
-    val hashtag: String?,
-    val tag: String? = null,
     val flag: Int,
     val completedDateTime: String?  // ISO_LOCAL_DATE_TIME
 )

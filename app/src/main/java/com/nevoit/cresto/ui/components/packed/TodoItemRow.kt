@@ -68,7 +68,7 @@ import com.nevoit.cresto.ui.theme.glasense.getFlagColor
 import java.time.format.DateTimeFormatter
 
 /**
- * A composable function that displays a single to-do item with a checkbox, title, due date, flag, and hashtag.
+ * A composable function that displays a single to-do item with a checkbox, title, due date, flag.
  *
  * @param item The [TodoItem] to display.
  * @param onCheckedChange A callback that is invoked when the checkbox is checked or unchecked.
@@ -207,14 +207,6 @@ fun TodoItemRow(
             }
         }
         Spacer(modifier = Modifier.width(12.dp))
-        // If the to-do item has a hashtag, display it.
-        Box(
-            modifier = Modifier
-                .height(32.dp)
-                .background(AppColors.content.copy(alpha = 0.05f))
-        ) {
-            item.hashtag?.let { Text(text = it, color = AppColors.content) }
-        }
     }
 }
 

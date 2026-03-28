@@ -96,16 +96,14 @@ class TodoRepository(
         return todoDatabase.withTransaction {
             val sourceTodosById = todoDao.getTodosWithSubTodosByIds(ids)
                 .associateBy { it.todoItem.id }
-            val orderedSourceTodos = ids.mapNotNull(sourceTodosById::get)
+            val orderedSourceTodos = ids.mapNotNull(sourceTodosById::get).asReversed()
             if (orderedSourceTodos.isEmpty()) return@withTransaction 0
 
-            val sourceTodosForInsert = orderedSourceTodos.asReversed()
-
             val now = LocalDateTime.now()
-            val todoCopies = sourceTodosForInsert.map { source ->
+            val todoCopies = orderedSourceTodos.mapIndexed { index, source ->
                 source.todoItem.copy(
                     id = 0,
-                    creationDateTime = now,
+                    creationDateTime = now.plusNanos(index * 1000000L),
                     isCompleted = false,
                     completedDateTime = null
                 )
@@ -115,7 +113,7 @@ class TodoRepository(
                 .map(Long::toInt)
 
             val subTodoCopies =
-                sourceTodosForInsert.zip(newTodoIds).flatMap { (source, newTodoId) ->
+                orderedSourceTodos.zip(newTodoIds).flatMap { (source, newTodoId) ->
                     source.subTodos.map { subTodo ->
                         subTodo.copy(
                             id = 0,
@@ -207,8 +205,6 @@ class TodoRepository(
         val dueDate: String?,
         val creationDateTime: String,
         val isCompleted: Boolean,
-        val hashtag: String?,
-        val tag: String?,
         val flag: Int,
         val completedDateTime: String?,
         val subTodos: List<SubTodoFingerprint>
@@ -233,8 +229,6 @@ class TodoRepository(
                     dueDate = it.dueDate?.toString(),
                     creationDateTime = it.creationDateTime.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME),
                     isCompleted = it.isCompleted,
-                    hashtag = it.hashtag,
-                    tag = it.tag,
                     flag = it.flag,
                     completedDateTime = it.completedDateTime?.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)
                 )
@@ -278,13 +272,11 @@ class TodoRepository(
 
             val newTodoId = todoDao.insertTodoForImport(
                 TodoItem(
-                    id = 0, // 强制新 id，避免与现有冲突
+                    id = 0, // auto-generate
                     title = todoDto.title,
                     dueDate = todoDto.dueDate?.let(java.time.LocalDate::parse),
                     creationDateTime = LocalDateTime.parse(todoDto.creationDateTime),
                     isCompleted = todoDto.isCompleted,
-                    hashtag = todoDto.hashtag,
-                    tag = todoDto.tag,
                     flag = todoDto.flag,
                     completedDateTime = todoDto.completedDateTime?.let(LocalDateTime::parse)
                 )
@@ -320,8 +312,6 @@ class TodoRepository(
             dueDate = todoItem.dueDate?.toString(),
             creationDateTime = todoItem.creationDateTime.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME),
             isCompleted = todoItem.isCompleted,
-            hashtag = todoItem.hashtag,
-            tag = todoItem.tag,
             flag = todoItem.flag,
             completedDateTime = todoItem.completedDateTime?.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME),
             subTodos = subTodos
@@ -345,8 +335,6 @@ class TodoRepository(
             dueDate = todo.dueDate,
             creationDateTime = todo.creationDateTime,
             isCompleted = todo.isCompleted,
-            hashtag = todo.hashtag,
-            tag = todo.tag,
             flag = todo.flag,
             completedDateTime = todo.completedDateTime,
             subTodos = subTodos

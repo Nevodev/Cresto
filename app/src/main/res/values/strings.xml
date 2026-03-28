@@ -155,7 +155,6 @@
     <string name="more">More</string>
     <string name="check_all">Complete selected</string>
     <string name="set_flag">Set flag</string>
-    <string name="set_tag">Set tag</string>
     <string name="duplicate_todo">Duplicate</string>
     <string name="merge_todos">Merge todos</string>
     <string name="link_main_todo">Link main todo</string>
