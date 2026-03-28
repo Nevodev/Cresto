@@ -38,7 +38,6 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.BlurEffect
 import androidx.compose.ui.graphics.TileMode
-import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
@@ -80,8 +79,6 @@ import dev.chrisbanes.haze.HazeStyle
 import dev.chrisbanes.haze.hazeEffect
 import dev.chrisbanes.haze.hazeSource
 import dev.chrisbanes.haze.rememberHazeState
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 
@@ -515,56 +512,14 @@ fun MainScreen() {
             }
         }
 
-        val scaleAni = remember { Animatable(0.4f) }
-        val alphaAni = remember { Animatable(0f) }
-        var isMenuInComposition by remember { mutableStateOf(false) }
+        GlasenseMenu(
+            density = density,
+            menuState = menuState,
+            backdrop = backdrop,
+            onDismiss = dismissMenu,
+            modifier = Modifier
+        )
 
-        LaunchedEffect(menuState.isVisible) {
-            if (menuState.isVisible) {
-                delay(50)
-                isMenuInComposition = true
-                coroutineScope {
-                    launch { scaleAni.animateTo(1f, spring(0.8f, 450f, 0.001f)) }
-                    launch { alphaAni.animateTo(1f) }
-                }
-            } else {
-                delay(50)
-                coroutineScope {
-                    launch { scaleAni.animateTo(0.4f, spring(0.7f, 600f)) }
-                    launch { alphaAni.animateTo(0f) }
-                }
-                isMenuInComposition = false
-            }
-        }
-
-        if (menuState.isVisible) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .clickable(
-                        interactionSource = interactionSource,
-                        indication = null,
-                        onClick = { dismissMenu() })
-            )
-        }
-        if (isMenuInComposition || menuState.isVisible) {
-            GlasenseMenu(
-                density = density,
-                menuState = menuState,
-                backdrop = backdrop,
-                onDismiss = dismissMenu,
-                modifier = Modifier
-                    .width(228.dp)
-                    .graphicsLayer {
-                        translationX = menuState.anchorPosition.x
-                        translationY = menuState.anchorPosition.y
-                        scaleX = scaleAni.value
-                        scaleY = scaleAni.value
-                        transformOrigin = TransformOrigin(0f, 0f)
-                    },
-                alphaAni = { alphaAni.value },
-            )
-        }
         if (bottomSheetState.isVisible) {
             Box(modifier = Modifier.fillMaxSize()) {
                 BottomSheet(

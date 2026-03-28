@@ -1,6 +1,8 @@
 package com.nevoit.cresto.ui.components.glasense
 
 import android.graphics.BlurMaskFilter
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -9,6 +11,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
@@ -19,7 +22,11 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
@@ -30,6 +37,7 @@ import androidx.compose.ui.graphics.Outline
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.TileMode
+import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.asAndroidPath
 import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
@@ -51,6 +59,9 @@ import com.kyant.shapes.RoundedRectangle
 import com.nevoit.cresto.R
 import com.nevoit.cresto.ui.theme.glasense.AppColors
 import com.nevoit.cresto.ui.theme.glasense.isAppInDarkTheme
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 data class MenuItemData(
     val text: String,
@@ -209,9 +220,30 @@ fun GlasenseMenu(
     menuState: MenuState,
     backdrop: LayerBackdrop,
     onDismiss: () -> Unit,
-    modifier: Modifier,
-    alphaAni: () -> Float
+    modifier: Modifier
 ) {
+    val scaleAni = remember { Animatable(0.4f) }
+    val alphaAni = remember { Animatable(0f) }
+    var isMenuInComposition by remember { mutableStateOf(false) }
+
+    LaunchedEffect(menuState.isVisible) {
+        if (menuState.isVisible) {
+            delay(50)
+            isMenuInComposition = true
+            coroutineScope {
+                launch { scaleAni.animateTo(1f, spring(0.8f, 450f, 0.001f)) }
+                launch { alphaAni.animateTo(1f) }
+            }
+        } else {
+            delay(50)
+            coroutineScope {
+                launch { scaleAni.animateTo(0.4f, spring(0.7f, 600f)) }
+                launch { alphaAni.animateTo(0f) }
+            }
+            isMenuInComposition = false
+        }
+    }
+
     val darkTheme = isAppInDarkTheme()
 
     val shadowRadiusPx = with(LocalDensity.current) { 32.dp.toPx() }
@@ -229,116 +261,137 @@ fun GlasenseMenu(
 
     val shape = RoundedCornerShape(16.dp)
 
-    Box(
-        modifier = modifier
-            .zIndex(99f) // Ensure the menu appears above other content.
-            .drawBehind {
-                val currentAlpha = alphaAni()
+    if (menuState.isVisible) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .clickable(
+                    interactionSource = remember { MutableInteractionSource() },
+                    indication = null,
+                    onClick = onDismiss
+                )
+        )
+    }
+    if (isMenuInComposition) {
+        Box(
+            modifier = modifier
+                .zIndex(99f) // Ensure the menu appears above other content.
+                .width(228.dp)
+                .graphicsLayer {
+                    translationX = menuState.anchorPosition.x
+                    translationY = menuState.anchorPosition.y
+                    scaleX = scaleAni.value
+                    scaleY = scaleAni.value
+                    transformOrigin = TransformOrigin(0f, 0f)
+                }
+                .drawBehind {
+                    val currentAlpha = alphaAni.value
 
-                if (currentAlpha > 0f) {
-                    val paintColor =
-                        shadowBaseColor.copy(alpha = shadowBaseColor.alpha * currentAlpha)
-                    shadowPaint.color = paintColor.toArgb()
+                    if (currentAlpha > 0f) {
+                        val paintColor =
+                            shadowBaseColor.copy(alpha = shadowBaseColor.alpha * currentAlpha)
+                        shadowPaint.color = paintColor.toArgb()
 
-                    drawIntoCanvas { canvas ->
-                        canvas.save()
-                        canvas.translate(0f, shadowDyPx)
+                        drawIntoCanvas { canvas ->
+                            canvas.save()
+                            canvas.translate(0f, shadowDyPx)
 
-                        when (val outline = shape.createOutline(size, layoutDirection, this)) {
-                            is Outline.Rectangle -> {
-                                canvas.nativeCanvas.drawRect(
-                                    outline.rect.left,
-                                    outline.rect.top,
-                                    outline.rect.right,
-                                    outline.rect.bottom,
-                                    shadowPaint
-                                )
+                            when (val outline = shape.createOutline(size, layoutDirection, this)) {
+                                is Outline.Rectangle -> {
+                                    canvas.nativeCanvas.drawRect(
+                                        outline.rect.left,
+                                        outline.rect.top,
+                                        outline.rect.right,
+                                        outline.rect.bottom,
+                                        shadowPaint
+                                    )
+                                }
+
+                                is Outline.Rounded -> {
+                                    canvas.nativeCanvas.drawRoundRect(
+                                        outline.roundRect.left, outline.roundRect.top,
+                                        outline.roundRect.right, outline.roundRect.bottom,
+                                        outline.roundRect.bottomLeftCornerRadius.x,
+                                        outline.roundRect.bottomLeftCornerRadius.y,
+                                        shadowPaint
+                                    )
+                                }
+
+                                is Outline.Generic -> {
+                                    canvas.nativeCanvas.drawPath(
+                                        outline.path.asAndroidPath(),
+                                        shadowPaint
+                                    )
+                                }
                             }
 
-                            is Outline.Rounded -> {
-                                canvas.nativeCanvas.drawRoundRect(
-                                    outline.roundRect.left, outline.roundRect.top,
-                                    outline.roundRect.right, outline.roundRect.bottom,
-                                    outline.roundRect.bottomLeftCornerRadius.x,
-                                    outline.roundRect.bottomLeftCornerRadius.y,
-                                    shadowPaint
-                                )
-                            }
-
-                            is Outline.Generic -> {
-                                canvas.nativeCanvas.drawPath(
-                                    outline.path.asAndroidPath(),
-                                    shadowPaint
-                                )
-                            }
+                            canvas.restore()
                         }
-
-                        canvas.restore()
                     }
                 }
-            }
-            // Core of the blur effect, drawing a blurred version of the content behind it.
-            .drawPlainBackdrop(
-                backdrop = backdrop,
-                shape = { RoundedRectangle(16.dp) },
-                layerBlock = {
-                    alpha = alphaAni()
-                },
-                effects = {
-                    blur(64f.dp.toPx(), TileMode.Mirror)
-                },
-                // Custom drawing on top of the blurred background to create stunning colors.
-                onDrawSurface = {
-                    // The drawing logic is different for light and dark themes.
-                    if (!darkTheme) {
-                        drawRect(
-                            brush = SolidColor(Color(0xFF272727).copy(alpha = 0.2f)),
-                            style = Fill,
-                            blendMode = BlendMode.Luminosity,
-                        )
-                        drawRect(
-                            brush = SolidColor(Color(0xFF252525).copy(alpha = 1f)),
-                            style = Fill,
-                            blendMode = BlendMode.Plus,
-                        )
-                        drawRect(
-                            brush = SolidColor(Color(0xFF555555).copy(alpha = 0.5f)),
-                            style = Fill,
-                            blendMode = BlendMode.ColorDodge,
-                        )
-                        drawRect(
-                            brush = SolidColor(Color(0xFFFFFFFF).copy(alpha = 0.2f)),
-                            style = Fill,
-                            blendMode = BlendMode.SrcOver,
-                        )
-                    } else {
-                        drawRect(
-                            brush = SolidColor(Color(0xFF000000).copy(alpha = 0.5f)),
-                            style = Fill,
-                            blendMode = BlendMode.Luminosity,
-                        )
-                        drawRect(
-                            brush = SolidColor(Color(0xFF252525).copy(alpha = 1f)),
-                            style = Fill,
-                            blendMode = BlendMode.Plus,
-                        )
-                        drawRect(
-                            brush = SolidColor(Color(0xFF4B4B4B).copy(alpha = 0.5f)),
-                            style = Fill,
-                            blendMode = BlendMode.ColorDodge,
-                        )
-                        drawRect(
-                            brush = SolidColor(Color(0xFF000000).copy(alpha = 0.3f)),
-                            style = Fill,
-                            blendMode = BlendMode.SrcOver,
-                        )
+                // Core of the blur effect, drawing a blurred version of the content behind it.
+                .drawPlainBackdrop(
+                    backdrop = backdrop,
+                    shape = { RoundedRectangle(16.dp) },
+                    layerBlock = {
+                        alpha = alphaAni.value
+                    },
+                    effects = {
+                        blur(64f.dp.toPx(), TileMode.Mirror)
+                    },
+                    // Custom drawing on top of the blurred background to create stunning colors.
+                    onDrawSurface = {
+                        // The drawing logic is different for light and dark themes.
+                        if (!darkTheme) {
+                            drawRect(
+                                brush = SolidColor(Color(0xFF272727).copy(alpha = 0.2f)),
+                                style = Fill,
+                                blendMode = BlendMode.Luminosity,
+                            )
+                            drawRect(
+                                brush = SolidColor(Color(0xFF252525).copy(alpha = 1f)),
+                                style = Fill,
+                                blendMode = BlendMode.Plus,
+                            )
+                            drawRect(
+                                brush = SolidColor(Color(0xFF555555).copy(alpha = 0.5f)),
+                                style = Fill,
+                                blendMode = BlendMode.ColorDodge,
+                            )
+                            drawRect(
+                                brush = SolidColor(Color(0xFFFFFFFF).copy(alpha = 0.2f)),
+                                style = Fill,
+                                blendMode = BlendMode.SrcOver,
+                            )
+                        } else {
+                            drawRect(
+                                brush = SolidColor(Color(0xFF000000).copy(alpha = 0.5f)),
+                                style = Fill,
+                                blendMode = BlendMode.Luminosity,
+                            )
+                            drawRect(
+                                brush = SolidColor(Color(0xFF252525).copy(alpha = 1f)),
+                                style = Fill,
+                                blendMode = BlendMode.Plus,
+                            )
+                            drawRect(
+                                brush = SolidColor(Color(0xFF4B4B4B).copy(alpha = 0.5f)),
+                                style = Fill,
+                                blendMode = BlendMode.ColorDodge,
+                            )
+                            drawRect(
+                                brush = SolidColor(Color(0xFF000000).copy(alpha = 0.3f)),
+                                style = Fill,
+                                blendMode = BlendMode.SrcOver,
+                            )
+                        }
                     }
-                }
-            )
-            .glasenseHighlight(16.dp)
-    ) {
-        // Display the actual menu items.
-        CustomMenuContent(items = menuState.items, onDismiss = onDismiss)
+                )
+                .glasenseHighlight(16.dp)
+        ) {
+            // Display the actual menu items.
+            CustomMenuContent(items = menuState.items, onDismiss = onDismiss)
+        }
     }
 }
 
