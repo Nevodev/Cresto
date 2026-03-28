@@ -5,10 +5,15 @@ import com.nevoit.cresto.ui.screens.settings.util.SortOption
 import com.nevoit.cresto.ui.screens.settings.util.SortOrder
 import java.text.Collator
 
+enum class TodoListType{
+    INCOMPLETED,
+    COMPLETED
+}
 fun sortTodos(
     list: List<TodoItemWithSubTodos>,
     option: SortOption,
-    order: SortOrder
+    order: SortOrder,
+    type: TodoListType
 ): List<TodoItemWithSubTodos> {
     val currentSortOption =
         SortOption.entries.getOrElse(option.ordinal) { SortOption.DEFAULT }
@@ -20,15 +25,26 @@ fun sortTodos(
         val itemA = a.todoItem
         val itemB = b.todoItem
 
-        val compareByCreationDate = if (currentSortOrder == SortOrder.ASCENDING) {
-            itemA.creationDateTime.compareTo(itemB.creationDateTime)
-        } else {
-            itemB.creationDateTime.compareTo(itemA.creationDateTime)
+        val baseDateA = when (type) {
+            TodoListType.INCOMPLETED -> itemA.creationDateTime
+            TodoListType.COMPLETED -> itemA.completedDateTime
+        }
+        val baseDateB = when (type) {
+            TodoListType.INCOMPLETED -> itemB.creationDateTime
+            TodoListType.COMPLETED -> itemB.completedDateTime
+        }
+
+        val compareByBaseDateTime = when {
+            baseDateA == null && baseDateB == null -> 0
+            baseDateA == null -> 1
+            baseDateB == null -> -1
+            currentSortOrder == SortOrder.ASCENDING -> baseDateA.compareTo(baseDateB)
+            else -> baseDateB.compareTo(baseDateA)
         }
 
         val compareResult = when (currentSortOption) {
             SortOption.DEFAULT -> {
-                compareByCreationDate
+                compareByBaseDateTime
             }
 
             SortOption.DUE_DATE -> {
@@ -36,7 +52,7 @@ fun sortTodos(
                 val dateB = itemB.dueDate
 
                 if (dateA == null && dateB == null) {
-                    compareByCreationDate
+                    compareByBaseDateTime
                 } else if (dateA == null) {
                     1
                 } else if (dateB == null) {
@@ -47,7 +63,7 @@ fun sortTodos(
                     } else {
                         dateB.compareTo(dateA)
                     }
-                    if (dueDateCompare != 0) dueDateCompare else compareByCreationDate
+                    if (dueDateCompare != 0) dueDateCompare else compareByBaseDateTime
                 }
             }
 
@@ -58,26 +74,28 @@ fun sortTodos(
                 val isBEmpty = flagB == 0
 
                 if (isAEmpty && isBEmpty) {
-                    0
+                    compareByBaseDateTime
                 } else if (isAEmpty) {
                     1
                 } else if (isBEmpty) {
                     -1
                 } else {
-                    if (currentSortOrder == SortOrder.ASCENDING) {
+                    val flagCompare = if (currentSortOrder == SortOrder.ASCENDING) {
                         flagA.compareTo(flagB)
                     } else {
                         flagB.compareTo(flagA)
                     }
+                    if (flagCompare != 0) flagCompare else compareByBaseDateTime
                 }
             }
 
             SortOption.TITLE -> {
-                if (currentSortOrder == SortOrder.ASCENDING) {
+                val titleCompare = if (currentSortOrder == SortOrder.ASCENDING) {
                     collator.compare(itemA.title, itemB.title)
                 } else {
                     collator.compare(itemB.title, itemA.title)
                 }
+                if (titleCompare != 0) titleCompare else compareByBaseDateTime
             }
         }
 

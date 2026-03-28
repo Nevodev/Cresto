@@ -95,10 +95,25 @@ fun BoxScope.HomeScreen(
         SortOrder.entries.getOrElse(sortOrderOrdinal) { SortOrder.DESCENDING }
     }
 
-    val sortedTodoList = remember(todoList, currentSortOption, currentSortOrder) {
-        sortTodos(todoList, currentSortOption, currentSortOrder)
+    val (rawIncompleteTodos, rawCompleteTodos) = remember(todoList) {
+        todoList.partition { !it.todoItem.isCompleted }
     }
-    val (incompleteTodos, completeTodos) = sortedTodoList.partition { !it.todoItem.isCompleted }
+    val incompleteTodos = remember(rawIncompleteTodos, currentSortOption, currentSortOrder) {
+        sortTodos(
+            list = rawIncompleteTodos,
+            option = currentSortOption,
+            order = currentSortOrder,
+            type = TodoListType.INCOMPLETED
+        )
+    }
+    val completeTodos = remember(rawCompleteTodos, currentSortOption, currentSortOrder) {
+        sortTodos(
+            list = rawCompleteTodos,
+            option = currentSortOption,
+            order = currentSortOrder,
+            type = TodoListType.COMPLETED
+        )
+    }
     var completedVisible by remember { mutableStateOf(true) }
     var showConfetti by remember { mutableStateOf(false) }
     var confettiHideJob by remember { mutableStateOf<Job?>(null) }
