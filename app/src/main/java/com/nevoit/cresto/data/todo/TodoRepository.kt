@@ -1,5 +1,6 @@
 package com.nevoit.cresto.data.todo
 
+import androidx.room.withTransaction
 import com.nevoit.cresto.data.statistics.DailyStat
 import com.nevoit.cresto.data.todo.backup.SubTodoBackupDto
 import com.nevoit.cresto.data.todo.backup.TodoBackupDto
@@ -26,7 +27,10 @@ data class ImportResult(
  *
  * @param todoDao The Data Access Object for the to-do items.
  */
-class TodoRepository(private val todoDao: TodoDao) {
+class TodoRepository(
+    private val todoDao: TodoDao,
+    private val todoDatabase: TodoDatabase
+) {
 
     val allTodos: Flow<List<TodoItemWithSubTodos>> = todoDao.getAllTodosWithSubTodos()
 
@@ -84,6 +88,97 @@ class TodoRepository(private val todoDao: TodoDao) {
 
     suspend fun updateFlagByIds(ids: List<Int>, flag: Int) {
         todoDao.updateFlagByIds(ids, flag)
+    }
+
+    suspend fun duplicateByIds(ids: List<Int>): Int {
+        if (ids.isEmpty()) return 0
+
+        return todoDatabase.withTransaction {
+            val sourceTodosById = todoDao.getTodosWithSubTodosByIds(ids)
+                .associateBy { it.todoItem.id }
+            val orderedSourceTodos = ids.mapNotNull(sourceTodosById::get)
+            if (orderedSourceTodos.isEmpty()) return@withTransaction 0
+
+            val sourceTodosForInsert = orderedSourceTodos.asReversed()
+
+            val now = LocalDateTime.now()
+            val todoCopies = sourceTodosForInsert.map { source ->
+                source.todoItem.copy(
+                    id = 0,
+                    creationDateTime = now,
+                    isCompleted = false,
+                    completedDateTime = null
+                )
+            }
+
+            val newTodoIds = todoDao.insertTodosForDuplicate(todoCopies)
+                .map(Long::toInt)
+
+            val subTodoCopies =
+                sourceTodosForInsert.zip(newTodoIds).flatMap { (source, newTodoId) ->
+                    source.subTodos.map { subTodo ->
+                        subTodo.copy(
+                            id = 0,
+                            parentId = newTodoId,
+                            isCompleted = false
+                        )
+                    }
+                }
+
+            if (subTodoCopies.isNotEmpty()) {
+                todoDao.insertSubTodosForDuplicate(subTodoCopies)
+            }
+
+            newTodoIds.size
+        }
+    }
+
+    suspend fun mergeByIdsAsSubTodos(ids: List<Int>, newTodoTitle: String): Int {
+        if (ids.isEmpty()) return 0
+
+        return todoDatabase.withTransaction {
+            val sourceTodosById = todoDao.getTodosWithSubTodosByIds(ids)
+                .associateBy { it.todoItem.id }
+            val orderedSourceTodos = ids.mapNotNull(sourceTodosById::get)
+            if (orderedSourceTodos.isEmpty()) return@withTransaction 0
+
+            val newTodoId = todoDao.insertTodoForMerge(
+                TodoItem(
+                    id = 0,
+                    title = newTodoTitle,
+                    creationDateTime = LocalDateTime.now()
+                )
+            ).toInt()
+
+            val mergedSubTodos = orderedSourceTodos.flatMap { source ->
+                buildList {
+                    add(
+                        SubTodoItem(
+                            id = 0,
+                            parentId = newTodoId,
+                            description = source.todoItem.title,
+                            isCompleted = source.todoItem.isCompleted
+                        )
+                    )
+                    addAll(
+                        source.subTodos.map { subTodo ->
+                            subTodo.copy(
+                                id = 0,
+                                parentId = newTodoId
+                            )
+                        }
+                    )
+                }
+            }
+
+            if (mergedSubTodos.isNotEmpty()) {
+                todoDao.insertSubTodosForMerge(mergedSubTodos)
+            }
+
+            todoDao.deleteByIds(orderedSourceTodos.map { it.todoItem.id })
+
+            mergedSubTodos.size
+        }
     }
 
     fun getTotalCount(): Flow<Int> {

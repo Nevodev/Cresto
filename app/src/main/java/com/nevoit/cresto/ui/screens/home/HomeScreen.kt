@@ -80,6 +80,11 @@ fun BoxScope.HomeScreen(
             swipeListState.close()
         }
     }
+    LaunchedEffect(isSelectionModeActive) {
+        if (!isSelectionModeActive) {
+            swipeListState.close()
+        }
+    }
 
     val isSmallTitleVisible by lazyListState.isScrolledPast(statusBarHeight + 24.dp)
     val interactionSource = remember { MutableInteractionSource() }

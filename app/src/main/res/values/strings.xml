@@ -155,6 +155,12 @@
     <string name="more">More</string>
     <string name="check_all">Complete selected</string>
     <string name="set_flag">Set flag</string>
+    <string name="set_tag">Set tag</string>
+    <string name="duplicate_todo">Duplicate</string>
+    <string name="merge_todos">Merge todos</string>
+    <string name="link_main_todo">Link main todo</string>
+    <string name="share">Share</string>
+    <string name="new_merged_todo_title">New Todo</string>
     <string name="flag_red">Red</string>
     <string name="flag_orange">Orange</string>
     <string name="flag_yellow">Yellow</string>

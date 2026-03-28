@@ -462,7 +462,7 @@ private fun CustomMenuItem(
         Icon(
             painter = icon,
             contentDescription = text,
-            tint = if (isDestructive) contentColor else iconColor,
+            tint = if (isDestructive) contentColor else if (iconColor == Color.Unspecified) AppColors.content else iconColor,
             modifier = Modifier.size(24.dp),
         )
     }

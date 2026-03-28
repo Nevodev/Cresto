@@ -609,7 +609,7 @@ fun SwipeableSubTodoItemRowEditable(
         SwipeableActionButton(
             index = 0,
             color = AppColors.primary,
-            icon = painterResource(id = R.drawable.ic_duplicate),
+            icon = painterResource(id = R.drawable.ic_duplicate_plus),
             isDestructive = false
         ),
         SwipeableActionButton(

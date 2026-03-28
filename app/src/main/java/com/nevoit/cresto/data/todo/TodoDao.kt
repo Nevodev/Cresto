@@ -61,6 +61,10 @@ interface TodoDao {
     @Query("SELECT * FROM todo_items WHERE id = :id")
     fun getTodoWithSubTodosById(id: Int): Flow<TodoItemWithSubTodos?>
 
+    @Transaction
+    @Query("SELECT * FROM todo_items WHERE id IN (:ids)")
+    suspend fun getTodosWithSubTodosByIds(ids: List<Int>): List<TodoItemWithSubTodos>
+
     @Query("DELETE FROM todo_items WHERE id = :id")
     suspend fun deleteById(id: Int)
 
@@ -119,6 +123,18 @@ interface TodoDao {
 
     @Insert(onConflict = OnConflictStrategy.ABORT)
     suspend fun insertSubTodoForImport(item: SubTodoItem): Long
+
+    @Insert(onConflict = OnConflictStrategy.ABORT)
+    suspend fun insertTodosForDuplicate(items: List<TodoItem>): List<Long>
+
+    @Insert(onConflict = OnConflictStrategy.ABORT)
+    suspend fun insertSubTodosForDuplicate(items: List<SubTodoItem>)
+
+    @Insert(onConflict = OnConflictStrategy.ABORT)
+    suspend fun insertTodoForMerge(item: TodoItem): Long
+
+    @Insert(onConflict = OnConflictStrategy.ABORT)
+    suspend fun insertSubTodosForMerge(items: List<SubTodoItem>)
 
     @Query("SELECT * FROM todo_items ORDER BY id ASC")
     suspend fun getAllTodosSnapshot(): List<TodoItem>

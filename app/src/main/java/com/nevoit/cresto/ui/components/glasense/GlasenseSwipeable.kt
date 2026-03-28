@@ -29,12 +29,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -52,8 +50,6 @@ import com.nevoit.cresto.ui.components.myScaleIn
 import com.nevoit.cresto.ui.components.myScaleOut
 import com.nevoit.cresto.ui.theme.glasense.AppButtonColors
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 import kotlin.math.abs
@@ -100,8 +96,8 @@ fun SwipeableContainer(
 ) {
     val haptic = LocalHapticFeedback.current
 
-    var swipeState by remember { mutableStateOf(SwipeState.IDLE) }
-    var initialSwipeState by remember { mutableStateOf(SwipeState.IDLE) }
+    var swipeState by remember(key) { mutableStateOf(SwipeState.IDLE) }
+    var initialSwipeState by remember(key) { mutableStateOf(SwipeState.IDLE) }
     val coroutineScope = rememberCoroutineScope()
 
     val density = LocalDensity.current
@@ -120,8 +116,8 @@ fun SwipeableContainer(
 
     val screenWidthPx = LocalWindowInfo.current.containerSize.width
 
-    val flingOffset = remember { Animatable(0f) }
-    val deleteFlingOffset = remember { Animatable(0f) }
+    val flingOffset = remember(key) { Animatable(0f) }
+    val deleteFlingOffset = remember(key) { Animatable(0f) }
 
     val animatedOffset by animateFloatAsState(
         targetValue = flingOffset.value,
@@ -131,8 +127,8 @@ fun SwipeableContainer(
         )
     )
 
-    val shouldIntercept = listState.currentOpenKey != null
-    var shouldComposeActions by remember { mutableStateOf(false) }
+    val shouldIntercept = listState.currentOpenKey != null && listState.currentOpenKey != key
+    var shouldComposeActions by remember(key) { mutableStateOf(false) }
 
     val revealedThresholds = remember(actions, actionButtonWidthPx, gapPx) {
         actions.indices.map { index ->
@@ -140,27 +136,18 @@ fun SwipeableContainer(
             gapPx + actionButtonWidthPx * trueIndex + actionButtonWidthPx / 2
         }
     }
-    var revealedCount by remember(actions) { mutableIntStateOf(0) }
-
-    LaunchedEffect(revealedThresholds) {
-        snapshotFlow { abs(flingOffset.value) }
-            .map { offset -> revealedThresholds.count { offset >= it } }
-            .distinctUntilChanged()
-            .collect { revealedCount = it }
+    val revealedCount by remember(key, revealedThresholds) {
+        derivedStateOf { revealedThresholds.count { abs(flingOffset.value) >= it } }
     }
 
-    val scale = remember { Animatable(1f) }
-    val alphaAni = remember { Animatable(1f) }
+    val scale = remember(key) { Animatable(1f) }
+    val alphaAni = remember(key) { Animatable(1f) }
 
-    /*fun reset() {
-        coroutineScope.launch {
-            swipeState = SwipeState.IDLE
-            flingOffset.snapTo(0f)
-            deleteFlingOffset.snapTo(0f)
-            scale.snapTo(1f)
-            alphaAni.snapTo(1f)
-        }
-    }*/
+    suspend fun resetVisualState() {
+        scale.snapTo(1f)
+        alphaAni.snapTo(1f)
+        deleteFlingOffset.snapTo(0f)
+    }
 
     fun executeAction(action: SwipeableActionButton) {
         if (action.isDestructive) {
@@ -171,12 +158,13 @@ fun SwipeableContainer(
                 }
             }
             coroutineScope.launch {
+                val flyOutExtraPx = totalActionsWidthPx + with(density) { 8.dp.toPx() }
                 val jobs = listOf(
                     launch { scale.animateTo(0.8f, tween(100)) },
                     launch { alphaAni.animateTo(0f, tween(100)) },
                     launch {
                         deleteFlingOffset.animateTo(
-                            targetValue = -screenWidthPx - flingOffset.value,
+                            targetValue = -(screenWidthPx + flyOutExtraPx) - flingOffset.value,
                             animationSpec = tween(
                                 100,
                                 easing = CubicBezierEasing(
@@ -191,24 +179,31 @@ fun SwipeableContainer(
                 )
                 jobs.joinAll()
                 swipeState = SwipeState.IDLE
+                listState.close()
                 onAction(action.index)
             }
         } else {
             onAction(action.index)
             coroutineScope.launch {
+                haptic.performHapticFeedback(HapticFeedbackType.Confirm)
+            }
+            coroutineScope.launch {
                 swipeState = SwipeState.IDLE
                 flingOffset.animateTo(0f)
                 shouldComposeActions = false
+                listState.close()
+                resetVisualState()
             }
         }
     }
 
     LaunchedEffect(listState.currentOpenKey) {
-        if (listState.currentOpenKey != key && swipeState != SwipeState.IDLE) {
+        if (listState.currentOpenKey != key) {
             coroutineScope.launch {
                 swipeState = SwipeState.IDLE
                 flingOffset.animateTo(0f)
                 shouldComposeActions = false
+                resetVisualState()
             }
         }
     }
@@ -293,7 +288,7 @@ fun SwipeableContainer(
             }
         }
 
-        val isDeepSwipe by remember {
+        val isDeepSwipe by remember(key, deepSwipeThresholdPx) {
             derivedStateOf { flingOffset.value < -deepSwipeThresholdPx }
         }
 
@@ -320,6 +315,7 @@ fun SwipeableContainer(
                     },
                     onDragStarted = {
                         initialSwipeState = swipeState
+                        coroutineScope.launch { resetVisualState() }
                         shouldComposeActions = true
                         listState.setOpen(key)
                     },
@@ -355,6 +351,7 @@ fun SwipeableContainer(
                                     initialVelocity = finalVelocity
                                 )
                                 shouldComposeActions = false
+                                resetVisualState()
                             }
                         }
                     }

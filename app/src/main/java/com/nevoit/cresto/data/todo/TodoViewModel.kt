@@ -129,6 +129,28 @@ class TodoViewModel(private val repository: TodoRepository) : ViewModel() {
         clearSelections()
     }
 
+    fun duplicateSelectedItems() = viewModelScope.launch {
+        val selectedIds = _selectedItemIds.value.toList()
+        if (selectedIds.isEmpty()) return@launch
+
+        repository.duplicateByIds(selectedIds)
+        clearSelections()
+    }
+
+    fun mergeSelectedItems(newTodoTitle: String) = viewModelScope.launch {
+        val selectedIds = _selectedItemIds.value
+        if (selectedIds.size < 2) return@launch
+
+        val orderedSelectedIds = allTodos.value
+            .map { it.todoItem.id }
+            .filter(selectedIds::contains)
+
+        if (orderedSelectedIds.isEmpty()) return@launch
+
+        repository.mergeByIdsAsSubTodos(orderedSelectedIds, newTodoTitle)
+        clearSelections()
+    }
+
     val selectedItemCount: StateFlow<Int> = selectedItemIds.map { it.size }
         .stateIn(
             scope = viewModelScope,

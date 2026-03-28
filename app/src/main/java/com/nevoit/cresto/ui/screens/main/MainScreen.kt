@@ -212,7 +212,12 @@ fun MainScreen() {
 
     val floatingBarColor = AppColors.pageBackground.copy(.5f)
 
-    val moreMenu = rememberMoreMenuItems()
+    val newMergedTodoTitle = stringResource(R.string.new_merged_todo_title)
+    val moreMenu = rememberMoreMenuItems(
+        onDuplicateSelected = viewModel::duplicateSelectedItems,
+        onMergeSelected = { viewModel.mergeSelectedItems(newMergedTodoTitle) },
+        canMerge = selectedItemCount >= 2
+    )
     var moreButtonBounds by remember { mutableStateOf<LayoutCoordinates?>(null) }
 
     val flagMenu = rememberFlagMenuItems(onFlagSelected = viewModel::flagSelectedItems)

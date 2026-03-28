@@ -11,39 +11,63 @@ import com.nevoit.cresto.ui.components.glasense.MenuItemData
 import com.nevoit.cresto.ui.theme.glasense.getFlagColor
 
 @Composable
-fun rememberMoreMenuItems(): List<GlasenseMenuItem> {
-    val rankIcon = painterResource(R.drawable.ic_rank)
+fun rememberMoreMenuItems(
+    onDuplicateSelected: () -> Unit,
+    onMergeSelected: () -> Unit,
+    canMerge: Boolean
+): List<GlasenseMenuItem> {
+    val combineIcon = painterResource(R.drawable.ic_combine_as_one)
+    val shareIcon = painterResource(R.drawable.ic_share)
+    val tagIcon = painterResource(R.drawable.ic_tag)
+    val duplicateIcon = painterResource(R.drawable.ic_duplicate)
+    val duplicateText = stringResource(R.string.duplicate_todo)
+    val setTagText = stringResource(R.string.set_tag)
+    val mergeTodosText = stringResource(R.string.merge_todos)
+    val shareText = stringResource(R.string.share)
 
-    return remember() {
-        listOf(
-            MenuItemData(
-                "创建副本",
-                rankIcon,
-                onClick = { }
-            ),
-            MenuItemData(
-                "设置标签",
-                rankIcon,
-                onClick = { }
-            ),
-            MenuDivider,
-            MenuItemData(
-                "合并任务",
-                rankIcon,
-                onClick = { }
-            ),
-            MenuItemData(
-                "关联主任务",
-                rankIcon,
-                onClick = { }
-            ),
-            MenuDivider,
-            MenuItemData(
-                "导出为 .json",
-                rankIcon,
-                onClick = { }
+    return remember(
+        onDuplicateSelected,
+        onMergeSelected,
+        canMerge,
+        duplicateText,
+        setTagText,
+        mergeTodosText,
+        shareText
+    ) {
+        buildList {
+            add(
+                MenuItemData(
+                    duplicateText,
+                    duplicateIcon,
+                    onClick = onDuplicateSelected
+                )
             )
-        )
+            add(
+                MenuItemData(
+                    setTagText,
+                    tagIcon,
+                    onClick = { }
+                )
+            )
+            if (canMerge) {
+                add(MenuDivider)
+                add(
+                    MenuItemData(
+                        mergeTodosText,
+                        combineIcon,
+                        onClick = onMergeSelected
+                    )
+                )
+            }
+            add(MenuDivider)
+            add(
+                MenuItemData(
+                    shareText,
+                    shareIcon,
+                    onClick = { }
+                )
+            )
+        }
     }
 }
 
@@ -64,13 +88,6 @@ fun rememberFlagMenuItems(onFlagSelected: (Int) -> Unit): List<GlasenseMenuItem>
     val noneText = stringResource(R.string.none)
     return remember(onFlagSelected, flagIcon, noFlagIcon, flagNames, noneText) {
         buildList {
-            add(
-                MenuItemData(
-                    text = noneText,
-                    icon = noFlagIcon,
-                    onClick = { onFlagSelected(0) }
-                )
-            )
             flagNames.forEachIndexed { index, flagName ->
                 val flagIndex = index + 1
                 add(
@@ -82,6 +99,16 @@ fun rememberFlagMenuItems(onFlagSelected: (Int) -> Unit): List<GlasenseMenuItem>
                     )
                 )
             }
+            add(
+                MenuDivider
+            )
+            add(
+                MenuItemData(
+                    text = noneText,
+                    icon = noFlagIcon,
+                    onClick = { onFlagSelected(0) }
+                )
+            )
         }
     }
 }
