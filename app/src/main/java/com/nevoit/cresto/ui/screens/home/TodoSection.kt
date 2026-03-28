@@ -24,7 +24,6 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawOutline
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.translate
@@ -32,7 +31,6 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -51,9 +49,6 @@ fun LazyItemScope.TodoListItemRow(
     item: TodoItemWithSubTodos,
     isSelected: Boolean,
     isSelectionModeActive: Boolean,
-    isComposed: Boolean,
-    selectionOutline: Color,
-    cardCorner: Dp,
     overlayInteractionSource: MutableInteractionSource,
     swipeListState: SwipeableListState,
     onEnterSelection: () -> Unit,
@@ -61,10 +56,13 @@ fun LazyItemScope.TodoListItemRow(
     onOpenDetail: () -> Unit,
     onCheckedChange: (Boolean) -> Unit,
     onDelete: () -> Unit,
-    displayItem: TodoItemWithSubTodos = item,
     onCheckboxTapPosition: ((Offset) -> Unit)? = null,
 ) {
+    val itemId = item.todoItem.id
     val alpha = remember { Animatable(if (isSelected) 1f else 0f) }
+    val rowInteractionSource = remember { MutableInteractionSource() }
+    val selectionOutline = AppColors.primary
+    val cardCorner = AppSpecs.cardCorner
 
     LaunchedEffect(isSelected) {
         if (isSelected) {
@@ -78,7 +76,7 @@ fun LazyItemScope.TodoListItemRow(
         modifier = Modifier
             .animateItem(placementSpec = spring(0.9f, 400f))
             .combinedClickable(
-                interactionSource = remember { MutableInteractionSource() },
+                interactionSource = rowInteractionSource,
                 indication = DimIndication(shape = AppSpecs.cardShape),
                 onLongClick = {
                     if (!isSelectionModeActive) {
@@ -97,12 +95,12 @@ fun LazyItemScope.TodoListItemRow(
             )
     ) {
         SwipeableTodoItem(
-            item = displayItem,
+            item = item,
             onCheckboxTapPosition = onCheckboxTapPosition ?: {},
             onCheckedChange = onCheckedChange,
             onDelete = onDelete,
             modifier = Modifier.drawBehind {
-                if (isComposed) {
+                if (alpha.value > 0) {
                     val outline = RoundedRectangle(cardCorner - 3.dp / 2).createOutline(
                         size = Size(size.width - 3.dp.toPx(), size.height - 3.dp.toPx()),
                         layoutDirection = LayoutDirection.Ltr,
