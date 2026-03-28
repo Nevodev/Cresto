@@ -127,7 +127,7 @@ fun SwipeableContainer(
         )
     )
 
-    val shouldIntercept = listState.currentOpenKey != null && listState.currentOpenKey != key
+    val shouldIntercept = listState.currentOpenKey != null && listState.currentOpenKey == key
     var shouldComposeActions by remember(key) { mutableStateOf(false) }
 
     val revealedThresholds = remember(actions, actionButtonWidthPx, gapPx) {
@@ -208,6 +208,8 @@ fun SwipeableContainer(
         }
     }
 
+    val interactionSource = remember { MutableInteractionSource() }
+
     Box(
         modifier = modifier
             .fillMaxWidth()
@@ -218,6 +220,12 @@ fun SwipeableContainer(
                 modifier = Modifier
                     .align(Alignment.CenterEnd)
                     .width(with(density) { totalActionsWidthPx.toDp() })
+                    .clickable(
+                        interactionSource = interactionSource,
+                        indication = null,
+                        onClick = {
+                        }
+                    )
                     .padding(end = 6.dp)
                     .fillMaxHeight(),
                 horizontalArrangement = Arrangement.End,
@@ -364,7 +372,7 @@ fun SwipeableContainer(
                     modifier = Modifier
                         .matchParentSize()
                         .clickable(
-                            interactionSource = remember { MutableInteractionSource() },
+                            interactionSource = interactionSource,
                             indication = null,
                             onClick = {
                                 listState.close()
