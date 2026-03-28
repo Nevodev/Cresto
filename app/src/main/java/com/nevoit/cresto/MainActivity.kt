@@ -13,8 +13,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.core.view.WindowCompat
 import com.nevoit.cresto.toolkit.overscroll.OffsetOverscrollFactory
-import com.nevoit.cresto.ui.MainScreen
 import com.nevoit.cresto.ui.screens.guidescreen.GuideActivity
+import com.nevoit.cresto.ui.screens.main.MainScreen
 import com.nevoit.cresto.ui.screens.settings.util.SettingsManager
 import com.nevoit.cresto.ui.theme.glasense.AppColors
 import com.nevoit.cresto.ui.theme.glasense.GlasenseTheme

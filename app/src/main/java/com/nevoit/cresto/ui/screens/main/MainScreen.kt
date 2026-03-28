@@ -1,4 +1,4 @@
-package com.nevoit.cresto.ui
+package com.nevoit.cresto.ui.screens.main
 
 import android.os.Build
 import androidx.activity.compose.BackHandler
@@ -512,38 +512,31 @@ fun MainScreen() {
             }
         }
 
-        GlasenseMenu(
-            density = density,
-            menuState = menuState,
-            backdrop = backdrop,
-            onDismiss = dismissMenu,
-            modifier = Modifier
-        )
-
         if (bottomSheetState.isVisible) {
-            Box(modifier = Modifier.fillMaxSize()) {
-                BottomSheet(
-                    onDismiss = { viewModel.hideBottomSheet() },
-                    onAddClick = { title, flagIndex, finalDate ->
-                        viewModel.insert(
-                            TodoItem(
-                                title = title,
-                                flag = flagIndex,
-                                dueDate = finalDate
-                            )
+            BottomSheet(
+                onDismiss = { viewModel.hideBottomSheet() },
+                onAddClick = { title, flagIndex, finalDate ->
+                    viewModel.insert(
+                        TodoItem(
+                            title = title,
+                            flag = flagIndex,
+                            dueDate = finalDate
                         )
-                    }, showDialog = showDialog
-                )
-            }
-        }
-
-        if (dialogState.isVisible) {
-            GlasenseDialog(
-                dialogState = dialogState,
-                backdrop = backdrop,
-                onDismiss = { dismissDialog() },
-                modifier = Modifier,
+                    )
+                }, showDialog = showDialog
             )
         }
+
+        GlasenseMenu(
+            menuState = menuState,
+            backdrop = backdrop,
+            onDismiss = dismissMenu
+        )
+
+        GlasenseDialog(
+            dialogState = dialogState,
+            backdrop = backdrop,
+            onDismiss = { dismissDialog() }
+        )
     }
 }

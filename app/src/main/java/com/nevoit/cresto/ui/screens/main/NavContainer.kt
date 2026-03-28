@@ -1,4 +1,4 @@
-package com.nevoit.cresto.ui
+package com.nevoit.cresto.ui.screens.main
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.CubicBezierEasing
@@ -12,6 +12,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.graphicsLayer
 import com.nevoit.cresto.data.todo.TodoViewModel
 import com.nevoit.cresto.ui.components.glasense.GlasenseMenuItem
@@ -24,7 +25,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun BoxScope.NavContainer(
     currentRoute: String,
-    showMenu: (anchorPosition: androidx.compose.ui.geometry.Offset, items: List<GlasenseMenuItem>) -> Unit,
+    showMenu: (anchorPosition: Offset, items: List<GlasenseMenuItem>) -> Unit,
     viewModel: TodoViewModel
 ) {
     val saveableStateHolder = rememberSaveableStateHolder()

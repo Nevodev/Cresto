@@ -136,43 +136,8 @@ fun GlasenseDialog(
     dialogState: DialogState,
     backdrop: LayerBackdrop,
     onDismiss: () -> Unit,
-    modifier: Modifier
+    modifier: Modifier = Modifier
 ) {
-    val blur = !LocalGlasenseSettings.current.liteMode
-    val darkTheme = isAppInDarkTheme()
-    val screenWidth =
-        with(LocalDensity.current) { LocalWindowInfo.current.containerSize.width.toDp() }
-
-    var isVisible by remember { mutableStateOf(false) }
-
-    val scaleAni = remember { Animatable(1.3f) }
-    val alphaAni = remember { Animatable(0f) }
-    val alphaAni2 = remember { Animatable(0f) }
-
-    val shadowBaseColor =
-        if (darkTheme) Color.Black.copy(alpha = 0.2f) else Color.Black.copy(alpha = 0.1f)
-    val dialogShape = AppSpecs.dialogShape
-
-    val shadowRadiusPx = with(LocalDensity.current) { 32.dp.toPx() }
-    val shadowDyPx = with(LocalDensity.current) { 16.dp.toPx() }
-
-    val shadowPaint = remember {
-        Paint().nativePaint.apply {
-            isAntiAlias = true
-            maskFilter = BlurMaskFilter(shadowRadiusPx, BlurMaskFilter.Blur.NORMAL)
-        }
-    }
-
-    val scope = rememberCoroutineScope()
-    val haptic = LocalHapticFeedback.current
-
-    LaunchedEffect(isVisible) {
-        coroutineScope {
-            launch { scaleAni.animateTo(1f, spring(1.3f, 1000f, .0001f)) }
-            launch { alphaAni.animateTo(1f, tween(300, 0)) }
-            launch { alphaAni2.animateTo(1f, tween(200, 0)) }
-        }
-    }
     val interactionSource = remember { MutableInteractionSource() }
     val surfaceColor = AppColors.cardBackground
 
@@ -180,206 +145,243 @@ fun GlasenseDialog(
 
     val isDarkMode = isAppInDarkTheme()
 
-    BackHandler() { }
-    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .graphicsLayer { alpha = alphaAni2.value }
-                .background(Color.Black.copy(.4f))
-                .clickable(
-                    interactionSource = interactionSource,
-                    indication = null,
-                    enabled = true,
-                    onClick = {}),
-            contentAlignment = Alignment.Center,
-        ) {}
+    val blur = !LocalGlasenseSettings.current.liteMode
+    val darkTheme = isAppInDarkTheme()
+    val screenWidth =
+        with(LocalDensity.current) { LocalWindowInfo.current.containerSize.width.toDp() }
 
-        Box(
-            modifier = modifier
-                .width(screenWidth - 48.dp * 2)
-                .drawBehind {
-                    val currentAlpha = alphaAni.value
+    val shadowBaseColor =
+        if (darkTheme) Color.Black.copy(alpha = 0.2f) else Color.Black.copy(alpha = 0.1f)
+    val dialogShape = AppSpecs.dialogShape
+    val shadowRadiusPx = with(LocalDensity.current) { 32.dp.toPx() }
+    val shadowDyPx = with(LocalDensity.current) { 16.dp.toPx() }
+    val shadowPaint = remember {
+        Paint().nativePaint.apply {
+            isAntiAlias = true
+            maskFilter = BlurMaskFilter(shadowRadiusPx, BlurMaskFilter.Blur.NORMAL)
+        }
+    }
+    val scope = rememberCoroutineScope()
+    val haptic = LocalHapticFeedback.current
 
-                    if (currentAlpha > 0f) {
-                        val paintColor =
-                            shadowBaseColor.copy(alpha = shadowBaseColor.alpha * currentAlpha)
-                        shadowPaint.color = paintColor.toArgb()
+    if (dialogState.isVisible) {
+        var isVisible by remember { mutableStateOf(false) }
 
-                        drawIntoCanvas { canvas ->
-                            canvas.save()
-                            canvas.translate(0f, shadowDyPx)
+        val scaleAni = remember { Animatable(1.3f) }
+        val alphaAni = remember { Animatable(0f) }
+        val alphaAni2 = remember { Animatable(0f) }
 
-                            val outline = dialogShape.createOutline(size, layoutDirection, this)
+        LaunchedEffect(isVisible) {
+            coroutineScope {
+                launch { scaleAni.animateTo(1f, spring(1.3f, 1000f, .0001f)) }
+                launch { alphaAni.animateTo(1f, tween(300, 0)) }
+                launch { alphaAni2.animateTo(1f, tween(200, 0)) }
+            }
+        }
 
-                            when (outline) {
-                                is androidx.compose.ui.graphics.Outline.Rectangle -> {
-                                    canvas.nativeCanvas.drawRect(
-                                        outline.rect.left,
-                                        outline.rect.top,
-                                        outline.rect.right,
-                                        outline.rect.bottom,
-                                        shadowPaint
-                                    )
-                                }
-
-                                is androidx.compose.ui.graphics.Outline.Rounded -> {
-                                    canvas.nativeCanvas.drawRoundRect(
-                                        outline.roundRect.left, outline.roundRect.top,
-                                        outline.roundRect.right, outline.roundRect.bottom,
-                                        outline.roundRect.bottomLeftCornerRadius.x,
-                                        outline.roundRect.bottomLeftCornerRadius.y,
-                                        shadowPaint
-                                    )
-                                }
-
-                                is androidx.compose.ui.graphics.Outline.Generic -> {
-                                    canvas.nativeCanvas.drawPath(
-                                        outline.path.asAndroidPath(),
-                                        shadowPaint
-                                    )
-                                }
-                            }
-
-                            canvas.restore()
-                        }
-                    }
-                }
-                .drawBackdrop(
-                    backdrop = backdrop,
-                    shape = { dialogShape },
-                    effects = {
-                        if (blur && !liquidGlass) blur(
-                            64f.dp.toPx(),
-                            TileMode.Mirror
-                        ) else if (blur) {
-                            blur(if (isDarkMode) 16f.dp.toPx() else 8f.dp.toPx(), TileMode.Mirror)
-                            lens(24f.dp.toPx(), 48f.dp.toPx(), depthEffect = true)
-                        }
-                    },
-                    highlight = { if (liquidGlass) Highlight.Default else null },
-                    shadow = null,
-                    innerShadow = null,
-                    // Custom drawing on top of the blurred background to create stunning colors.
-                    onDrawSurface = {
-                        if (!blur) drawRect(
-                            brush = SolidColor(surfaceColor),
-                            style = Fill
-                        )
-                        // The drawing logic is different for light and dark themes.
-                        if (!darkTheme) {
-                            drawRect(
-                                brush = SolidColor(Color(0xFF6C6C6C).copy(alpha = 0.7f)),
-                                style = Fill,
-                                blendMode = BlendMode.Luminosity,
-                            )
-                            drawRect(
-                                brush = SolidColor(Color(0xFF252525).copy(alpha = 1f)),
-                                style = Fill,
-                                blendMode = BlendMode.Plus,
-                            )
-                            drawRect(
-                                brush = SolidColor(Color(0xFF555555).copy(alpha = 0.5f)),
-                                style = Fill,
-                                blendMode = BlendMode.ColorDodge,
-                            )
-                            drawRect(
-                                brush = SolidColor(Color(0xFFFFFFFF).copy(alpha = 0.3f)),
-                                style = Fill,
-                                blendMode = BlendMode.SrcOver,
-                            )
-                        } else {
-                            drawRect(
-                                brush = SolidColor(Color(0xFF000000).copy(alpha = 0.4f)),
-                                style = Fill,
-                                blendMode = BlendMode.Luminosity,
-                            )
-                            drawRect(
-                                brush = SolidColor(Color(0xFF252525).copy(alpha = 1f)),
-                                style = Fill,
-                                blendMode = BlendMode.Plus,
-                            )
-                            drawRect(
-                                brush = SolidColor(Color(0xFF4B4B4B).copy(alpha = 0.5f)),
-                                style = Fill,
-                                blendMode = BlendMode.ColorDodge,
-                            )
-                            drawRect(
-                                brush = SolidColor(Color(0xFF000000).copy(alpha = 0.3f)),
-                                style = Fill,
-                                blendMode = BlendMode.SrcOver,
-                            )
-                        }
-                    },
-                    layerBlock = {
-                        scaleX = scaleAni.value
-                        scaleY = scaleAni.value
-                        alpha = alphaAni.value
-                    })
-                .then(if (!liquidGlass) Modifier.glasenseHighlight(AppSpecs.dialogCorner) else Modifier)
-                .onGloballyPositioned { isVisible = true }
-        ) {
-            Column(
+        BackHandler() { }
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Box(
                 modifier = Modifier
-                    .padding(12.dp)
-            ) {
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = dialogState.title,
-                    style = MaterialTheme.typography.headlineSmall,
-                    modifier = Modifier.fillMaxWidth(),
-                    textAlign = TextAlign.Center
-                )
-                if (dialogState.message == null) {
-                    Spacer(modifier = Modifier.height(16.dp))
-                }
-                dialogState.message?.let {
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = it,
-                        style = MaterialTheme.typography.bodyMedium,
-                        lineHeight = 20.sp,
-                        modifier = Modifier
-                            .graphicsLayer(alpha = 0.5f)
-                            .padding(horizontal = 4.dp)
-                            .fillMaxWidth(),
-                        textAlign = TextAlign.Center,
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-                }
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    dialogState.items.forEach { item ->
-                        GlasenseDialogButton(
-                            modifier = Modifier.weight(1f),
-                            text = item.text,
-                            icon = item.icon,
-                            isDestructive = item.isDestructive,
-                            isPrimary = item.isPrimary,
-                            onDismiss = {
-                                if (item.isDestructive) {
-                                    scope.launch {
-                                        repeat(5) {
-                                            haptic.performHapticFeedback(HapticFeedbackType.SegmentFrequentTick)
-                                            delay(Random.nextLong(50, 70))
-                                        }
+                    .fillMaxSize()
+                    .graphicsLayer { alpha = alphaAni2.value }
+                    .background(Color.Black.copy(.4f))
+                    .clickable(
+                        interactionSource = interactionSource,
+                        indication = null,
+                        enabled = true,
+                        onClick = {}),
+                contentAlignment = Alignment.Center,
+            ) {}
+
+            Box(
+                modifier = modifier
+                    .width(screenWidth - 48.dp * 2)
+                    .drawBehind {
+                        val currentAlpha = alphaAni.value
+
+                        if (currentAlpha > 0f) {
+                            val paintColor =
+                                shadowBaseColor.copy(alpha = shadowBaseColor.alpha * currentAlpha)
+                            shadowPaint.color = paintColor.toArgb()
+
+                            drawIntoCanvas { canvas ->
+                                canvas.save()
+                                canvas.translate(0f, shadowDyPx)
+
+                                val outline = dialogShape.createOutline(size, layoutDirection, this)
+
+                                when (outline) {
+                                    is androidx.compose.ui.graphics.Outline.Rectangle -> {
+                                        canvas.nativeCanvas.drawRect(
+                                            outline.rect.left,
+                                            outline.rect.top,
+                                            outline.rect.right,
+                                            outline.rect.bottom,
+                                            shadowPaint
+                                        )
+                                    }
+
+                                    is androidx.compose.ui.graphics.Outline.Rounded -> {
+                                        canvas.nativeCanvas.drawRoundRect(
+                                            outline.roundRect.left, outline.roundRect.top,
+                                            outline.roundRect.right, outline.roundRect.bottom,
+                                            outline.roundRect.bottomLeftCornerRadius.x,
+                                            outline.roundRect.bottomLeftCornerRadius.y,
+                                            shadowPaint
+                                        )
+                                    }
+
+                                    is androidx.compose.ui.graphics.Outline.Generic -> {
+                                        canvas.nativeCanvas.drawPath(
+                                            outline.path.asAndroidPath(),
+                                            shadowPaint
+                                        )
                                     }
                                 }
-                                scope.launch {
-                                    launch { alphaAni2.animateTo(0f, tween(200, 0)) }
-                                    alphaAni.animateTo(0f, tween(200, 0))
-                                    onDismiss()
-                                    item.onClick()
-                                }
-                            },
+
+                                canvas.restore()
+                            }
+                        }
+                    }
+                    .drawBackdrop(
+                        backdrop = backdrop,
+                        shape = { dialogShape },
+                        effects = {
+                            if (blur && !liquidGlass) blur(
+                                64f.dp.toPx(),
+                                TileMode.Mirror
+                            ) else if (blur) {
+                                blur(
+                                    if (isDarkMode) 16f.dp.toPx() else 8f.dp.toPx(),
+                                    TileMode.Mirror
+                                )
+                                lens(24f.dp.toPx(), 48f.dp.toPx(), depthEffect = true)
+                            }
+                        },
+                        highlight = { if (liquidGlass) Highlight.Default else null },
+                        shadow = null,
+                        innerShadow = null,
+                        // Custom drawing on top of the blurred background to create stunning colors.
+                        onDrawSurface = {
+                            if (!blur) drawRect(
+                                brush = SolidColor(surfaceColor),
+                                style = Fill
+                            )
+                            // The drawing logic is different for light and dark themes.
+                            if (!darkTheme) {
+                                drawRect(
+                                    brush = SolidColor(Color(0xFF6C6C6C).copy(alpha = 0.7f)),
+                                    style = Fill,
+                                    blendMode = BlendMode.Luminosity,
+                                )
+                                drawRect(
+                                    brush = SolidColor(Color(0xFF252525).copy(alpha = 1f)),
+                                    style = Fill,
+                                    blendMode = BlendMode.Plus,
+                                )
+                                drawRect(
+                                    brush = SolidColor(Color(0xFF555555).copy(alpha = 0.5f)),
+                                    style = Fill,
+                                    blendMode = BlendMode.ColorDodge,
+                                )
+                                drawRect(
+                                    brush = SolidColor(Color(0xFFFFFFFF).copy(alpha = 0.3f)),
+                                    style = Fill,
+                                    blendMode = BlendMode.SrcOver,
+                                )
+                            } else {
+                                drawRect(
+                                    brush = SolidColor(Color(0xFF000000).copy(alpha = 0.4f)),
+                                    style = Fill,
+                                    blendMode = BlendMode.Luminosity,
+                                )
+                                drawRect(
+                                    brush = SolidColor(Color(0xFF252525).copy(alpha = 1f)),
+                                    style = Fill,
+                                    blendMode = BlendMode.Plus,
+                                )
+                                drawRect(
+                                    brush = SolidColor(Color(0xFF4B4B4B).copy(alpha = 0.5f)),
+                                    style = Fill,
+                                    blendMode = BlendMode.ColorDodge,
+                                )
+                                drawRect(
+                                    brush = SolidColor(Color(0xFF000000).copy(alpha = 0.3f)),
+                                    style = Fill,
+                                    blendMode = BlendMode.SrcOver,
+                                )
+                            }
+                        },
+                        layerBlock = {
+                            scaleX = scaleAni.value
+                            scaleY = scaleAni.value
+                            alpha = alphaAni.value
+                        })
+                    .then(if (!liquidGlass) Modifier.glasenseHighlight(AppSpecs.dialogCorner) else Modifier)
+                    .onGloballyPositioned { isVisible = true }
+            ) {
+                Column(
+                    modifier = Modifier
+                        .padding(12.dp)
+                ) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = dialogState.title,
+                        style = MaterialTheme.typography.headlineSmall,
+                        modifier = Modifier.fillMaxWidth(),
+                        textAlign = TextAlign.Center
+                    )
+                    if (dialogState.message == null) {
+                        Spacer(modifier = Modifier.height(16.dp))
+                    }
+                    dialogState.message?.let {
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = it,
+                            style = MaterialTheme.typography.bodyMedium,
+                            lineHeight = 20.sp,
+                            modifier = Modifier
+                                .graphicsLayer(alpha = 0.5f)
+                                .padding(horizontal = 4.dp)
+                                .fillMaxWidth(),
+                            textAlign = TextAlign.Center,
                         )
+                        Spacer(modifier = Modifier.height(16.dp))
+                    }
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        dialogState.items.forEach { item ->
+                            GlasenseDialogButton(
+                                modifier = Modifier.weight(1f),
+                                text = item.text,
+                                icon = item.icon,
+                                isDestructive = item.isDestructive,
+                                isPrimary = item.isPrimary,
+                                onDismiss = {
+                                    if (item.isDestructive) {
+                                        scope.launch {
+                                            repeat(5) {
+                                                haptic.performHapticFeedback(HapticFeedbackType.SegmentFrequentTick)
+                                                delay(Random.nextLong(50, 70))
+                                            }
+                                        }
+                                    }
+                                    scope.launch {
+                                        launch { alphaAni2.animateTo(0f, tween(200, 0)) }
+                                        alphaAni.animateTo(0f, tween(200, 0))
+                                        onDismiss()
+                                        item.onClick()
+                                    }
+                                },
+                            )
+                        }
                     }
                 }
             }
-
         }
     }
 }
