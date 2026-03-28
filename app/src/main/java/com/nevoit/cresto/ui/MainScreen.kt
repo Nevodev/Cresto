@@ -111,7 +111,7 @@ fun MainScreen() {
 
     var menuState by remember { mutableStateOf(MenuState()) }
 
-    val showMenu: (anchorPosition: androidx.compose.ui.geometry.Offset, items: List<GlasenseMenuItem>) -> Unit =
+    val showMenu: (anchorPosition: Offset, items: List<GlasenseMenuItem>) -> Unit =
         { position, items ->
             menuState = MenuState(isVisible = true, anchorPosition = position, items = items)
         }
