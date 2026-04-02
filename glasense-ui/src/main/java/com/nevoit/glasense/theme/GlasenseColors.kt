@@ -1,12 +1,9 @@
-package com.nevoit.cresto.ui.theme.glasense
+package com.nevoit.glasense.theme
 
 import androidx.compose.material3.ColorScheme
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
-import com.nevoit.glasense.theme.Blue500
-import com.nevoit.glasense.theme.Green500
-import com.nevoit.glasense.theme.Red500
 
 @Immutable
 data class GlasenseColors(
@@ -106,3 +103,4 @@ fun glasenseColorsFromScheme(scheme: ColorScheme, isDark: Boolean): GlasenseColo
 }
 
 val LocalGlasenseColors = staticCompositionLocalOf { GlasenseLightPalette }
+

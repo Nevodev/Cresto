@@ -12,9 +12,7 @@ import androidx.core.view.WindowCompat
 import com.nevoit.cresto.data.todo.TodoViewModel
 import com.nevoit.cresto.ui.theme.glasense.AppColors
 import com.nevoit.cresto.ui.theme.glasense.GlasenseTheme
-import com.nevoit.cresto.ui.theme.glasense.isAppInDarkTheme
 import com.nevoit.glasense.overscroll.rememberOffsetOverscrollFactory
-import com.nevoit.glasense.theme.LocalGlasenseIsDarkTheme
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class DetailActivity : ComponentActivity() {
@@ -33,8 +31,7 @@ class DetailActivity : ComponentActivity() {
                 val overscrollFactory = rememberOffsetOverscrollFactory(Orientation.Vertical)
                 CompositionLocalProvider(
                     LocalOverscrollFactory provides overscrollFactory,
-                    LocalContentColor provides AppColors.content,
-                    LocalGlasenseIsDarkTheme provides isAppInDarkTheme()
+                    LocalContentColor provides AppColors.content
                 ) {
                     DetailScreen(todoId = todoId, viewModel = todoViewModel)
                 }

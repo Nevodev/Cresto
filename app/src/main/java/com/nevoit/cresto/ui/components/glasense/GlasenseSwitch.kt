@@ -52,7 +52,7 @@ import com.kyant.backdrop.shadow.InnerShadow
 import com.kyant.backdrop.shadow.Shadow
 import com.kyant.shapes.Capsule
 import com.nevoit.cresto.ui.theme.glasense.AppColors
-import com.nevoit.cresto.ui.theme.glasense.GlasenseColors
+import com.nevoit.glasense.theme.GlasenseColors
 import com.nevoit.cresto.ui.theme.glasense.LocalGlasenseSettings
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.android.awaitFrame

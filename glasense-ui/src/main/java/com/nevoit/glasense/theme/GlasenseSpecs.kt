@@ -1,4 +1,4 @@
-package com.nevoit.cresto.ui.theme.glasense
+package com.nevoit.glasense.theme
 
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.staticCompositionLocalOf
