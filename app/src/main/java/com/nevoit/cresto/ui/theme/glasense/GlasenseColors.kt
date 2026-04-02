@@ -4,6 +4,9 @@ import androidx.compose.material3.ColorScheme
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
+import com.nevoit.glasense.theme.Blue500
+import com.nevoit.glasense.theme.Green500
+import com.nevoit.glasense.theme.Red500
 
 @Immutable
 data class GlasenseColors(

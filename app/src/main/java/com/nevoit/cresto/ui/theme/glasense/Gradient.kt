@@ -3,6 +3,10 @@ package com.nevoit.cresto.ui.theme.glasense
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.colorspace.ColorSpaces
+import com.nevoit.glasense.theme.Blue500
+import com.nevoit.glasense.theme.Orange500
+import com.nevoit.glasense.theme.Violet500
+import com.nevoit.glasense.theme.adjustSaturationInOklab
 
 val easingBlackGradientMask = Brush.verticalGradient(
     colorStops = arrayOf(

@@ -9,6 +9,9 @@ A modern, elegant and neat To-Do App
 - \[WIP\] Widgets.
 - \[WIP\] Analytics.
 
+## Third-Party Notices
+See `THIRD_PARTY_NOTICES.md` for third-party license attributions.
+
 
 ## Star History
 

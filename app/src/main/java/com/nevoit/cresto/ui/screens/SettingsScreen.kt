@@ -31,10 +31,10 @@ import com.nevoit.cresto.ui.components.packed.PageContent
 import com.nevoit.cresto.ui.screens.settings.SettingsActivity
 import com.nevoit.cresto.ui.screens.settings.SettingsDestination
 import com.nevoit.cresto.ui.theme.glasense.AppColors
-import com.nevoit.cresto.ui.theme.glasense.Blue500
-import com.nevoit.cresto.ui.theme.glasense.Pink400
-import com.nevoit.cresto.ui.theme.glasense.Purple500
-import com.nevoit.cresto.ui.theme.glasense.Slate500
+import com.nevoit.glasense.theme.Blue500
+import com.nevoit.glasense.theme.Pink400
+import com.nevoit.glasense.theme.Purple500
+import com.nevoit.glasense.theme.Slate500
 import dev.chrisbanes.haze.ExperimentalHazeApi
 import dev.chrisbanes.haze.hazeSource
 import dev.chrisbanes.haze.rememberHazeState

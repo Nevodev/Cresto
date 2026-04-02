@@ -22,7 +22,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Brush.Companion.sweepGradient
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -41,9 +41,9 @@ import com.nevoit.cresto.ui.components.packed.PageContent
 import com.nevoit.cresto.ui.components.packed.VGap
 import com.nevoit.cresto.ui.theme.glasense.AppButtonColors
 import com.nevoit.cresto.ui.theme.glasense.AppColors
-import com.nevoit.cresto.ui.theme.glasense.Blue500
-import com.nevoit.cresto.ui.theme.glasense.Pink400
-import com.nevoit.cresto.ui.theme.glasense.Purple500
+import com.nevoit.glasense.theme.Blue500
+import com.nevoit.glasense.theme.Pink400
+import com.nevoit.glasense.theme.Purple500
 import dev.chrisbanes.haze.ExperimentalHazeApi
 import dev.chrisbanes.haze.hazeSource
 import dev.chrisbanes.haze.rememberHazeState
@@ -103,7 +103,7 @@ fun AIScreen() {
             // Header item for the AI section with a gradient brush and glow effect
             item {
                 ConfigInfoHeader(
-                    brush = Brush.sweepGradient(
+                    brush = sweepGradient(
                         colorStops = arrayOf(
                             0f to Pink400,
                             0.33f to Purple500,

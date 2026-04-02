@@ -6,10 +6,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalWindowInfo
-import com.nevoit.cresto.ui.theme.glasense.Amber400
-import com.nevoit.cresto.ui.theme.glasense.Pink400
-import com.nevoit.cresto.ui.theme.glasense.Purple400
-import com.nevoit.cresto.ui.theme.glasense.Rose400
+import com.nevoit.glasense.theme.Amber400
+import com.nevoit.glasense.theme.Pink400
+import com.nevoit.glasense.theme.Purple400
+import com.nevoit.glasense.theme.Rose400
 import io.github.vinceglb.confettikit.compose.ConfettiKit
 import io.github.vinceglb.confettikit.core.Party
 import io.github.vinceglb.confettikit.core.Position

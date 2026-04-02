@@ -1,4 +1,4 @@
-package com.nevoit.cresto.ui.components.glasense
+package com.nevoit.glasense.component
 
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
@@ -20,25 +20,28 @@ import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.drawOutline
 import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.graphics.drawscope.translate
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.kyant.shapes.Capsule
-import com.nevoit.cresto.ui.theme.glasense.isAppInDarkTheme
+import com.nevoit.glasense.theme.LocalGlasenseIsDarkTheme
 
 @Composable
-fun GlasenseLoadingIndicator(
+fun GlasenseActivityIndicator(
     modifier: Modifier = Modifier,
-    size: androidx.compose.ui.unit.Dp = 32.dp,
+    size: Dp = 32.dp,
     durationMillis: Int = 1000,
     tickShape: Shape = Capsule()
 ) {
-    val color = when (isAppInDarkTheme()) {
+    val resolvedDarkTheme = LocalGlasenseIsDarkTheme.current
+
+    val color = when (resolvedDarkTheme) {
         true -> Color.White.copy(.8f)
         false -> Color.Black.copy(.6f)
     }
     val tickCount = 8
     val delayPerTick = durationMillis / tickCount
 
-    val transition = rememberInfiniteTransition(label = "IOSLoading")
+    val transition = rememberInfiniteTransition(label = "GlasenseLoadingTransition")
 
     val alphaValues = List(tickCount) { index ->
         transition.animateFloat(
@@ -58,7 +61,7 @@ fun GlasenseLoadingIndicator(
                     offsetType = StartOffsetType.FastForward
                 )
             ),
-            label = "Alpha$index"
+            label = "TickAlpha$index"
         )
     }
     Box(modifier = modifier) {
@@ -95,5 +98,4 @@ fun GlasenseLoadingIndicator(
             }
         }
     }
-
 }

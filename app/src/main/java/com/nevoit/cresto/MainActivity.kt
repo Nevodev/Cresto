@@ -15,7 +15,9 @@ import com.nevoit.cresto.ui.screens.main.MainScreen
 import com.nevoit.cresto.ui.screens.settings.util.SettingsManager
 import com.nevoit.cresto.ui.theme.glasense.AppColors
 import com.nevoit.cresto.ui.theme.glasense.GlasenseTheme
+import com.nevoit.cresto.ui.theme.glasense.isAppInDarkTheme
 import com.nevoit.glasense.overscroll.rememberOffsetOverscrollFactory
+import com.nevoit.glasense.theme.LocalGlasenseIsDarkTheme
 
 /**
  * The main activity of the application.
@@ -43,6 +45,7 @@ class MainActivity : ComponentActivity() {
                 CompositionLocalProvider(
                     LocalOverscrollFactory provides overscrollFactory,
                     LocalContentColor provides AppColors.content,
+                    LocalGlasenseIsDarkTheme provides isAppInDarkTheme()
                 ) {
                     // Display the main screen of the application.
                     MainScreen()

@@ -56,7 +56,6 @@ import com.nevoit.cresto.data.todo.TodoViewModel
 import com.nevoit.cresto.ui.components.CustomAnimatedVisibility
 import com.nevoit.cresto.ui.components.glasense.GlasenseButtonAlt
 import com.nevoit.cresto.ui.components.glasense.GlasenseDynamicSmallTitle
-import com.nevoit.cresto.ui.components.glasense.GlasenseLoadingIndicator
 import com.nevoit.cresto.ui.components.glasense.GlasensePageHeader
 import com.nevoit.cresto.ui.components.glasense.extend.overscrollSpacer
 import com.nevoit.cresto.ui.components.glasense.glasenseHighlight
@@ -70,11 +69,6 @@ import com.nevoit.cresto.ui.components.packed.ZenCirclesBreathing
 import com.nevoit.cresto.ui.theme.glasense.AppButtonColors
 import com.nevoit.cresto.ui.theme.glasense.AppColors
 import com.nevoit.cresto.ui.theme.glasense.AppSpecs
-import com.nevoit.cresto.ui.theme.glasense.Blue600
-import com.nevoit.cresto.ui.theme.glasense.Cyan500
-import com.nevoit.cresto.ui.theme.glasense.Green500
-import com.nevoit.cresto.ui.theme.glasense.Rose500
-import com.nevoit.cresto.ui.theme.glasense.Yellow500
 import com.nevoit.cresto.ui.theme.glasense.defaultEnterTransition
 import com.nevoit.cresto.ui.theme.glasense.defaultExitTransition
 import com.nevoit.cresto.ui.theme.glasense.elegantEnterTransition
@@ -82,6 +76,12 @@ import com.nevoit.cresto.ui.theme.glasense.isAppInDarkTheme
 import com.nevoit.cresto.ui.theme.glasense.strongEnterTransition
 import com.nevoit.cresto.ui.theme.glasense.strongExitTransition
 import com.nevoit.cresto.ui.viewmodel.ModeTimerViewModel
+import com.nevoit.glasense.component.GlasenseActivityIndicator
+import com.nevoit.glasense.theme.Blue600
+import com.nevoit.glasense.theme.Cyan500
+import com.nevoit.glasense.theme.Green500
+import com.nevoit.glasense.theme.Rose500
+import com.nevoit.glasense.theme.Yellow500
 import dev.chrisbanes.haze.ExperimentalHazeApi
 import dev.chrisbanes.haze.hazeSource
 import dev.chrisbanes.haze.rememberHazeState
@@ -567,7 +567,7 @@ fun BoxScope.MindFlowScreen(
                         icon = painterResource(R.drawable.ic_mini_analytics),
                         modifier = Modifier.weight(1f)
                     ) {
-                        GlasenseLoadingIndicator(
+                        GlasenseActivityIndicator(
                             modifier = Modifier.fillMaxSize(),
                             size = 24.dp
                         )

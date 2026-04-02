@@ -2,9 +2,9 @@ package com.nevoit.cresto.ui.screens.settings.util
 
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
-import com.tencent.mmkv.MMKV
-import com.nevoit.cresto.ui.theme.glasense.Blue500
 import androidx.compose.ui.graphics.toArgb
+import com.nevoit.glasense.theme.Blue500
+import com.tencent.mmkv.MMKV
 
 /**
  * A singleton object for managing app settings using MMKV.

@@ -71,12 +71,12 @@ import com.nevoit.cresto.ui.components.packed.ConfigItem
 import com.nevoit.cresto.ui.components.packed.ConfigItemContainer
 import com.nevoit.cresto.ui.components.packed.PageContent
 import com.nevoit.cresto.ui.components.packed.VGap
-import com.nevoit.cresto.ui.theme.glasense.Amber400
 import com.nevoit.cresto.ui.theme.glasense.AppButtonColors
 import com.nevoit.cresto.ui.theme.glasense.AppColors
 import com.nevoit.cresto.ui.theme.glasense.AppSpecs
-import com.nevoit.cresto.ui.theme.glasense.Emerald400
-import com.nevoit.cresto.ui.theme.glasense.Slate500
+import com.nevoit.glasense.theme.Amber400
+import com.nevoit.glasense.theme.Emerald400
+import com.nevoit.glasense.theme.Slate500
 import com.tencent.mmkv.MMKV
 import dev.chrisbanes.haze.ExperimentalHazeApi
 import dev.chrisbanes.haze.hazeSource

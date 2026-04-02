@@ -1,4 +1,4 @@
-package com.nevoit.cresto.ui.components.glasense
+package com.nevoit.glasense.modifier
 
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithContent
@@ -18,7 +18,7 @@ enum class OverlayWeight {
 fun Modifier.glasenseOverlay(
     visible: Boolean = true,
     dark: Boolean = false,
-    weight: OverlayWeight = OverlayWeight.Medium
+    weight: OverlayWeight = OverlayWeight.Float
 ): Modifier = drawWithContent {
     if (visible) {
         drawOverlay(dark, weight)
