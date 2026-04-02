@@ -1,4 +1,4 @@
-package com.nevoit.cresto.toolkit.overscroll
+package com.nevoit.glasense.overscroll.util
 
 import kotlin.math.abs
 import kotlin.math.exp

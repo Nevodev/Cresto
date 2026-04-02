@@ -9,15 +9,13 @@ import androidx.compose.foundation.LocalOverscrollFactory
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.core.view.WindowCompat
-import com.nevoit.cresto.toolkit.overscroll.OffsetOverscrollFactory
 import com.nevoit.cresto.ui.screens.guidescreen.GuideActivity
 import com.nevoit.cresto.ui.screens.main.MainScreen
 import com.nevoit.cresto.ui.screens.settings.util.SettingsManager
 import com.nevoit.cresto.ui.theme.glasense.AppColors
 import com.nevoit.cresto.ui.theme.glasense.GlasenseTheme
+import com.nevoit.glasense.overscroll.rememberOffsetOverscrollFactory
 
 /**
  * The main activity of the application.
@@ -39,14 +37,7 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             GlasenseTheme {
-                val animationScope = rememberCoroutineScope()
-                // Create a custom overscroll factory.
-                val overscrollFactory = remember {
-                    OffsetOverscrollFactory(
-                        orientation = Orientation.Vertical,
-                        animationScope = animationScope,
-                    )
-                }
+                val overscrollFactory = rememberOffsetOverscrollFactory(Orientation.Vertical)
 
                 // Provide the custom overscroll factory to the composable tree.
                 CompositionLocalProvider(

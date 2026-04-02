@@ -10,12 +10,10 @@ import androidx.compose.foundation.LocalOverscrollFactory
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.core.view.WindowCompat
-import com.nevoit.cresto.toolkit.overscroll.OffsetOverscrollFactory
 import com.nevoit.cresto.ui.theme.glasense.AppColors
 import com.nevoit.cresto.ui.theme.glasense.GlasenseTheme
+import com.nevoit.glasense.overscroll.rememberOffsetOverscrollFactory
 
 enum class SettingsDestination(val value: String) {
     APPEARANCE("appearance"),
@@ -53,13 +51,7 @@ class SettingsActivity : ComponentActivity() {
 
         setContent {
             GlasenseTheme {
-                val animationScope = rememberCoroutineScope()
-                val overscrollFactory = remember {
-                    OffsetOverscrollFactory(
-                        orientation = Orientation.Vertical,
-                        animationScope = animationScope,
-                    )
-                }
+                val overscrollFactory = rememberOffsetOverscrollFactory(Orientation.Vertical)
                 CompositionLocalProvider(
                     LocalOverscrollFactory provides overscrollFactory,
                     LocalContentColor provides AppColors.content

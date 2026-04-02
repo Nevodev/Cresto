@@ -9,13 +9,11 @@ import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.core.view.WindowCompat
 import com.nevoit.cresto.data.todo.TodoViewModel
-import com.nevoit.cresto.toolkit.overscroll.OffsetOverscrollFactory
 import com.nevoit.cresto.ui.theme.glasense.AppColors
 import com.nevoit.cresto.ui.theme.glasense.GlasenseTheme
+import com.nevoit.glasense.overscroll.rememberOffsetOverscrollFactory
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class DetailActivity : ComponentActivity() {
@@ -31,13 +29,7 @@ class DetailActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             GlasenseTheme {
-                val animationScope = rememberCoroutineScope()
-                val overscrollFactory = remember {
-                    OffsetOverscrollFactory(
-                        orientation = Orientation.Vertical,
-                        animationScope = animationScope,
-                    )
-                }
+                val overscrollFactory = rememberOffsetOverscrollFactory(Orientation.Vertical)
                 CompositionLocalProvider(
                     LocalOverscrollFactory provides overscrollFactory,
                     LocalContentColor provides contentColorFor(AppColors.pageBackground),

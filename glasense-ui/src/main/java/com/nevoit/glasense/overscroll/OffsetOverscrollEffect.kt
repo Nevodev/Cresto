@@ -1,4 +1,4 @@
-package com.nevoit.cresto.toolkit.overscroll
+package com.nevoit.glasense.overscroll
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.AnimationSpec
@@ -22,7 +22,10 @@ import androidx.compose.ui.node.DelegatableNode
 import androidx.compose.ui.node.LayoutModifierNode
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Velocity
-import com.nevoit.cresto.toolkit.layout.singleRelativeLayoutWithLayer
+import com.nevoit.glasense.overscroll.util.NoOpShape
+import com.nevoit.glasense.overscroll.util.ProgressConverter
+import com.nevoit.glasense.overscroll.util.SpaceVectorConverter
+import com.nevoit.glasense.overscroll.util.singleRelativeLayoutWithLayer
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.android.awaitFrame
 import kotlinx.coroutines.launch
@@ -31,16 +34,18 @@ import kotlin.math.sign
 
 
 @Composable
-fun rememberOffsetOverscrollEffect(
+internal fun rememberOffsetOverscrollEffect(
     orientation: Orientation,
-    animationSpec: AnimationSpec<Float> = OffsetOverscrollEffect.DefaultAnimationSpec
+    animationSpec: AnimationSpec<Float> = OffsetOverscrollEffect.DefaultAnimationSpec,
+    maxFraction: Float = 0.65f
 ): OffsetOverscrollEffect {
     val animationScope = rememberCoroutineScope()
-    return remember(orientation, animationScope, animationSpec) {
+    return remember(orientation, animationScope, animationSpec, maxFraction) {
         OffsetOverscrollEffect(
             orientation = orientation,
             animationScope = animationScope,
-            animationSpec = animationSpec
+            animationSpec = animationSpec,
+            maxFraction = maxFraction
         )
     }
 }
@@ -48,7 +53,8 @@ fun rememberOffsetOverscrollEffect(
 class OffsetOverscrollEffect(
     private val orientation: Orientation,
     private val animationScope: CoroutineScope,
-    private val animationSpec: AnimationSpec<Float>
+    private val animationSpec: AnimationSpec<Float>,
+    private val maxFraction: Float,
 ) : OverscrollEffect, SpaceVectorConverter by SpaceVectorConverter(orientation) {
 
     private val overscrollOffsetAnimation =
@@ -143,7 +149,7 @@ class OffsetOverscrollEffect(
                 ).toFloat()
                 if (unconsumed != 0f) {
                     overscrollOffsetAnimation.snapTo(
-                        animationSpec.vectorize(Float.VectorConverter).getValueFromNanos(
+                        animationSpec.vectorize(Float.Companion.VectorConverter).getValueFromNanos(
                             frameTimeNanos,
                             AnimationVector(0f),
                             AnimationVector(0f),
@@ -194,7 +200,7 @@ class OffsetOverscrollEffect(
                 ).toFloat()
                 if (unconsumed != 0f) {
                     overscrollOffsetAnimation.snapTo(
-                        animationSpec.vectorize(Float.VectorConverter).getValueFromNanos(
+                        animationSpec.vectorize(Float.Companion.VectorConverter).getValueFromNanos(
                             frameTimeNanos,
                             AnimationVector(0f),
                             AnimationVector(0f),
@@ -261,7 +267,7 @@ class OffsetOverscrollEffect(
     }
 
     private fun computeOffset(overscrollDistance: Float, maxDistance: Float): Float {
-        val progress = ProgressConverter.convert(overscrollDistance / maxDistance, 0.6f)
+        val progress = ProgressConverter.convert(overscrollDistance / maxDistance, maxFraction)
         return progress * maxDistance
     }
 

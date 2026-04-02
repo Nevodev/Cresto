@@ -70,7 +70,6 @@ import com.nevoit.cresto.data.todo.EXTRA_DELETE_ID
 import com.nevoit.cresto.data.todo.SubTodoItem
 import com.nevoit.cresto.data.todo.TodoItem
 import com.nevoit.cresto.data.todo.TodoViewModel
-import com.nevoit.cresto.toolkit.overscroll.OffsetOverscrollFactory
 import com.nevoit.cresto.ui.components.CustomAnimatedVisibility
 import com.nevoit.cresto.ui.components.bottomsheet.SelectedButton
 import com.nevoit.cresto.ui.components.glasense.DialogItemData
@@ -100,6 +99,7 @@ import com.nevoit.cresto.ui.theme.glasense.defaultExitTransition
 import com.nevoit.cresto.ui.theme.glasense.getFlagColor
 import com.nevoit.cresto.ui.theme.glasense.isAppInDarkTheme
 import com.nevoit.cresto.util.formatRelativeTime
+import com.nevoit.glasense.overscroll.rememberOffsetOverscrollFactory
 import dev.chrisbanes.haze.ExperimentalHazeApi
 import dev.chrisbanes.haze.hazeSource
 import dev.chrisbanes.haze.rememberHazeState
@@ -232,15 +232,7 @@ fun DetailScreen(
         }
     }
 
-    val animationScope = rememberCoroutineScope()
-    // Create a custom overscroll factory.
-    val overscrollFactory = remember {
-        OffsetOverscrollFactory(
-            orientation = Orientation.Horizontal,
-            animationScope = animationScope,
-        )
-    }
-
+    val overscrollFactory = rememberOffsetOverscrollFactory(Orientation.Vertical)
 
     Box(
         modifier = Modifier

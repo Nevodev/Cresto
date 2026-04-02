@@ -30,7 +30,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -46,7 +45,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.kyant.shapes.Capsule
 import com.nevoit.cresto.R
-import com.nevoit.cresto.toolkit.overscroll.OffsetOverscrollFactory
 import com.nevoit.cresto.ui.components.CustomAnimatedVisibility
 import com.nevoit.cresto.ui.components.glasense.GlasenseButton
 import com.nevoit.cresto.ui.components.glasense.GlasenseButtonAlt
@@ -60,6 +58,7 @@ import com.nevoit.cresto.ui.theme.glasense.AppSpecs
 import com.nevoit.cresto.ui.theme.glasense.defaultEnterTransition
 import com.nevoit.cresto.ui.theme.glasense.defaultExitTransition
 import com.nevoit.cresto.ui.theme.glasense.getFlagColor
+import com.nevoit.glasense.overscroll.rememberOffsetOverscrollFactory
 import java.time.LocalDate
 
 /**
@@ -100,15 +99,7 @@ fun AddTodoSheet(
         }
     }
 
-    val animationScope = rememberCoroutineScope()
-    // Create a custom overscroll factory.
-    val overscrollFactory = remember {
-        OffsetOverscrollFactory(
-            orientation = Orientation.Horizontal,
-            animationScope = animationScope,
-        )
-    }
-
+    val overscrollFactory = rememberOffsetOverscrollFactory(Orientation.Horizontal)
     // Main layout
     Column(
         modifier = Modifier

@@ -21,7 +21,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -30,8 +29,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.kyant.shapes.Capsule
-import com.nevoit.cresto.toolkit.overscroll.OffsetOverscrollFactory
 import com.nevoit.cresto.ui.theme.glasense.AppColors
+import com.nevoit.glasense.overscroll.rememberOffsetOverscrollFactory
 
 @Composable
 fun GlasenseChipGroup(
@@ -40,13 +39,7 @@ fun GlasenseChipGroup(
     selectedItem: String,
     onItemSelected: (String) -> Unit
 ) {
-    val animationScope = rememberCoroutineScope()
-    val overscrollFactory = remember {
-        OffsetOverscrollFactory(
-            orientation = Orientation.Horizontal,
-            animationScope = animationScope,
-        )
-    }
+    val overscrollFactory = rememberOffsetOverscrollFactory(Orientation.Horizontal)
 
     CompositionLocalProvider(
         LocalOverscrollFactory provides overscrollFactory

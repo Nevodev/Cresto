@@ -1,4 +1,4 @@
-package com.nevoit.cresto.toolkit.overscroll
+package com.nevoit.glasense.overscroll.util
 
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
@@ -17,4 +17,3 @@ internal object NoOpShape : Shape {
         return Outline.Rectangle(Rect(Offset.Zero, size))
     }
 }
-
