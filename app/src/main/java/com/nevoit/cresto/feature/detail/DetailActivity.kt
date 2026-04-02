@@ -1,6 +1,5 @@
-package com.nevoit.cresto
+package com.nevoit.cresto.feature.detail
 
-import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -10,42 +9,33 @@ import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.core.view.WindowCompat
-import com.nevoit.cresto.feature.guide.GuideActivity
-import com.nevoit.cresto.feature.main.MainScreen
-import com.nevoit.cresto.feature.settings.util.SettingsManager
+import com.nevoit.cresto.data.todo.TodoViewModel
 import com.nevoit.cresto.glasense.AppColors
 import com.nevoit.cresto.glasense.GlasenseTheme
 import com.nevoit.glasense.overscroll.rememberOffsetOverscrollFactory
+import org.koin.androidx.viewmodel.ext.android.viewModel
 
-/**
- * The main activity of the application.
- */
-class MainActivity : ComponentActivity() {
+class DetailActivity : ComponentActivity() {
+
+    private val todoViewModel: TodoViewModel by viewModel()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        // This makes the app display behind the system bars.
+
+        val todoId = intent.getIntExtra("todo_id", -1)
+
         WindowCompat.setDecorFitsSystemWindows(window, false)
         enableEdgeToEdge()
-
-        val isFirstRun = SettingsManager.isFirstRun
-
-        if (isFirstRun) {
-            startActivity(Intent(this, GuideActivity::class.java))
-            finish()
-            return
-        }
-
         setContent {
             GlasenseTheme {
-                val overscrollFactory = rememberOffsetOverscrollFactory(Orientation.Vertical)
-
-                // Provide the custom overscroll factory to the composable tree.
+                val overscrollFactory = rememberOffsetOverscrollFactory(
+                    orientation = Orientation.Vertical
+                )
                 CompositionLocalProvider(
                     LocalOverscrollFactory provides overscrollFactory,
                     LocalContentColor provides AppColors.content
                 ) {
-                    // Display the main screen of the application.
-                    MainScreen()
+                    DetailScreen(todoId = todoId, viewModel = todoViewModel)
                 }
             }
         }

@@ -21,10 +21,10 @@ import com.kyant.backdrop.effects.blur
 import com.kyant.backdrop.effects.lens
 import com.kyant.backdrop.highlight.Highlight
 import com.kyant.shapes.Capsule
-import com.nevoit.cresto.ui.theme.glasense.AppColors
-import com.nevoit.cresto.ui.theme.glasense.NavigationButtonActiveColors
-import com.nevoit.cresto.ui.theme.glasense.NavigationButtonNormalColors
-import com.nevoit.cresto.ui.theme.glasense.isAppInDarkTheme
+import com.nevoit.cresto.glasense.AppColors
+import com.nevoit.cresto.glasense.NavigationButtonActiveColors
+import com.nevoit.cresto.glasense.NavigationButtonNormalColors
+import com.nevoit.cresto.glasense.isAppInDarkTheme
 
 /**
  * A custom navigation button with active and inactive states.

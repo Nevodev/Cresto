@@ -27,7 +27,7 @@ import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.nevoit.cresto.ui.theme.glasense.AppColors
+import com.nevoit.cresto.glasense.AppColors
 
 @Composable
 fun LineThroughText(
@@ -52,7 +52,7 @@ fun LineThroughText(
             if (progress.value == 1f && lineAlpha.value == 1f) {
                 return@LaunchedEffect
             }
-            
+
             lineAlpha.snapTo(1f)
 
             if (progress.value >= 1f) {

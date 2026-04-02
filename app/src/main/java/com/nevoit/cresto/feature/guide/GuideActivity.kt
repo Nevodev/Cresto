@@ -1,4 +1,4 @@
-package com.nevoit.cresto
+package com.nevoit.cresto.feature.guide
 
 import android.content.Intent
 import android.os.Bundle
@@ -10,42 +10,35 @@ import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.core.view.WindowCompat
-import com.nevoit.cresto.feature.guide.GuideActivity
-import com.nevoit.cresto.feature.main.MainScreen
+import com.nevoit.cresto.MainActivity
 import com.nevoit.cresto.feature.settings.util.SettingsManager
 import com.nevoit.cresto.glasense.AppColors
 import com.nevoit.cresto.glasense.GlasenseTheme
 import com.nevoit.glasense.overscroll.rememberOffsetOverscrollFactory
 
-/**
- * The main activity of the application.
- */
-class MainActivity : ComponentActivity() {
+class GuideActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        // This makes the app display behind the system bars.
         WindowCompat.setDecorFitsSystemWindows(window, false)
         enableEdgeToEdge()
-
-        val isFirstRun = SettingsManager.isFirstRun
-
-        if (isFirstRun) {
-            startActivity(Intent(this, GuideActivity::class.java))
-            finish()
-            return
-        }
-
         setContent {
             GlasenseTheme {
-                val overscrollFactory = rememberOffsetOverscrollFactory(Orientation.Vertical)
+                val overscrollFactory = rememberOffsetOverscrollFactory(
+                    orientation = Orientation.Vertical
+                )
 
-                // Provide the custom overscroll factory to the composable tree.
                 CompositionLocalProvider(
                     LocalOverscrollFactory provides overscrollFactory,
-                    LocalContentColor provides AppColors.content
+                    LocalContentColor provides AppColors.content,
                 ) {
-                    // Display the main screen of the application.
-                    MainScreen()
+                    GuideScreen(onFinish = {
+                        SettingsManager.isFirstRun = false
+
+                        val intent = Intent(this, MainActivity::class.java)
+                        startActivity(intent)
+
+                        finish()
+                    })
                 }
             }
         }

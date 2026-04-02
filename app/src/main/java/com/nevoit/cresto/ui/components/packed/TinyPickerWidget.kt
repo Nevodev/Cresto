@@ -43,7 +43,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.nevoit.cresto.R
-import com.nevoit.cresto.ui.theme.glasense.AppColors
+import com.nevoit.cresto.glasense.AppColors
 import com.nevoit.glasense.theme.Blue500
 import com.nevoit.glasense.theme.Gray500
 import com.nevoit.glasense.theme.Green500

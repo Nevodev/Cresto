@@ -45,6 +45,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.kyant.shapes.Capsule
 import com.nevoit.cresto.R
+import com.nevoit.cresto.glasense.AppButtonColors
+import com.nevoit.cresto.glasense.AppColors
+import com.nevoit.cresto.glasense.AppSpecs
+import com.nevoit.cresto.glasense.defaultEnterTransition
+import com.nevoit.cresto.glasense.defaultExitTransition
+import com.nevoit.cresto.glasense.getFlagColor
 import com.nevoit.cresto.ui.components.CustomAnimatedVisibility
 import com.nevoit.cresto.ui.components.glasense.GlasenseButton
 import com.nevoit.cresto.ui.components.glasense.GlasenseButtonAlt
@@ -52,12 +58,6 @@ import com.nevoit.cresto.ui.components.glasense.glasenseHighlight
 import com.nevoit.cresto.ui.components.packed.HorizontalFlagPicker
 import com.nevoit.cresto.ui.components.packed.HorizontalPresetDatePicker
 import com.nevoit.cresto.ui.components.packed.VGap
-import com.nevoit.cresto.ui.theme.glasense.AppButtonColors
-import com.nevoit.cresto.ui.theme.glasense.AppColors
-import com.nevoit.cresto.ui.theme.glasense.AppSpecs
-import com.nevoit.cresto.ui.theme.glasense.defaultEnterTransition
-import com.nevoit.cresto.ui.theme.glasense.defaultExitTransition
-import com.nevoit.cresto.ui.theme.glasense.getFlagColor
 import com.nevoit.glasense.overscroll.rememberOffsetOverscrollFactory
 import java.time.LocalDate
 
@@ -99,7 +99,9 @@ fun AddTodoSheet(
         }
     }
 
-    val overscrollFactory = rememberOffsetOverscrollFactory(Orientation.Horizontal)
+    val overscrollFactory = rememberOffsetOverscrollFactory(
+        orientation = Orientation.Horizontal
+    )
     // Main layout
     Column(
         modifier = Modifier

@@ -25,7 +25,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.nevoit.cresto.ui.theme.glasense.AppSpecs
+import com.nevoit.cresto.glasense.AppSpecs
 
 /**
  * A composable function that displays a header for a configuration screen.

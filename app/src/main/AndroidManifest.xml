@@ -25,18 +25,18 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".ui.screens.settings.SettingsActivity"
+            android:name=".feature.settings.SettingsActivity"
             android:exported="false"
             android:parentActivityName=".MainActivity"
             android:theme="@style/Theme.Cresto" />
         <activity
-            android:name=".ui.screens.detailscreen.DetailActivity"
+            android:name=".feature.detail.DetailActivity"
             android:exported="false"
             android:parentActivityName=".MainActivity"
             android:theme="@style/Theme.Cresto"
             android:windowSoftInputMode="adjustNothing" />
         <activity
-            android:name=".ui.screens.guidescreen.GuideActivity"
+            android:name=".feature.guide.GuideActivity"
             android:exported="false"
             android:parentActivityName=".MainActivity"
             android:theme="@style/Theme.Cresto"

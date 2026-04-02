@@ -29,7 +29,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.kyant.shapes.Capsule
-import com.nevoit.cresto.ui.theme.glasense.AppColors
+import com.nevoit.cresto.glasense.AppColors
 import com.nevoit.glasense.overscroll.rememberOffsetOverscrollFactory
 
 @Composable
@@ -39,7 +39,9 @@ fun GlasenseChipGroup(
     selectedItem: String,
     onItemSelected: (String) -> Unit
 ) {
-    val overscrollFactory = rememberOffsetOverscrollFactory(Orientation.Horizontal)
+    val overscrollFactory = rememberOffsetOverscrollFactory(
+        orientation = Orientation.Horizontal
+    )
 
     CompositionLocalProvider(
         LocalOverscrollFactory provides overscrollFactory

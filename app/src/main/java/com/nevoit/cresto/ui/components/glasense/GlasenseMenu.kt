@@ -60,8 +60,8 @@ import com.kyant.backdrop.drawPlainBackdrop
 import com.kyant.backdrop.effects.blur
 import com.kyant.shapes.RoundedRectangle
 import com.nevoit.cresto.R
-import com.nevoit.cresto.ui.theme.glasense.AppColors
-import com.nevoit.cresto.ui.theme.glasense.isAppInDarkTheme
+import com.nevoit.cresto.glasense.AppColors
+import com.nevoit.cresto.glasense.isAppInDarkTheme
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch

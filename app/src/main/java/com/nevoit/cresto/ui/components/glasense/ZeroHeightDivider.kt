@@ -11,7 +11,7 @@ import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.nevoit.cresto.ui.theme.glasense.AppColors
+import com.nevoit.cresto.glasense.AppColors
 
 /**
  * A composable that draws a horizontal line with zero height.

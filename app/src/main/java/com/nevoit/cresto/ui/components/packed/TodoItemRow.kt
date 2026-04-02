@@ -53,6 +53,11 @@ import com.nevoit.cresto.R
 import com.nevoit.cresto.data.todo.SubTodoItem
 import com.nevoit.cresto.data.todo.TodoItem
 import com.nevoit.cresto.data.todo.TodoItemWithSubTodos
+import com.nevoit.cresto.glasense.AppColors
+import com.nevoit.cresto.glasense.AppSpecs
+import com.nevoit.cresto.glasense.defaultEnterTransition
+import com.nevoit.cresto.glasense.defaultExitTransition
+import com.nevoit.cresto.glasense.getFlagColor
 import com.nevoit.cresto.ui.components.CustomAnimatedVisibility
 import com.nevoit.cresto.ui.components.glasense.GlasenseCheckbox
 import com.nevoit.cresto.ui.components.glasense.SwipeableActionButton
@@ -60,11 +65,6 @@ import com.nevoit.cresto.ui.components.glasense.SwipeableContainer
 import com.nevoit.cresto.ui.components.glasense.SwipeableListState
 import com.nevoit.cresto.ui.components.glasense.extend.LineThroughBasicTextField
 import com.nevoit.cresto.ui.components.glasense.extend.LineThroughText
-import com.nevoit.cresto.ui.theme.glasense.AppColors
-import com.nevoit.cresto.ui.theme.glasense.AppSpecs
-import com.nevoit.cresto.ui.theme.glasense.defaultEnterTransition
-import com.nevoit.cresto.ui.theme.glasense.defaultExitTransition
-import com.nevoit.cresto.ui.theme.glasense.getFlagColor
 import java.time.format.DateTimeFormatter
 
 /**
