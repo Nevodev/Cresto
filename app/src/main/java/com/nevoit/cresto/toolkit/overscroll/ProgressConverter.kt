@@ -1,4 +1,4 @@
-package com.nevoit.cresto.util
+package com.nevoit.cresto.toolkit.overscroll
 
 import kotlin.math.abs
 import kotlin.math.exp
@@ -16,7 +16,7 @@ fun interface ProgressConverter {
      * @param progress The input progress, typically in the range [-1, 1] or [0, 1].
      * @return The converted, non-linear progress value.
      */
-    fun convert(progress: Float): Float
+    fun convert(progress: Float, fraction: Float): Float
 
     companion object {
 
@@ -25,10 +25,10 @@ fun interface ProgressConverter {
          * The transformation becomes less sensitive as the absolute progress approaches its limit.
          */
         val Default: ProgressConverter =
-            ProgressConverter { progress ->
+            ProgressConverter { progress, fraction ->
                 // Uses an exponential function to create a curve that changes quickly at the
                 // beginning and more slowly as it approaches its maximum.
-                (1f - exp(-abs(progress * 0.5f))) * progress.sign
+                (1f - exp(-abs(progress * fraction))) * progress.sign
             }
     }
 }

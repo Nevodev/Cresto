@@ -1,4 +1,4 @@
-package com.nevoit.cresto.util
+package com.nevoit.cresto.toolkit.overscroll
 
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.ui.geometry.Offset

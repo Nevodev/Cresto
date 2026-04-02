@@ -4,7 +4,6 @@ import androidx.compose.animation.core.AnimationSpec
 import androidx.compose.foundation.OverscrollEffect
 import androidx.compose.foundation.OverscrollFactory
 import androidx.compose.foundation.gestures.Orientation
-import com.nevoit.cresto.util.ProgressConverter
 import kotlinx.coroutines.CoroutineScope
 
 data class OffsetOverscrollFactory(

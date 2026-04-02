@@ -8,6 +8,8 @@ import androidx.compose.animation.core.spring
 import androidx.compose.foundation.OverscrollEffect
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
@@ -21,8 +23,6 @@ import androidx.compose.ui.node.LayoutModifierNode
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Velocity
 import com.nevoit.cresto.toolkit.layout.singleRelativeLayoutWithLayer
-import com.nevoit.cresto.util.ProgressConverter
-import com.nevoit.cresto.util.SpaceVectorConverter
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.android.awaitFrame
 import kotlinx.coroutines.launch
@@ -56,6 +56,15 @@ class OffsetOverscrollEffect(
 
     private val overscrollOffsetAnimation =
         Animatable(0f, 0.5f)
+
+    val isInOverscroll: Boolean by derivedStateOf {
+
+        overscrollOffsetAnimation.isRunning || overscrollOffsetAnimation.value != 0f
+
+    }
+
+    val overScrollOffset: Float
+        get() = overscrollOffsetAnimation.value
 
     override val isInProgress: Boolean = false
 
@@ -241,6 +250,7 @@ class OffsetOverscrollEffect(
                 Orientation.Vertical -> constraints.maxHeight.toFloat()
             }
             return singleRelativeLayoutWithLayer(placeable) {
+                shape = NoOpShape
                 val overscrollDistance = overscrollOffsetAnimation.value
                 if (overscrollDistance != 0f) {
                     val offsetPx = computeOffset(overscrollDistance, maxDistance)
@@ -254,7 +264,7 @@ class OffsetOverscrollEffect(
     }
 
     private fun computeOffset(overscrollDistance: Float, maxDistance: Float): Float {
-        val progress = progressConverter.convert(overscrollDistance / maxDistance)
+        val progress = progressConverter.convert(overscrollDistance / maxDistance, 0.6f)
         return progress * maxDistance
     }
 
