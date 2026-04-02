@@ -33,16 +33,14 @@ import kotlin.math.sign
 @Composable
 fun rememberOffsetOverscrollEffect(
     orientation: Orientation,
-    animationSpec: AnimationSpec<Float> = OffsetOverscrollEffect.DefaultAnimationSpec,
-    progressConverter: ProgressConverter = ProgressConverter.Default
+    animationSpec: AnimationSpec<Float> = OffsetOverscrollEffect.DefaultAnimationSpec
 ): OffsetOverscrollEffect {
     val animationScope = rememberCoroutineScope()
-    return remember(orientation, animationScope, animationSpec, progressConverter) {
+    return remember(orientation, animationScope, animationSpec) {
         OffsetOverscrollEffect(
             orientation = orientation,
             animationScope = animationScope,
-            animationSpec = animationSpec,
-            progressConverter = progressConverter
+            animationSpec = animationSpec
         )
     }
 }
@@ -50,8 +48,7 @@ fun rememberOffsetOverscrollEffect(
 class OffsetOverscrollEffect(
     private val orientation: Orientation,
     private val animationScope: CoroutineScope,
-    private val animationSpec: AnimationSpec<Float>,
-    private val progressConverter: ProgressConverter = ProgressConverter.Default
+    private val animationSpec: AnimationSpec<Float>
 ) : OverscrollEffect, SpaceVectorConverter by SpaceVectorConverter(orientation) {
 
     private val overscrollOffsetAnimation =
@@ -264,7 +261,7 @@ class OffsetOverscrollEffect(
     }
 
     private fun computeOffset(overscrollDistance: Float, maxDistance: Float): Float {
-        val progress = progressConverter.convert(overscrollDistance / maxDistance, 0.6f)
+        val progress = ProgressConverter.convert(overscrollDistance / maxDistance, 0.6f)
         return progress * maxDistance
     }
 

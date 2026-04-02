@@ -10,15 +10,13 @@ data class OffsetOverscrollFactory(
     private val orientation: Orientation,
     private val animationScope: CoroutineScope,
     private val animationSpec: AnimationSpec<Float> = OffsetOverscrollEffect.DefaultAnimationSpec,
-    private val progressConverter: ProgressConverter = ProgressConverter.Default
 ) : OverscrollFactory {
 
     override fun createOverscrollEffect(): OverscrollEffect {
         return OffsetOverscrollEffect(
             orientation = orientation,
             animationScope = animationScope,
-            animationSpec = animationSpec,
-            progressConverter = progressConverter
+            animationSpec = animationSpec
         )
     }
 }
