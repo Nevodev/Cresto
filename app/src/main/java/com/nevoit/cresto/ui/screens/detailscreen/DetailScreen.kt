@@ -46,6 +46,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.layout.LayoutCoordinates
@@ -127,7 +128,11 @@ fun DetailScreen(
     val surfaceColor = AppColors.pageBackground
 
     val backdrop = rememberLayerBackdrop {
-        drawRect(surfaceColor)
+        drawRect(
+            color = surfaceColor,
+            size = Size(this.size.width * 3, this.size.height * 3),
+            topLeft = Offset(-this.size.width, -this.size.height)
+        )
         drawContent()
     }
 

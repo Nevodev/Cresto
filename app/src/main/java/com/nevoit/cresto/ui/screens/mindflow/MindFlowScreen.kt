@@ -1,4 +1,4 @@
-package com.nevoit.cresto.ui.screens
+package com.nevoit.cresto.ui.screens.mindflow
 
 import androidx.compose.animation.Animatable
 import androidx.compose.animation.animateContentSize

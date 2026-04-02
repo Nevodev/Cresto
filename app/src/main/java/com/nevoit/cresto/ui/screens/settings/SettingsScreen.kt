@@ -1,4 +1,4 @@
-package com.nevoit.cresto.ui.screens
+package com.nevoit.cresto.ui.screens.settings
 
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
@@ -28,8 +28,6 @@ import com.nevoit.cresto.ui.components.packed.AboutEntryItem
 import com.nevoit.cresto.ui.components.packed.ConfigContainer
 import com.nevoit.cresto.ui.components.packed.ConfigEntryItem
 import com.nevoit.cresto.ui.components.packed.PageContent
-import com.nevoit.cresto.ui.screens.settings.SettingsActivity
-import com.nevoit.cresto.ui.screens.settings.SettingsDestination
 import com.nevoit.cresto.ui.theme.glasense.AppColors
 import com.nevoit.glasense.theme.Blue500
 import com.nevoit.glasense.theme.Pink400

@@ -16,9 +16,9 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.graphicsLayer
 import com.nevoit.cresto.data.todo.TodoViewModel
 import com.nevoit.cresto.ui.components.glasense.GlasenseMenuItem
-import com.nevoit.cresto.ui.screens.MindFlowScreen
-import com.nevoit.cresto.ui.screens.SettingsScreen
 import com.nevoit.cresto.ui.screens.home.HomeScreen
+import com.nevoit.cresto.ui.screens.mindflow.MindFlowScreen
+import com.nevoit.cresto.ui.screens.settings.SettingsScreen
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
