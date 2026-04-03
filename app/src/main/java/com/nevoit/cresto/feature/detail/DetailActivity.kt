@@ -10,8 +10,8 @@ import androidx.compose.material3.LocalContentColor
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.core.view.WindowCompat
 import com.nevoit.cresto.data.todo.TodoViewModel
-import com.nevoit.cresto.glasense.AppColors
-import com.nevoit.cresto.glasense.GlasenseTheme
+import com.nevoit.cresto.theme.AppColors
+import com.nevoit.cresto.theme.GlasenseTheme
 import com.nevoit.glasense.overscroll.rememberOffsetOverscrollFactory
 import org.koin.androidx.viewmodel.ext.android.viewModel
 

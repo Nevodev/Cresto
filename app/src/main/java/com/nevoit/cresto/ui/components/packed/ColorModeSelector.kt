@@ -34,7 +34,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import com.nevoit.cresto.R
 import com.nevoit.cresto.feature.settings.util.SettingsManager
-import com.nevoit.cresto.glasense.AppColors
+import com.nevoit.cresto.theme.AppColors
 import com.nevoit.cresto.ui.components.glasense.GlasenseCheckbox
 import com.nevoit.cresto.ui.components.glasense.GlasenseSwitch
 import com.nevoit.cresto.ui.components.glasense.ZeroHeightDivider

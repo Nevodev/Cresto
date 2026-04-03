@@ -11,8 +11,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.nevoit.cresto.glasense.AppColors
-import com.nevoit.cresto.glasense.AppSpecs
+import com.nevoit.cresto.theme.AppColors
+import com.nevoit.cresto.theme.AppSpecs
 
 /**
  * A container for configuration items.

@@ -1,4 +1,4 @@
-package com.nevoit.cresto.glasense
+package com.nevoit.cresto.theme
 
 import android.app.Activity
 import androidx.compose.foundation.isSystemInDarkTheme

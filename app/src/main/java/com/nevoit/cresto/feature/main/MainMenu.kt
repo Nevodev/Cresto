@@ -5,7 +5,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import com.nevoit.cresto.R
-import com.nevoit.cresto.glasense.getFlagColor
+import com.nevoit.cresto.theme.getFlagColor
 import com.nevoit.cresto.ui.components.glasense.GlasenseMenuItem
 import com.nevoit.cresto.ui.components.glasense.MenuDivider
 import com.nevoit.cresto.ui.components.glasense.MenuItemData

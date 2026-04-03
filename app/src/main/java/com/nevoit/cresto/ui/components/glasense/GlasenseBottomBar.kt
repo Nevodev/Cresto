@@ -11,8 +11,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.nevoit.cresto.glasense.LocalGlasenseSettings
-import com.nevoit.cresto.glasense.linearGradientMaskB2T70
+import com.nevoit.cresto.theme.LocalGlasenseSettings
+import com.nevoit.cresto.theme.linearGradientMaskB2T70
 import com.nevoit.cresto.toolkit.gaussiangradient.smoothGradientMask
 import com.nevoit.cresto.toolkit.gaussiangradient.smoothGradientMaskFallbackInvert
 import com.nevoit.cresto.ui.components.CustomAnimatedVisibility

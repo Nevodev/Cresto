@@ -12,8 +12,8 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.core.view.WindowCompat
 import com.nevoit.cresto.MainActivity
 import com.nevoit.cresto.feature.settings.util.SettingsManager
-import com.nevoit.cresto.glasense.AppColors
-import com.nevoit.cresto.glasense.GlasenseTheme
+import com.nevoit.cresto.theme.AppColors
+import com.nevoit.cresto.theme.GlasenseTheme
 import com.nevoit.glasense.overscroll.rememberOffsetOverscrollFactory
 
 class GuideActivity : ComponentActivity() {

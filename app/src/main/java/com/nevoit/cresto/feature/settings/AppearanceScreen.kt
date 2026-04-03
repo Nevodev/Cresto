@@ -70,11 +70,11 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.nevoit.cresto.R
 import com.nevoit.cresto.feature.settings.util.SettingsViewModel
-import com.nevoit.cresto.glasense.AppButtonColors
-import com.nevoit.cresto.glasense.AppColors
-import com.nevoit.cresto.glasense.AppSpecs
-import com.nevoit.cresto.glasense.LocalGlasenseSettings
-import com.nevoit.cresto.glasense.isAppInDarkTheme
+import com.nevoit.cresto.theme.AppButtonColors
+import com.nevoit.cresto.theme.AppColors
+import com.nevoit.cresto.theme.AppSpecs
+import com.nevoit.cresto.theme.LocalGlasenseSettings
+import com.nevoit.cresto.theme.isAppInDarkTheme
 import com.nevoit.cresto.ui.components.glasense.DimIndication
 import com.nevoit.cresto.ui.components.glasense.GlasenseButton
 import com.nevoit.cresto.ui.components.glasense.GlasenseDynamicSmallTitle

@@ -41,7 +41,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import com.nevoit.cresto.R
-import com.nevoit.cresto.glasense.AppColors
+import com.nevoit.cresto.theme.AppColors
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 

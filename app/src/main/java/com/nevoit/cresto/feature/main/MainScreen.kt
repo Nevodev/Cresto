@@ -58,11 +58,11 @@ import com.nevoit.cresto.R
 import com.nevoit.cresto.data.todo.TodoItem
 import com.nevoit.cresto.data.todo.TodoViewModel
 import com.nevoit.cresto.feature.settings.util.SettingsManager
-import com.nevoit.cresto.glasense.AppButtonColors
-import com.nevoit.cresto.glasense.AppColors
-import com.nevoit.cresto.glasense.LocalGlasenseSettings
-import com.nevoit.cresto.glasense.linearGradientMaskB2T70
-import com.nevoit.cresto.glasense.linearGradientMaskB2T90
+import com.nevoit.cresto.theme.AppButtonColors
+import com.nevoit.cresto.theme.AppColors
+import com.nevoit.cresto.theme.LocalGlasenseSettings
+import com.nevoit.cresto.theme.linearGradientMaskB2T70
+import com.nevoit.cresto.theme.linearGradientMaskB2T90
 import com.nevoit.cresto.toolkit.gaussiangradient.smoothGradientMask
 import com.nevoit.cresto.toolkit.gaussiangradient.smoothGradientMaskFallback
 import com.nevoit.cresto.ui.components.bottomsheet.BottomSheet

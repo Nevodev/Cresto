@@ -1,4 +1,4 @@
-package com.nevoit.cresto.glasense
+package com.nevoit.cresto.theme
 
 import androidx.compose.runtime.Composable
 import com.nevoit.cresto.feature.settings.util.SettingsManager

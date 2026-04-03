@@ -60,11 +60,11 @@ import com.kyant.backdrop.effects.blur
 import com.kyant.backdrop.effects.lens
 import com.kyant.backdrop.highlight.Highlight
 import com.nevoit.cresto.feature.settings.util.SettingsManager
-import com.nevoit.cresto.glasense.AppButtonColors
-import com.nevoit.cresto.glasense.AppColors
-import com.nevoit.cresto.glasense.AppSpecs
-import com.nevoit.cresto.glasense.LocalGlasenseSettings
-import com.nevoit.cresto.glasense.isAppInDarkTheme
+import com.nevoit.cresto.theme.AppButtonColors
+import com.nevoit.cresto.theme.AppColors
+import com.nevoit.cresto.theme.AppSpecs
+import com.nevoit.cresto.theme.LocalGlasenseSettings
+import com.nevoit.cresto.theme.isAppInDarkTheme
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch

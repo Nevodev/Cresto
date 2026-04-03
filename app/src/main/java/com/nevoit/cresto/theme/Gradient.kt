@@ -1,4 +1,4 @@
-package com.nevoit.cresto.glasense
+package com.nevoit.cresto.theme
 
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color

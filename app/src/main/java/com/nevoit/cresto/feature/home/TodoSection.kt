@@ -38,8 +38,8 @@ import androidx.compose.ui.zIndex
 import com.kyant.shapes.RoundedRectangle
 import com.nevoit.cresto.R
 import com.nevoit.cresto.data.todo.TodoItemWithSubTodos
-import com.nevoit.cresto.glasense.AppColors
-import com.nevoit.cresto.glasense.AppSpecs
+import com.nevoit.cresto.theme.AppColors
+import com.nevoit.cresto.theme.AppSpecs
 import com.nevoit.cresto.ui.components.glasense.DimIndication
 import com.nevoit.cresto.ui.components.glasense.SwipeableListState
 import com.nevoit.cresto.ui.components.packed.SwipeableTodoItem

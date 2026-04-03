@@ -73,11 +73,11 @@ import com.kyant.backdrop.highlight.Highlight
 import com.kyant.backdrop.highlight.HighlightStyle
 import com.kyant.shapes.RoundedRectangle
 import com.nevoit.cresto.R
-import com.nevoit.cresto.glasense.AppButtonColors
-import com.nevoit.cresto.glasense.AppColors
-import com.nevoit.cresto.glasense.AppSpecs
-import com.nevoit.cresto.glasense.defaultEnterTransition
-import com.nevoit.cresto.glasense.defaultExitTransition
+import com.nevoit.cresto.theme.AppButtonColors
+import com.nevoit.cresto.theme.AppColors
+import com.nevoit.cresto.theme.AppSpecs
+import com.nevoit.cresto.theme.defaultEnterTransition
+import com.nevoit.cresto.theme.defaultExitTransition
 import com.nevoit.cresto.toolkit.gradientmapping.GradientMappedImage
 import com.nevoit.cresto.ui.components.CustomAnimatedVisibility
 import com.nevoit.cresto.ui.components.glasense.GlasenseButtonAlt

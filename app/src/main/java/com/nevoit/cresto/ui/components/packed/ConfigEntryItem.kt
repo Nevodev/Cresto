@@ -50,7 +50,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.kyant.shapes.RoundedRectangle
 import com.nevoit.cresto.R
-import com.nevoit.cresto.glasense.AppColors
+import com.nevoit.cresto.theme.AppColors
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 

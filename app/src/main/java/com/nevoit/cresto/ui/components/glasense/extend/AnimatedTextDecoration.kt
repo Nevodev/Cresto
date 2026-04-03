@@ -27,7 +27,7 @@ import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.nevoit.cresto.glasense.AppColors
+import com.nevoit.cresto.theme.AppColors
 
 @Composable
 fun LineThroughText(
