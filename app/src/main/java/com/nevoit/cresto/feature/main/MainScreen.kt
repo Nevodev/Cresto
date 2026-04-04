@@ -335,7 +335,7 @@ fun MainScreen() {
                                         if (liquidGlass) 8f.dp.toPx() else 32f.dp.toPx(),
                                         TileMode.Decal
                                     )
-                                    if (liquidGlass) lens(16f.dp.toPx(), 32f.dp.toPx())
+                                    if (liquidGlass) lens(16f.dp.toPx(), 48f.dp.toPx())
                                 },
                                 onDrawSurface = {
                                     drawRect(color = floatingBarColor)
@@ -369,7 +369,7 @@ fun MainScreen() {
                                         if (liquidGlass) 8f.dp.toPx() else 32f.dp.toPx(),
                                         TileMode.Decal
                                     )
-                                    if (liquidGlass) lens(16f.dp.toPx(), 32f.dp.toPx())
+                                    if (liquidGlass) lens(16f.dp.toPx(), 48f.dp.toPx())
                                 },
                                 onDrawSurface = {
                                     drawRect(color = floatingBarColor)
@@ -471,7 +471,7 @@ fun MainScreen() {
                                         if (liquidGlass) 8f.dp.toPx() else 32f.dp.toPx(),
                                         TileMode.Decal
                                     )
-                                    if (liquidGlass) lens(16f.dp.toPx(), 32f.dp.toPx())
+                                    if (liquidGlass) lens(16f.dp.toPx(), 48f.dp.toPx())
                                 },
                                 onDrawSurface = {
                                     drawRect(color = floatingBarColor)

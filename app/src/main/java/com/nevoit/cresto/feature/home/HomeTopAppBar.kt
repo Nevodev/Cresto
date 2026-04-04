@@ -97,12 +97,19 @@ fun BoxScope.HomeTopAppBar(
         }
     }
     val dpPx = with(density) { 1.dp.toPx() }
-    GlasenseDynamicSmallTitle(
-        modifier = Modifier.align(Alignment.TopCenter),
-        title = if (isComposed) stringResource(
+    val resolvedTitle = if (isTitleVisible) {
+        if (isSelectionModeActive) stringResource(
             R.string.selected_todos,
             lastNonZeroSelected
-        ) else stringResource(R.string.all_todos),
+        ) else stringResource(R.string.all_todos)
+    } else if (isComposed) stringResource(
+        R.string.selected_todos,
+        lastNonZeroSelected
+    ) else stringResource(R.string.all_todos)
+
+    GlasenseDynamicSmallTitle(
+        modifier = Modifier.align(Alignment.TopCenter),
+        title = resolvedTitle,
         textStyle = TextStyle(fontFeatureSettings = "tnum"),
         statusBarHeight = statusBarHeight,
         isVisible = if (isSelectionModeActive) true else isTitleVisible,

@@ -62,10 +62,10 @@ fun GlasenseNavigationButton(
                 highlight = { if (liquidGlass) Highlight.Default else null },
                 effects = {
                     blur(if (liquidGlass) 8f.dp.toPx() else 32f.dp.toPx(), TileMode.Decal)
-                    if (liquidGlass) lens(16f.dp.toPx(), 32f.dp.toPx())
+                    if (liquidGlass) lens(16f.dp.toPx(), 48f.dp.toPx())
                 },
                 onDrawSurface = {
-                    if (!isActive) {
+                    if (!isActive && !liquidGlass) {
                         if (!darkTheme) {
                             drawRect(
                                 brush = SolidColor(Color(0xFF888888).copy(alpha = 0.7f)),
@@ -102,6 +102,41 @@ fun GlasenseNavigationButton(
                                 brush = SolidColor(Color(0xFF000000).copy(alpha = 0.2f)),
                                 style = Fill,
                                 blendMode = BlendMode.Luminosity
+                            )
+                            drawRect(
+                                brush = SolidColor(Color(0xFF000000).copy(alpha = 0.2f)),
+                                style = Fill,
+                                blendMode = BlendMode.Overlay
+                            )
+                            drawRect(
+                                brush = SolidColor(Color(0xFF595959).copy(alpha = 0.4f)),
+                                style = Fill,
+                                blendMode = BlendMode.Luminosity
+                            )
+                        }
+                    }
+                    if (liquidGlass && !isActive) {
+                        if (!darkTheme) {
+                            drawRect(
+                                brush = SolidColor(Color(0xFF888888).copy(alpha = 0.7f)),
+                                style = Fill,
+                                blendMode = BlendMode.Luminosity
+                            )
+                            drawRect(
+                                brush = SolidColor(Color(0xFF5F5F5F).copy(alpha = 1f)),
+                                style = Fill,
+                                blendMode = BlendMode.ColorDodge
+                            )
+                            drawRect(
+                                brush = SolidColor(Color(0xFFFFFFFF).copy(alpha = 0.1f)),
+                                style = Fill,
+                                blendMode = BlendMode.SrcOver
+                            )
+                            // Dark theme inactive style.
+                        } else {
+                            drawRect(
+                                brush = SolidColor(Color(0xFFFFFFFF).copy(alpha = 0.1f)),
+                                style = Fill
                             )
                             drawRect(
                                 brush = SolidColor(Color(0xFF000000).copy(alpha = 0.2f)),
