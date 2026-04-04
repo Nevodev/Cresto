@@ -24,7 +24,7 @@ fun GlasensePageHeader(
 ) {
     // A box that provides padding for the status bar and sets a fixed height.
     Box(
-        modifier = Modifier
+        modifier = modifier
             .statusBarsPadding()
             .height(160.dp)
             .fillMaxWidth()
@@ -33,7 +33,7 @@ fun GlasensePageHeader(
         Text(
             text = title,
             style = MaterialTheme.typography.headlineLarge,
-            modifier = modifier
+            modifier = Modifier
                 .padding(start = 12.dp, bottom = 16.dp)
                 .align(Alignment.BottomStart)
         )

@@ -6,12 +6,14 @@ import com.nevoit.cresto.data.statistics.DailyStat
 import com.nevoit.cresto.data.statistics.TodoStat
 import com.nevoit.cresto.data.utils.EventItem
 import com.tencent.mmkv.MMKV
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
@@ -369,5 +371,36 @@ class TodoViewModel(private val repository: TodoRepository) : ViewModel() {
 
     fun clearImportPreview() {
         _importPreviewState.value = ImportPreviewUiState()
+    }
+
+    private val _isSearchBoxOpen = MutableStateFlow(false)
+    val isSearchBoxOpen: StateFlow<Boolean> = _isSearchBoxOpen.asStateFlow()
+
+    fun openSearchBox() {
+        _isSearchBoxOpen.value = true
+    }
+
+    fun closeSearchBox() {
+        _isSearchBoxOpen.value = false
+    }
+
+    fun toggleSearchBox() {
+        _isSearchBoxOpen.update { !it }
+    }
+
+    private val _searchQuery = MutableStateFlow("")
+    val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val searchedTodos: StateFlow<List<TodoItemWithSubTodos>> = _searchQuery
+        .flatMapLatest { query -> repository.searchTodos(query) }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyList()
+        )
+
+    fun updateSearchQuery(query: String) {
+        _searchQuery.value = query
     }
 }

@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -191,7 +190,7 @@ fun GlasenseButtonAdaptable(
     enabled: Boolean = true,
     shape: Shape = Capsule(),
     onClick: () -> Unit,
-    colors: ButtonColors,
+    colors: GlasenseButtonColors,
     animated: Boolean = true,
     content: @Composable () -> Unit,
 ) {
@@ -369,7 +368,7 @@ fun GlasenseButtonToolBar(
     shape: Shape = Capsule(),
     onClick: () -> Unit,
     colors: GlasenseButtonColors,
-    animated: Boolean = true,
+    animated: () -> Boolean = { true },
     content: @Composable () -> Unit,
 ) {
     val contentColor = if (enabled) colors.contentColor else colors.disabledContentColor
@@ -377,26 +376,26 @@ fun GlasenseButtonToolBar(
 
     // Animate scale and alpha for press feedback.
     val isPressed by interactionSource.collectIsPressedAsState()
+    val pressed = isPressed && animated()
+    
     val scale by animateFloatAsState(
-        targetValue = if (isPressed) 1.2f else 1.0f,
+        targetValue = if (pressed) 1.2f else 1.0f,
         animationSpec = spring(0.5f, 300f, 0.0001f)
     )
     val alpha by animateFloatAsState(
-        targetValue = if (isPressed) 0.2f else 0f,
+        targetValue = if (pressed) 0.2f else 0f,
         animationSpec = spring(0.5f, 300f, 0.001f)
     )
     Box(
         modifier = Modifier
             // Apply scale animation for press effect.
-            .then(
-                if (animated) Modifier.graphicsLayer {
-                    scaleY = scale
-                    scaleX = scale
-                    transformOrigin = TransformOrigin.Center
-                } else Modifier
-            )
+            .graphicsLayer {
+                scaleY = scale
+                scaleX = scale
+                transformOrigin = TransformOrigin.Center
+            }
             .then(modifier)
-            .then(if (animated) Modifier.clip(shape) else Modifier)
+            .clip(shape)
             // Handle click events.
             .clickable(
                 enabled = enabled,
@@ -408,20 +407,16 @@ fun GlasenseButtonToolBar(
             .height(48.dp)
             .background(color = backgroundColor, shape = shape)
             // Draw a white flash overlay on press.
-            .then(
-                if (animated) {
-                    Modifier.drawBehind {
-                        drawRect(
-                            size = this.size,
-                            color = Color.White,
-                            alpha = alpha,
-                            blendMode = BlendMode.Plus
-                        )
-                    }
-                } else {
-                    Modifier
+            .drawBehind {
+                if (alpha > 0f) {
+                    drawRect(
+                        size = this.size,
+                        color = Color.White,
+                        alpha = alpha,
+                        blendMode = BlendMode.Plus
+                    )
                 }
-            ),
+            },
         contentAlignment = Alignment.Center
     ) {
         CompositionLocalProvider(LocalContentColor provides contentColor) {

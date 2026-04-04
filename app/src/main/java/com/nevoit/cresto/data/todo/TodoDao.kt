@@ -146,4 +146,13 @@ interface TodoDao {
     @Query("SELECT * FROM sub_todo_items ORDER BY id ASC")
     suspend fun getAllSubTodosSnapshot(): List<SubTodoItem>
 
+    @Transaction
+    @Query(
+        """
+        SELECT * FROM todo_items
+        WHERE (:query = '' OR title LIKE '%' || :query || '%' COLLATE NOCASE)
+        ORDER BY id DESC
+        """
+    )
+    fun searchTodosWithSubTodos(query: String): Flow<List<TodoItemWithSubTodos>>
 }

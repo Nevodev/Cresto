@@ -21,7 +21,6 @@ import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -341,10 +340,7 @@ fun MainScreen() {
                                     drawRect(color = floatingBarColor)
                                 }
                             ),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = AppColors.scrimNormal,
-                            contentColor = AppColors.primary
-                        )
+                        colors = AppButtonColors.action()
                     ) {
                         Icon(
                             painter = painterResource(id = R.drawable.ic_ellipsis),
@@ -477,10 +473,7 @@ fun MainScreen() {
                                     drawRect(color = floatingBarColor)
                                 }
                             ),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = AppColors.scrimNormal,
-                            contentColor = AppColors.primary
-                        )
+                        colors = AppButtonColors.action()
                     ) {
                         Icon(
                             painter = painterResource(id = R.drawable.ic_trash),

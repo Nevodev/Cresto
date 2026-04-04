@@ -5,13 +5,16 @@ import android.content.Intent
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -30,8 +33,8 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.nevoit.cresto.R
 import com.nevoit.cresto.data.todo.EXTRA_TODO_ID
 import com.nevoit.cresto.data.todo.TodoViewModel
@@ -65,9 +68,11 @@ fun BoxScope.HomeScreen(
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
 
-    val todoList by viewModel.allTodos.collectAsStateWithLifecycle()
+    val allTodos by viewModel.allTodos.collectAsStateWithLifecycle()
+    val searchedTodos by viewModel.searchedTodos.collectAsStateWithLifecycle()
     val selectedItemIds by viewModel.selectedItemIds.collectAsState()
     val isSelectionModeActive by viewModel.isSelectionModeActive.collectAsState()
+    val isSearchBoxOpen by viewModel.isSearchBoxOpen.collectAsState()
 
     val statusBarHeight = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
 
@@ -89,7 +94,7 @@ fun BoxScope.HomeScreen(
         }
     }
 
-    val isSmallTitleVisible by lazyListState.isScrolledPast(statusBarHeight + 24.dp)
+    val isSmallTitleVisible by lazyListState.isScrolledPast(if (isSearchBoxOpen) 0.dp else statusBarHeight + 24.dp)
     val interactionSource = remember { MutableInteractionSource() }
     val menuItemsSort = rememberSortMenuItems()
 
@@ -103,6 +108,10 @@ fun BoxScope.HomeScreen(
     }
     val currentSortOrder = remember(sortOrderOrdinal) {
         SortOrder.entries.getOrElse(sortOrderOrdinal) { SortOrder.DESCENDING }
+    }
+
+    val todoList = remember(isSearchBoxOpen, allTodos, searchedTodos) {
+        if (isSearchBoxOpen) searchedTodos else allTodos
     }
 
     val (rawIncompleteTodos, rawCompleteTodos) = remember(todoList) {
@@ -149,17 +158,34 @@ fun BoxScope.HomeScreen(
     if (isSelectionModeActive) {
         BackHandler { viewModel.clearSelections() }
     }
-
+    LaunchedEffect(isSearchBoxOpen) {
+        if (isSearchBoxOpen) {
+            swipeListState.close()
+        }
+    }
     PageContent(
         state = lazyListState,
         modifier = Modifier
             .hazeSource(hazeState, 0f),
         tabPadding = true
     ) {
-        item {
-            GlasensePageHeader(
-                title = stringResource(R.string.all_todos)
-            )
+
+        if (isSearchBoxOpen) {
+            item(key = "top_padding") {
+                Box(
+                    modifier = Modifier
+                        .animateItem(placementSpec = spring(0.9f, 400f))
+                        .statusBarsPadding()
+                        .height(48.dp + 12.dp + 48.dp + 12.dp)
+                )
+            }
+        } else {
+            item(key = "title") {
+                GlasensePageHeader(
+                    modifier = Modifier.animateItem(placementSpec = spring(0.9f, 400f)),
+                    title = stringResource(R.string.all_todos)
+                )
+            }
         }
 
         itemsIndexed(

@@ -384,4 +384,8 @@ class TodoRepository(
             unique = uniqueCount
         )
     }
+
+    fun searchTodos(query: String): Flow<List<TodoItemWithSubTodos>> {
+        return todoDao.searchTodosWithSubTodos(query.trim())
+    }
 }
