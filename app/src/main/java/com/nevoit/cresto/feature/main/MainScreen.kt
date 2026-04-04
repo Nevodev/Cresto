@@ -47,6 +47,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.kyant.backdrop.backdrops.layerBackdrop
 import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import com.kyant.backdrop.drawBackdrop
@@ -57,7 +58,7 @@ import com.kyant.shapes.Capsule
 import com.nevoit.cresto.R
 import com.nevoit.cresto.data.todo.TodoItem
 import com.nevoit.cresto.data.todo.TodoViewModel
-import com.nevoit.cresto.feature.settings.util.SettingsManager
+import com.nevoit.cresto.feature.settings.util.SettingsViewModel
 import com.nevoit.cresto.theme.AppButtonColors
 import com.nevoit.cresto.theme.AppColors
 import com.nevoit.cresto.theme.LocalGlasenseSettings
@@ -96,8 +97,9 @@ sealed class Screen(val route: String) {
 fun MainScreen() {
     val surfaceColor = AppColors.pageBackground
     var currentRoute by rememberSaveable { mutableStateOf(Screen.Home.route) }
+    val settingsViewModel: SettingsViewModel = viewModel()
 
-    val liquidGlass by SettingsManager.isLiquidGlassState
+    val liquidGlass by settingsViewModel.isLiquidGlass
 
     val hazeState = rememberHazeState()
     val backdrop = rememberLayerBackdrop {

@@ -25,6 +25,8 @@ object SettingsManager {
     private const val KEY_SORT_OPTION = "sort_option"
     private const val KEY_SORT_ORDER = "sort_order"
     private const val KEY_THEME_PRIMARY_COLOR = "theme_primary_color"
+    private const val KEY_DUE_TODAY_MARKER = "due_today_marker_enabled"
+    private const val KEY_OVERDUE_MARKER = "overdue_marker_enabled"
 
     private val defaultThemePrimaryColor = Blue500.toArgb()
 
@@ -44,6 +46,8 @@ object SettingsManager {
         mutableIntStateOf(mmkv.decodeInt(KEY_SORT_ORDER, SortOrder.DESCENDING.ordinal))
     val themePrimaryColorState =
         mutableIntStateOf(mmkv.decodeInt(KEY_THEME_PRIMARY_COLOR, defaultThemePrimaryColor))
+    val isDueTodayMarkerState = mutableStateOf(mmkv.decodeBool(KEY_DUE_TODAY_MARKER, true))
+    val isOverdueMarkerState = mutableStateOf(mmkv.decodeBool(KEY_OVERDUE_MARKER, true))
 
     var isCustomPrimaryColorEnabled: Boolean
         get() = mmkv.decodeBool(KEY_CUSTOM_PRIMARY_COLOR_ENABLED, false)
@@ -111,6 +115,20 @@ object SettingsManager {
         set(value) {
             mmkv.encode(KEY_THEME_PRIMARY_COLOR, value)
             themePrimaryColorState.intValue = value
+        }
+
+    var isDueTodayMarker: Boolean
+        get() = mmkv.decodeBool(KEY_DUE_TODAY_MARKER, true)
+        set(value) {
+            mmkv.encode(KEY_DUE_TODAY_MARKER, value)
+            isDueTodayMarkerState.value = value
+        }
+
+    var isOverdueMarker: Boolean
+        get() = mmkv.decodeBool(KEY_OVERDUE_MARKER, true)
+        set(value) {
+            mmkv.encode(KEY_OVERDUE_MARKER, value)
+            isOverdueMarkerState.value = value
         }
 }
 

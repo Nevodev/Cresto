@@ -27,7 +27,9 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.nevoit.cresto.R
+import com.nevoit.cresto.feature.settings.util.SettingsViewModel
 import com.nevoit.cresto.theme.AppButtonColors
 import com.nevoit.cresto.theme.AppColors
 import com.nevoit.cresto.theme.harmonize
@@ -54,7 +56,7 @@ import dev.chrisbanes.haze.rememberHazeState
  */
 @OptIn(ExperimentalHazeApi::class)
 @Composable
-fun GeneralScreen() {
+fun GeneralScreen(settingsViewModel: SettingsViewModel = viewModel()) {
     // Get the current activity instance to allow finishing the screen
     val activity = LocalActivity.current
 
@@ -69,6 +71,8 @@ fun GeneralScreen() {
 
     // Determine if the small title should be visible based on the scroll position
     val isSmallTitleVisible by lazyListState.isScrolledPast(statusBarHeight + 24.dp)
+    val isDueTodayMarkerEnabled by settingsViewModel.isDueTodayMarker
+    val isOverdueMarkerEnabled by settingsViewModel.isOverdueMarker
 
     // Root container for the screen, filling the entire available space
     Box(
@@ -164,8 +168,8 @@ fun GeneralScreen() {
                     Column {
                         ConfigItem(title = stringResource(R.string.due_today_marker)) {
                             GlasenseSwitch(
-                                checked = false,
-                                onCheckedChange = {},
+                                checked = isDueTodayMarkerEnabled,
+                                onCheckedChange = { settingsViewModel.onDueTodayMarkerChanged(it) },
                                 backgroundColor = AppColors.cardBackground
                             )
                         }
@@ -188,8 +192,8 @@ fun GeneralScreen() {
                     Column {
                         ConfigItem(title = stringResource(R.string.overdue_marker)) {
                             GlasenseSwitch(
-                                checked = false,
-                                onCheckedChange = {},
+                                checked = isOverdueMarkerEnabled,
+                                onCheckedChange = { settingsViewModel.onOverdueMarkerChanged(it) },
                                 backgroundColor = AppColors.cardBackground
                             )
                         }

@@ -30,12 +30,14 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.nevoit.cresto.R
 import com.nevoit.cresto.data.todo.EXTRA_TODO_ID
 import com.nevoit.cresto.data.todo.TodoViewModel
 import com.nevoit.cresto.feature.detail.DetailActivity
 import com.nevoit.cresto.feature.settings.util.SettingsManager
+import com.nevoit.cresto.feature.settings.util.SettingsViewModel
 import com.nevoit.cresto.feature.settings.util.SortOption
 import com.nevoit.cresto.feature.settings.util.SortOrder
 import com.nevoit.cresto.ui.components.glasense.GlasenseMenuItem
@@ -59,6 +61,7 @@ fun BoxScope.HomeScreen(
     showMenu: (anchorPosition: Offset, items: List<GlasenseMenuItem>) -> Unit,
     viewModel: TodoViewModel
 ) {
+    val settingsViewModel: SettingsViewModel = viewModel()
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
 
@@ -92,6 +95,8 @@ fun BoxScope.HomeScreen(
 
     val sortOptionOrdinal by SettingsManager.sortOptionState
     val sortOrderOrdinal by SettingsManager.sortOrderState
+    val isDueTodayMarkerEnabled by settingsViewModel.isDueTodayMarker
+    val isOverdueMarkerEnabled by settingsViewModel.isOverdueMarker
 
     val currentSortOption = remember(sortOptionOrdinal) {
         SortOption.entries.getOrElse(sortOptionOrdinal) { SortOption.DEFAULT }
@@ -178,6 +183,8 @@ fun BoxScope.HomeScreen(
 
             TodoListItemRow(
                 item = displayItem,
+                isDueTodayMarkerEnabled = isDueTodayMarkerEnabled,
+                isOverdueMarkerEnabled = isOverdueMarkerEnabled,
                 isSelected = item.todoItem.id in selectedItemIds,
                 isSelectionModeActive = isSelectionModeActive,
                 overlayInteractionSource = interactionSource,
@@ -249,6 +256,8 @@ fun BoxScope.HomeScreen(
                 ) { index, item ->
                     TodoListItemRow(
                         item = item,
+                        isDueTodayMarkerEnabled = isDueTodayMarkerEnabled,
+                        isOverdueMarkerEnabled = isOverdueMarkerEnabled,
                         isSelected = item.todoItem.id in selectedItemIds,
                         isSelectionModeActive = isSelectionModeActive,
                         overlayInteractionSource = interactionSource,

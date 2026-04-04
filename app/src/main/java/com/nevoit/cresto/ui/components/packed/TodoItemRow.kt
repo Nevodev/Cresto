@@ -35,15 +35,19 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.Lifecycle
@@ -58,6 +62,7 @@ import com.nevoit.cresto.theme.AppSpecs
 import com.nevoit.cresto.theme.defaultEnterTransition
 import com.nevoit.cresto.theme.defaultExitTransition
 import com.nevoit.cresto.theme.getFlagColor
+import com.nevoit.cresto.theme.harmonize
 import com.nevoit.cresto.ui.components.CustomAnimatedVisibility
 import com.nevoit.cresto.ui.components.glasense.GlasenseCheckbox
 import com.nevoit.cresto.ui.components.glasense.SwipeableActionButton
@@ -65,6 +70,9 @@ import com.nevoit.cresto.ui.components.glasense.SwipeableContainer
 import com.nevoit.cresto.ui.components.glasense.SwipeableListState
 import com.nevoit.cresto.ui.components.glasense.extend.LineThroughBasicTextField
 import com.nevoit.cresto.ui.components.glasense.extend.LineThroughText
+import com.nevoit.glasense.theme.Red500
+import com.nevoit.glasense.theme.Yellow500
+import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
 /**
@@ -77,6 +85,8 @@ import java.time.format.DateTimeFormatter
 @Composable
 fun TodoItemRow(
     item: TodoItemWithSubTodos,
+    isDueTodayMarkerEnabled: Boolean,
+    isOverdueMarkerEnabled: Boolean,
     onCheckedChange: (Boolean) -> Unit,
     onCheckboxTapPosition: (Offset) -> Unit = {},
     modifier: Modifier
@@ -89,6 +99,9 @@ fun TodoItemRow(
 
     val completedText = stringResource(R.string.completed)
     val flagText = stringResource(R.string.flag)
+    val dueTodayText = stringResource(R.string.due_today_text)
+
+    val density = LocalDensity.current
 
     Row(
         modifier = Modifier
@@ -109,45 +122,16 @@ fun TodoItemRow(
         )
         Spacer(modifier = Modifier.width(12.dp))
         // If the to-do item has no due date, display only the title.
-        if (item.dueDate == null) {
-            if (hasTasks) {
-                Column(
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(vertical = 12.dp)
-                ) {
-                    LineThroughText(
-                        text = item.title,
-                        style = MaterialTheme.typography.bodyMedium,
-                        lineThrough = item.isCompleted
-                    )
-                    Row {
-                        Text(
-                            text = "$completedText ",
-                            style = MaterialTheme.typography.bodyMedium,
-                            fontSize = 14.sp,
-                            modifier = Modifier.alpha(0.4f)
-                        )
-                        Text(
-                            text = "${completedTask.size}/$totalTaskCount",
-                            style = MaterialTheme.typography.bodyMedium,
-                            fontSize = 14.sp,
-                            modifier = Modifier.alpha(0.4f)
-                        )
-                    }
-                }
-            } else {
-                LineThroughText(
-                    text = item.title,
-                    style = MaterialTheme.typography.bodyMedium,
-                    lineThrough = item.isCompleted,
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(vertical = 12.dp)
-                )
-            }
+        if (item.dueDate == null && !hasTasks) {
+            LineThroughText(
+                text = item.title,
+                style = MaterialTheme.typography.bodyMedium,
+                lineThrough = item.isCompleted,
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(vertical = 12.dp)
+            )
         } else {
-            // If the to-do item has a due date, display both the title and the due date.
             Column(
                 modifier = Modifier
                     .weight(1f)
@@ -158,38 +142,111 @@ fun TodoItemRow(
                     style = MaterialTheme.typography.bodyMedium,
                     lineThrough = item.isCompleted
                 )
-                if (hasTasks) {
-                    Row {
+                Spacer(modifier = Modifier.height(2.dp))
+                Row {
+                    if (item.dueDate != null) {
+                        val today = LocalDate.now()
+
+                        val isToday = item.dueDate == today
+                        val isExpired = item.dueDate < today
+
+                        val formattedDate = if (item.dueDate.year == today.year) {
+                            item.dueDate.format(DateTimeFormatter.ofPattern("M/d"))
+                        } else {
+                            item.dueDate.format(DateTimeFormatter.ofPattern("yyyy/M/d"))
+                        }
+
+                        val dueDateText = if (isToday) {
+                            if (isDueTodayMarkerEnabled && !item.isCompleted) {
+                                dueTodayText
+                            } else {
+                                formattedDate
+                            }
+                        } else if (isExpired) {
+                            if (isOverdueMarkerEnabled && !item.isCompleted) {
+                                stringResource(R.string.overdue_with_date, formattedDate)
+                            } else {
+                                formattedDate
+                            }
+                        } else {
+                            formattedDate
+                        }
+
+                        val color = if (isToday) {
+                            if (isDueTodayMarkerEnabled && !item.isCompleted) harmonize(Yellow500) else AppColors.content.copy(
+                                .4f
+                            )
+                        } else if (isExpired) {
+                            if (isOverdueMarkerEnabled && !item.isCompleted) harmonize(Red500) else AppColors.content.copy(
+                                .4f
+                            )
+                        } else {
+                            AppColors.content.copy(.4f)
+                        }
+                        Icon(
+                            painter = painterResource(R.drawable.ic_calendar_alt),
+                            contentDescription = null,
+                            tint = color,
+                            modifier = Modifier
+                                .size(density.run { 18.sp.toDp() })
+                                .align(Alignment.CenterVertically)
+                        )
+
+                        Spacer(Modifier.width(2.dp))
                         Text(
-                            text = item.dueDate.format(DateTimeFormatter.ofPattern("yyyy/MM/dd")),
+                            text = dueDateText,
                             style = MaterialTheme.typography.bodyMedium,
                             fontSize = 14.sp,
-                            modifier = Modifier.alpha(0.4f)
+                            color = color
                         )
+                    }
+                    if (item.dueDate != null && hasTasks) {
                         Text(
-                            text = " · $completedText ",
-                            style = MaterialTheme.typography.bodyMedium,
-                            fontSize = 14.sp,
-                            modifier = Modifier.alpha(0.4f)
-                        )
-                        Text(
-                            text = "${completedTask.size}/$totalTaskCount",
+                            text = " · ",
                             style = MaterialTheme.typography.bodyMedium,
                             fontSize = 14.sp,
                             modifier = Modifier.alpha(0.4f)
                         )
                     }
-                } else {
-                    Text(
-                        text = item.dueDate.format(DateTimeFormatter.ofPattern("yyyy/MM/dd")),
-                        style = MaterialTheme.typography.bodyMedium,
-                        fontSize = 14.sp,
-                        modifier = Modifier.alpha(0.4f)
-                    )
+                    if (hasTasks) {
+                        val color = AppColors.content
+                        val areCompleted = totalTaskCount == completedTask.size
+                        Row(
+                            modifier = Modifier
+                                .alpha(0.4f)
+                                .then(
+                                    if (areCompleted) Modifier.lineThrough(
+                                        color,
+                                        width = 1.5.dp
+                                    ) else Modifier
+                                )
+                        ) {
+                            Icon(
+                                painter = painterResource(R.drawable.ic_list_bullet_clipboard),
+                                contentDescription = null,
+                                tint = color,
+                                modifier = Modifier
+                                    .size(density.run { 18.sp.toDp() })
+                                    .align(Alignment.CenterVertically)
+                            )
+                            Spacer(Modifier.width(2.dp))
+                            Text(
+                                text = "$completedText ",
+                                style = MaterialTheme.typography.bodyMedium,
+                                fontSize = 14.sp,
+                                color = color
+                            )
+                            Text(
+                                text = "${completedTask.size}/$totalTaskCount",
+                                style = MaterialTheme.typography.bodyMedium,
+                                fontSize = 14.sp,
+                                color = color
+                            )
+                        }
+                    }
                 }
             }
         }
-
         // If the to-do item has a flag, display the flag icon.
         if (getFlagColor(item.flag) != Color.Transparent) {
             Spacer(modifier = Modifier.width(12.dp))
@@ -215,6 +272,8 @@ fun TodoItemRow(
 fun SwipeableTodoItem(
     listState: SwipeableListState,
     item: TodoItemWithSubTodos,
+    isDueTodayMarkerEnabled: Boolean,
+    isOverdueMarkerEnabled: Boolean,
     onDelete: () -> Unit,
     modifier: Modifier,
     onCheckedChange: (Boolean) -> Unit,
@@ -242,6 +301,8 @@ fun SwipeableTodoItem(
     ) {
         TodoItemRow(
             item = item,
+            isDueTodayMarkerEnabled = isDueTodayMarkerEnabled,
+            isOverdueMarkerEnabled = isOverdueMarkerEnabled,
             onCheckedChange = onCheckedChange,
             onCheckboxTapPosition = onCheckboxTapPosition,
             modifier = modifier
@@ -629,4 +690,16 @@ fun SwipeableSubTodoItemRowEditable(
             modifier = Modifier,
             onEditEnd = { string, boolean -> onEditEnd(string, boolean) })
     }
+}
+
+fun Modifier.lineThrough(color: Color, width: Dp): Modifier = drawWithContent {
+    val inset = width.toPx() / 2
+    drawContent()
+    drawLine(
+        color = color,
+        start = Offset(inset, size.height / 2),
+        end = Offset(size.width - inset, size.height / 2),
+        strokeWidth = width.toPx(),
+        cap = StrokeCap.Round
+    )
 }

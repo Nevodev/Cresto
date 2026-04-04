@@ -87,6 +87,8 @@
     <string name="done">Done</string>
     <string name="none">None</string>
     <string name="today">Today</string>
+    <string name="due_today_text">Due today</string>
+    <string name="overdue_with_date">Overdue - %1$s</string>
     <string name="tomorrow">Tomorrow</string>
     <string name="next_week">Next Week</string>
     <string name="new_todo">New Todo</string>

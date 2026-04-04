@@ -10,6 +10,8 @@ class SettingsViewModel : ViewModel() {
     val isLiteMode = SettingsManager.isLiteModeState
     val isLiquidGlass = SettingsManager.isLiquidGlassState
     val themePrimaryColor = SettingsManager.themePrimaryColorState
+    val isDueTodayMarker = SettingsManager.isDueTodayMarkerState
+    val isOverdueMarker = SettingsManager.isOverdueMarkerState
 
     fun onCustomPrimaryColorChanged(isEnabled: Boolean) {
         SettingsManager.isCustomPrimaryColorEnabled = isEnabled
@@ -36,5 +38,13 @@ class SettingsViewModel : ViewModel() {
 
     fun onThemePrimaryColorChanged(colorArgb: Int) {
         SettingsManager.themePrimaryColor = colorArgb
+    }
+
+    fun onDueTodayMarkerChanged(isEnabled: Boolean) {
+        SettingsManager.isDueTodayMarker = isEnabled
+    }
+
+    fun onOverdueMarkerChanged(isEnabled: Boolean) {
+        SettingsManager.isOverdueMarker = isEnabled
     }
 }

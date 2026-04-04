@@ -47,6 +47,8 @@ import com.nevoit.cresto.ui.components.packed.SwipeableTodoItem
 @Composable
 fun LazyItemScope.TodoListItemRow(
     item: TodoItemWithSubTodos,
+    isDueTodayMarkerEnabled: Boolean,
+    isOverdueMarkerEnabled: Boolean,
     isSelected: Boolean,
     isSelectionModeActive: Boolean,
     overlayInteractionSource: MutableInteractionSource,
@@ -58,7 +60,6 @@ fun LazyItemScope.TodoListItemRow(
     onDelete: () -> Unit,
     onCheckboxTapPosition: ((Offset) -> Unit)? = null,
 ) {
-    val itemId = item.todoItem.id
     val alpha = remember { Animatable(if (isSelected) 1f else 0f) }
     val rowInteractionSource = remember { MutableInteractionSource() }
     val selectionOutline = AppColors.primary
@@ -96,6 +97,8 @@ fun LazyItemScope.TodoListItemRow(
     ) {
         SwipeableTodoItem(
             item = item,
+            isDueTodayMarkerEnabled = isDueTodayMarkerEnabled,
+            isOverdueMarkerEnabled = isOverdueMarkerEnabled,
             onCheckboxTapPosition = onCheckboxTapPosition ?: {},
             onCheckedChange = onCheckedChange,
             onDelete = onDelete,
