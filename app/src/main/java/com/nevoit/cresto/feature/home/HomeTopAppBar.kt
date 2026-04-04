@@ -59,7 +59,6 @@ import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInWindow
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -81,7 +80,6 @@ import com.nevoit.glasense.modifier.glasenseOverlay
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.HazeStyle
 import dev.chrisbanes.haze.hazeEffect
-import kotlinx.coroutines.android.awaitFrame
 import kotlinx.coroutines.launch
 
 @Composable
@@ -388,16 +386,6 @@ fun BoxScope.HomeTopAppBar(
     }
 
     val searchFocusRequester = remember { FocusRequester() }
-    val keyboardController = LocalSoftwareKeyboardController.current
-
-    LaunchedEffect(isSearchBoxOpen, isSearchBoxComposed) {
-        if (isSearchBoxOpen && isSearchBoxComposed) {
-            awaitFrame()
-            searchFocusRequester.requestFocus()
-            keyboardController?.show()
-        }
-    }
-
 
     if (isSearchBoxComposed) {
         BackHandler { viewModel.onSearchCloseIconClick() }
@@ -475,6 +463,9 @@ fun BoxScope.HomeTopAppBar(
                     .size(28.dp),
                 tint = AppColors.contentVariant
             )
+            LaunchedEffect(Unit) {
+                searchFocusRequester.requestFocus()
+            }
             BasicTextField(
                 value = searchQuery,
                 onValueChange = viewModel::updateSearchQuery,
