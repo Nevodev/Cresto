@@ -73,21 +73,28 @@ class TodoViewModel(private val repository: TodoRepository) : ViewModel() {
     }
 
     fun toggleSelectAllItems() {
-        val allIds = allTodos.value.map { it.todoItem.id }.toSet()
-        if (allIds.isEmpty()) {
-            clearSelections()
-            return
+        val visibleIds = getVisibleTodoIds()
+        if (visibleIds.isEmpty()) return
+
+        _selectedItemIds.update { currentIds ->
+            val isVisibleAllSelected = visibleIds.all(currentIds::contains)
+            if (isVisibleAllSelected) {
+                currentIds - visibleIds
+            } else {
+                currentIds + visibleIds
+            }
         }
 
-        val isAllSelected = _selectedItemIds.value.size == allIds.size &&
-                _selectedItemIds.value.containsAll(allIds)
+        _isSelectionModeActive.value = _selectedItemIds.value.isNotEmpty()
+    }
 
-        if (isAllSelected) {
-            clearSelections()
+    private fun getVisibleTodoIds(): Set<Int> {
+        val visibleTodos = if (_searchQuery.value.isBlank()) {
+            allTodos.value
         } else {
-            _selectedItemIds.value = allIds
-            _isSelectionModeActive.value = true
+            searchedTodos.value
         }
+        return visibleTodos.map { it.todoItem.id }.toSet()
     }
 
 
@@ -382,6 +389,14 @@ class TodoViewModel(private val repository: TodoRepository) : ViewModel() {
 
     fun closeSearchBox() {
         _isSearchBoxOpen.value = false
+    }
+
+    fun onSearchCloseIconClick() {
+        if (_searchQuery.value.isNotEmpty()) {
+            _searchQuery.value = ""
+        } else {
+            closeSearchBox()
+        }
     }
 
     fun toggleSearchBox() {

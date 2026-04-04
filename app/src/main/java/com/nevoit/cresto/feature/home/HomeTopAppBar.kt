@@ -40,6 +40,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.BlurEffect
 import androidx.compose.ui.graphics.Color
@@ -57,6 +59,7 @@ import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInWindow
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -78,6 +81,7 @@ import com.nevoit.glasense.modifier.glasenseOverlay
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.HazeStyle
 import dev.chrisbanes.haze.hazeEffect
+import kotlinx.coroutines.android.awaitFrame
 import kotlinx.coroutines.launch
 
 @Composable
@@ -170,7 +174,7 @@ fun BoxScope.HomeTopAppBar(
             searchBoxBlurAnimation.animateTo(0f, tween(300))
         } else {
             scope.launch { searchBoxAlphaAnimation.animateTo(0f, tween(300)) }
-            scope.launch { searchIconWidthAnimation.animateTo(1f, spring(0.8f, 500f)) }
+            scope.launch { searchIconWidthAnimation.animateTo(1f, spring(0.8f, 400f)) }
             searchBoxBlurAnimation.animateTo(targetBlurRadius, tween(300))
             isSearchBoxComposed = false
         }
@@ -233,7 +237,7 @@ fun BoxScope.HomeTopAppBar(
                                     interactionSource = sharedInteractionSource,
                                     indication = null
                                 ) {
-                                    viewModel.toggleSearchBox()
+                                    viewModel.openSearchBox()
                                 },
                             contentAlignment = Alignment.Center
                         ) {
@@ -383,8 +387,20 @@ fun BoxScope.HomeTopAppBar(
         }
     }
 
+    val searchFocusRequester = remember { FocusRequester() }
+    val keyboardController = LocalSoftwareKeyboardController.current
+
+    LaunchedEffect(isSearchBoxOpen, isSearchBoxComposed) {
+        if (isSearchBoxOpen && isSearchBoxComposed) {
+            awaitFrame()
+            searchFocusRequester.requestFocus()
+            keyboardController?.show()
+        }
+    }
+
+
     if (isSearchBoxComposed) {
-        BackHandler() { viewModel.closeSearchBox() }
+        BackHandler { viewModel.onSearchCloseIconClick() }
         Box(
             modifier = Modifier
                 .padding(horizontal = 12.dp)
@@ -463,6 +479,7 @@ fun BoxScope.HomeTopAppBar(
                 value = searchQuery,
                 onValueChange = viewModel::updateSearchQuery,
                 modifier = Modifier
+                    .focusRequester(searchFocusRequester)
                     .height(48.dp)
                     .padding(start = 44.dp, end = 42.dp)
                     .fillMaxWidth(),
@@ -495,7 +512,7 @@ fun BoxScope.HomeTopAppBar(
                         interactionSource = remember { MutableInteractionSource() },
                         indication = null
                     ) {
-                        viewModel.closeSearchBox()
+                        viewModel.onSearchCloseIconClick()
                     }
                     .padding(14.dp)
                     .size(20.dp),
