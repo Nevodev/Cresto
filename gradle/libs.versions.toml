@@ -20,6 +20,7 @@ navigationCompose = "2.9.7"
 roomRuntime = "2.8.4"
 koin-bom = "4.2.0"
 confettiKit = "0.8.0"
+materialKolor = "4.1.1"
 
 
 [libraries]
@@ -62,6 +63,7 @@ generativeai = { module = "com.google.ai.client.generativeai:generativeai", vers
 haze = { module = "dev.chrisbanes.haze:haze", version.ref = "haze" }
 mmkv = { module = "com.tencent:mmkv", version.ref = "mmkv" }
 confetti-kit = { module = "io.github.vinceglb:confettikit", version.ref = "confettiKit" }
+materialKolor = { module = "com.materialkolor:material-kolor", version.ref = "materialKolor" }
 
 koin-bom = { module = "io.insert-koin:koin-bom", version.ref = "koin-bom" }
 koin-androidx-compose = { module = "io.insert-koin:koin-androidx-compose" }

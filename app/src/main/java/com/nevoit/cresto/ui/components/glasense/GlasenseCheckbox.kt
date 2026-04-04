@@ -56,6 +56,7 @@ fun GlasenseCheckbox(
     onCheckedChange: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
     role: Role = Role.Checkbox,
+    enabled: Boolean = true,
     onTapPosition: (Offset) -> Unit = {}
 ) {
     val haptic = LocalHapticFeedback.current
@@ -152,6 +153,7 @@ fun GlasenseCheckbox(
                     }
                     onCheckedChange(value)
                 },
+                enabled = enabled,
                 role = role,
                 interactionSource = remember { MutableInteractionSource() },
                 indication = null
@@ -270,7 +272,8 @@ fun <T : Any> rememberCheckBoxState(initialSelection: T? = null): CheckBoxState<
 fun <T> GlasenseCheckbox(
     state: CheckBoxState<T>,
     value: T,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true
 ) {
     val isChecked = state.selectedValue == value
 
@@ -280,6 +283,7 @@ fun <T> GlasenseCheckbox(
             state.onSelectionChange(value)
         },
         modifier = modifier,
-        role = Role.RadioButton
+        role = Role.RadioButton,
+        enabled = enabled
     )
 }

@@ -44,13 +44,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.nevoit.cresto.R
 import com.nevoit.cresto.theme.AppColors
-import com.nevoit.glasense.theme.Blue500
-import com.nevoit.glasense.theme.Gray500
-import com.nevoit.glasense.theme.Green500
-import com.nevoit.glasense.theme.Orange500
-import com.nevoit.glasense.theme.Purple500
-import com.nevoit.glasense.theme.Red500
-import com.nevoit.glasense.theme.Yellow500
+import com.nevoit.cresto.theme.getFlagColor
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -70,16 +64,8 @@ fun HorizontalFlagPicker(
     selectedIndex: Int,
     onIndexSelected: (Int) -> Unit,
 ) {
-    val colors = listOf(
-        Color.Transparent,
-        Red500,
-        Orange500,
-        Yellow500,
-        Green500,
-        Blue500,
-        Purple500,
-        Gray500
-    )
+    val colors = List(8) { i -> getFlagColor(i) }
+
     val noneText = stringResource(R.string.none)
     Box(modifier = Modifier.fillMaxSize()) {
         LazyRow(
@@ -97,7 +83,6 @@ fun HorizontalFlagPicker(
                         onClick = { onIndexSelected(index) }
                     )
                 } else {
-                    // 其他项目显示颜色圆圈
                     ColorCircle(
                         color = color,
                         isSelected = (selectedIndex == index),

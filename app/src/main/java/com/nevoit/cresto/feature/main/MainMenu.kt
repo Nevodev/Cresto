@@ -75,8 +75,10 @@ fun rememberFlagMenuItems(onFlagSelected: (Int) -> Unit): List<GlasenseMenuItem>
         stringResource(R.string.flag_gray)
     )
 
+    val flagColors = List(8) { i -> getFlagColor(i) }
+
     val noneText = stringResource(R.string.none)
-    return remember(onFlagSelected, flagIcon, noFlagIcon, flagNames, noneText) {
+    return remember(onFlagSelected, flagIcon, noFlagIcon, flagNames, noneText, flagColors) {
         buildList {
             flagNames.forEachIndexed { index, flagName ->
                 val flagIndex = index + 1
@@ -84,7 +86,7 @@ fun rememberFlagMenuItems(onFlagSelected: (Int) -> Unit): List<GlasenseMenuItem>
                     MenuItemData(
                         text = flagName,
                         icon = flagIcon,
-                        iconColor = getFlagColor(flagIndex),
+                        iconColor = flagColors[flagIndex],
                         onClick = { onFlagSelected(flagIndex) }
                     )
                 )

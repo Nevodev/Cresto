@@ -21,6 +21,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.nevoit.cresto.R
 import com.nevoit.cresto.theme.AppColors
+import com.nevoit.cresto.theme.harmonize
 import com.nevoit.cresto.ui.components.glasense.GlasenseDynamicSmallTitle
 import com.nevoit.cresto.ui.components.glasense.GlasensePageHeader
 import com.nevoit.cresto.ui.components.glasense.extend.overscrollSpacer
@@ -53,8 +54,6 @@ fun BoxScope.SettingsScreen() {
 
     val context = LocalContext.current
 
-
-
     PageContent(
         state = lazyListState,
         modifier = Modifier
@@ -72,10 +71,10 @@ fun BoxScope.SettingsScreen() {
                     ConfigEntryItem(
                         brush = Brush.sweepGradient(
                             colorStops = arrayOf(
-                                0f to Pink400,
-                                0.33f to Purple500,
-                                0.66f to Blue500,
-                                1f to Pink400
+                                0f to harmonize(Pink400),
+                                0.33f to harmonize(Purple500),
+                                0.66f to harmonize(Blue500),
+                                1f to harmonize(Pink400)
                             )
                         ),
                         icon = painterResource(R.drawable.ic_twotone_sparkles),
@@ -95,7 +94,7 @@ fun BoxScope.SettingsScreen() {
             ConfigContainer(backgroundColor = hierarchicalSurfaceColor) {
                 Column(modifier = Modifier.fillMaxWidth()) {
                     ConfigEntryItem(
-                        color = Blue500,
+                        color = harmonize(Blue500),
                         icon = painterResource(R.drawable.ic_twotone_image),
                         title = stringResource(R.string.appearance),
                         onClick = {
@@ -109,7 +108,7 @@ fun BoxScope.SettingsScreen() {
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                     ConfigEntryItem(
-                        color = Slate500,
+                        color = harmonize(Slate500),
                         icon = painterResource(R.drawable.ic_twotone_storage),
                         title = stringResource(R.string.data_storage),
                         onClick = {
@@ -123,7 +122,7 @@ fun BoxScope.SettingsScreen() {
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                     ConfigEntryItem(
-                        color = Slate500,
+                        color = harmonize(Slate500),
                         icon = painterResource(R.drawable.ic_twotone_gear),
                         title = stringResource(R.string.general),
                         onClick = {
@@ -155,7 +154,7 @@ fun BoxScope.SettingsScreen() {
         item {
             ConfigContainer(backgroundColor = hierarchicalSurfaceColor) {
                 ConfigEntryItem(
-                    color = Slate500,
+                    color = harmonize(Slate500),
                     icon = painterResource(R.drawable.ic_twotone_info),
                     title = stringResource(R.string.credits),
                     onClick = {}

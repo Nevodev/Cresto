@@ -74,6 +74,7 @@ import com.nevoit.cresto.theme.AppButtonColors
 import com.nevoit.cresto.theme.AppColors
 import com.nevoit.cresto.theme.AppSpecs
 import com.nevoit.cresto.theme.LocalGlasenseSettings
+import com.nevoit.cresto.theme.harmonize
 import com.nevoit.cresto.theme.isAppInDarkTheme
 import com.nevoit.cresto.ui.components.glasense.DimIndication
 import com.nevoit.cresto.ui.components.glasense.GlasenseButton
@@ -196,7 +197,7 @@ fun AppearanceScreen(settingsViewModel: SettingsViewModel = viewModel()) {
             // Header item for the Appearance section
             item {
                 ConfigInfoHeader(
-                    color = Blue500,
+                    color = harmonize(Blue500),
                     backgroundColor = hierarchicalSurfaceColor,
                     icon = painterResource(R.drawable.ic_twotone_image),
                     title = stringResource(R.string.appearance),

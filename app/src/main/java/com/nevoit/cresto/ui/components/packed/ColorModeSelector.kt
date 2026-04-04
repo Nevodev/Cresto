@@ -3,8 +3,6 @@ package com.nevoit.cresto.ui.components.packed
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -31,9 +29,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.zIndex
 import com.nevoit.cresto.R
-import com.nevoit.cresto.feature.settings.util.SettingsManager
 import com.nevoit.cresto.theme.AppColors
 import com.nevoit.cresto.ui.components.glasense.GlasenseCheckbox
 import com.nevoit.cresto.ui.components.glasense.GlasenseSwitch
@@ -46,7 +42,6 @@ fun ColorModeSelector(
     currentMode: Int,
     onChange: (Int) -> Unit
 ) {
-    var isLiquidGlass by SettingsManager.isLiquidGlassState
     // 0 is light, 1 is dark, 2 is auto
     val isAutomatic = currentMode == 2
 
@@ -81,24 +76,12 @@ fun ColorModeSelector(
             onChange(returnMode)
         }
     }
-    val interactionSource = remember { MutableInteractionSource() }
 
     ConfigItemContainer(
         backgroundColor = backgroundColor
     ) {
         Column {
             Box {
-                if (isAutomatic) {
-                    Box(
-                        modifier = Modifier
-                            .matchParentSize()
-                            .clickable(
-                                interactionSource = interactionSource,
-                                indication = null,
-                                onClick = {})
-                            .zIndex(99f)
-                    )
-                }
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -121,7 +104,11 @@ fun ColorModeSelector(
                             lineHeight = 16.sp
                         )
                         Spacer(modifier = Modifier.height(8.dp))
-                        GlasenseCheckbox(state = selectionState, value = "light")
+                        GlasenseCheckbox(
+                            state = selectionState,
+                            value = "light",
+                            enabled = !isAutomatic
+                        )
                     }
                     Spacer(modifier = Modifier.width(72.dp))
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -139,7 +126,11 @@ fun ColorModeSelector(
                             lineHeight = 16.sp
                         )
                         Spacer(modifier = Modifier.height(8.dp))
-                        GlasenseCheckbox(state = selectionState, value = "dark")
+                        GlasenseCheckbox(
+                            state = selectionState,
+                            value = "dark",
+                            enabled = !isAutomatic
+                        )
                     }
                 }
             }

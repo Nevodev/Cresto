@@ -61,6 +61,7 @@ import com.nevoit.cresto.data.todo.TodoViewModel
 import com.nevoit.cresto.theme.AppButtonColors
 import com.nevoit.cresto.theme.AppColors
 import com.nevoit.cresto.theme.AppSpecs
+import com.nevoit.cresto.theme.harmonize
 import com.nevoit.cresto.ui.components.glasense.DialogItemData
 import com.nevoit.cresto.ui.components.glasense.DialogState
 import com.nevoit.cresto.ui.components.glasense.GlasenseButton
@@ -460,7 +461,7 @@ fun DataStorageScreen() {
             // Header item for the Data & Storage section
             item {
                 ConfigInfoHeader(
-                    color = Slate500,
+                    color = harmonize(Slate500),
                     backgroundColor = hierarchicalSurfaceColor,
                     icon = painterResource(R.drawable.ic_twotone_storage),
                     title = stringResource(R.string.data_storage),
@@ -698,8 +699,8 @@ private fun StorageChart(appSize: Long, dataSize: Long, cacheSize: Long) {
     var totalWidth by remember { mutableStateOf(0.dp) }
 
     val appColor = AppColors.primary
-    val dataColor = Amber400
-    val cacheColor = Emerald400
+    val dataColor = harmonize(Amber400)
+    val cacheColor = harmonize(Emerald400)
 
     val hierarchicalSurfaceColor = AppColors.cardBackground
 

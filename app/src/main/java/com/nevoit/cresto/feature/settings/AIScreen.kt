@@ -30,6 +30,7 @@ import androidx.compose.ui.unit.dp
 import com.nevoit.cresto.R
 import com.nevoit.cresto.theme.AppButtonColors
 import com.nevoit.cresto.theme.AppColors
+import com.nevoit.cresto.theme.harmonize
 import com.nevoit.cresto.ui.components.glasense.GlasenseButton
 import com.nevoit.cresto.ui.components.glasense.GlasenseDynamicSmallTitle
 import com.nevoit.cresto.ui.components.glasense.GlasenseSwitch
@@ -78,10 +79,6 @@ fun AIScreen() {
     // Determine if the small title should be visible based on the scroll position
     val isSmallTitleVisible by lazyListState.isScrolledPast(statusBarHeight + 24.dp)
 
-    // Get the pixel value for 1dp, used for drawing divider lines
-    val dp = with(density) {
-        1.dp.toPx()
-    }
 
     // Root container for the screen, filling the entire available space
     Box(
@@ -105,10 +102,10 @@ fun AIScreen() {
                 ConfigInfoHeader(
                     brush = sweepGradient(
                         colorStops = arrayOf(
-                            0f to Pink400,
-                            0.33f to Purple500,
-                            0.66f to Blue500,
-                            1f to Pink400
+                            0f to harmonize(Pink400),
+                            0.33f to harmonize(Purple500),
+                            0.66f to harmonize(Blue500),
+                            1f to harmonize(Pink400)
                         )
                     ),
                     backgroundColor = hierarchicalSurfaceColor,

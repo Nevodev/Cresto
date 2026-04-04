@@ -30,6 +30,7 @@ import androidx.compose.ui.unit.sp
 import com.nevoit.cresto.R
 import com.nevoit.cresto.theme.AppButtonColors
 import com.nevoit.cresto.theme.AppColors
+import com.nevoit.cresto.theme.harmonize
 import com.nevoit.cresto.ui.components.glasense.GlasenseButton
 import com.nevoit.cresto.ui.components.glasense.GlasenseDynamicSmallTitle
 import com.nevoit.cresto.ui.components.glasense.GlasenseSwitch
@@ -87,7 +88,7 @@ fun GeneralScreen() {
             }
             item {
                 ConfigInfoHeader(
-                    color = Slate500,
+                    color = harmonize(Slate500),
                     backgroundColor = AppColors.cardBackground,
                     icon = painterResource(R.drawable.ic_twotone_gear),
                     title = stringResource(R.string.general),
