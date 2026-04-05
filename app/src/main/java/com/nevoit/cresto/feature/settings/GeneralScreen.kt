@@ -98,7 +98,7 @@ fun GeneralScreen(settingsViewModel: SettingsViewModel = viewModel()) {
                     title = stringResource(R.string.general),
                     info = stringResource(R.string.manage_startup_behavior_todo_marking_and_advanced_shortcuts)
                 )
-                Spacer(modifier = Modifier.height(12.dp))
+                VGap()
             }
             item {
                 ConfigItemContainer(
@@ -134,7 +134,7 @@ fun GeneralScreen(settingsViewModel: SettingsViewModel = viewModel()) {
                         }
                     }
                 }
-                Spacer(modifier = Modifier.height(12.dp))
+                VGap()
             }
             item {
                 ConfigItemContainer(
@@ -159,7 +159,7 @@ fun GeneralScreen(settingsViewModel: SettingsViewModel = viewModel()) {
                     modifier = Modifier.padding(horizontal = 12.dp),
                     color = AppColors.contentVariant.copy(alpha = .3f)
                 )
-                Spacer(modifier = Modifier.height(12.dp))
+                VGap()
             }
             item {
                 ConfigItemContainer(
@@ -183,7 +183,7 @@ fun GeneralScreen(settingsViewModel: SettingsViewModel = viewModel()) {
                     modifier = Modifier.padding(horizontal = 12.dp),
                     color = AppColors.contentVariant.copy(alpha = .3f)
                 )
-                Spacer(modifier = Modifier.height(12.dp))
+                VGap()
             }
             item {
                 ConfigItemContainer(
@@ -207,7 +207,7 @@ fun GeneralScreen(settingsViewModel: SettingsViewModel = viewModel()) {
                     modifier = Modifier.padding(horizontal = 12.dp),
                     color = AppColors.contentVariant.copy(alpha = .3f)
                 )
-                Spacer(modifier = Modifier.height(12.dp))
+                VGap()
             }
             item {
                 ConfigItemContainer(

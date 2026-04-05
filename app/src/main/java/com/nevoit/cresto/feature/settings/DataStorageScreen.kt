@@ -468,7 +468,7 @@ fun DataStorageScreen() {
                     enableGlow = false,
                     info = stringResource(R.string.manage_your_application_s_storage_footprint)
                 )
-                Spacer(modifier = Modifier.height(12.dp))
+                VGap()
             }
 
             // Item to display storage usage details
@@ -532,7 +532,7 @@ fun DataStorageScreen() {
                         }
                     }
                 }
-                Spacer(modifier = Modifier.height(12.dp))
+                VGap()
             }
             // Item containing database import/export options
             item {
@@ -568,7 +568,7 @@ fun DataStorageScreen() {
                         }
                     }
                 }
-                Spacer(modifier = Modifier.height(12.dp))
+                VGap()
             }
             // Item containing data reset and clearing options
             item {
@@ -758,7 +758,7 @@ private fun StorageChart(appSize: Long, dataSize: Long, cacheSize: Long) {
                 )
             }
         }
-        Spacer(modifier = Modifier.height(12.dp))
+        VGap()
         // Legend
         Row(
             modifier = Modifier.fillMaxWidth(),

@@ -2,7 +2,6 @@
 agp = "9.1.0"
 backdrop = "1.0.6"
 shapes = "1.2.0"
-generativeai = "0.9.0"
 haze = "1.7.2"
 kotlin = "2.3.20"
 coreKtx = "1.18.0"
@@ -59,7 +58,6 @@ kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serializa
 
 backdrop = { module = "io.github.kyant0:backdrop", version.ref = "backdrop" }
 shapes = { module = "io.github.kyant0:shapes", version.ref = "shapes" }
-generativeai = { module = "com.google.ai.client.generativeai:generativeai", version.ref = "generativeai" }
 haze = { module = "dev.chrisbanes.haze:haze", version.ref = "haze" }
 mmkv = { module = "com.tencent:mmkv", version.ref = "mmkv" }
 confetti-kit = { module = "io.github.vinceglb:confettikit", version.ref = "confettiKit" }

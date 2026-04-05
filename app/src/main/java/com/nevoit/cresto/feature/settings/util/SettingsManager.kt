@@ -27,6 +27,12 @@ object SettingsManager {
     private const val KEY_THEME_PRIMARY_COLOR = "theme_primary_color"
     private const val KEY_DUE_TODAY_MARKER = "due_today_marker_enabled"
     private const val KEY_OVERDUE_MARKER = "overdue_marker_enabled"
+    private const val KEY_AI_API_URL = "ai_api_url"
+    private const val KEY_AI_API_KEY = "ai_api_key"
+    private const val KEY_AI_TEXT_MODEL = "ai_text_model"
+    private const val KEY_AI_MULTIMODAL_MODEL = "ai_multimodal_model"
+    private const val DEFAULT_AI_API_URL = "https://open.bigmodel.cn/api/paas/v4/chat/completions"
+    private const val DEFAULT_AI_MODEL = "glm-4-flash"
 
     private val defaultThemePrimaryColor = Blue500.toArgb()
 
@@ -48,6 +54,11 @@ object SettingsManager {
         mutableIntStateOf(mmkv.decodeInt(KEY_THEME_PRIMARY_COLOR, defaultThemePrimaryColor))
     val isDueTodayMarkerState = mutableStateOf(mmkv.decodeBool(KEY_DUE_TODAY_MARKER, true))
     val isOverdueMarkerState = mutableStateOf(mmkv.decodeBool(KEY_OVERDUE_MARKER, true))
+    val aiApiUrlState = mutableStateOf(resolveAiApiUrl(mmkv.decodeString(KEY_AI_API_URL, DEFAULT_AI_API_URL)))
+    val aiApiKeyState = mutableStateOf(mmkv.decodeString(KEY_AI_API_KEY, "") ?: "")
+    val aiTextModelState = mutableStateOf(mmkv.decodeString(KEY_AI_TEXT_MODEL, DEFAULT_AI_MODEL) ?: DEFAULT_AI_MODEL)
+    val aiMultimodalModelState =
+        mutableStateOf(mmkv.decodeString(KEY_AI_MULTIMODAL_MODEL, DEFAULT_AI_MODEL) ?: DEFAULT_AI_MODEL)
 
     var isCustomPrimaryColorEnabled: Boolean
         get() = mmkv.decodeBool(KEY_CUSTOM_PRIMARY_COLOR_ENABLED, false)
@@ -130,6 +141,45 @@ object SettingsManager {
             mmkv.encode(KEY_OVERDUE_MARKER, value)
             isOverdueMarkerState.value = value
         }
+
+    var aiApiUrl: String
+        get() = resolveAiApiUrl(mmkv.decodeString(KEY_AI_API_URL, DEFAULT_AI_API_URL))
+        set(value) {
+            mmkv.encode(KEY_AI_API_URL, value)
+            aiApiUrlState.value = value
+        }
+
+    private fun resolveAiApiUrl(rawValue: String?): String {
+        return rawValue?.trim().takeUnless { it.isNullOrEmpty() } ?: DEFAULT_AI_API_URL
+    }
+
+    var aiApiKey: String
+        get() = mmkv.decodeString(KEY_AI_API_KEY, "") ?: ""
+        set(value) {
+            mmkv.encode(KEY_AI_API_KEY, value)
+            aiApiKeyState.value = value
+        }
+
+    var aiTextModel: String
+        get() = mmkv.decodeString(KEY_AI_TEXT_MODEL, DEFAULT_AI_MODEL) ?: DEFAULT_AI_MODEL
+        set(value) {
+            mmkv.encode(KEY_AI_TEXT_MODEL, value)
+            aiTextModelState.value = value
+        }
+
+    var aiMultimodalModel: String
+        get() = mmkv.decodeString(KEY_AI_MULTIMODAL_MODEL, DEFAULT_AI_MODEL) ?: DEFAULT_AI_MODEL
+        set(value) {
+            mmkv.encode(KEY_AI_MULTIMODAL_MODEL, value)
+            aiMultimodalModelState.value = value
+        }
+
+    fun resetAiSettingsToDefaults() {
+        aiApiUrl = DEFAULT_AI_API_URL
+        aiApiKey = ""
+        aiTextModel = DEFAULT_AI_MODEL
+        aiMultimodalModel = DEFAULT_AI_MODEL
+    }
 }
 
 enum class SortOption {

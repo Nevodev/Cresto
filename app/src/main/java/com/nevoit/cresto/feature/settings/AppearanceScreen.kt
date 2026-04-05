@@ -203,7 +203,7 @@ fun AppearanceScreen(settingsViewModel: SettingsViewModel = viewModel()) {
                     title = stringResource(R.string.appearance),
                     info = stringResource(R.string.craft_your_unique_style_with_a_few_adorable_tweaks)
                 )
-                Spacer(modifier = Modifier.height(12.dp))
+                VGap()
             }
             // Item for selecting the color mode (light/dark/system)
             item {
@@ -212,7 +212,7 @@ fun AppearanceScreen(settingsViewModel: SettingsViewModel = viewModel()) {
                     onChange = { settingsViewModel.colorMode(it) },
                     currentMode = currentMode
                 )
-                Spacer(modifier = Modifier.height(12.dp))
+                VGap()
             }
             // Item container for color-related settings
             item {
@@ -280,7 +280,7 @@ fun AppearanceScreen(settingsViewModel: SettingsViewModel = viewModel()) {
                     modifier = Modifier.padding(horizontal = 12.dp),
                     color = AppColors.contentVariant.copy(alpha = .3f)
                 )
-                Spacer(modifier = Modifier.height(12.dp))
+                VGap()
             }
             // Item container for design-related settings
             item {

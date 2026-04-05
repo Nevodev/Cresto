@@ -30,6 +30,7 @@ import com.nevoit.cresto.ui.components.packed.AboutEntryItem
 import com.nevoit.cresto.ui.components.packed.ConfigContainer
 import com.nevoit.cresto.ui.components.packed.ConfigEntryItem
 import com.nevoit.cresto.ui.components.packed.PageContent
+import com.nevoit.cresto.ui.components.packed.VGap
 import com.nevoit.glasense.theme.Blue500
 import com.nevoit.glasense.theme.Pink400
 import com.nevoit.glasense.theme.Purple500
@@ -88,7 +89,7 @@ fun BoxScope.SettingsScreen() {
                     )
                 }
             }
-            Spacer(modifier = Modifier.height(12.dp))
+            VGap()
         }
         item {
             ConfigContainer(backgroundColor = hierarchicalSurfaceColor) {
@@ -136,7 +137,7 @@ fun BoxScope.SettingsScreen() {
                     )
                 }
             }
-            Spacer(modifier = Modifier.height(12.dp))
+            VGap()
         }
         item {
             ConfigContainer(backgroundColor = hierarchicalSurfaceColor) {
@@ -149,7 +150,7 @@ fun BoxScope.SettingsScreen() {
                     }
                 )
             }
-            Spacer(modifier = Modifier.height(12.dp))
+            VGap()
         }
         item {
             ConfigContainer(backgroundColor = hierarchicalSurfaceColor) {

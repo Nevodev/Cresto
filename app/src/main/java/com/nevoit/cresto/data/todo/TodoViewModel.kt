@@ -18,9 +18,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import java.time.LocalDate
 import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
 
 data class BottomSheetUiState(
     val isVisible: Boolean = false
@@ -225,16 +223,7 @@ class TodoViewModel(private val repository: TodoRepository) : ViewModel() {
     fun insertAiGeneratedTodos(aiItems: List<EventItem>) {
         viewModelScope.launch {
             try {
-                val todoItemsToInsert = aiItems.map { eventItem ->
-                    TodoItem(
-                        title = eventItem.title,
-                        dueDate = LocalDate.parse(eventItem.date, DateTimeFormatter.ISO_LOCAL_DATE)
-                    )
-                }
-
-                if (todoItemsToInsert.isNotEmpty()) {
-                    repository.insertAll(todoItemsToInsert)
-                }
+                repository.insertAiGeneratedTodosWithSubTasks(aiItems)
 
             } catch (e: Exception) {
                 println("Error inserting AI-generated todos: ${e.message}")

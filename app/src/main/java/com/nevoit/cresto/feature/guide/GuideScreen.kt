@@ -83,6 +83,7 @@ import com.nevoit.cresto.ui.components.CustomAnimatedVisibility
 import com.nevoit.cresto.ui.components.glasense.GlasenseButtonAlt
 import com.nevoit.cresto.ui.components.glasense.glasenseHighlight
 import com.nevoit.cresto.ui.components.glasense.isScrolledPast
+import com.nevoit.cresto.ui.components.packed.VGap
 import com.nevoit.glasense.theme.Blue500
 import com.nevoit.glasense.theme.Indigo500
 import com.nevoit.glasense.theme.Pink400
@@ -558,7 +559,7 @@ fun InformationPage() {
                 }
             }
         }
-        item { Spacer(modifier = Modifier.height(12.dp)) }
+        item { VGap() }
         item {
             Row(
                 modifier = Modifier
@@ -617,7 +618,7 @@ fun InformationPage() {
                 }
             }
         }
-        item { Spacer(modifier = Modifier.height(12.dp)) }
+        item { VGap() }
         item {
             Row(
                 modifier = Modifier

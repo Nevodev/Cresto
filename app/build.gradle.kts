@@ -110,7 +110,6 @@ dependencies {
     implementation(libs.haze)
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.lifecycle.runtime.compose)
-    implementation(libs.generativeai)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.mmkv)
     implementation(libs.shapes)

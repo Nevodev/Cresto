@@ -11,5 +11,6 @@ data class EventResponse(
 @Serializable
 data class EventItem(
     val title: String,
-    val date: String
+    val date: String,
+    val subTasks: List<String> = emptyList()
 )

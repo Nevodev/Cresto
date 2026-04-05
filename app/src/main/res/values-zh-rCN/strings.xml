@@ -56,6 +56,12 @@
     <string name="enable_extract_screen_quick_toggle">启用“提取屏幕”快捷开关</string>
     <string name="add_a_quick_toggle_to_control_center_for_one_tap_ai_screen_extraction_shizuku_required">可在控制中心添加快捷开关，通过 AI 一键提取屏幕上的待办事项。此功能需要 Shizuku 权限。</string>
     <string name="boost_your_experience_with_intelligent_cresto_function_calling">利用Cresto智能调用，提升体验。</string>
+    <string name="text_processing_model">文本处理模型</string>
+    <string name="multimodal_model">多模态模型</string>
+    <string name="model">模型</string>
+    <string name="save">保存</string>
+    <string name="save_settings">保存设置</string>
+    <string name="saved">已保存</string>
     <string name="test">测试</string>
     <string name="input">输入</string>
     <string name="response">回应</string>

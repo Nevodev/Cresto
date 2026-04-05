@@ -9,7 +9,6 @@ import androidx.compose.animation.core.spring
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.height
@@ -49,6 +48,7 @@ import com.nevoit.cresto.ui.components.glasense.extend.overscrollSpacer
 import com.nevoit.cresto.ui.components.glasense.isScrolledPast
 import com.nevoit.cresto.ui.components.glasense.rememberSwipeableListState
 import com.nevoit.cresto.ui.components.packed.PageContent
+import com.nevoit.cresto.ui.components.packed.VGap
 import dev.chrisbanes.haze.ExperimentalHazeApi
 import dev.chrisbanes.haze.hazeSource
 import dev.chrisbanes.haze.rememberHazeState
@@ -262,7 +262,7 @@ fun BoxScope.HomeScreen(
             )
 
             if (completeTodos.isNotEmpty() || index != incompleteTodos.lastIndex) {
-                Spacer(modifier = Modifier.height(12.dp))
+                VGap()
             }
         }
 
@@ -303,7 +303,7 @@ fun BoxScope.HomeScreen(
                     )
 
                     if (index != completeTodos.lastIndex) {
-                        Spacer(modifier = Modifier.height(12.dp))
+                        VGap()
                     }
                 }
             }

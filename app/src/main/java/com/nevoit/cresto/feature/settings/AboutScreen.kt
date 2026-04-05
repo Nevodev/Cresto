@@ -164,7 +164,7 @@ fun AboutScreen() {
                 ) {
 
                 }
-                Spacer(modifier = Modifier.height(12.dp))
+                VGap()
             }
             // Item container for displaying developer information
             item {
@@ -339,7 +339,7 @@ fun AboutScreen() {
                         }
                     }
                 }
-                Spacer(modifier = Modifier.height(12.dp))
+                VGap()
             }
             // Item for displaying version information
             item {

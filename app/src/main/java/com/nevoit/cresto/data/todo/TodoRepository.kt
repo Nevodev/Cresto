@@ -7,6 +7,7 @@ import com.nevoit.cresto.data.todo.backup.TodoBackupDto
 import com.nevoit.cresto.data.todo.backup.TodoBackupFile
 import kotlinx.coroutines.flow.Flow
 import kotlinx.serialization.json.Json
+import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
@@ -56,6 +57,36 @@ class TodoRepository(
 
     suspend fun insertSubTodo(item: SubTodoItem) {
         todoDao.insertSubTodo(item)
+    }
+
+    suspend fun insertAiGeneratedTodosWithSubTasks(aiItems: List<com.nevoit.cresto.data.utils.EventItem>) {
+        if (aiItems.isEmpty()) return
+
+        todoDatabase.withTransaction {
+            aiItems.forEach { eventItem ->
+                val parentId = todoDao.insertTodoForImport(
+                    TodoItem(
+                        title = eventItem.title,
+                        dueDate = LocalDate.parse(eventItem.date, DateTimeFormatter.ISO_LOCAL_DATE)
+                    )
+                ).toInt()
+
+                val subTodos = eventItem.subTasks
+                    .map(String::trim)
+                    .filter(String::isNotEmpty)
+                    .distinct()
+                    .map { subTitle ->
+                        SubTodoItem(
+                            parentId = parentId,
+                            description = subTitle
+                        )
+                    }
+
+                subTodos.forEach { subTodo ->
+                    todoDao.insertSubTodoForImport(subTodo)
+                }
+            }
+        }
     }
 
     suspend fun updateSubTodo(item: SubTodoItem) {

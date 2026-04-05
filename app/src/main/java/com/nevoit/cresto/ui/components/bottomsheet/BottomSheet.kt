@@ -1,5 +1,10 @@
 package com.nevoit.cresto.ui.components.bottomsheet
 
+import android.content.Context
+import android.net.Uri
+import android.util.Base64
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.CubicBezierEasing
@@ -54,6 +59,7 @@ import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -67,7 +73,6 @@ import com.kyant.backdrop.effects.colorControls
 import com.kyant.shapes.Capsule
 import com.nevoit.cresto.R
 import com.nevoit.cresto.data.todo.TodoViewModel
-import com.nevoit.cresto.secrets.ApiKey
 import com.nevoit.cresto.theme.AppButtonColors
 import com.nevoit.cresto.theme.AppColors
 import com.nevoit.cresto.theme.defaultEnterTransition
@@ -91,6 +96,8 @@ import com.nevoit.cresto.ui.viewmodel.UiState
 import com.nevoit.cresto.util.deviceCornerShape
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.koin.androidx.compose.koinViewModel
 import java.time.LocalDate
 
@@ -122,6 +129,7 @@ fun BottomSheet(
     val scope = rememberCoroutineScope()
 
     val density = LocalDensity.current
+    val context = LocalContext.current
 
     val keyboardController = LocalSoftwareKeyboardController.current
 
@@ -156,11 +164,28 @@ fun BottomSheet(
         )
     )
     val isLoading = uiState is UiState.Loading
-    val apikey = ApiKey
-
     val errorTitle = stringResource(R.string.error)
 
     val imeHeight = WindowInsets.ime.exclude(WindowInsets.navigationBars).getBottom(density)
+
+    val imagePickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        if (uri == null) return@rememberLauncherForActivityResult
+
+        scope.launch {
+            val imageDataUrl = withContext(Dispatchers.IO) {
+                uri.toImageDataUrl(context)
+            }
+
+            if (imageDataUrl.isBlank()) {
+                showDialog(errorDialogItems, errorTitle, "图片读取失败，请重试")
+                return@launch
+            }
+
+            aiViewModel.generateContentFromImage(imageDataUrl)
+        }
+    }
 
     LaunchedEffect(true) {
         aiViewModel.sideEffect.collect { effect ->
@@ -392,10 +417,7 @@ fun BottomSheet(
                                             .fillMaxWidth(),
                                         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                                         onKeyboardAction = {
-                                            aiViewModel.generateContent(
-                                                state.text.toString(),
-                                                apikey
-                                            )
+                                            aiViewModel.generateContent(state.text.toString())
                                         },
                                         textStyle = MaterialTheme.typography.bodyLarge.copy(
                                             color = AppColors.content
@@ -432,10 +454,7 @@ fun BottomSheet(
                                         enabled = true,
                                         shape = CircleShape,
                                         onClick = {
-                                            aiViewModel.generateContent(
-                                                state.text.toString(),
-                                                apikey
-                                            )
+                                            aiViewModel.generateContent(state.text.toString())
                                         },
                                         modifier = Modifier
                                             .width(40.dp)
@@ -465,7 +484,7 @@ fun BottomSheet(
                                     GlasenseButton(
                                         enabled = true,
                                         shape = CircleShape,
-                                        onClick = { },
+                                        onClick = { imagePickerLauncher.launch("image/*") },
                                         modifier = Modifier
                                             .width(40.dp)
                                             .height(40.dp)
@@ -591,4 +610,17 @@ fun BottomSheet(
             }
         }
     }
+}
+
+private fun Uri.toImageDataUrl(context: Context): String {
+    val resolver = context.contentResolver
+    val mime = resolver.getType(this) ?: "image/jpeg"
+    val bytes = resolver.openInputStream(this)?.use { it.readBytes() } ?: return ""
+
+    // Keep payload size bounded to reduce request failures on very large images.
+    val maxSizeBytes = 5 * 1024 * 1024
+    if (bytes.size > maxSizeBytes) return ""
+
+    val base64 = Base64.encodeToString(bytes, Base64.NO_WRAP)
+    return "data:$mime;base64,$base64"
 }

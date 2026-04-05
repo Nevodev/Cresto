@@ -98,6 +98,7 @@ import com.nevoit.cresto.ui.components.packed.PageContent
 import com.nevoit.cresto.ui.components.packed.SubTodoItemRowAdd
 import com.nevoit.cresto.ui.components.packed.SwipeableSubTodoItemRowEditable
 import com.nevoit.cresto.ui.components.packed.TodoItemRowEditable
+import com.nevoit.cresto.ui.components.packed.VGap
 import com.nevoit.cresto.util.formatRelativeTime
 import com.nevoit.glasense.component.GlasenseActivityIndicator
 import com.nevoit.glasense.overscroll.rememberOffsetOverscrollFactory
@@ -282,7 +283,7 @@ fun DetailScreen(
                             title = string
                         }
                     )
-                    Spacer(modifier = Modifier.height(12.dp))
+                    VGap()
                 }
                 item(key = "controls") {
                     CompositionLocalProvider(
@@ -463,7 +464,7 @@ fun DetailScreen(
                     }
                 }
                 item(key = "small_title") {
-                    Spacer(modifier = Modifier.height(12.dp))
+                    VGap()
                     Text(
                         text = stringResource(R.string.task),
                         fontSize = 14.sp,
@@ -504,7 +505,7 @@ fun DetailScreen(
                             }
                         },
                     )
-                    Spacer(modifier = Modifier.height(12.dp))
+                    VGap()
                 }
                 item(key = "add") {
                     SubTodoItemRowAdd(
