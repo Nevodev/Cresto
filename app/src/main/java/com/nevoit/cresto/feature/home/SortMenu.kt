@@ -22,7 +22,7 @@ fun rememberSortMenuItems(): List<GlasenseMenuItem> {
     val descText = stringResource(R.string.descending)
 
     val rankIcon = painterResource(R.drawable.ic_rank)
-    val calendarAltIcon = painterResource(R.drawable.ic_calendar_alt)
+    val calendarAltIcon = painterResource(R.drawable.ic_calendar)
     val flagIcon = painterResource(R.drawable.ic_flag)
     val characterIcon = painterResource(R.drawable.ic_character)
     val ascIcon = painterResource(R.drawable.ic_chevron_up)

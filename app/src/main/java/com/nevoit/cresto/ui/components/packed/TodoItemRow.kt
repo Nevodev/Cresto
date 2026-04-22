@@ -184,7 +184,7 @@ fun TodoItemRow(
                             AppColors.content.copy(.4f)
                         }
                         Icon(
-                            painter = painterResource(R.drawable.ic_calendar_alt),
+                            painter = painterResource(R.drawable.ic_calendar),
                             contentDescription = null,
                             tint = color,
                             modifier = Modifier
