@@ -87,7 +87,7 @@ fun AddTodoSheet(
     // Focus requester to programmatically request focus for the text field.
     val focusRequester = remember { FocusRequester() }
     var selectedIndex by remember { mutableIntStateOf(0) }
-    var finalDate by remember { mutableStateOf<LocalDate?>(null) }
+    var finalDate by remember { mutableStateOf<LocalDate?>(LocalDate.now()) }
 
     val keyboardController = LocalSoftwareKeyboardController.current
 
@@ -260,9 +260,18 @@ fun AddTodoSheet(
                                 exit = defaultExitTransition
                             ) {
                                 Icon(
-                                    painter = painterResource(id = R.drawable.ic_calendar),
+                                    painter = if (finalDate != null) {
+                                        painterResource(id = R.drawable.ic_calendar_clock)
+                                    } else {
+                                        painterResource(id = R.drawable.ic_calendar)
+                                    },
                                     contentDescription = stringResource(R.string.due_date),
-                                    modifier = Modifier.width(28.dp)
+                                    modifier = Modifier.width(28.dp),
+                                    tint = if (finalDate != null) {
+                                        AppColors.primary
+                                    } else {
+                                        AppColors.content.copy(alpha = 0.5F)
+                                    }
                                 )
                             }
                             // Animated visibility for the date picker.
