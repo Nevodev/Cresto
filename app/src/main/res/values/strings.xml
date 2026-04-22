@@ -36,7 +36,7 @@
     <string name="manage_startup_behavior_todo_marking_and_advanced_shortcuts">Manage startup behavior, todo markers, and advanced shortcuts.</string>
     <string name="general_section_title">General</string>
     <string name="check_for_updates_on_startup">Check for Updates on Startup</string>
-    <string name="completion_sound">Completion Sound</string>
+    <string name="completion_sound">Play Sound on Completing Todo</string>
     <string name="language">Language</string>
     <string name="chinese">Chinese</string>
     <string name="todos">Todos</string>

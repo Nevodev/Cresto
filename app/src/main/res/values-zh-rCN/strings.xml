@@ -41,7 +41,7 @@
     <string name="manage_startup_behavior_todo_marking_and_advanced_shortcuts">管理启动行为、待办标记与高级快捷功能。</string>
     <string name="general_section_title">通用</string>
     <string name="check_for_updates_on_startup">启动时检查更新</string>
-    <string name="completion_sound">完成提示音</string>
+    <string name="completion_sound">完成待办事项时播放提示音</string>
     <string name="language">语言</string>
     <string name="chinese">中文</string>
     <string name="todos">待办事项</string>
