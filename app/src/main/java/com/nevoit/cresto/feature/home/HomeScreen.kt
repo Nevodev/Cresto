@@ -2,6 +2,7 @@ package com.nevoit.cresto.feature.home
 
 import android.app.Activity
 import android.content.Intent
+import android.os.SystemClock
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -18,9 +19,11 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -67,6 +70,13 @@ fun BoxScope.HomeScreen(
     val settingsViewModel: SettingsViewModel = viewModel()
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
+    val completionSoundPlayer = remember(context) { HomeCompletionSoundPlayer(context) }
+    var lastCompletionSoundAtMs by remember { mutableLongStateOf(0L) }
+    val completionSoundThrottleMs = 200L
+
+    DisposableEffect(completionSoundPlayer) {
+        onDispose { completionSoundPlayer.release() }
+    }
 
     val allTodos by viewModel.allTodos.collectAsStateWithLifecycle()
     val searchedTodos by viewModel.searchedTodos.collectAsStateWithLifecycle()
@@ -228,6 +238,16 @@ fun BoxScope.HomeScreen(
                 },
                 onCheckedChange = { checked ->
                     val todoId = item.todoItem.id
+                    val wasChecked = isChecked
+
+                    if (!wasChecked && checked) {
+                        val now = SystemClock.elapsedRealtime()
+                        if (now - lastCompletionSoundAtMs >= completionSoundThrottleMs) {
+                            completionSoundPlayer.playIfAllowed()
+                            lastCompletionSoundAtMs = now
+                        }
+                    }
+
                     if (checked && incompleteCount == 1) {
                         confettiTriggerPosition = latestCheckboxTapPosition
                         confettiHideJob?.cancel()

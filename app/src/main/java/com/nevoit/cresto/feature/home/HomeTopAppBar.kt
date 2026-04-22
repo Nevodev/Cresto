@@ -285,8 +285,8 @@ fun BoxScope.HomeTopAppBar(
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
-                                painter = painterResource(id = R.drawable.ic_funnel),
-                                contentDescription = stringResource(R.string.filter),
+                                painter = painterResource(id = R.drawable.ic_sort),
+                                contentDescription = stringResource(R.string.sort),
                                 modifier = Modifier.width(32.dp),
                                 tint = AppColors.primary
                             )

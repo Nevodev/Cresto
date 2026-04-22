@@ -27,6 +27,7 @@ object SettingsManager {
     private const val KEY_THEME_PRIMARY_COLOR = "theme_primary_color"
     private const val KEY_DUE_TODAY_MARKER = "due_today_marker_enabled"
     private const val KEY_OVERDUE_MARKER = "overdue_marker_enabled"
+    private const val KEY_COMPLETION_SOUND = "completion_sound_enabled"
     private const val KEY_AI_API_URL = "ai_api_url"
     private const val KEY_AI_API_KEY = "ai_api_key"
     private const val KEY_AI_TEXT_MODEL = "ai_text_model"
@@ -54,6 +55,7 @@ object SettingsManager {
         mutableIntStateOf(mmkv.decodeInt(KEY_THEME_PRIMARY_COLOR, defaultThemePrimaryColor))
     val isDueTodayMarkerState = mutableStateOf(mmkv.decodeBool(KEY_DUE_TODAY_MARKER, true))
     val isOverdueMarkerState = mutableStateOf(mmkv.decodeBool(KEY_OVERDUE_MARKER, true))
+    val isCompletionSoundEnabledState = mutableStateOf(mmkv.decodeBool(KEY_COMPLETION_SOUND, true))
     val aiApiUrlState = mutableStateOf(resolveAiApiUrl(mmkv.decodeString(KEY_AI_API_URL, DEFAULT_AI_API_URL)))
     val aiApiKeyState = mutableStateOf(mmkv.decodeString(KEY_AI_API_KEY, "") ?: "")
     val aiTextModelState = mutableStateOf(mmkv.decodeString(KEY_AI_TEXT_MODEL, DEFAULT_AI_MODEL) ?: DEFAULT_AI_MODEL)
@@ -140,6 +142,13 @@ object SettingsManager {
         set(value) {
             mmkv.encode(KEY_OVERDUE_MARKER, value)
             isOverdueMarkerState.value = value
+        }
+
+    var isCompletionSoundEnabled: Boolean
+        get() = mmkv.decodeBool(KEY_COMPLETION_SOUND, true)
+        set(value) {
+            mmkv.encode(KEY_COMPLETION_SOUND, value)
+            isCompletionSoundEnabledState.value = value
         }
 
     var aiApiUrl: String

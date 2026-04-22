@@ -190,4 +190,5 @@
     <string name="backup_import_completed">Import Completed</string>
     <string name="backup_import_result_message">Total %1$d items, imported %2$d, skipped %3$d.</string>
     <string name="confirm_action_title">%1$s?</string>
+    <string name="sort">Sort</string>
 </resources>

@@ -73,6 +73,7 @@ fun GeneralScreen(settingsViewModel: SettingsViewModel = viewModel()) {
     val isSmallTitleVisible by lazyListState.isScrolledPast(statusBarHeight + 24.dp)
     val isDueTodayMarkerEnabled by settingsViewModel.isDueTodayMarker
     val isOverdueMarkerEnabled by settingsViewModel.isOverdueMarker
+    val isCompletionSoundEnabled by settingsViewModel.isCompletionSoundEnabled
 
     // Root container for the screen, filling the entire available space
     Box(
@@ -118,8 +119,8 @@ fun GeneralScreen(settingsViewModel: SettingsViewModel = viewModel()) {
                         Spacer(modifier = Modifier.height(8.dp))
                         ConfigItem(title = stringResource(R.string.completion_sound)) {
                             GlasenseSwitch(
-                                checked = false,
-                                onCheckedChange = {},
+                                checked = isCompletionSoundEnabled,
+                                onCheckedChange = { settingsViewModel.onCompletionSoundChanged(it) },
                                 backgroundColor = AppColors.cardBackground
                             )
                         }

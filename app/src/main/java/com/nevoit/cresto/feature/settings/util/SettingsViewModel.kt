@@ -12,6 +12,7 @@ class SettingsViewModel : ViewModel() {
     val themePrimaryColor = SettingsManager.themePrimaryColorState
     val isDueTodayMarker = SettingsManager.isDueTodayMarkerState
     val isOverdueMarker = SettingsManager.isOverdueMarkerState
+    val isCompletionSoundEnabled = SettingsManager.isCompletionSoundEnabledState
 
     fun onCustomPrimaryColorChanged(isEnabled: Boolean) {
         SettingsManager.isCustomPrimaryColorEnabled = isEnabled
@@ -46,5 +47,9 @@ class SettingsViewModel : ViewModel() {
 
     fun onOverdueMarkerChanged(isEnabled: Boolean) {
         SettingsManager.isOverdueMarker = isEnabled
+    }
+
+    fun onCompletionSoundChanged(isEnabled: Boolean) {
+        SettingsManager.isCompletionSoundEnabled = isEnabled
     }
 }
