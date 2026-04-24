@@ -1,6 +1,9 @@
 package com.nevoit.cresto.ui.components.glasense
 
-import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.rememberSplineBasedDecay
+import androidx.compose.foundation.gestures.snapping.SnapLayoutInfoProvider
+import androidx.compose.foundation.gestures.snapping.snapFlingBehavior
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -20,6 +23,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.drawOutline
 import androidx.compose.ui.graphics.graphicsLayer
@@ -31,6 +35,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.times
+import com.kyant.shapes.Rectangle
 import com.nevoit.cresto.theme.AppColors
 import com.nevoit.cresto.theme.AppSpecs
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -47,6 +52,7 @@ fun GlasenseWheelPicker(
     textStyle: TextStyle = LocalTextStyle.current,
     onItemSelected: (Int) -> Unit
 ) {
+    val density = LocalDensity.current
     val hapticController = LocalHapticFeedback.current
     var hasEmittedInitialSelection by remember { mutableStateOf(false) }
     val visibleCount = if (visibleItemsCount % 2 == 0) visibleItemsCount + 1 else visibleItemsCount
@@ -58,8 +64,30 @@ fun GlasenseWheelPicker(
     }
 
     val listState = rememberLazyListState(initialFirstVisibleItemIndex = boundedCurrentSelected)
-    val flingBehavior = rememberSnapFlingBehavior(lazyListState = listState)
-    val density = LocalDensity.current
+
+    val snapLayoutInfoProvider = remember(listState) {
+        SnapLayoutInfoProvider(lazyListState = listState)
+    }
+
+    val decayAnimationSpec = rememberSplineBasedDecay<Float>()
+
+    val customSnapAnimationSpec = remember {
+        spring<Float>(stiffness = 200f)
+    }
+
+    val flingBehavior = remember(
+        snapLayoutInfoProvider,
+        decayAnimationSpec,
+        customSnapAnimationSpec
+    ) {
+        snapFlingBehavior(
+            snapLayoutInfoProvider = snapLayoutInfoProvider,
+            decayAnimationSpec = decayAnimationSpec,
+            snapAnimationSpec = customSnapAnimationSpec
+        )
+    }
+
+//    val flingBehavior = rememberSnapFlingBehavior(lazyListState = listState)
     val itemHeightPx = with(density) { itemHeight.toPx() }
     val maxRotationDeg = 90f
     val maxAngleRad = Math.toRadians(maxRotationDeg.toDouble()).toFloat()
@@ -124,6 +152,7 @@ fun GlasenseWheelPicker(
     Box(
         modifier = modifier
             .height(wheelContainerHeight)
+            .clip(Rectangle)
             .fillMaxWidth(),
         contentAlignment = Alignment.Center
     ) {

@@ -34,6 +34,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -139,7 +140,7 @@ fun AppearanceScreen(settingsViewModel: SettingsViewModel = viewModel()) {
     val currentThemePrimaryColor by settingsViewModel.themePrimaryColor
 
     var showColorPicker by remember { mutableStateOf(false) }
-    var pendingThemePrimaryColor by remember { mutableStateOf(currentThemePrimaryColor) }
+    var pendingThemePrimaryColor by remember { mutableIntStateOf(currentThemePrimaryColor) }
     var latestColorPickerTriggerBounds by remember { mutableStateOf<Rect?>(null) }
     var popupAnchorBounds by remember { mutableStateOf(Rect.Zero) }
 

@@ -54,10 +54,13 @@ import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.platform.LocalLocale
+import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -85,11 +88,16 @@ import com.nevoit.cresto.ui.components.glasense.GlasenseDialog
 import com.nevoit.cresto.ui.components.glasense.GlasenseDynamicSmallTitle
 import com.nevoit.cresto.ui.components.glasense.GlasenseMenu
 import com.nevoit.cresto.ui.components.glasense.GlasenseMenuItem
+import com.nevoit.cresto.ui.components.glasense.GlasensePopup
+import com.nevoit.cresto.ui.components.glasense.GlasenseWheelPicker
 import com.nevoit.cresto.ui.components.glasense.MenuState
+import com.nevoit.cresto.ui.components.glasense.PopupState
 import com.nevoit.cresto.ui.components.glasense.ZeroHeightDivider
 import com.nevoit.cresto.ui.components.glasense.extend.overscrollSpacer
+import com.nevoit.cresto.ui.components.glasense.glasenseHighlight
 import com.nevoit.cresto.ui.components.glasense.isScrolledPast
 import com.nevoit.cresto.ui.components.glasense.rememberSwipeableListState
+import com.nevoit.cresto.ui.components.packed.HGap
 import com.nevoit.cresto.ui.components.packed.PageContent
 import com.nevoit.cresto.ui.components.packed.SubTodoItemRowAdd
 import com.nevoit.cresto.ui.components.packed.SwipeableSubTodoItemRowEditable
@@ -103,7 +111,10 @@ import dev.chrisbanes.haze.rememberHazeState
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.time.LocalDate
+import java.time.Month
+import java.time.YearMonth
 import java.time.format.DateTimeFormatter
+import java.time.format.TextStyle
 
 @OptIn(ExperimentalHazeApi::class, ExperimentalLayoutApi::class)
 @Composable
@@ -201,6 +212,8 @@ fun DetailScreen(
     }
     var moreButtonBounds by remember { mutableStateOf<LayoutCoordinates?>(null) }
     var flagButtonBounds by remember { mutableStateOf<LayoutCoordinates?>(null) }
+    var dateButtonBounds by remember { mutableStateOf(Rect.Zero) }
+    var isDatePickerVisible by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         while (true) {
@@ -318,6 +331,9 @@ fun DetailScreen(
                                 Spacer(modifier = Modifier.weight(1f))
                                 Box(
                                     modifier = Modifier
+                                        .onGloballyPositioned { coordinates ->
+                                            dateButtonBounds = coordinates.boundsInWindow()
+                                        }
                                         .align(Alignment.CenterVertically)
                                         .wrapContentSize()
                                         .clip(Capsule())
@@ -328,7 +344,7 @@ fun DetailScreen(
                                             interactionSource = remember { MutableInteractionSource() },
                                             indication = DimIndication()
                                         ) {
-
+                                            isDatePickerVisible = true
                                         }
                                 ) {
                                     Text(
@@ -634,6 +650,137 @@ fun DetailScreen(
         backdrop = backdrop,
         onDismiss = dismissMenu
     )
+    var selectedYear by remember { mutableIntStateOf(LocalDate.now().year) }
+    var selectedMonth by remember { mutableIntStateOf(LocalDate.now().monthValue) }
+    var selectedDay by remember { mutableIntStateOf(LocalDate.now().dayOfMonth) }
+
+    LaunchedEffect(isDatePickerVisible) {
+        if (isDatePickerVisible) {
+            val date = finalDate ?: LocalDate.now()
+            selectedYear = date.year
+            selectedMonth = date.monthValue
+            selectedDay = date.dayOfMonth
+        }
+    }
+
+    val currentYear = LocalDate.now().year
+    val yearOptions = remember(currentYear) {
+        (currentYear - 1..currentYear + 20).map { it.toString() }
+    }
+    val locale = LocalLocale.current.platformLocale
+    val monthOptions = remember(locale) {
+        (1..12).map { month ->
+            Month.of(month).getDisplayName(TextStyle.FULL, locale)
+        }
+    }
+
+    val daysInMonth = remember(selectedYear, selectedMonth) {
+        YearMonth.of(selectedYear, selectedMonth).lengthOfMonth()
+    }
+
+    val dayOptions = remember(daysInMonth) {
+        (1..daysInMonth).map { it.toString() }
+    }
+
+    LaunchedEffect(daysInMonth) {
+        if (selectedDay > daysInMonth) {
+            selectedDay = daysInMonth
+        }
+    }
+
+    GlasensePopup(
+        popupState = PopupState(
+            isVisible = isDatePickerVisible,
+            anchorBounds = dateButtonBounds
+        ),
+        onDismiss = {
+            isDatePickerVisible = false
+        },
+        width = LocalWindowInfo.current.containerDpSize.width - 24.dp,
+        popupMargin = 12.dp,
+        anchorGap = 12.dp,
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            GlasenseButton(
+                enabled = true,
+                shape = CircleShape,
+                onClick = {
+                    isDatePickerVisible = false
+                },
+                modifier = Modifier
+                    .width(48.dp)
+                    .height(48.dp),
+                colors = AppButtonColors.secondary(),
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_cross),
+                    contentDescription = stringResource(R.string.cancel),
+                    modifier = Modifier.width(28.dp)
+                )
+            }
+            Text(
+                text = "选择截止日期",
+                modifier = Modifier.weight(1f),
+                textAlign = TextAlign.Center,
+                style = MaterialTheme.typography.headlineSmall
+            )
+            GlasenseButton(
+                enabled = true,
+                shape = CircleShape,
+                onClick = {
+                    finalDate = LocalDate.of(selectedYear, selectedMonth, selectedDay)
+                    isDatePickerVisible = false
+                },
+                modifier = Modifier
+                    .width(48.dp)
+                    .height(48.dp),
+                colors = AppButtonColors.primary()
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .glasenseHighlight(48.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_checkmark),
+                        contentDescription = stringResource(R.string.done),
+                        modifier = Modifier.width(28.dp)
+                    )
+                }
+            }
+        }
+        Row {
+            GlasenseWheelPicker(
+                modifier = Modifier.weight(1f),
+                items = yearOptions,
+                currentSelected = (selectedYear - (currentYear - 1)).coerceAtLeast(0)
+            ) { index ->
+                selectedYear = index + (currentYear - 1)
+            }
+            HGap()
+            // 月份选择：index 0 对应 1月
+            GlasenseWheelPicker(
+                modifier = Modifier.weight(1f),
+                items = monthOptions,
+                currentSelected = (selectedMonth - 1).coerceAtLeast(0)
+            ) { index ->
+                selectedMonth = index + 1
+            }
+            HGap()
+            // 天数选择：index 0 对应 1号
+            GlasenseWheelPicker(
+                modifier = Modifier.weight(1f),
+                items = dayOptions,
+                currentSelected = (selectedDay - 1).coerceAtLeast(0)
+            ) { index ->
+                selectedDay = index + 1
+            }
+        }
+    }
 }
 
 @Composable
