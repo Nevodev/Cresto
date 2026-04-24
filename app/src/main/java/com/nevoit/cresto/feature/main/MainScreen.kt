@@ -34,13 +34,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.BlurEffect
 import androidx.compose.ui.graphics.TileMode
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.layout.positionInWindow
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
@@ -112,9 +113,9 @@ fun MainScreen() {
 
     var menuState by remember { mutableStateOf(MenuState()) }
 
-    val showMenu: (anchorPosition: Offset, items: List<GlasenseMenuItem>) -> Unit =
-        { position, items ->
-            menuState = MenuState(isVisible = true, anchorPosition = position, items = items)
+    val showMenu: (anchorBounds: Rect, items: List<GlasenseMenuItem>) -> Unit =
+        { bounds, items ->
+            menuState = MenuState(isVisible = true, anchorBounds = bounds, items = items)
         }
 
     val dismissMenu = {
@@ -309,12 +310,8 @@ fun MainScreen() {
                         shape = Capsule(),
                         onClick = {
                             moreButtonBounds?.let {
-                                val position = Offset(
-                                    x = it.positionInWindow().x,
-                                    y = it.positionInWindow().y - with(density) { 8.dp.toPx() },
-                                )
                                 showMenu(
-                                    position,
+                                    it.boundsInWindow(),
                                     moreMenu
                                 )
                             }
@@ -389,12 +386,8 @@ fun MainScreen() {
                                         indication = null
                                     ) {
                                         flagButtonBounds?.let {
-                                            val position = Offset(
-                                                x = it.positionInWindow().x,
-                                                y = it.positionInWindow().y - with(density) { 8.dp.toPx() },
-                                            )
                                             showMenu(
-                                                position,
+                                                it.boundsInWindow(),
                                                 flagMenu
                                             )
                                         }

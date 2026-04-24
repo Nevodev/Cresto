@@ -32,6 +32,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -64,7 +65,7 @@ import kotlin.time.Duration.Companion.seconds
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalHazeApi::class)
 @Composable
 fun BoxScope.HomeScreen(
-    showMenu: (anchorPosition: Offset, items: List<GlasenseMenuItem>) -> Unit,
+    showMenu: (anchorBounds: Rect, items: List<GlasenseMenuItem>) -> Unit,
     viewModel: TodoViewModel
 ) {
     val settingsViewModel: SettingsViewModel = viewModel()

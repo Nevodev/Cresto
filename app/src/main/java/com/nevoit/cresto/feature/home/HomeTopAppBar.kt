@@ -42,7 +42,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.BlurEffect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Paint
@@ -58,7 +58,6 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.layout.positionInWindow
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
@@ -87,7 +86,7 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun BoxScope.HomeTopAppBar(
-    menuController: (anchorPosition: Offset, items: List<GlasenseMenuItem>) -> Unit,
+    menuController: (anchorBounds: Rect, items: List<GlasenseMenuItem>) -> Unit,
     menuItems: List<GlasenseMenuItem>,
     isTitleVisible: Boolean,
     hazeState: HazeState,
@@ -128,7 +127,6 @@ fun BoxScope.HomeTopAppBar(
             isComposed = false
         }
     }
-    val dpPx = with(density) { 1.dp.toPx() }
     val resolvedTitle = if (isTitleVisible) {
         if (isSelectionModeActive) stringResource(
             R.string.selected_todos,
@@ -279,11 +277,7 @@ fun BoxScope.HomeTopAppBar(
                                     indication = null
                                 ) {
                                     coordinatesCaptured?.let {
-                                        val position = Offset(
-                                            x = it.positionInWindow().x,
-                                            y = it.positionInWindow().y + it.boundsInWindow().height + 8 * dpPx,
-                                        )
-                                        menuController(position, menuItems)
+                                        menuController(it.boundsInWindow(), menuItems)
                                     }
                                 },
                             contentAlignment = Alignment.Center

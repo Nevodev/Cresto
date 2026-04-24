@@ -12,7 +12,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.graphicsLayer
 import com.nevoit.cresto.data.todo.TodoViewModel
 import com.nevoit.cresto.feature.home.HomeScreen
@@ -25,7 +25,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun BoxScope.NavContainer(
     currentRoute: String,
-    showMenu: (anchorPosition: Offset, items: List<GlasenseMenuItem>) -> Unit,
+    showMenu: (anchorBounds: Rect, items: List<GlasenseMenuItem>) -> Unit,
     viewModel: TodoViewModel
 ) {
     val saveableStateHolder = rememberSaveableStateHolder()

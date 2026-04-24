@@ -46,14 +46,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.layout.positionInWindow
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
@@ -182,9 +181,9 @@ fun DetailScreen(
 
     var menuState by remember { mutableStateOf(MenuState()) }
 
-    val showMenu: (anchorPosition: Offset, items: List<GlasenseMenuItem>) -> Unit =
-        { position, items ->
-            menuState = MenuState(isVisible = true, anchorPosition = position, items = items)
+    val showMenu: (anchorBounds: Rect, items: List<GlasenseMenuItem>) -> Unit =
+        { bounds, items ->
+            menuState = MenuState(isVisible = true, anchorBounds = bounds, items = items)
         }
 
     val dismissMenu = {
@@ -202,8 +201,6 @@ fun DetailScreen(
     }
     var moreButtonBounds by remember { mutableStateOf<LayoutCoordinates?>(null) }
     var flagButtonBounds by remember { mutableStateOf<LayoutCoordinates?>(null) }
-
-    val density = LocalDensity.current
 
     LaunchedEffect(Unit) {
         while (true) {
@@ -387,14 +384,8 @@ fun DetailScreen(
                                             indication = DimIndication()
                                         ) {
                                             flagButtonBounds?.let {
-                                                val position = Offset(
-                                                    x = it.positionInWindow().x + it.boundsInWindow().width,
-                                                    y = it.positionInWindow().y + it.boundsInWindow().height + with(
-                                                        density
-                                                    ) { 8.dp.toPx() },
-                                                )
                                                 showMenu(
-                                                    position,
+                                                    it.boundsInWindow(),
                                                     flagMenu
                                                 )
                                             }
@@ -542,14 +533,8 @@ fun DetailScreen(
                         indication = null
                     ) {
                         moreButtonBounds?.let {
-                            val position = Offset(
-                                x = it.positionInWindow().x + it.boundsInWindow().width,
-                                y = it.positionInWindow().y + it.boundsInWindow().height + with(
-                                    density
-                                ) { 8.dp.toPx() },
-                            )
                             showMenu(
-                                position,
+                                it.boundsInWindow(),
                                 moreMenu
                             )
                         }

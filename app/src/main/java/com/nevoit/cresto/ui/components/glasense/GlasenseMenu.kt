@@ -32,6 +32,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Outline
@@ -89,7 +90,7 @@ sealed interface GlasenseMenuItem
 
 data class MenuState(
     val isVisible: Boolean = false,
-    val anchorPosition: Offset = Offset.Zero,
+    val anchorBounds: Rect = Rect.Zero,
     val items: List<GlasenseMenuItem> = emptyList()
 )
 
@@ -109,10 +110,11 @@ private fun cornerToOrigin(corner: PopupCorner): TransformOrigin = when (corner)
 }
 
 private fun pickPlacement(
-    anchor: Offset,
+    anchorBounds: Rect,
     menuSize: IntSize,
     viewport: IntSize,
-    marginPx: Float
+    marginPx: Float,
+    gapPx: Float
 ): PopupPlacement {
     fun overflow(x: Float, y: Float): Float {
         val left = (marginPx - x).coerceAtLeast(0f)
@@ -123,10 +125,10 @@ private fun pickPlacement(
     }
 
     val candidates = listOf(
-        PopupCorner.LeftTop to Offset(anchor.x, anchor.y),
-        PopupCorner.RightTop to Offset(anchor.x - menuSize.width, anchor.y),
-        PopupCorner.RightBottom to Offset(anchor.x - menuSize.width, anchor.y - menuSize.height),
-        PopupCorner.LeftBottom to Offset(anchor.x, anchor.y - menuSize.height),
+        PopupCorner.LeftTop to Offset(anchorBounds.left, anchorBounds.bottom + gapPx),
+        PopupCorner.RightTop to Offset(anchorBounds.right - menuSize.width, anchorBounds.bottom + gapPx),
+        PopupCorner.RightBottom to Offset(anchorBounds.right - menuSize.width, anchorBounds.top - menuSize.height - gapPx),
+        PopupCorner.LeftBottom to Offset(anchorBounds.left, anchorBounds.top - menuSize.height - gapPx),
     )
 
     val chosen = candidates.firstOrNull { (_, p) -> overflow(p.x, p.y) == 0f }
@@ -147,7 +149,7 @@ private fun pickPlacement(
 /**
  * A menu with GlasenseBackgroundBlur Style, using [LayerBackdrop] for blurred background.
  *
- * @param menuState State object containing menu items and anchor position.
+ * @param menuState State object containing menu items and launcher bounds.
  * @param backdrop The [LayerBackdrop] instance for rendering the background effect.
  * @param onDismiss Lambda to be called to dismiss the menu.
  * @param modifier The modifier to be applied to the menu container.
@@ -167,12 +169,13 @@ fun GlasenseMenu(
     val effectiveMenuSize =
         if (menuSize == IntSize.Zero) IntSize(menuWidthPx, fallbackHeightPx) else menuSize
     val density = LocalDensity.current
-    val placement = remember(menuState.anchorPosition, effectiveMenuSize, viewport) {
+    val placement = remember(menuState.anchorBounds, effectiveMenuSize, viewport) {
         pickPlacement(
-            anchor = menuState.anchorPosition,
+            anchorBounds = menuState.anchorBounds,
             menuSize = effectiveMenuSize,
             viewport = viewport,
-            marginPx = with(density) { 8.dp.toPx() }
+            marginPx = with(density) { 8.dp.toPx() },
+            gapPx = with(density) { 8.dp.toPx() }
         )
     }
     val scaleAni = remember { Animatable(0.4f) }
