@@ -322,7 +322,6 @@ fun DetailScreen(
                                     lineHeight = 18.sp,
                                     fontWeight = FontWeight.Normal,
                                     modifier = Modifier
-                                        .weight(1f)
                                         .align(Alignment.CenterVertically)
                                 )
                                 Spacer(modifier = Modifier.weight(1f))
@@ -377,7 +376,6 @@ fun DetailScreen(
                                     lineHeight = 18.sp,
                                     fontWeight = FontWeight.Normal,
                                     modifier = Modifier
-                                        .weight(1f)
                                         .align(Alignment.CenterVertically)
                                 )
                                 Spacer(modifier = Modifier.weight(1f))
