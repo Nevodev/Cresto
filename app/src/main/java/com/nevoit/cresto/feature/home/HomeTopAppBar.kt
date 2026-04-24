@@ -54,11 +54,14 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.nativePaint
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInWindow
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -156,7 +159,7 @@ fun BoxScope.HomeTopAppBar(
         animationSpec = tween(300)
     )
 
-
+    val hapticController = LocalHapticFeedback.current
     var isSearchBoxComposed by remember { mutableStateOf(false) }
     val searchBoxAlphaAnimation = remember { Animatable(if (isSearchBoxOpen) 1f else 0f) }
     val searchIconWidthAnimation = remember { Animatable(if (isSearchBoxOpen) 0f else 1f) }
@@ -167,6 +170,7 @@ fun BoxScope.HomeTopAppBar(
     LaunchedEffect(isSearchBoxOpen) {
         if (isSearchBoxOpen) {
             isSearchBoxComposed = true
+            hapticController.performHapticFeedback(HapticFeedbackType.ContextClick)
             scope.launch { searchBoxAlphaAnimation.animateTo(1f, tween(300)) }
             scope.launch { searchIconWidthAnimation.animateTo(0f, tween(300)) }
             searchBoxBlurAnimation.animateTo(0f, tween(300))
@@ -386,6 +390,7 @@ fun BoxScope.HomeTopAppBar(
     }
 
     val searchFocusRequester = remember { FocusRequester() }
+    val keyboard = LocalSoftwareKeyboardController.current
 
     if (isSearchBoxComposed) {
         BackHandler { viewModel.onSearchCloseIconClick() }
@@ -503,6 +508,9 @@ fun BoxScope.HomeTopAppBar(
                         interactionSource = remember { MutableInteractionSource() },
                         indication = null
                     ) {
+                        if (isSearchBoxOpen) {
+                            keyboard?.hide()
+                        }
                         viewModel.onSearchCloseIconClick()
                     }
                     .padding(14.dp)

@@ -3,16 +3,13 @@ package com.nevoit.cresto.feature.detail
 import android.app.Activity
 import android.content.Intent
 import androidx.activity.compose.LocalActivity
-import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.spring
-import androidx.compose.foundation.LocalOverscrollFactory
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -27,10 +24,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -45,9 +44,9 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.boundsInWindow
@@ -55,6 +54,7 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInWindow
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
@@ -71,29 +71,26 @@ import com.nevoit.cresto.data.todo.EXTRA_DELETE_ID
 import com.nevoit.cresto.data.todo.SubTodoItem
 import com.nevoit.cresto.data.todo.TodoItem
 import com.nevoit.cresto.data.todo.TodoViewModel
+import com.nevoit.cresto.feature.main.rememberFlagMenuItems
 import com.nevoit.cresto.theme.AppButtonColors
 import com.nevoit.cresto.theme.AppColors
-import com.nevoit.cresto.theme.defaultEnterTransition
-import com.nevoit.cresto.theme.defaultExitTransition
+import com.nevoit.cresto.theme.AppSpecs
 import com.nevoit.cresto.theme.getFlagColor
 import com.nevoit.cresto.theme.isAppInDarkTheme
-import com.nevoit.cresto.ui.components.CustomAnimatedVisibility
-import com.nevoit.cresto.ui.components.bottomsheet.SelectedButton
 import com.nevoit.cresto.ui.components.glasense.DialogItemData
 import com.nevoit.cresto.ui.components.glasense.DialogState
+import com.nevoit.cresto.ui.components.glasense.DimIndication
 import com.nevoit.cresto.ui.components.glasense.GlasenseBottomBar
 import com.nevoit.cresto.ui.components.glasense.GlasenseButton
-import com.nevoit.cresto.ui.components.glasense.GlasenseButtonAlt
 import com.nevoit.cresto.ui.components.glasense.GlasenseDialog
 import com.nevoit.cresto.ui.components.glasense.GlasenseDynamicSmallTitle
 import com.nevoit.cresto.ui.components.glasense.GlasenseMenu
 import com.nevoit.cresto.ui.components.glasense.GlasenseMenuItem
 import com.nevoit.cresto.ui.components.glasense.MenuState
+import com.nevoit.cresto.ui.components.glasense.ZeroHeightDivider
 import com.nevoit.cresto.ui.components.glasense.extend.overscrollSpacer
 import com.nevoit.cresto.ui.components.glasense.isScrolledPast
 import com.nevoit.cresto.ui.components.glasense.rememberSwipeableListState
-import com.nevoit.cresto.ui.components.packed.HorizontalFlagPicker
-import com.nevoit.cresto.ui.components.packed.HorizontalPresetDatePicker
 import com.nevoit.cresto.ui.components.packed.PageContent
 import com.nevoit.cresto.ui.components.packed.SubTodoItemRowAdd
 import com.nevoit.cresto.ui.components.packed.SwipeableSubTodoItemRowEditable
@@ -101,13 +98,13 @@ import com.nevoit.cresto.ui.components.packed.TodoItemRowEditable
 import com.nevoit.cresto.ui.components.packed.VGap
 import com.nevoit.cresto.util.formatRelativeTime
 import com.nevoit.glasense.component.GlasenseActivityIndicator
-import com.nevoit.glasense.overscroll.rememberOffsetOverscrollFactory
 import dev.chrisbanes.haze.ExperimentalHazeApi
 import dev.chrisbanes.haze.hazeSource
 import dev.chrisbanes.haze.rememberHazeState
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
 @OptIn(ExperimentalHazeApi::class, ExperimentalLayoutApi::class)
 @Composable
@@ -204,6 +201,7 @@ fun DetailScreen(
         }
     }
     var moreButtonBounds by remember { mutableStateOf<LayoutCoordinates?>(null) }
+    var flagButtonBounds by remember { mutableStateOf<LayoutCoordinates?>(null) }
 
     val density = LocalDensity.current
 
@@ -222,11 +220,6 @@ fun DetailScreen(
         }
     }
 
-    LaunchedEffect(selectedIndex) {
-        itemWithSubTodos?.let {
-            viewModel.update(it.todoItem.copy(flag = selectedIndex))
-        }
-    }
     LaunchedEffect(finalDate) {
         itemWithSubTodos?.let {
             viewModel.update(it.todoItem.copy(dueDate = finalDate))
@@ -238,9 +231,13 @@ fun DetailScreen(
         }
     }
 
-    val overscrollFactory = rememberOffsetOverscrollFactory(
-        orientation = Orientation.Vertical
-    )
+    val hapticController = LocalHapticFeedback.current
+
+    val flagMenu = rememberFlagMenuItems(noneFirst = true) { index ->
+        itemWithSubTodos?.let {
+            viewModel.update(it.todoItem.copy(flag = index))
+        }
+    }
 
     Box(
         modifier = Modifier
@@ -285,186 +282,155 @@ fun DetailScreen(
                     )
                     VGap()
                 }
-                item(key = "controls") {
+                item(key = "information") {
                     CompositionLocalProvider(
-                        LocalOverscrollFactory provides overscrollFactory
+                        LocalContentColor provides AppColors.contentVariant
                     ) {
-                        BoxWithConstraints(
+                        Column(
                             modifier = Modifier
                                 .animateItem(placementSpec = spring(0.9f, 400f))
                                 .fillMaxWidth()
-                                .height(48.dp)
+                                .background(
+                                    color = AppColors.cardBackground,
+                                    shape = AppSpecs.cardShape
+                                )
+                                .padding(horizontal = 12.dp)
+
                         ) {
-                            var selectedButton by remember { mutableStateOf(SelectedButton.NONE) }
-
-                            val totalWidth = this.maxWidth
-
-                            // Calculate the width of the buttons based on the selected state.
-                            val collapsedSize = 48.dp
-                            val spacerSize = 12.dp
-                            val expandedWidth =
-                                totalWidth - (collapsedSize * 1) - (spacerSize * 1)
-                            val defaultWidth = (totalWidth - (spacerSize * 1)) / 2
-
-                            // Animate the width of the due date button.
-                            val dueDateWidth by animateDpAsState(
-                                targetValue = when (selectedButton) {
-                                    SelectedButton.DUE_DATE -> expandedWidth
-                                    SelectedButton.NONE -> defaultWidth
-                                    else -> collapsedSize
-                                },
-                                animationSpec = spring(
-                                    dampingRatio = 0.7f,
-                                    stiffness = 300f
-                                )
-                            )
-                            // Animate the width of the flag button.
-                            val flagWidth by animateDpAsState(
-                                targetValue = when (selectedButton) {
-                                    SelectedButton.FLAG -> expandedWidth
-                                    SelectedButton.NONE -> defaultWidth
-                                    else -> collapsedSize
-                                },
-                                animationSpec = spring(
-                                    dampingRatio = 0.7f,
-                                    stiffness = 300f
-                                )
-                            )
                             Row(
-                                modifier = Modifier
-                                    .width(totalWidth)
-                                    .height(48.dp),
-                                horizontalArrangement = Arrangement.SpaceBetween
+                                modifier = Modifier.padding(vertical = 12.dp),
+                                verticalAlignment = Alignment.CenterVertically
                             ) {
-                                // Due date button.
-                                GlasenseButtonAlt(
-                                    enabled = true,
-                                    shape = Capsule(),
-                                    onClick = {
-                                        selectedButton =
-                                            if (selectedButton == SelectedButton.DUE_DATE) {
-                                                SelectedButton.NONE
-                                            } else {
-                                                SelectedButton.DUE_DATE
-                                            }
-                                    },
+                                Icon(
+                                    painter =
+                                        painterResource(id = R.drawable.ic_calendar),
+                                    contentDescription = stringResource(R.string.due_date),
                                     modifier = Modifier
-                                        .height(48.dp)
-                                        .width(dueDateWidth),
-                                    colors = if (darkMode) AppButtonColors.secondary().copy(
-                                        containerColor = AppButtonColors.secondary().containerColor.copy(
-                                            .1f
+                                        .padding(end = 8.dp)
+                                        .width(28.dp)
+                                )
+                                Text(
+                                    text = stringResource(R.string.due_date),
+                                    fontSize = 16.sp,
+                                    lineHeight = 18.sp,
+                                    fontWeight = FontWeight.Normal,
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .align(Alignment.CenterVertically)
+                                )
+                                Spacer(modifier = Modifier.weight(1f))
+                                Box(
+                                    modifier = Modifier
+                                        .align(Alignment.CenterVertically)
+                                        .wrapContentSize()
+                                        .clip(Capsule())
+                                        .background(
+                                            color = AppColors.scrimNormal
                                         )
-                                    ) else AppButtonColors.secondary(),
-                                    indication = true
-                                ) {
-                                    Box(
-                                        modifier = Modifier.fillMaxSize(),
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        // Animated visibility for the due date icon.
-                                        CustomAnimatedVisibility(
-                                            visible = selectedButton != SelectedButton.DUE_DATE,
-                                            enter = defaultEnterTransition,
-                                            exit = defaultExitTransition
+                                        .clickable(
+                                            interactionSource = remember { MutableInteractionSource() },
+                                            indication = DimIndication()
                                         ) {
-                                            Icon(
-                                                painter = painterResource(id = R.drawable.ic_calendar),
-                                                contentDescription = stringResource(R.string.due_date),
-                                                modifier = Modifier.width(28.dp)
-                                            )
-                                        }
-                                        // Animated visibility for the date picker.
-                                        CustomAnimatedVisibility(
-                                            visible = selectedButton == SelectedButton.DUE_DATE,
-                                            enter = defaultEnterTransition,
-                                            exit = defaultExitTransition
-                                        ) {
-                                            HorizontalPresetDatePicker(
-                                                initialDate = finalDate,
-                                                onDateSelected = {
-                                                    finalDate = it
-                                                    selectedButton = SelectedButton.NONE
-                                                }
-                                            )
 
                                         }
-                                    }
-
-                                }
-                                Spacer(modifier = Modifier.width(12.dp))
-                                // Flag button.
-                                GlasenseButtonAlt(
-                                    enabled = true,
-                                    shape = Capsule(),
-                                    onClick = {
-                                        selectedButton =
-                                            if (selectedButton == SelectedButton.FLAG) {
-                                                SelectedButton.NONE
-                                            } else {
-                                                SelectedButton.FLAG
-                                            }
-                                    },
-                                    modifier = Modifier
-                                        .height(48.dp)
-                                        .width(flagWidth),
-                                    colors = if (darkMode) AppButtonColors.secondary().copy(
-                                        containerColor = AppButtonColors.secondary().containerColor.copy(
-                                            .1f
-                                        )
-                                    ) else AppButtonColors.secondary(),
                                 ) {
-                                    Box(
-                                        modifier = Modifier.fillMaxSize(),
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        // Animated visibility for the flag icon.
-                                        CustomAnimatedVisibility(
-                                            visible = selectedButton != SelectedButton.FLAG,
-                                            enter = defaultEnterTransition,
-                                            exit = defaultExitTransition
-                                        ) {
-                                            val displayColor = getFlagColor(selectedIndex)
-                                            Icon(
-                                                painter = if (displayColor == Color.Transparent) {
-                                                    painterResource(id = R.drawable.ic_flag)
-                                                } else {
-                                                    painterResource(id = R.drawable.ic_flag_fill)
-                                                },
-                                                contentDescription = stringResource(R.string.flag),
-                                                modifier = Modifier.width(28.dp),
-                                                tint = if (displayColor == Color.Transparent) {
-                                                    AppColors.content.copy(
-                                                        alpha = 0.5F
-                                                    )
-                                                } else {
-                                                    displayColor
-                                                }
-                                            )
-                                        }
-                                        // Animated visibility for the flag picker.
-                                        CustomAnimatedVisibility(
-                                            visible = selectedButton == SelectedButton.FLAG,
-                                            enter = defaultEnterTransition,
-                                            exit = defaultExitTransition
-                                        ) {
-                                            HorizontalFlagPicker(
-                                                selectedIndex = selectedIndex,
-                                                onIndexSelected = { newIndex ->
-                                                    selectedIndex = newIndex
-                                                    selectedButton = SelectedButton.NONE
-                                                }
-                                            )
-                                        }
-                                    }
+                                    Text(
+                                        text = finalDate?.format(DateTimeFormatter.ofPattern("yyyy/MM/dd"))
+                                            ?: stringResource(R.string.none),
+                                        fontSize = 16.sp,
+                                        lineHeight = 18.sp,
+                                        fontWeight = FontWeight.Normal,
+                                        modifier = Modifier.padding(
+                                            horizontal = 8.dp,
+                                            vertical = 4.dp
+                                        ),
+                                        color = AppColors.content
+                                    )
                                 }
                             }
-
+                            ZeroHeightDivider()
+                            Row(
+                                modifier = Modifier
+                                    .padding(vertical = 12.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.ic_flag),
+                                    contentDescription = stringResource(R.string.flag),
+                                    modifier = Modifier
+                                        .padding(end = 8.dp)
+                                        .width(28.dp)
+                                )
+                                Text(
+                                    text = stringResource(R.string.flag),
+                                    fontSize = 16.sp,
+                                    lineHeight = 18.sp,
+                                    fontWeight = FontWeight.Normal,
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .align(Alignment.CenterVertically)
+                                )
+                                Spacer(modifier = Modifier.weight(1f))
+                                Row(
+                                    modifier = Modifier
+                                        .onGloballyPositioned { coordinates ->
+                                            flagButtonBounds = coordinates
+                                        }
+                                        .align(Alignment.CenterVertically)
+                                        .wrapContentSize()
+                                        .clip(Capsule())
+                                        .background(
+                                            color = AppColors.scrimNormal
+                                        )
+                                        .clickable(
+                                            interactionSource = remember { MutableInteractionSource() },
+                                            indication = DimIndication()
+                                        ) {
+                                            flagButtonBounds?.let {
+                                                val position = Offset(
+                                                    x = it.positionInWindow().x + it.boundsInWindow().width,
+                                                    y = it.positionInWindow().y + it.boundsInWindow().height + with(
+                                                        density
+                                                    ) { 8.dp.toPx() },
+                                                )
+                                                showMenu(
+                                                    position,
+                                                    flagMenu
+                                                )
+                                            }
+                                        }
+                                        .padding(
+                                            horizontal = 8.dp,
+                                            vertical = 4.dp
+                                        ),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    if (selectedIndex != 0) {
+                                        Box(
+                                            modifier = Modifier
+                                                .padding(end = 6.dp)
+                                                .size(12.dp)
+                                                .background(
+                                                    color = getFlagColor(selectedIndex),
+                                                    shape = CircleShape
+                                                )
+                                        )
+                                    }
+                                    Text(
+                                        text = getFlagText(selectedIndex),
+                                        fontSize = 16.sp,
+                                        lineHeight = 18.sp,
+                                        fontWeight = FontWeight.Normal,
+                                        color = AppColors.content
+                                    )
+                                }
+                            }
                         }
                     }
+                    VGap()
                 }
                 item(key = "small_title") {
-                    VGap()
+
                     Text(
                         text = stringResource(R.string.task),
                         fontSize = 14.sp,
@@ -683,4 +649,19 @@ fun DetailScreen(
         backdrop = backdrop,
         onDismiss = dismissMenu
     )
+}
+
+@Composable
+fun getFlagText(index: Int): String {
+    val flagNames = listOf(
+        stringResource(R.string.none),
+        stringResource(R.string.flag_red),
+        stringResource(R.string.flag_orange),
+        stringResource(R.string.flag_yellow),
+        stringResource(R.string.flag_green),
+        stringResource(R.string.flag_blue),
+        stringResource(R.string.flag_purple),
+        stringResource(R.string.flag_gray)
+    )
+    return flagNames[index]
 }

@@ -40,6 +40,8 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.hapticfeedback.HapticFeedback
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.nevoit.cresto.R
@@ -63,6 +65,7 @@ import java.time.format.DateTimeFormatter
 fun HorizontalFlagPicker(
     selectedIndex: Int,
     onIndexSelected: (Int) -> Unit,
+    hapticController: HapticFeedback
 ) {
     val colors = List(8) { i -> getFlagColor(i) }
 
@@ -80,13 +83,23 @@ fun HorizontalFlagPicker(
                     SelectorBox(
                         text = noneText,
                         isSelected = (selectedIndex == 0),
-                        onClick = { onIndexSelected(index) }
+                        onClick = {
+                            hapticController.performHapticFeedback(HapticFeedbackType.ContextClick)
+                        },
+                        onFinish = {
+                            onIndexSelected(index)
+                        }
                     )
                 } else {
                     ColorCircle(
                         color = color,
                         isSelected = (selectedIndex == index),
-                        onClick = { onIndexSelected(index) }
+                        onClick = {
+                            hapticController.performHapticFeedback(HapticFeedbackType.ContextClick)
+                        },
+                        onFinish = {
+                            onIndexSelected(index)
+                        }
                     )
                 }
             }
@@ -106,6 +119,7 @@ fun ColorCircle(
     color: Color,
     isSelected: Boolean,
     onClick: () -> Unit,
+    onFinish: () -> Unit
 ) {
     val scale = remember { Animatable(1f) }
 
@@ -134,6 +148,7 @@ fun ColorCircle(
 
                 is PressInteraction.Release -> {
                     isPressed = true
+                    onClick()
                     coroutineScope {
                         launch {
                             scale.animateTo(
@@ -143,7 +158,7 @@ fun ColorCircle(
                         }
                         launch {
                             delay(100)
-                            onClick()
+                            onFinish()
                         }
                     }
                 }
@@ -217,7 +232,8 @@ private fun getPresetTypeForDate(date: LocalDate?): Int {
 @Composable
 fun HorizontalPresetDatePicker(
     initialDate: LocalDate?,
-    onDateSelected: (LocalDate?) -> Unit
+    onDateSelected: (LocalDate?) -> Unit,
+    hapticController: HapticFeedback
 ) {
     var selectedDate by remember { mutableStateOf(initialDate) }
     var selectedPreset by remember { mutableIntStateOf(getPresetTypeForDate(initialDate)) }
@@ -256,6 +272,9 @@ fun HorizontalPresetDatePicker(
                     text = text,
                     isSelected = (selectedPreset == index),
                     onClick = {
+                        hapticController.performHapticFeedback(HapticFeedbackType.ContextClick)
+                    },
+                    onFinish = {
                         val newDate = when (index) {
                             0 -> null
                             1 -> LocalDate.now()
@@ -292,7 +311,10 @@ fun HorizontalPresetDatePicker(
                 DateSelectorBox(
                     text = buttonText ?: stringResource(R.string.custom),
                     isSelected = isCustomDateSelected,
-                    onClick = { showDatePicker = true }
+                    onClick = {
+                        hapticController.performHapticFeedback(HapticFeedbackType.ContextClick)
+                        showDatePicker = true
+                    }
                 )
             }
         }
@@ -338,7 +360,8 @@ fun HorizontalPresetDatePicker(
 private fun SelectorBox(
     text: String,
     isSelected: Boolean,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    onFinish: () -> Unit
 ) {
     val scale = remember { Animatable(1f) }
     val interactionSource = remember { MutableInteractionSource() }
@@ -357,6 +380,7 @@ private fun SelectorBox(
                 }
 
                 is PressInteraction.Release -> {
+                    onClick()
                     isPressed = true
                     coroutineScope {
                         launch {
@@ -367,7 +391,7 @@ private fun SelectorBox(
                         }
                         launch {
                             delay(100)
-                            onClick()
+                            onFinish()
                         }
                     }
                 }

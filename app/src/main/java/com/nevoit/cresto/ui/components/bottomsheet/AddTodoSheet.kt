@@ -37,6 +37,8 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -98,6 +100,8 @@ fun AddTodoSheet(
             onAddClick(text, selectedIndex, finalDate)
         }
     }
+
+    val hapticController = LocalHapticFeedback.current
 
     val overscrollFactory = rememberOffsetOverscrollFactory(
         orientation = Orientation.Horizontal
@@ -237,6 +241,7 @@ fun AddTodoSheet(
                         enabled = true,
                         shape = Capsule(),
                         onClick = {
+                            hapticController.performHapticFeedback(HapticFeedbackType.ContextClick)
                             selectedButton = if (selectedButton == SelectedButton.DUE_DATE) {
                                 SelectedButton.NONE
                             } else {
@@ -285,7 +290,8 @@ fun AddTodoSheet(
                                     onDateSelected = {
                                         finalDate = it
                                         selectedButton = SelectedButton.NONE
-                                    }
+                                    },
+                                    hapticController = hapticController
                                 )
 
                             }
@@ -298,6 +304,7 @@ fun AddTodoSheet(
                         enabled = true,
                         shape = Capsule(),
                         onClick = {
+                            hapticController.performHapticFeedback(HapticFeedbackType.ContextClick)
                             selectedButton = if (selectedButton == SelectedButton.FLAG) {
                                 SelectedButton.NONE
                             } else {
@@ -346,7 +353,8 @@ fun AddTodoSheet(
                                     onIndexSelected = { newIndex ->
                                         selectedIndex = newIndex
                                         selectedButton = SelectedButton.NONE
-                                    }
+                                    },
+                                    hapticController = hapticController
                                 )
                             }
                         }

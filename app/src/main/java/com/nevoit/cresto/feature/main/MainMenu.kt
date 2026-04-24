@@ -62,7 +62,10 @@ fun rememberMoreMenuItems(
 }
 
 @Composable
-fun rememberFlagMenuItems(onFlagSelected: (Int) -> Unit): List<GlasenseMenuItem> {
+fun rememberFlagMenuItems(
+    noneFirst: Boolean = false,
+    onFlagSelected: (Int) -> Unit
+): List<GlasenseMenuItem> {
     val flagIcon = painterResource(R.drawable.ic_flag_fill)
     val noFlagIcon = painterResource(R.drawable.ic_flag)
     val flagNames = listOf(
@@ -80,6 +83,18 @@ fun rememberFlagMenuItems(onFlagSelected: (Int) -> Unit): List<GlasenseMenuItem>
     val noneText = stringResource(R.string.none)
     return remember(onFlagSelected, flagIcon, noFlagIcon, flagNames, noneText, flagColors) {
         buildList {
+            if (noneFirst) {
+                add(
+                    MenuItemData(
+                        text = noneText,
+                        icon = noFlagIcon,
+                        onClick = { onFlagSelected(0) }
+                    )
+                )
+                add(
+                    MenuDivider
+                )
+            }
             flagNames.forEachIndexed { index, flagName ->
                 val flagIndex = index + 1
                 add(
@@ -91,16 +106,18 @@ fun rememberFlagMenuItems(onFlagSelected: (Int) -> Unit): List<GlasenseMenuItem>
                     )
                 )
             }
-            add(
-                MenuDivider
-            )
-            add(
-                MenuItemData(
-                    text = noneText,
-                    icon = noFlagIcon,
-                    onClick = { onFlagSelected(0) }
+            if (!noneFirst) {
+                add(
+                    MenuDivider
                 )
-            )
+                add(
+                    MenuItemData(
+                        text = noneText,
+                        icon = noFlagIcon,
+                        onClick = { onFlagSelected(0) }
+                    )
+                )
+            }
         }
     }
 }

@@ -47,8 +47,10 @@ import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.nativePaint
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.IntSize
@@ -176,7 +178,13 @@ fun GlasenseMenu(
     val scaleAni = remember { Animatable(0.4f) }
     val alphaAni = remember { Animatable(0f) }
     var isMenuInComposition by remember { mutableStateOf(false) }
+    val hapticController = LocalHapticFeedback.current
 
+    LaunchedEffect(menuState.isVisible) {
+        if (menuState.isVisible) {
+            hapticController.performHapticFeedback(HapticFeedbackType.ContextClick)
+        }
+    }
     LaunchedEffect(menuState.isVisible) {
         if (menuState.isVisible) {
             delay(50)
