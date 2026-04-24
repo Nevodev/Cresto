@@ -285,19 +285,14 @@ private fun TodoItemMetadataLayout(
                 }
             }
 
-            private fun <T> splitMeasurables(items: List<T>): Triple<T?, T?, T?> {
-                var index = 0
-                val due = if (showDueDate) items[index++] else null
-                val dot = if (showDueDate && showTasks) items[index++] else null
-                val task = if (showTasks) items[index] else null
-                return Triple(due, dot, task)
-            }
-
             private fun intrinsicHeight(
                 width: Int,
                 measurables: List<IntrinsicMeasurable>,
             ): Int {
-                val (due, dot, task) = splitMeasurables(measurables)
+                var index = 0
+                val due = if (showDueDate) measurables[index++] else null
+                val dot = if (showDueDate && showTasks) measurables[index++] else null
+                val task = if (showTasks) measurables[index] else null
                 val dueW = due?.maxIntrinsicWidth(Int.MAX_VALUE) ?: 0
                 val dotW = dot?.maxIntrinsicWidth(Int.MAX_VALUE) ?: 0
                 val taskW = task?.maxIntrinsicWidth(Int.MAX_VALUE) ?: 0
@@ -323,7 +318,10 @@ private fun TodoItemMetadataLayout(
                 constraints: Constraints,
             ): MeasureResult {
                 val looseConstraints = constraints.copy(minWidth = 0, minHeight = 0)
-                val (dueMeasurable, dotMeasurable, taskMeasurable) = splitMeasurables(measurables)
+                var index = 0
+                val dueMeasurable = if (showDueDate) measurables[index++] else null
+                val dotMeasurable = if (showDueDate && showTasks) measurables[index++] else null
+                val taskMeasurable = if (showTasks) measurables[index] else null
                 val duePlaceable = dueMeasurable?.measure(looseConstraints)
                 val dotPlaceable = dotMeasurable?.measure(looseConstraints)
                 val taskPlaceable = taskMeasurable?.measure(looseConstraints)
@@ -393,7 +391,10 @@ private fun TodoItemMetadataLayout(
                 measurables: List<IntrinsicMeasurable>,
                 height: Int,
             ): Int {
-                val (due, _, task) = splitMeasurables(measurables)
+                var index = 0
+                val due = if (showDueDate) measurables[index++] else null
+                if (showDueDate && showTasks) index++
+                val task = if (showTasks) measurables[index] else null
                 val dueW = due?.minIntrinsicWidth(height) ?: 0
                 val taskW = task?.minIntrinsicWidth(height) ?: 0
                 return if (due != null && task != null) maxOf(dueW, taskW) else dueW + taskW
@@ -403,7 +404,10 @@ private fun TodoItemMetadataLayout(
                 measurables: List<IntrinsicMeasurable>,
                 height: Int,
             ): Int {
-                val (due, dot, task) = splitMeasurables(measurables)
+                var index = 0
+                val due = if (showDueDate) measurables[index++] else null
+                val dot = if (showDueDate && showTasks) measurables[index++] else null
+                val task = if (showTasks) measurables[index] else null
                 val dueW = due?.maxIntrinsicWidth(height) ?: 0
                 val dotW = dot?.maxIntrinsicWidth(height) ?: 0
                 val taskW = task?.maxIntrinsicWidth(height) ?: 0
