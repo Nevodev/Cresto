@@ -2,6 +2,7 @@ package com.nevoit.cresto.ui.components.glasense
 
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.rememberSplineBasedDecay
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.gestures.snapping.SnapLayoutInfoProvider
 import androidx.compose.foundation.gestures.snapping.snapFlingBehavior
 import androidx.compose.foundation.layout.Box
@@ -20,10 +21,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.drawOutline
 import androidx.compose.ui.graphics.graphicsLayer
@@ -35,13 +35,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.times
-import com.kyant.shapes.Rectangle
 import com.nevoit.cresto.theme.AppColors
 import com.nevoit.cresto.theme.AppSpecs
-import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlin.math.absoluteValue
 import kotlin.math.sin
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun GlasenseWheelPicker(
     modifier: Modifier = Modifier,
@@ -87,7 +86,6 @@ fun GlasenseWheelPicker(
         )
     }
 
-//    val flingBehavior = rememberSnapFlingBehavior(lazyListState = listState)
     val itemHeightPx = with(density) { itemHeight.toPx() }
     val maxRotationDeg = 90f
     val maxAngleRad = Math.toRadians(maxRotationDeg.toDouble()).toFloat()
@@ -111,9 +109,10 @@ fun GlasenseWheelPicker(
         (itemHeightPx + (visibleHalfArcPx * 2f)).toDp()
     }
 
-    val centeredIndex by remember(listState) {
+    val centeredIndex by remember(listState, items) {
         derivedStateOf {
             val layoutInfo = listState.layoutInfo
+            if (layoutInfo.visibleItemsInfo.isEmpty()) return@derivedStateOf boundedCurrentSelected
             val viewportCenter =
                 (layoutInfo.viewportStartOffset + layoutInfo.viewportEndOffset) / 2f
             layoutInfo.visibleItemsInfo
@@ -129,30 +128,27 @@ fun GlasenseWheelPicker(
         }
     }
 
-    LaunchedEffect(boundedCurrentSelected) {
-        if (listState.firstVisibleItemIndex != boundedCurrentSelected) {
-            listState.scrollToItem(boundedCurrentSelected)
+    LaunchedEffect(centeredIndex) {
+        if (hasEmittedInitialSelection) {
+            onItemSelected(centeredIndex)
+            hapticController.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+        } else {
+            hasEmittedInitialSelection = true
         }
     }
 
-    LaunchedEffect(listState) {
-        snapshotFlow { centeredIndex }
-            .distinctUntilChanged()
-            .collect { index ->
-                onItemSelected(index)
-                if (hasEmittedInitialSelection) {
-                    hapticController.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                } else {
-                    hasEmittedInitialSelection = true
-                }
-            }
+    LaunchedEffect(currentSelected) {
+        if (currentSelected != centeredIndex && !listState.isScrollInProgress) {
+            listState.animateScrollToItem(currentSelected.coerceIn(0, items.lastIndex))
+        }
     }
+
     val shape = AppSpecs.cardShape
     val color = AppColors.scrimNormal
     Box(
         modifier = modifier
             .height(wheelContainerHeight)
-            .clip(Rectangle)
+            .clipToBounds()
             .fillMaxWidth(),
         contentAlignment = Alignment.Center
     ) {
@@ -181,8 +177,7 @@ fun GlasenseWheelPicker(
                         .fillMaxWidth()
                         .graphicsLayer {
                             val layoutInfo = listState.layoutInfo
-                            val visibleInfo =
-                                layoutInfo.visibleItemsInfo.find { it.index == index }
+                            val visibleInfo = layoutInfo.visibleItemsInfo.find { it.index == index }
 
                             if (visibleInfo != null) {
                                 val itemCenterY = visibleInfo.offset + (visibleInfo.size / 2f)

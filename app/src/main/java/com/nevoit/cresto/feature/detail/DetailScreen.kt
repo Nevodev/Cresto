@@ -762,7 +762,6 @@ fun DetailScreen(
                 selectedYear = index + (currentYear - 1)
             }
             HGap()
-            // 月份选择：index 0 对应 1月
             GlasenseWheelPicker(
                 modifier = Modifier.weight(1f),
                 items = monthOptions,
@@ -771,7 +770,6 @@ fun DetailScreen(
                 selectedMonth = index + 1
             }
             HGap()
-            // 天数选择：index 0 对应 1号
             GlasenseWheelPicker(
                 modifier = Modifier.weight(1f),
                 items = dayOptions,
