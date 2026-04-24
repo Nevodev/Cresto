@@ -53,7 +53,6 @@ import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalLocale
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.res.painterResource
@@ -78,7 +77,6 @@ import com.nevoit.cresto.theme.AppButtonColors
 import com.nevoit.cresto.theme.AppColors
 import com.nevoit.cresto.theme.AppSpecs
 import com.nevoit.cresto.theme.getFlagColor
-import com.nevoit.cresto.theme.isAppInDarkTheme
 import com.nevoit.cresto.ui.components.glasense.DialogItemData
 import com.nevoit.cresto.ui.components.glasense.DialogState
 import com.nevoit.cresto.ui.components.glasense.DimIndication
@@ -148,8 +146,6 @@ fun DetailScreen(
     val swipeListState = rememberSwipeableListState()
 
     val isSmallTitleVisible by lazyListState.isScrolledPast(statusBarHeight + 24.dp)
-
-    val darkMode = isAppInDarkTheme()
 
     var finalDate by remember { mutableStateOf<LocalDate?>(null) }
     var selectedIndex by remember { mutableIntStateOf(0) }
@@ -240,8 +236,6 @@ fun DetailScreen(
             viewModel.update(it.todoItem.copy(title = title))
         }
     }
-
-    val hapticController = LocalHapticFeedback.current
 
     val flagMenu = rememberFlagMenuItems(noneFirst = true) { index ->
         itemWithSubTodos?.let {
@@ -348,7 +342,7 @@ fun DetailScreen(
                                         }
                                 ) {
                                     Text(
-                                        text = finalDate?.format(DateTimeFormatter.ofPattern("yyyy/MM/dd"))
+                                        text = finalDate?.format(DateTimeFormatter.ofPattern("yyyy/M/d"))
                                             ?: stringResource(R.string.none),
                                         fontSize = 16.sp,
                                         lineHeight = 18.sp,
@@ -650,23 +644,31 @@ fun DetailScreen(
         backdrop = backdrop,
         onDismiss = dismissMenu
     )
-    var selectedYear by remember { mutableIntStateOf(LocalDate.now().year) }
+    var selectedYearIndex by remember { mutableIntStateOf(0) }
     var selectedMonth by remember { mutableIntStateOf(LocalDate.now().monthValue) }
     var selectedDay by remember { mutableIntStateOf(LocalDate.now().dayOfMonth) }
 
+    val currentYear = LocalDate.now().year
+    val noneString = stringResource(R.string.none)
+    val yearOptions = remember(currentYear, noneString) {
+        listOf(noneString) + (currentYear - 1..currentYear + 20).map { it.toString() }
+    }
+
     LaunchedEffect(isDatePickerVisible) {
         if (isDatePickerVisible) {
-            val date = finalDate ?: LocalDate.now()
-            selectedYear = date.year
-            selectedMonth = date.monthValue
-            selectedDay = date.dayOfMonth
+            finalDate?.let { date ->
+                selectedYearIndex = (date.year - (currentYear - 1)) + 1
+                selectedMonth = date.monthValue
+                selectedDay = date.dayOfMonth
+            } ?: run {
+                selectedYearIndex = 0
+                val now = LocalDate.now()
+                selectedMonth = now.monthValue
+                selectedDay = now.dayOfMonth
+            }
         }
     }
 
-    val currentYear = LocalDate.now().year
-    val yearOptions = remember(currentYear) {
-        (currentYear - 1..currentYear + 20).map { it.toString() }
-    }
     val locale = LocalLocale.current.platformLocale
     val monthOptions = remember(locale) {
         (1..12).map { month ->
@@ -674,8 +676,10 @@ fun DetailScreen(
         }
     }
 
-    val daysInMonth = remember(selectedYear, selectedMonth) {
-        YearMonth.of(selectedYear, selectedMonth).lengthOfMonth()
+    val daysInMonth = remember(selectedYearIndex, selectedMonth) {
+        val year =
+            if (selectedYearIndex > 0) selectedYearIndex - 1 + (currentYear - 1) else currentYear
+        YearMonth.of(year, selectedMonth).lengthOfMonth()
     }
 
     val dayOptions = remember(daysInMonth) {
@@ -731,7 +735,12 @@ fun DetailScreen(
                 enabled = true,
                 shape = CircleShape,
                 onClick = {
-                    finalDate = LocalDate.of(selectedYear, selectedMonth, selectedDay)
+                    if (selectedYearIndex == 0) {
+                        finalDate = null
+                    } else {
+                        val year = selectedYearIndex - 1 + (currentYear - 1)
+                        finalDate = LocalDate.of(year, selectedMonth, selectedDay)
+                    }
                     isDatePickerVisible = false
                 },
                 modifier = Modifier
@@ -757,14 +766,14 @@ fun DetailScreen(
             GlasenseWheelPicker(
                 modifier = Modifier.weight(1f),
                 items = yearOptions,
-                currentSelected = (selectedYear - (currentYear - 1)).coerceAtLeast(0)
+                currentSelected = selectedYearIndex
             ) { index ->
-                selectedYear = index + (currentYear - 1)
+                selectedYearIndex = index
             }
             HGap()
             GlasenseWheelPicker(
                 modifier = Modifier.weight(1f),
-                items = monthOptions,
+                items = if (selectedYearIndex > 0) monthOptions else listOf(""),
                 currentSelected = (selectedMonth - 1).coerceAtLeast(0)
             ) { index ->
                 selectedMonth = index + 1
@@ -772,11 +781,12 @@ fun DetailScreen(
             HGap()
             GlasenseWheelPicker(
                 modifier = Modifier.weight(1f),
-                items = dayOptions,
+                items = if (selectedYearIndex > 0) dayOptions else listOf(""),
                 currentSelected = (selectedDay - 1).coerceAtLeast(0)
             ) { index ->
                 selectedDay = index + 1
             }
+
         }
     }
 }
