@@ -726,7 +726,7 @@ fun DetailScreen(
                 )
             }
             Text(
-                text = "选择截止日期",
+                text = stringResource(R.string.select_due_date),
                 modifier = Modifier.weight(1f),
                 textAlign = TextAlign.Center,
                 style = MaterialTheme.typography.headlineSmall

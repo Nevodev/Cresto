@@ -181,4 +181,5 @@
     <string name="backup_import_result_message">总计 %1$d 条，导入 %2$d 条，跳过 %3$d 条。</string>
     <string name="confirm_action_title">%1$s?</string>
     <string name="sort">排序</string>
+    <string name="select_due_date">选择截止日期</string>
 </resources>
