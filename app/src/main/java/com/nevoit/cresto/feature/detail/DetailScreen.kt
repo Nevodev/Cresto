@@ -45,10 +45,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Shadow
+import androidx.compose.ui.graphics.drawOutline
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
@@ -91,11 +94,11 @@ import com.nevoit.cresto.ui.components.glasense.GlasenseWheelPicker
 import com.nevoit.cresto.ui.components.glasense.MenuState
 import com.nevoit.cresto.ui.components.glasense.PopupState
 import com.nevoit.cresto.ui.components.glasense.ZeroHeightDivider
+import com.nevoit.cresto.ui.components.glasense.ZeroWidthDivider
 import com.nevoit.cresto.ui.components.glasense.extend.overscrollSpacer
 import com.nevoit.cresto.ui.components.glasense.glasenseHighlight
 import com.nevoit.cresto.ui.components.glasense.isScrolledPast
 import com.nevoit.cresto.ui.components.glasense.rememberSwipeableListState
-import com.nevoit.cresto.ui.components.packed.HGap
 import com.nevoit.cresto.ui.components.packed.PageContent
 import com.nevoit.cresto.ui.components.packed.SubTodoItemRowAdd
 import com.nevoit.cresto.ui.components.packed.SwipeableSubTodoItemRowEditable
@@ -691,7 +694,8 @@ fun DetailScreen(
             selectedDay = daysInMonth
         }
     }
-
+    val shape = AppSpecs.cardShape
+    val color = AppColors.scrimNormal
     GlasensePopup(
         popupState = PopupState(
             isVisible = isDatePickerVisible,
@@ -762,31 +766,60 @@ fun DetailScreen(
                 }
             }
         }
-        Row {
-            GlasenseWheelPicker(
-                modifier = Modifier.weight(1f),
-                items = yearOptions,
-                currentSelected = selectedYearIndex
-            ) { index ->
-                selectedYearIndex = index
+        Box {
+            Row(
+                modifier = Modifier
+                    .align(Alignment.Center)
+                    .fillMaxWidth()
+                    .height(40.dp)
+                    .drawWithContent {
+                        drawContent()
+                        val outline = shape.createOutline(size, layoutDirection, this)
+                        drawOutline(outline, color)
+                    }
+                    .padding(vertical = 8.dp)
+            ) {
+                Spacer(Modifier.weight(1f))
+                ZeroWidthDivider()
+                Spacer(Modifier.weight(1f))
+                ZeroWidthDivider()
+                Spacer(Modifier.weight(1f))
             }
-            HGap()
-            GlasenseWheelPicker(
-                modifier = Modifier.weight(1f),
-                items = if (selectedYearIndex > 0) monthOptions else listOf(""),
-                currentSelected = (selectedMonth - 1).coerceAtLeast(0)
-            ) { index ->
-                selectedMonth = index + 1
-            }
-            HGap()
-            GlasenseWheelPicker(
-                modifier = Modifier.weight(1f),
-                items = if (selectedYearIndex > 0) dayOptions else listOf(""),
-                currentSelected = (selectedDay - 1).coerceAtLeast(0)
-            ) { index ->
-                selectedDay = index + 1
-            }
+            Row {
+                GlasenseWheelPicker(
+                    modifier = Modifier.weight(1f),
+                    items = yearOptions,
+                    indicator = false,
+                    currentSelected = selectedYearIndex
+                ) { index ->
+                    selectedYearIndex = index
+                }
+                GlasenseWheelPicker(
+                    modifier = Modifier
+                        .weight(1f)
+                        .graphicsLayer {
+                            alpha = if (selectedYearIndex > 0) 1f else 0f
+                        },
+                    items = monthOptions,
+                    indicator = false,
+                    currentSelected = (selectedMonth - 1).coerceAtLeast(0)
+                ) { index ->
+                    selectedMonth = index + 1
+                }
+                GlasenseWheelPicker(
+                    modifier = Modifier
+                        .weight(1f)
+                        .graphicsLayer {
+                            alpha = if (selectedYearIndex > 0) 1f else 0f
+                        },
+                    items = dayOptions,
+                    indicator = false,
+                    currentSelected = (selectedDay - 1).coerceAtLeast(0)
+                ) { index ->
+                    selectedDay = index + 1
+                }
 
+            }
         }
     }
 }

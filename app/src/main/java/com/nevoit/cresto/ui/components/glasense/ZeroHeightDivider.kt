@@ -1,8 +1,10 @@
 package com.nevoit.cresto.ui.components.glasense
 
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
@@ -43,4 +45,27 @@ fun ZeroHeightDivider(
             }
             .fillMaxWidth()
             .height(0.dp))
+}
+
+@Composable
+fun ZeroWidthDivider(
+    modifier: Modifier = Modifier,
+    color: Color = AppColors.content.copy(.1f),
+    width: Dp = 1.dp,
+    blendMode: BlendMode = BlendMode.SrcOver
+) {
+    Spacer(
+        modifier = Modifier
+            .then(modifier)
+            .drawBehind {
+                drawLine(
+                    color = color,
+                    start = Offset(x = 0f, y = 0f),
+                    end = Offset(x = 0f, y = this.size.height),
+                    strokeWidth = width.toPx(),
+                    blendMode = blendMode
+                )
+            }
+            .fillMaxHeight()
+            .width(0.dp))
 }

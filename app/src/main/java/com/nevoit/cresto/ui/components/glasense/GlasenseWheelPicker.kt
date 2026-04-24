@@ -1,7 +1,7 @@
 package com.nevoit.cresto.ui.components.glasense
 
+import androidx.compose.animation.core.exponentialDecay
 import androidx.compose.animation.core.spring
-import androidx.compose.animation.rememberSplineBasedDecay
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.gestures.snapping.SnapLayoutInfoProvider
 import androidx.compose.foundation.gestures.snapping.snapFlingBehavior
@@ -49,6 +49,7 @@ fun GlasenseWheelPicker(
     visibleItemsCount: Int = 7,
     itemHeight: Dp = 40.dp,
     textStyle: TextStyle = LocalTextStyle.current,
+    indicator: Boolean = true,
     onItemSelected: (Int) -> Unit
 ) {
     val density = LocalDensity.current
@@ -68,7 +69,7 @@ fun GlasenseWheelPicker(
         SnapLayoutInfoProvider(lazyListState = listState)
     }
 
-    val decayAnimationSpec = rememberSplineBasedDecay<Float>()
+    val decayAnimationSpec = exponentialDecay<Float>(frictionMultiplier = 0.5f)
 
     val customSnapAnimationSpec = remember {
         spring<Float>(stiffness = 200f)
@@ -152,16 +153,18 @@ fun GlasenseWheelPicker(
             .fillMaxWidth(),
         contentAlignment = Alignment.Center
     ) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(itemHeight)
-                .drawWithContent {
-                    drawContent()
-                    val outline = shape.createOutline(size, layoutDirection, this)
-                    drawOutline(outline, color)
-                }
-        )
+        if (indicator) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(itemHeight)
+                    .drawWithContent {
+                        drawContent()
+                        val outline = shape.createOutline(size, layoutDirection, this)
+                        drawOutline(outline, color)
+                    }
+            )
+        }
 
         LazyColumn(
             state = listState,
