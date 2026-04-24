@@ -36,6 +36,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -51,7 +52,6 @@ import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.graphics.drawOutline
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
@@ -694,6 +694,12 @@ fun DetailScreen(
             selectedDay = daysInMonth
         }
     }
+    val showColumn by remember {
+        derivedStateOf {
+            selectedYearIndex > 0
+        }
+    }
+
     val shape = AppSpecs.cardShape
     val color = AppColors.scrimNormal
     GlasensePopup(
@@ -794,29 +800,27 @@ fun DetailScreen(
                 ) { index ->
                     selectedYearIndex = index
                 }
-                GlasenseWheelPicker(
-                    modifier = Modifier
-                        .weight(1f)
-                        .graphicsLayer {
-                            alpha = if (selectedYearIndex > 0) 1f else 0f
-                        },
-                    items = monthOptions,
-                    indicator = false,
-                    currentSelected = (selectedMonth - 1).coerceAtLeast(0)
-                ) { index ->
-                    selectedMonth = index + 1
-                }
-                GlasenseWheelPicker(
-                    modifier = Modifier
-                        .weight(1f)
-                        .graphicsLayer {
-                            alpha = if (selectedYearIndex > 0) 1f else 0f
-                        },
-                    items = dayOptions,
-                    indicator = false,
-                    currentSelected = (selectedDay - 1).coerceAtLeast(0)
-                ) { index ->
-                    selectedDay = index + 1
+                if (showColumn) {
+                    GlasenseWheelPicker(
+                        modifier = Modifier
+                            .weight(1f),
+                        items = monthOptions,
+                        indicator = false,
+                        currentSelected = (selectedMonth - 1).coerceAtLeast(0)
+                    ) { index ->
+                        selectedMonth = index + 1
+                    }
+                    GlasenseWheelPicker(
+                        modifier = Modifier
+                            .weight(1f),
+                        items = dayOptions,
+                        indicator = false,
+                        currentSelected = (selectedDay - 1).coerceAtLeast(0)
+                    ) { index ->
+                        selectedDay = index + 1
+                    }
+                } else {
+                    Spacer(modifier = Modifier.weight(2f))
                 }
 
             }
