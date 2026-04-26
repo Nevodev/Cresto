@@ -5,7 +5,6 @@ import android.content.pm.PackageManager
 import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -27,8 +26,12 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -39,9 +42,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.drawOutline
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -65,9 +71,25 @@ import com.nevoit.cresto.ui.components.packed.PageContent
 import com.nevoit.cresto.ui.components.packed.VGap
 import com.nevoit.cresto.ui.modifier.shaderRipple
 import com.nevoit.cresto.ui.modifier.tiltOnPress
+import com.nevoit.glasense.theme.Amber400
+import com.nevoit.glasense.theme.Blue400
+import com.nevoit.glasense.theme.Green400
+import com.nevoit.glasense.theme.Orange400
+import com.nevoit.glasense.theme.Pink400
+import com.nevoit.glasense.theme.Purple400
+import com.nevoit.glasense.theme.Rose400
 import dev.chrisbanes.haze.ExperimentalHazeApi
 import dev.chrisbanes.haze.hazeSource
 import dev.chrisbanes.haze.rememberHazeState
+import io.github.vinceglb.confettikit.compose.ConfettiKit
+import io.github.vinceglb.confettikit.core.Angle
+import io.github.vinceglb.confettikit.core.Party
+import io.github.vinceglb.confettikit.core.Position
+import io.github.vinceglb.confettikit.core.emitter.Emitter
+import kotlinx.coroutines.delay
+import kotlin.random.Random
+import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.seconds
 
 /**
  * This composable function defines the About screen.
@@ -83,12 +105,6 @@ fun AboutScreen() {
     // Calculate the height of the status bar to adjust layout
     val statusBarHeight = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
     val density = LocalDensity.current
-    // Calculate the scroll threshold in pixels for showing/hiding the small title
-    val thresholdPx = if (statusBarHeight > 0.dp) {
-        with(density) {
-            (statusBarHeight + 24.dp).toPx()
-        }
-    } else 0f
 
     // Remember the state for the Haze effect, a library for blurring content behind a surface
     val hazeState = rememberHazeState()
@@ -115,6 +131,9 @@ fun AboutScreen() {
         }
     }
     val darkMode = isAppInDarkTheme()
+    var aboutCardTapCount by remember { mutableIntStateOf(0) }
+    var confettiBurstKey by remember { mutableIntStateOf(0) }
+    val hapticController = LocalHapticFeedback.current
 
     // Root container for the screen, filling the entire available space
     Box(
@@ -140,34 +159,44 @@ fun AboutScreen() {
                     modifier = Modifier
                         .aspectRatio(3f / 4f)
                         .fillMaxWidth()
-                        .tiltOnPress(maxTilt = 10f)
-                        .clip(shape)
-                        .shaderRipple()
-                        .paint(
-                            painter = if (darkMode) painterResource(R.drawable.about_background) else painterResource(
-                                R.drawable.about_background_light
-                            ),
-                            contentScale = ContentScale.Crop
-                        )
-                        .drawBehind {
-                            val outline = shape.createOutline(
-                                size = size,
-                                layoutDirection = LayoutDirection.Ltr,
-                                density = density
-                            )
-                            // Draw a white glowing border around the image
-                            drawOutline(
-                                outline = outline,
-                                style = Stroke(4.dp.toPx()),
-                                color = if (darkMode) Color.White.copy(.2f) else Color.Black.copy(
-                                    .05f
-                                ),
-                                blendMode = BlendMode.Luminosity
-                            )
-                        }
                 ) {
-                    
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .tiltOnPress(maxTilt = 10f) {
+                                aboutCardTapCount += 1
+                                if (aboutCardTapCount >= 10) {
+                                    aboutCardTapCount = 0
+                                    confettiBurstKey += 1
+                                }
+                            }
+                            .clip(shape)
+                            .shaderRipple()
+                            .paint(
+                                painter = if (darkMode) painterResource(R.drawable.about_background) else painterResource(
+                                    R.drawable.about_background_light
+                                ),
+                                contentScale = ContentScale.Crop
+                            )
+                            .drawBehind {
+                                val outline = shape.createOutline(
+                                    size = size,
+                                    layoutDirection = LayoutDirection.Ltr,
+                                    density = density
+                                )
+                                // Draw a white glowing border around the image
+                                drawOutline(
+                                    outline = outline,
+                                    style = Stroke(4.dp.toPx()),
+                                    color = if (darkMode) Color.White.copy(.2f) else Color.Black.copy(
+                                        .05f
+                                    ),
+                                    blendMode = BlendMode.Luminosity
+                                )
+                            }
+                    )
                 }
+
                 VGap()
             }
             // Item container for displaying developer information
@@ -474,5 +503,50 @@ fun AboutScreen() {
                 modifier = Modifier.width(32.dp)
             )
         }
+        if (confettiBurstKey > 0) {
+            // Force a fresh composition so each 10-tap milestone retriggers the burst.
+            key(confettiBurstKey) {
+                LaunchedEffect(Unit) {
+                    repeat(10) {
+                        hapticController.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                        delay(Random.nextLong(50, 100).milliseconds)
+                    }
+                }
+                ConfettiKit(
+                    modifier = Modifier.fillMaxSize(),
+                    parties = parade()
+                )
+            }
+        }
     }
+}
+
+fun parade(): List<Party> {
+    val party = Party(
+        speed = 10f,
+        maxSpeed = 30f,
+        damping = 0.91f,
+        angle = Angle.RIGHT - 45,
+        spread = 270,
+        colors = listOf(
+            Amber400.toArgb(),
+            Purple400.toArgb(),
+            Rose400.toArgb(),
+            Pink400.toArgb(),
+            Blue400.toArgb(),
+            Orange400.toArgb(),
+            Green400.toArgb()
+        ),
+        timeToLive = 4000L,
+        emitter = Emitter(duration = 0.8.seconds).perSecond(150),
+        position = Position.Relative(-0.1, 0.1)
+    )
+
+    return listOf(
+        party,
+        party.copy(
+            angle = party.angle - 90, // flip angle from right to left
+            position = Position.Relative(1.1, 0.1)
+        ),
+    )
 }

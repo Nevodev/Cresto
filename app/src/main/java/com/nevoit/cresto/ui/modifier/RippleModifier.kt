@@ -62,7 +62,9 @@ private val RIPPLE_SHADER = """
             }
         }
         
-        return half4(finalColor, 1.0);
+        // Keep non-ripple area transparent and only apply alpha where the ripple exists.
+        float finalAlpha = clamp(max(finalColor.r, max(finalColor.g, finalColor.b)), 0.0, 1.0);
+        return half4(finalColor, finalAlpha);
     }
 """.trimIndent()
 

@@ -59,6 +59,7 @@ import dev.chrisbanes.haze.rememberHazeState
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 
 
@@ -160,7 +161,7 @@ fun BoxScope.HomeScreen(
             val deleteId = result.data?.getIntExtra("extra_delete_id", -1) ?: -1
             if (deleteId != -1) {
                 scope.launch {
-                    delay(300)
+                    delay(300.milliseconds)
                     viewModel.deleteById(deleteId)
                 }
             }
@@ -269,7 +270,7 @@ fun BoxScope.HomeScreen(
 
                     isChecked = checked
                     val updateJob = scope.launch {
-                        delay(300)
+                        delay(300.milliseconds)
                         viewModel.update(item.todoItem.copy(isCompleted = checked))
                     }
                     pendingUpdateJobs[todoId] = updateJob

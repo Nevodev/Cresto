@@ -18,16 +18,18 @@ import com.nevoit.glasense.theme.Springs
 /**
  * A modifier that adds a 3D tilt effect when the element is pressed,
  * similar to Windows 10 tiles.
- * 
+ *
  * This version uses [pointerInput] directly to ensure zero delay feedback,
  * even when placed inside scrollable containers.
  *
  * @param maxTilt The maximum tilt angle in degrees.
  * @param maxScale The scale factor when pressed.
+ * @param onClick Callback invoked when the press is released inside the bounds.
  */
 fun Modifier.tiltOnPress(
     maxTilt: Float = 20f,
-    maxScale: Float = 0.98f
+    maxScale: Float = 0.98f,
+    onClick: () -> Unit = {}
 ): Modifier = composed {
     var isPressed by remember { mutableStateOf(false) }
     var size by remember { mutableStateOf(IntSize.Zero) }
@@ -71,7 +73,7 @@ fun Modifier.tiltOnPress(
 
     this
         .onGloballyPositioned { size = it.size }
-        .pointerInput(Unit) {
+        .pointerInput(onClick) {
             awaitPointerEventScope {
                 while (true) {
                     val event = awaitPointerEvent(PointerEventPass.Initial)
@@ -81,6 +83,9 @@ fun Modifier.tiltOnPress(
                             isPressed = true
                             tapOffset = change.position
                         } else {
+                            val releasedInside = change.position.x in 0f..size.width.toFloat() &&
+                                change.position.y in 0f..size.height.toFloat()
+                            if (isPressed && releasedInside) onClick()
                             isPressed = false
                         }
                     }
