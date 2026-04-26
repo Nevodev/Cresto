@@ -50,12 +50,14 @@ import com.nevoit.cresto.theme.isAppInDarkTheme
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlin.time.Duration.Companion.milliseconds
 
 data class PopupState(
     val isVisible: Boolean = false,
     val anchorBounds: Rect = Rect.Zero
 )
 
+@Suppress("unused")
 private enum class AnchorPopupCorner { LeftTop, RightTop, RightBottom, LeftBottom }
 
 private data class AnchorPopupPlacement(
@@ -157,14 +159,14 @@ fun GlasensePopup(
     LaunchedEffect(popupState.isVisible) {
         if (popupState.isVisible) {
             hapticController.performHapticFeedback(HapticFeedbackType.ContextClick)
-            delay(50)
+            delay(50.milliseconds)
             isPopupInComposition = true
             coroutineScope {
                 launch { scaleAni.animateTo(1f, spring(0.8f, 450f, 0.001f)) }
                 launch { alphaAni.animateTo(1f) }
             }
         } else {
-            delay(50)
+            delay(50.milliseconds)
             coroutineScope {
                 launch { scaleAni.animateTo(0.4f, spring(0.7f, 600f)) }
                 launch { alphaAni.animateTo(0f) }
