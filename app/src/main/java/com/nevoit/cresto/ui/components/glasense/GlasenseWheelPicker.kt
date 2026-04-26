@@ -130,14 +130,18 @@ fun GlasenseWheelPicker(
         }
     }
 
-    LaunchedEffect(currentSelected) {
-        if (currentSelected != centeredIndex && !listState.isScrollInProgress) {
-            listState.animateScrollToItem(currentSelected.coerceIn(0, items.lastIndex))
+
+    LaunchedEffect(currentSelected, items.size) {
+        if (items.isEmpty()) return@LaunchedEffect
+        val targetIndex = currentSelected.coerceIn(0, items.lastIndex)
+        if (targetIndex != centeredIndex && !listState.isScrollInProgress) {
+            listState.animateScrollToItem(targetIndex)
         }
     }
 
     val shape = AppSpecs.cardShape
     val color = AppColors.scrimNormal
+
     Box(
         modifier = modifier
             .height(wheelContainerHeight)
