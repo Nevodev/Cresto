@@ -31,41 +31,41 @@ fun <T> spring(
 
 object Springs {
     fun <T> smooth(
-        duration: Int = 500,
+        durationMillis: Int = 500,
         extraBounce: Double = 0.0,
         visibilityThreshold: T? = null
     ): SpringSpec<T> = spring(
-        durationMillis = duration,
+        durationMillis = durationMillis,
         bounce = 0.0 + extraBounce,
         visibilityThreshold = visibilityThreshold
     )
 
     fun <T> crisp(
-        duration: Int = 300,
+        durationMillis: Int = 300,
         extraBounce: Double = 0.0,
         visibilityThreshold: T? = null
     ): SpringSpec<T> = spring(
-        durationMillis = duration,
+        durationMillis = durationMillis,
         bounce = 0.1 + extraBounce,
         visibilityThreshold = visibilityThreshold
     )
 
     fun <T> snappy(
-        duration: Int = 500,
+        durationMillis: Int = 500,
         extraBounce: Double = 0.0,
         visibilityThreshold: T? = null
     ): SpringSpec<T> = spring(
-        durationMillis = duration,
+        durationMillis = durationMillis,
         bounce = 0.15 + extraBounce,
         visibilityThreshold = visibilityThreshold
     )
 
     fun <T> bouncy(
-        duration: Int = 500,
+        durationMillis: Int = 500,
         extraBounce: Double = 0.0,
         visibilityThreshold: T? = null
     ): SpringSpec<T> = spring(
-        durationMillis = duration,
+        durationMillis = durationMillis,
         bounce = 0.3 + extraBounce,
         visibilityThreshold = visibilityThreshold
     )

@@ -5,6 +5,7 @@ import android.content.pm.PackageManager
 import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -62,6 +63,8 @@ import com.nevoit.cresto.ui.components.glasense.isScrolledPast
 import com.nevoit.cresto.ui.components.packed.ConfigItemContainer
 import com.nevoit.cresto.ui.components.packed.PageContent
 import com.nevoit.cresto.ui.components.packed.VGap
+import com.nevoit.cresto.ui.modifier.shaderRipple
+import com.nevoit.cresto.ui.modifier.tiltOnPress
 import dev.chrisbanes.haze.ExperimentalHazeApi
 import dev.chrisbanes.haze.hazeSource
 import dev.chrisbanes.haze.rememberHazeState
@@ -133,11 +136,13 @@ fun AboutScreen() {
             // An item that displays a background image for the About screen
             item {
                 val shape = AppSpecs.cardShape
-                Column(
+                Box(
                     modifier = Modifier
                         .aspectRatio(3f / 4f)
                         .fillMaxWidth()
+                        .tiltOnPress(maxTilt = 10f)
                         .clip(shape)
+                        .shaderRipple()
                         .paint(
                             painter = if (darkMode) painterResource(R.drawable.about_background) else painterResource(
                                 R.drawable.about_background_light
@@ -159,10 +164,9 @@ fun AboutScreen() {
                                 ),
                                 blendMode = BlendMode.Luminosity
                             )
-                        },
-                    horizontalAlignment = Alignment.CenterHorizontally
+                        }
                 ) {
-
+                    
                 }
                 VGap()
             }
