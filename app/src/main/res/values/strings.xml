@@ -22,6 +22,7 @@
     <string name="data_storage"><![CDATA[Data & Storage]]></string>
     <string name="general">General</string>
     <string name="credits">Credits</string>
+    <string name="credits_info">Cresto is built with the help of these amazing open-source libraries.</string>
     <string name="developer">Developer</string>
     <string name="developer_avatar">Developer Avatar</string>
     <string name="main_developer">Main Developer</string>

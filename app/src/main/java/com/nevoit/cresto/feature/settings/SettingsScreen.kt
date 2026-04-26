@@ -158,7 +158,11 @@ fun BoxScope.SettingsScreen() {
                     color = harmonize(Slate500),
                     icon = painterResource(R.drawable.ic_twotone_info),
                     title = stringResource(R.string.credits),
-                    onClick = {}
+                    onClick = {
+                        context.startActivity(
+                            SettingsActivity.createIntent(context, SettingsDestination.CREDITS)
+                        )
+                    }
                 )
             }
         }

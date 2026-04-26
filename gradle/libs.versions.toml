@@ -20,6 +20,7 @@ roomRuntime = "2.8.4"
 koin-bom = "4.2.1"
 confettiKit = "0.8.0"
 materialKolor = "4.1.1"
+aboutLibraries = "14.0.1"
 
 
 [libraries]
@@ -66,10 +67,14 @@ materialKolor = { module = "com.materialkolor:material-kolor", version.ref = "ma
 koin-bom = { module = "io.insert-koin:koin-bom", version.ref = "koin-bom" }
 koin-androidx-compose = { module = "io.insert-koin:koin-androidx-compose" }
 
+aboutlibraries-core = { module = "com.mikepenz:aboutlibraries-core", version.ref = "aboutLibraries" }
+aboutlibraries-compose-core = { module = "com.mikepenz:aboutlibraries-compose-core", version.ref = "aboutLibraries" }
+
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 android-library = { id = "com.android.library", version.ref = "agp" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 ksp = { id = "com.google.devtools.ksp", version = "2.3.6" }
+aboutLibraries = { id = "com.mikepenz.aboutlibraries.plugin", version.ref = "aboutLibraries" }
 

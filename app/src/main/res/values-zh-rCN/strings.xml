@@ -27,6 +27,7 @@
     <string name="data_storage">数据与存储</string>
     <string name="general">通用</string>
     <string name="credits">致谢</string>
+    <string name="credits_info">Cresto 能够顺利运行，离不开这些优秀的开源库。</string>
     <string name="developer">开发者</string>
     <string name="developer_avatar">开发者头像</string>
     <string name="main_developer">主开发者</string>

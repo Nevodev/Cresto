@@ -20,7 +20,8 @@ enum class SettingsDestination(val value: String) {
     AI("ai"),
     DATA_STORAGE("data_storage"),
     GENERAL("general"),
-    ABOUT("about");
+    ABOUT("about"),
+    CREDITS("credits");
 
     companion object {
         fun fromValue(value: String?): SettingsDestination {
@@ -64,6 +65,7 @@ class SettingsActivity : ComponentActivity() {
                         SettingsDestination.DATA_STORAGE -> DataStorageScreen()
                         SettingsDestination.GENERAL -> GeneralScreen()
                         SettingsDestination.ABOUT -> AboutScreen()
+                        SettingsDestination.CREDITS -> CreditsScreen()
                     }
                 }
             }

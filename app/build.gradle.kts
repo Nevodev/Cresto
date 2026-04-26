@@ -22,6 +22,7 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.ksp)
     alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.aboutLibraries)
 }
 
 configure<ApplicationExtension> {
@@ -46,6 +47,7 @@ configure<ApplicationExtension> {
     buildTypes {
         release {
             isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -116,6 +118,8 @@ dependencies {
     implementation(libs.backdrop)
     implementation(libs.confetti.kit)
     implementation(libs.materialKolor)
+    implementation(libs.aboutlibraries.core)
+    implementation(libs.aboutlibraries.compose.core)
 
     implementation(platform(libs.koin.bom))
     implementation(libs.koin.androidx.compose)
