@@ -68,6 +68,7 @@ import com.nevoit.cresto.theme.isAppInDarkTheme
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlin.time.Duration.Companion.milliseconds
 
 data class MenuItemData(
     val text: String,
@@ -126,9 +127,18 @@ private fun pickPlacement(
 
     val candidates = listOf(
         PopupCorner.LeftTop to Offset(anchorBounds.left, anchorBounds.bottom + gapPx),
-        PopupCorner.RightTop to Offset(anchorBounds.right - menuSize.width, anchorBounds.bottom + gapPx),
-        PopupCorner.RightBottom to Offset(anchorBounds.right - menuSize.width, anchorBounds.top - menuSize.height - gapPx),
-        PopupCorner.LeftBottom to Offset(anchorBounds.left, anchorBounds.top - menuSize.height - gapPx),
+        PopupCorner.RightTop to Offset(
+            anchorBounds.right - menuSize.width,
+            anchorBounds.bottom + gapPx
+        ),
+        PopupCorner.RightBottom to Offset(
+            anchorBounds.right - menuSize.width,
+            anchorBounds.top - menuSize.height - gapPx
+        ),
+        PopupCorner.LeftBottom to Offset(
+            anchorBounds.left,
+            anchorBounds.top - menuSize.height - gapPx
+        ),
     )
 
     val chosen = candidates.firstOrNull { (_, p) -> overflow(p.x, p.y) == 0f }
@@ -190,14 +200,14 @@ fun GlasenseMenu(
     }
     LaunchedEffect(menuState.isVisible) {
         if (menuState.isVisible) {
-            delay(50)
+            delay(50.milliseconds)
             isMenuInComposition = true
             coroutineScope {
                 launch { scaleAni.animateTo(1f, spring(0.8f, 450f, 0.001f)) }
                 launch { alphaAni.animateTo(1f) }
             }
         } else {
-            delay(50)
+            delay(50.milliseconds)
             coroutineScope {
                 launch { scaleAni.animateTo(0.4f, spring(0.7f, 600f)) }
                 launch { alphaAni.animateTo(0f) }
@@ -224,7 +234,7 @@ fun GlasenseMenu(
     val shape = RoundedCornerShape(16.dp)
 
     if (menuState.isVisible) {
-        BackHandler() { onDismiss() }
+        BackHandler { onDismiss() }
         Box(
             modifier = Modifier
                 .fillMaxSize()

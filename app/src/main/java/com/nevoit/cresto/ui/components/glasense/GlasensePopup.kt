@@ -176,7 +176,7 @@ fun GlasensePopup(
     }
 
     val shadowBaseColor =
-        if (isAppInDarkTheme()) Color.Black.copy(alpha = 0.2f) else Color.Black.copy(alpha = 0.1f)
+        if (isAppInDarkTheme()) Color.Black.copy(alpha = 0.4f) else Color.Black.copy(alpha = 0.1f)
     val shadowRadiusPx = with(density) { 32.dp.toPx() }
     val shadowDyPx = with(density) { 16.dp.toPx() }
     val shadowPaint = remember(density) {
