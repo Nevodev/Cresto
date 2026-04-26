@@ -57,6 +57,10 @@ data class PopupState(
     val anchorBounds: Rect = Rect.Zero
 )
 
+enum class PopupDirection {
+    Up, Down, Auto
+}
+
 @Suppress("unused")
 private enum class AnchorPopupCorner { LeftTop, RightTop, RightBottom, LeftBottom }
 
@@ -71,7 +75,8 @@ private fun pickPopupPlacement(
     popupSize: IntSize,
     viewport: IntSize,
     marginPx: Float,
-    gapPx: Float
+    gapPx: Float,
+    preferredDirection: PopupDirection = PopupDirection.Auto
 ): AnchorPopupPlacement {
     fun overflow(x: Float, y: Float): Float {
         val left = (marginPx - x).coerceAtLeast(0f)
@@ -85,13 +90,25 @@ private fun pickPopupPlacement(
     val anchorCenterY = (anchorBounds.top + anchorBounds.bottom) / 2f
     val targetX = anchorCenterX - popupSize.width / 2f
 
-    val candidates = listOf(
-        AnchorPopupCorner.LeftTop to Offset(targetX, anchorBounds.bottom + gapPx),
-        AnchorPopupCorner.LeftBottom to Offset(
-            targetX,
-            anchorBounds.top - popupSize.height - gapPx
-        ),
-    )
+    val topPos = anchorBounds.top - popupSize.height - gapPx
+    val bottomPos = anchorBounds.bottom + gapPx
+
+    val candidates = when (preferredDirection) {
+        PopupDirection.Up -> listOf(
+            AnchorPopupCorner.LeftBottom to Offset(targetX, topPos),
+            AnchorPopupCorner.LeftTop to Offset(targetX, bottomPos)
+        )
+
+        PopupDirection.Down -> listOf(
+            AnchorPopupCorner.LeftTop to Offset(targetX, bottomPos),
+            AnchorPopupCorner.LeftBottom to Offset(targetX, topPos)
+        )
+
+        PopupDirection.Auto -> listOf(
+            AnchorPopupCorner.LeftTop to Offset(targetX, bottomPos),
+            AnchorPopupCorner.LeftBottom to Offset(targetX, topPos)
+        )
+    }
 
     val chosen = candidates.firstOrNull { (_, p) -> overflow(p.x, p.y) == 0f }
         ?: candidates.minBy { (_, p) -> overflow(p.x, p.y) }
@@ -117,6 +134,7 @@ fun GlasensePopup(
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier,
     width: Dp? = null,
+    direction: PopupDirection = PopupDirection.Auto,
     shape: Shape = AppSpecs.dialogShape,
     containerColor: Color = AppColors.cardBackground,
     contentPadding: PaddingValues = PaddingValues(12.dp),
@@ -141,6 +159,7 @@ fun GlasensePopup(
         viewport,
         popupMargin,
         anchorGap,
+        direction,
         density
     ) {
         pickPopupPlacement(
@@ -148,7 +167,8 @@ fun GlasensePopup(
             popupSize = effectivePopupSize,
             viewport = viewport,
             marginPx = with(density) { popupMargin.toPx() },
-            gapPx = with(density) { anchorGap.toPx() }
+            gapPx = with(density) { anchorGap.toPx() },
+            preferredDirection = direction
         )
     }
 

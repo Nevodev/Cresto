@@ -39,8 +39,8 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.BlurEffect
 import androidx.compose.ui.graphics.TileMode
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.LayoutCoordinates
+import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
@@ -69,6 +69,7 @@ import com.nevoit.cresto.toolkit.gaussiangradient.smoothGradientMaskFallback
 import com.nevoit.cresto.ui.components.bottomsheet.BottomSheet
 import com.nevoit.cresto.ui.components.glasense.DialogItemData
 import com.nevoit.cresto.ui.components.glasense.DialogState
+import com.nevoit.cresto.ui.components.glasense.DueDatePicker
 import com.nevoit.cresto.ui.components.glasense.GlasenseButtonAdaptable
 import com.nevoit.cresto.ui.components.glasense.GlasenseButtonToolBar
 import com.nevoit.cresto.ui.components.glasense.GlasenseDialog
@@ -76,6 +77,7 @@ import com.nevoit.cresto.ui.components.glasense.GlasenseMenu
 import com.nevoit.cresto.ui.components.glasense.GlasenseMenuItem
 import com.nevoit.cresto.ui.components.glasense.GlasenseNavigationButton
 import com.nevoit.cresto.ui.components.glasense.MenuState
+import com.nevoit.cresto.ui.components.glasense.PopupDirection
 import dev.chrisbanes.haze.ExperimentalHazeApi
 import dev.chrisbanes.haze.HazeInputScale
 import dev.chrisbanes.haze.HazeProgressive
@@ -85,6 +87,7 @@ import dev.chrisbanes.haze.hazeSource
 import dev.chrisbanes.haze.rememberHazeState
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
+import java.time.LocalDate
 
 sealed class Screen(val route: String) {
     object Home : Screen("home")
@@ -140,6 +143,11 @@ fun MainScreen() {
     val viewModel: TodoViewModel = koinViewModel()
 
     val bottomSheetState by viewModel.bottomSheetState.collectAsState()
+
+    var isDatePickerVisible by remember { mutableStateOf(false) }
+    var dateButtonBounds by remember { mutableStateOf(Rect.Zero) }
+    var sheetFinalDate by remember { mutableStateOf<LocalDate?>(null) }
+    var onDateSelectedCallback by remember { mutableStateOf<(LocalDate?) -> Unit>({}) }
 
     val navigationBarHeight = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
 
@@ -554,7 +562,14 @@ fun MainScreen() {
                             dueDate = finalDate
                         )
                     )
-                }, showDialog = showDialog
+                },
+                showDialog = showDialog,
+                onRequestCustomDate = { bounds, initialDate, onSelected ->
+                    dateButtonBounds = bounds
+                    sheetFinalDate = initialDate
+                    onDateSelectedCallback = onSelected
+                    isDatePickerVisible = true
+                }
             )
         }
 
@@ -568,6 +583,17 @@ fun MainScreen() {
             dialogState = dialogState,
             backdrop = backdrop,
             onDismiss = { dismissDialog() }
+        )
+
+        DueDatePicker(
+            isVisible = isDatePickerVisible,
+            anchorBounds = dateButtonBounds,
+            initialDate = sheetFinalDate,
+            onDismiss = { isDatePickerVisible = false },
+            onDateSelected = { date ->
+                onDateSelectedCallback(date)
+            },
+            direction = PopupDirection.Up
         )
     }
 }

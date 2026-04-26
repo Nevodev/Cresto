@@ -1,16 +1,13 @@
 package com.nevoit.cresto.ui.components.bottomsheet
 
-import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.LocalOverscrollFactory
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.Orientation
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -30,20 +27,25 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.layout.Layout
+import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
 import com.kyant.shapes.Capsule
 import com.nevoit.cresto.R
@@ -61,7 +63,10 @@ import com.nevoit.cresto.ui.components.packed.HorizontalFlagPicker
 import com.nevoit.cresto.ui.components.packed.HorizontalPresetDatePicker
 import com.nevoit.cresto.ui.components.packed.VGap
 import com.nevoit.glasense.overscroll.rememberOffsetOverscrollFactory
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import java.time.LocalDate
+import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * Enum to represent the currently selected button in the AddTodoSheet.
@@ -80,7 +85,8 @@ enum class SelectedButton {
 @Composable
 fun AddTodoSheet(
     onAddClick: (String, Int, LocalDate?) -> Unit,
-    onClose: () -> Unit
+    onClose: () -> Unit,
+    onRequestCustomDate: (Rect, LocalDate?, (LocalDate?) -> Unit) -> Unit
 ) {
     // State for tracking the currently selected button (due date, flag, etc.)
     var selectedButton by remember { mutableStateOf(SelectedButton.NONE) }
@@ -102,6 +108,7 @@ fun AddTodoSheet(
     }
 
     val hapticController = LocalHapticFeedback.current
+    val scope = rememberCoroutineScope()
 
     val overscrollFactory = rememberOffsetOverscrollFactory(
         orientation = Orientation.Horizontal
@@ -192,50 +199,21 @@ fun AddTodoSheet(
             LocalOverscrollFactory provides overscrollFactory
         ) {
             // Buttons for due date and flag.
-            BoxWithConstraints(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(48.dp)
-            ) {
-                val totalWidth = this.maxWidth
+            val progress by animateFloatAsState(
+                targetValue = when (selectedButton) {
+                    SelectedButton.DUE_DATE -> 1f
+                    SelectedButton.FLAG -> -1f
+                    SelectedButton.NONE -> 0f
+                },
+                animationSpec = spring(
+                    dampingRatio = 0.7f,
+                    stiffness = 300f
+                ),
+                label = "buttons_expansion"
+            )
 
-                // Calculate the width of the buttons based on the selected state.
-                val collapsedSize = 48.dp
-                val spacerSize = 12.dp
-                val expandedWidth = totalWidth - (collapsedSize * 1) - (spacerSize * 1)
-                val defaultWidth = (totalWidth - (spacerSize * 1)) / 2
-
-                // Animate the width of the due date button.
-                val dueDateWidth by animateDpAsState(
-                    targetValue = when (selectedButton) {
-                        SelectedButton.DUE_DATE -> expandedWidth
-                        SelectedButton.NONE -> defaultWidth
-                        else -> collapsedSize
-                    },
-                    animationSpec = spring(
-                        dampingRatio = 0.7f,
-                        stiffness = 300f
-                    )
-                )
-                // Animate the width of the flag button.
-                val flagWidth by animateDpAsState(
-                    targetValue = when (selectedButton) {
-                        SelectedButton.FLAG -> expandedWidth
-                        SelectedButton.NONE -> defaultWidth
-                        else -> collapsedSize
-                    },
-                    animationSpec = spring(
-                        dampingRatio = 0.7f,
-                        stiffness = 300f
-                    )
-                )
-
-                Row(
-                    modifier = Modifier
-                        .width(totalWidth)
-                        .height(48.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
+            Layout(
+                content = {
                     // Due date button.
                     GlasenseButtonAlt(
                         enabled = true,
@@ -248,9 +226,7 @@ fun AddTodoSheet(
                                 SelectedButton.DUE_DATE
                             }
                         },
-                        modifier = Modifier
-                            .height(48.dp)
-                            .width(dueDateWidth),
+                        modifier = Modifier.height(48.dp),
                         colors = AppButtonColors.secondary(),
                         indication = true
                     ) {
@@ -291,6 +267,19 @@ fun AddTodoSheet(
                                         finalDate = it
                                         selectedButton = SelectedButton.NONE
                                     },
+                                    onRequestCustomDate = { coordinates ->
+                                        onRequestCustomDate(
+                                            coordinates.boundsInWindow(),
+                                            finalDate
+                                        ) { newDate ->
+                                            finalDate = newDate
+                                            scope.launch {
+                                                delay(100.milliseconds)
+                                                selectedButton = SelectedButton.NONE
+                                            }
+
+                                        }
+                                    },
                                     hapticController = hapticController
                                 )
 
@@ -298,7 +287,6 @@ fun AddTodoSheet(
                         }
 
                     }
-                    Spacer(modifier = Modifier.width(12.dp))
                     // Flag button.
                     GlasenseButtonAlt(
                         enabled = true,
@@ -311,9 +299,7 @@ fun AddTodoSheet(
                                 SelectedButton.FLAG
                             }
                         },
-                        modifier = Modifier
-                            .height(48.dp)
-                            .width(flagWidth),
+                        modifier = Modifier.height(48.dp),
                         colors = AppButtonColors.secondary(),
                     ) {
                         Box(
@@ -359,8 +345,42 @@ fun AddTodoSheet(
                             }
                         }
                     }
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(48.dp)
+            ) { measurables, constraints ->
+                val totalWidth = constraints.maxWidth
+                val spacerPx = 12.dp.roundToPx()
+                val collapsedPx = 48.dp.roundToPx()
+                val availableWidth = totalWidth - spacerPx
+                val defaultWidth = availableWidth / 2f
+                val expandedWidth = availableWidth - collapsedPx
+
+                val dueDateWidth: Int
+                val flagWidth: Int
+
+                if (progress >= 0) {
+                    dueDateWidth =
+                        (defaultWidth + (expandedWidth - defaultWidth) * progress).toInt()
+                    flagWidth = (defaultWidth + (collapsedPx - defaultWidth) * progress).toInt()
+                } else {
+                    val p = -progress
+                    dueDateWidth = (defaultWidth + (collapsedPx - defaultWidth) * p).toInt()
+                    flagWidth = (defaultWidth + (expandedWidth - defaultWidth) * p).toInt()
                 }
 
+                val dueDatePlaceable = measurables[0].measure(
+                    Constraints.fixed(dueDateWidth, constraints.maxHeight)
+                )
+                val flagPlaceable = measurables[1].measure(
+                    Constraints.fixed(flagWidth, constraints.maxHeight)
+                )
+
+                layout(totalWidth, constraints.maxHeight) {
+                    dueDatePlaceable.placeRelative(0, 0)
+                    flagPlaceable.placeRelative(dueDateWidth + spacerPx, 0)
+                }
             }
         }
         // Request focus for the text field when the sheet is launched.

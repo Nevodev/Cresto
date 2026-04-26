@@ -69,6 +69,7 @@ import com.nevoit.cresto.ui.components.glasense.GlasenseButton
 import com.nevoit.cresto.ui.components.glasense.GlasenseDynamicSmallTitle
 import com.nevoit.cresto.ui.components.glasense.GlasensePopup
 import com.nevoit.cresto.ui.components.glasense.GlasenseSwitch
+import com.nevoit.cresto.ui.components.glasense.PopupDirection
 import com.nevoit.cresto.ui.components.glasense.PopupState
 import com.nevoit.cresto.ui.components.glasense.ZeroHeightDivider
 import com.nevoit.cresto.ui.components.glasense.extend.overscrollSpacer
@@ -343,6 +344,7 @@ fun AppearanceScreen(settingsViewModel: SettingsViewModel = viewModel()) {
             width = LocalWindowInfo.current.containerDpSize.width - 24.dp,
             popupMargin = 12.dp,
             anchorGap = 12.dp,
+            direction = PopupDirection.Up
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),

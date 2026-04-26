@@ -20,12 +20,8 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.DatePicker
-import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -42,6 +38,8 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.hapticfeedback.HapticFeedback
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.layout.LayoutCoordinates
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.nevoit.cresto.R
@@ -50,10 +48,9 @@ import com.nevoit.cresto.theme.getFlagColor
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import java.time.Instant
 import java.time.LocalDate
-import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
+import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * A horizontal picker for selecting a color flag.
@@ -157,7 +154,7 @@ fun ColorCircle(
                             )
                         }
                         launch {
-                            delay(100)
+                            delay(100.milliseconds)
                             onFinish()
                         }
                     }
@@ -233,16 +230,11 @@ private fun getPresetTypeForDate(date: LocalDate?): Int {
 fun HorizontalPresetDatePicker(
     initialDate: LocalDate?,
     onDateSelected: (LocalDate?) -> Unit,
+    onRequestCustomDate: (LayoutCoordinates) -> Unit,
     hapticController: HapticFeedback
 ) {
     var selectedDate by remember { mutableStateOf(initialDate) }
     var selectedPreset by remember { mutableIntStateOf(getPresetTypeForDate(initialDate)) }
-    var showDatePicker by remember { mutableStateOf(false) }
-
-    val datePickerState = rememberDatePickerState(
-        initialSelectedDateMillis = selectedDate?.atStartOfDay(ZoneOffset.UTC)?.toInstant()
-            ?.toEpochMilli()
-    )
 
     val presets = listOf(
         stringResource(R.string.none),
@@ -302,8 +294,15 @@ fun HorizontalPresetDatePicker(
             }
             item {
                 val isCustomDateSelected = (selectedPreset == 4)
+
+                val today = LocalDate.now()
+
                 val buttonText = if (isCustomDateSelected) {
-                    selectedDate?.format(DateTimeFormatter.ofPattern("MM/dd"))
+                    if (selectedDate?.year == today.year) {
+                        selectedDate?.format(DateTimeFormatter.ofPattern("M/d"))
+                    } else {
+                        selectedDate?.format(DateTimeFormatter.ofPattern("yyyy/M/d"))
+                    }
                 } else {
                     stringResource(R.string.custom)
                 }
@@ -311,44 +310,11 @@ fun HorizontalPresetDatePicker(
                 DateSelectorBox(
                     text = buttonText ?: stringResource(R.string.custom),
                     isSelected = isCustomDateSelected,
-                    onClick = {
-                        hapticController.performHapticFeedback(HapticFeedbackType.ContextClick)
-                        showDatePicker = true
+                    onClick = { coordinates ->
+                        onRequestCustomDate(coordinates)
                     }
                 )
             }
-        }
-    }
-
-    // Show the date picker dialog when needed.
-    if (showDatePicker) {
-        DatePickerDialog(
-            onDismissRequest = { showDatePicker = false },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        showDatePicker = false
-                        datePickerState.selectedDateMillis?.let { millis ->
-                            val chosenDate = Instant.ofEpochMilli(millis)
-                                .atZone(ZoneOffset.UTC)
-                                .toLocalDate()
-                            selectedDate = chosenDate
-                            // selectedPreset = 4 // Mark as custom date
-                            onDateSelected(chosenDate)
-                        }
-                    },
-                    enabled = datePickerState.selectedDateMillis != null
-                ) {
-                    Text(stringResource(R.string.done))
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { showDatePicker = false }) {
-                    Text(stringResource(R.string.cancel))
-                }
-            }
-        ) {
-            DatePicker(state = datePickerState)
         }
     }
 }
@@ -390,7 +356,7 @@ private fun SelectorBox(
                             )
                         }
                         launch {
-                            delay(100)
+                            delay(100.milliseconds)
                             onFinish()
                         }
                     }
@@ -407,6 +373,13 @@ private fun SelectorBox(
                     )
                 }
             }
+        }
+    }
+
+    // Reset pressed state if selection changes externally.
+    LaunchedEffect(isSelected) {
+        if (isSelected) {
+            isPressed = false
         }
     }
 
@@ -441,11 +414,12 @@ private fun SelectorBox(
 private fun DateSelectorBox(
     text: String,
     isSelected: Boolean,
-    onClick: () -> Unit
+    onClick: (LayoutCoordinates) -> Unit
 ) {
     val scale = remember { Animatable(1f) }
     val interactionSource = remember { MutableInteractionSource() }
     var isPressed by remember { mutableStateOf(false) }
+    var coordinates: LayoutCoordinates? by remember { mutableStateOf(null) }
 
     // Handle press and release animations.
     LaunchedEffect(interactionSource) {
@@ -453,7 +427,7 @@ private fun DateSelectorBox(
             when (interaction) {
                 is PressInteraction.Release -> {
                     isPressed = true
-                    onClick()
+                    coordinates?.let { onClick(it) }
                 }
 
                 is PressInteraction.Cancel -> {
@@ -470,8 +444,16 @@ private fun DateSelectorBox(
         }
     }
 
+    // Reset pressed state if selection changes externally.
+    LaunchedEffect(isSelected) {
+        if (isSelected) {
+            isPressed = false
+        }
+    }
+
     Box(
         modifier = Modifier
+            .onGloballyPositioned { coordinates = it }
             .graphicsLayer {
                 scaleX = scale.value
                 scaleY = scale.value

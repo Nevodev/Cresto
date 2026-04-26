@@ -3,9 +3,9 @@ package com.nevoit.cresto.ui.components.bottomsheet
 import android.content.Context
 import android.net.Uri
 import android.util.Base64
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.CubicBezierEasing
 import androidx.compose.animation.core.FastOutSlowInEasing
@@ -50,6 +50,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
@@ -58,8 +59,8 @@ import androidx.compose.ui.graphics.TileMode
 import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.onSizeChanged
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -94,12 +95,13 @@ import com.nevoit.cresto.ui.viewmodel.AiSideEffect
 import com.nevoit.cresto.ui.viewmodel.AiViewModel
 import com.nevoit.cresto.ui.viewmodel.UiState
 import com.nevoit.cresto.util.deviceCornerShape
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.koin.androidx.compose.koinViewModel
 import java.time.LocalDate
+import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * A composable function that displays a bottom sheet with custom animations.
@@ -114,6 +116,7 @@ fun BottomSheet(
     onAddClick: (String, Int, LocalDate?) -> Unit,
     aiViewModel: AiViewModel = viewModel(),
     showDialog: (items: List<DialogItemData>, title: String, message: String?) -> Unit,
+    onRequestCustomDate: (Rect, LocalDate?, (LocalDate?) -> Unit) -> Unit
 ) {
     val uiState by aiViewModel.uiState.collectAsState()
 
@@ -226,7 +229,7 @@ fun BottomSheet(
                 )
             }
             scope.launch {
-                delay(300)
+                delay(300.milliseconds)
                 scaleAnimation.animateTo(
                     targetValue = 1f,
                     animationSpec = spring(0.8f, 300f, 0.001f)
@@ -606,7 +609,7 @@ fun BottomSheet(
                         )
                         onDismiss()
                     }
-                })
+                }, onRequestCustomDate = onRequestCustomDate)
             }
         }
     }
