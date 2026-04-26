@@ -3,7 +3,6 @@ package com.nevoit.cresto.feature.detail
 import android.app.Activity
 import android.content.Intent
 import androidx.activity.compose.LocalActivity
-import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -106,6 +105,7 @@ import com.nevoit.cresto.ui.components.packed.TodoItemRowEditable
 import com.nevoit.cresto.ui.components.packed.VGap
 import com.nevoit.cresto.util.formatRelativeTime
 import com.nevoit.glasense.component.GlasenseActivityIndicator
+import com.nevoit.glasense.theme.Springs
 import dev.chrisbanes.haze.ExperimentalHazeApi
 import dev.chrisbanes.haze.hazeSource
 import dev.chrisbanes.haze.rememberHazeState
@@ -271,7 +271,7 @@ fun DetailScreen(
                 item(key = "status_bar") {
                     Box(
                         modifier = Modifier
-                            .animateItem(placementSpec = spring(0.9f, 400f))
+                            .animateItem(placementSpec = Springs.crisp())
                             .padding(top = 48.dp + statusBarHeight + 12.dp)
                     )
                 }
@@ -281,7 +281,7 @@ fun DetailScreen(
                         onCheckedChange = { isChecked ->
                             viewModel.update(currentItem.todoItem.copy(isCompleted = isChecked))
                         },
-                        modifier = Modifier.animateItem(placementSpec = spring(0.9f, 400f)),
+                        modifier = Modifier.animateItem(placementSpec = Springs.crisp()),
                         onEditEnd = { string ->
                             // if update here will cause conflict
                             title = string
@@ -295,7 +295,7 @@ fun DetailScreen(
                     ) {
                         Column(
                             modifier = Modifier
-                                .animateItem(placementSpec = spring(0.9f, 400f))
+                                .animateItem(placementSpec = Springs.crisp())
                                 .fillMaxWidth()
                                 .background(
                                     color = AppColors.cardBackground,
@@ -440,7 +440,7 @@ fun DetailScreen(
                         fontWeight = FontWeight.Normal,
                         color = AppColors.contentVariant,
                         modifier = Modifier
-                            .animateItem(placementSpec = spring(0.9f, 400f))
+                            .animateItem(placementSpec = Springs.crisp())
                             .fillMaxWidth()
                             .padding(top = 8.dp, bottom = 8.dp, start = 12.dp)
                     )
@@ -449,7 +449,7 @@ fun DetailScreen(
                     SwipeableSubTodoItemRowEditable(
                         listState = swipeListState,
                         subTodo = subTodo,
-                        modifier = Modifier.animateItem(placementSpec = spring(0.9f, 400f)),
+                        modifier = Modifier.animateItem(placementSpec = Springs.crisp()),
                         onEditEnd = { string, checked ->
                             viewModel.updateSubTodo(
                                 subTodo.copy(
@@ -477,7 +477,7 @@ fun DetailScreen(
                 }
                 item(key = "add") {
                     SubTodoItemRowAdd(
-                        modifier = Modifier.animateItem(placementSpec = spring(0.9f, 400f)),
+                        modifier = Modifier.animateItem(placementSpec = Springs.crisp()),
                         onEditEnd = { description, checked ->
                             viewModel.insertSubTodo(
                                 SubTodoItem(

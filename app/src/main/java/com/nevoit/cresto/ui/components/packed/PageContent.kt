@@ -22,6 +22,7 @@ fun PageContent(
     content: LazyListScope.() -> Unit
 ) {
     val navigationBarHeight = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+    val flingBehavior = rememberCupertinoFlingBehavior()
 
     LazyColumn(
         state = state,
@@ -33,7 +34,8 @@ fun PageContent(
             end = 12.dp,
             bottom = if (tabPadding) 120.dp + navigationBarHeight else bottomPadding
                 ?: navigationBarHeight
-        )
+        ),
+        flingBehavior = flingBehavior
     ) {
         content()
     }
@@ -48,6 +50,7 @@ fun PageContentNoPadding(
     content: LazyListScope.() -> Unit
 ) {
     val navigationBarHeight = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+    val flingBehavior = rememberCupertinoFlingBehavior()
 
     LazyColumn(
         state = state,
@@ -59,7 +62,8 @@ fun PageContentNoPadding(
             end = 0.dp,
             bottom = if (tabPadding) 120.dp + navigationBarHeight else bottomPadding
                 ?: navigationBarHeight
-        )
+        ),
+        flingBehavior = flingBehavior
     ) {
         content()
     }

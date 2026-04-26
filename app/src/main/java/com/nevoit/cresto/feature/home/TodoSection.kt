@@ -1,7 +1,6 @@
 package com.nevoit.cresto.feature.home
 
 import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
@@ -43,6 +42,7 @@ import com.nevoit.cresto.theme.AppSpecs
 import com.nevoit.cresto.ui.components.glasense.DimIndication
 import com.nevoit.cresto.ui.components.glasense.SwipeableListState
 import com.nevoit.cresto.ui.components.packed.SwipeableTodoItem
+import com.nevoit.glasense.theme.Springs
 
 @Composable
 fun LazyItemScope.TodoListItemRow(
@@ -75,7 +75,7 @@ fun LazyItemScope.TodoListItemRow(
 
     Box(
         modifier = Modifier
-            .animateItem(placementSpec = spring(0.9f, 400f))
+            .animateItem(placementSpec = Springs.crisp())
             .combinedClickable(
                 interactionSource = rowInteractionSource,
                 indication = DimIndication(shape = AppSpecs.cardShape),
@@ -156,7 +156,7 @@ fun LazyItemScope.TodoListSectionHead(
         horizontalArrangement = Arrangement.SpaceBetween,
         modifier = Modifier
             .zIndex(-1f)
-            .animateItem(placementSpec = spring(0.9f, 400f))
+            .animateItem(placementSpec = Springs.crisp())
             .fillMaxWidth()
             .clickable(
                 interactionSource = interactionSource,

@@ -1,10 +1,7 @@
 package com.nevoit.cresto.ui.components.glasense
 
-import androidx.compose.animation.core.exponentialDecay
-import androidx.compose.animation.core.spring
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.gestures.snapping.SnapLayoutInfoProvider
-import androidx.compose.foundation.gestures.snapping.snapFlingBehavior
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -37,6 +34,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.times
 import com.nevoit.cresto.theme.AppColors
 import com.nevoit.cresto.theme.AppSpecs
+import com.nevoit.cresto.ui.components.packed.rememberCupertinoDecaySpec
+import com.nevoit.cresto.ui.components.packed.rememberGlasenseSnapFlingBehavior
+import com.nevoit.glasense.theme.Springs
 import kotlin.math.absoluteValue
 import kotlin.math.sin
 
@@ -69,23 +69,15 @@ fun GlasenseWheelPicker(
         SnapLayoutInfoProvider(lazyListState = listState)
     }
 
-    val decayAnimationSpec = exponentialDecay<Float>(frictionMultiplier = 0.5f)
+    val decayAnimationSpec = rememberCupertinoDecaySpec()
 
-    val customSnapAnimationSpec = remember {
-        spring<Float>(stiffness = 200f)
-    }
+    val customSnapAnimationSpec = remember { Springs.smooth<Float>() }
 
-    val flingBehavior = remember(
-        snapLayoutInfoProvider,
-        decayAnimationSpec,
-        customSnapAnimationSpec
-    ) {
-        snapFlingBehavior(
-            snapLayoutInfoProvider = snapLayoutInfoProvider,
-            decayAnimationSpec = decayAnimationSpec,
-            snapAnimationSpec = customSnapAnimationSpec
-        )
-    }
+    val flingBehavior = rememberGlasenseSnapFlingBehavior(
+        snapLayoutInfoProvider = snapLayoutInfoProvider,
+        decayAnimationSpec = decayAnimationSpec,
+        snapAnimationSpec = customSnapAnimationSpec,
+    )
 
     val itemHeightPx = with(density) { itemHeight.toPx() }
     val maxRotationDeg = 90f

@@ -6,7 +6,6 @@ import android.os.SystemClock
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.animation.core.spring
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
@@ -53,6 +52,7 @@ import com.nevoit.cresto.ui.components.glasense.isScrolledPast
 import com.nevoit.cresto.ui.components.glasense.rememberSwipeableListState
 import com.nevoit.cresto.ui.components.packed.PageContent
 import com.nevoit.cresto.ui.components.packed.VGap
+import com.nevoit.glasense.theme.Springs
 import dev.chrisbanes.haze.ExperimentalHazeApi
 import dev.chrisbanes.haze.hazeSource
 import dev.chrisbanes.haze.rememberHazeState
@@ -185,7 +185,7 @@ fun BoxScope.HomeScreen(
             item(key = "top_padding") {
                 Box(
                     modifier = Modifier
-                        .animateItem(placementSpec = spring(0.9f, 400f))
+                        .animateItem(placementSpec = Springs.crisp())
                         .statusBarsPadding()
                         .height(48.dp + 12.dp + 48.dp + 12.dp)
                 )
@@ -193,7 +193,7 @@ fun BoxScope.HomeScreen(
         } else {
             item(key = "title") {
                 GlasensePageHeader(
-                    modifier = Modifier.animateItem(placementSpec = spring(0.9f, 400f)),
+                    modifier = Modifier.animateItem(placementSpec = Springs.crisp()),
                     title = stringResource(R.string.all_todos)
                 )
             }
