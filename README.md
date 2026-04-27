@@ -9,6 +9,9 @@ A modern, elegant and neat To-Do App
 - \[WIP\] Widgets.
 - \[WIP\] Analytics.
 
+## Glasense UI \[WIP\]
+A package includes fluent and beautiful components from Cresto. Glasense is the name of my own design system.
+
 ## Third-Party Notices
 See `THIRD_PARTY_NOTICES.md` for third-party license attributions.
 
