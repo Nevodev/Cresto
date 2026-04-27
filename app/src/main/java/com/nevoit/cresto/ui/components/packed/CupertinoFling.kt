@@ -9,16 +9,16 @@ import androidx.compose.foundation.gestures.FlingBehavior
 import androidx.compose.foundation.gestures.ScrollScope
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
-import kotlin.coroutines.cancellation.CancellationException
+import kotlinx.coroutines.CancellationException
 import kotlin.math.abs
 import kotlin.math.ln
 import kotlin.math.pow
 import kotlin.math.roundToLong
 
 private const val UIScrollViewDecelerationRateNormal = 0.998f
-private const val UIScrollViewDecelerationRateFast = 0.990f
-private const val ABS_VELOCITY_THRESHOLD = 0.5f //half a pixel
-private const val SECONDS_TO_NANOS = 1_000_000_000L
+private const val SecondsToNanos: Long = 1_000_000_000L
+private const val decayStopVelocityThreshold =
+    50.0f //weird value but looks natural in practice, similar to the default threshold used by iOS
 
 @Composable
 fun rememberCupertinoDecaySpec(
@@ -29,83 +29,92 @@ fun rememberCupertinoDecaySpec(
     }
 }
 
-/**
- * Cupertino-like fling behavior for Android Compose so list inertia feels closer to iOS.
- */
 @Composable
 fun rememberCupertinoFlingBehavior(
     decelerationRate: Float = UIScrollViewDecelerationRateNormal
 ): FlingBehavior {
-    val decaySpec = remember(decelerationRate) {
-        CupertinoScrollDecayAnimationSpec(decelerationRate).generateDecayAnimationSpec<Float>()
-    }
-
+    val decaySpec = rememberCupertinoDecaySpec(decelerationRate)
     return remember(decaySpec) {
-        CupertinoLikeFlingBehavior(decaySpec)
+        CupertinoFlingBehavior(decaySpec)
     }
 }
 
-private class CupertinoLikeFlingBehavior(
-    private val flingDecay: DecayAnimationSpec<Float>
+private class CupertinoFlingBehavior(
+    private val flingDecay: DecayAnimationSpec<Float>,
+    private val velocityThreshold: Float = 500f
 ) : FlingBehavior {
     override suspend fun ScrollScope.performFling(initialVelocity: Float): Float {
-        if (abs(initialVelocity) <= 1f) {
-            return initialVelocity
+        if (abs(initialVelocity) < velocityThreshold) {
+            return 0f
         }
 
-        var velocityLeft = initialVelocity
-        var lastValue = 0f
+        if (abs(initialVelocity) > 1f) {
+            var velocityLeft = initialVelocity
+            var lastValue = 0f
 
-        val animationState = AnimationState(initialValue = 0f, initialVelocity = initialVelocity)
-
-        try {
-            animationState.animateDecay(flingDecay) {
+            AnimationState(
+                initialValue = 0f,
+                initialVelocity = initialVelocity,
+            ).animateDecay(flingDecay) {
                 val delta = value - lastValue
-                val consumed = scrollBy(delta)
+                val consumed = try {
+                    scrollBy(delta)
+                } catch (exception: CancellationException) {
+                    0.0f
+                }
                 lastValue = value
                 velocityLeft = this.velocity
 
-                if (abs(delta - consumed) > ABS_VELOCITY_THRESHOLD) {
+                if (abs(delta - consumed) > 0.5f) {
                     this.cancelAnimation()
                 }
             }
-        } catch (_: CancellationException) {
-            velocityLeft = animationState.velocity
+            return velocityLeft
+        } else {
+            return initialVelocity
         }
-
-        return velocityLeft
     }
 }
 
 private class CupertinoScrollDecayAnimationSpec(
-    private val decelerationRate: Float
+    private val decelerationRate: Float = UIScrollViewDecelerationRateNormal
 ) : FloatDecayAnimationSpec {
     private val coefficient: Float = 1000f * ln(decelerationRate)
 
-    override val absVelocityThreshold: Float = ABS_VELOCITY_THRESHOLD
+    override val absVelocityThreshold: Float = decayStopVelocityThreshold
 
-    override fun getTargetValue(initialValue: Float, initialVelocity: Float): Float =
-        initialValue - initialVelocity / coefficient
+    override fun getTargetValue(initialValue: Float, initialVelocity: Float): Float {
+        val absVelocity = abs(initialVelocity)
+        if (absVelocity <= absVelocityThreshold) {
+            return initialValue
+        }
+
+        val targetVelocity = kotlin.math.sign(initialVelocity) * absVelocityThreshold
+
+        return initialValue + (targetVelocity - initialVelocity) / coefficient
+    }
 
     override fun getValueFromNanos(
         playTimeNanos: Long,
         initialValue: Float,
         initialVelocity: Float
     ): Float {
-        val playTimeSeconds = nanosToSeconds(playTimeNanos).toFloat()
-        val velocityIntegral =
+        val playTimeSeconds = convertNanosToSeconds(playTimeNanos).toFloat()
+        val initialVelocityOverTimeIntegral =
             (decelerationRate.pow(1000f * playTimeSeconds) - 1f) / coefficient * initialVelocity
-        return initialValue + velocityIntegral
+        return initialValue + initialVelocityOverTimeIntegral
     }
 
     override fun getDurationNanos(initialValue: Float, initialVelocity: Float): Long {
-        val velocity = abs(initialVelocity)
-        if (velocity < absVelocityThreshold) {
+        val absVelocity = abs(initialVelocity)
+
+        if (absVelocity < absVelocityThreshold) {
             return 0
         }
 
-        val seconds = ln(-coefficient * absVelocityThreshold / velocity) / coefficient
-        return secondsToNanos(seconds)
+        val seconds = ln(absVelocityThreshold / absVelocity) / coefficient
+
+        return convertSecondsToNanos(seconds)
     }
 
     override fun getVelocityFromNanos(
@@ -113,14 +122,14 @@ private class CupertinoScrollDecayAnimationSpec(
         initialValue: Float,
         initialVelocity: Float
     ): Float {
-        val playTimeSeconds = nanosToSeconds(playTimeNanos).toFloat()
+        val playTimeSeconds = convertNanosToSeconds(playTimeNanos).toFloat()
+
         return initialVelocity * decelerationRate.pow(1000f * playTimeSeconds)
     }
 }
 
-private fun secondsToNanos(seconds: Float): Long =
-    (seconds.toDouble() * SECONDS_TO_NANOS).roundToLong()
+private fun convertSecondsToNanos(seconds: Float): Long =
+    (seconds.toDouble() * SecondsToNanos).roundToLong()
 
-private fun nanosToSeconds(nanos: Long): Double =
-    nanos.toDouble() / SECONDS_TO_NANOS
-
+private fun convertNanosToSeconds(nanos: Long): Double =
+    nanos.toDouble() / SecondsToNanos
