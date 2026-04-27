@@ -74,6 +74,8 @@ fun GeneralScreen(settingsViewModel: SettingsViewModel = viewModel()) {
     val isDueTodayMarkerEnabled by settingsViewModel.isDueTodayMarker
     val isOverdueMarkerEnabled by settingsViewModel.isOverdueMarker
     val isCompletionSoundEnabled by settingsViewModel.isCompletionSoundEnabled
+    val isEasterEggEnabled by settingsViewModel.isEasterEggEnabled
+    val isSuperGraphicUltraModernGirlEnabled by settingsViewModel.isSuperGraphicUltraModernGirlEnabled
 
     // Root container for the screen, filling the entire available space
     Box(
@@ -243,6 +245,37 @@ fun GeneralScreen(settingsViewModel: SettingsViewModel = viewModel()) {
                     modifier = Modifier.padding(horizontal = 12.dp),
                     color = AppColors.contentVariant.copy(alpha = .3f)
                 )
+                VGap()
+            }
+            if (isEasterEggEnabled) {
+                item {
+                    ConfigItemContainer(
+                        title = "???",
+                        backgroundColor = AppColors.cardBackground
+                    ) {
+                        Column {
+                            ConfigItem(title = "Super Graphic Ultra Modern Girl") {
+                                GlasenseSwitch(
+                                    checked = isSuperGraphicUltraModernGirlEnabled,
+                                    onCheckedChange = {
+                                        settingsViewModel.onSuperGraphicUltraModernGirlChanged(
+                                            it
+                                        )
+                                    },
+                                    backgroundColor = AppColors.cardBackground
+                                )
+                            }
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "We're leaving the planet and you can't come.",
+                        fontSize = 14.sp,
+                        lineHeight = 18.sp,
+                        modifier = Modifier.padding(horizontal = 12.dp),
+                        color = AppColors.contentVariant.copy(alpha = .3f)
+                    )
+                }
             }
             item { VGap() }
             overscrollSpacer(lazyListState)

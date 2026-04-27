@@ -25,9 +25,10 @@ private val RIPPLE_SHADER = """
     uniform float2 positions[10];
     uniform float progresses[10];
     uniform float maxRadius;
+    uniform float3 rippleColor;
 
     half4 main(float2 fragCoord) {
-        float3 finalColor = float3(0.0);
+        float finalAlpha = 0.0;
         
         for (int i = 0; i < 10; i++) {
             float progress = progresses[i];
@@ -45,25 +46,25 @@ private val RIPPLE_SHADER = """
                 // Use a soft ring centered at 'radius'
                 float ring = 1.0 - smoothstep(0.0, blur, abs(dist - radius) - thickness);
                 
-                float alpha = 0.1;
+                float alpha = 1.0;
                 if (progress < 0.2){
                     // Fade in with ease-out
                     float t = progress / 0.2;
                     float easeOut = 1.0 - pow(1.0 - t, 2.0);
-                    alpha = 0.1 * easeOut;
+                    alpha = 1.0 * easeOut;
                 } else {
                     // Fade out with ease-in
                     float t = (progress - 0.2) / 0.8;
                     float easeIn = t * t;
-                    alpha = 0.1 * (1.0 - easeIn);
+                    alpha = 1.0 * (1.0 - easeIn);
                 }
                 float final = ring * alpha;
-                finalColor += float3(final);
+                finalAlpha += final;
             }
         }
         
-        // Keep non-ripple area transparent and only apply alpha where the ripple exists.
-        float finalAlpha = clamp(max(finalColor.r, max(finalColor.g, finalColor.b)), 0.0, 1.0);
+        finalAlpha = clamp(finalAlpha, 0.0, 1.0);
+        float3 finalColor = rippleColor * finalAlpha;
         return half4(finalColor, finalAlpha);
     }
 """.trimIndent()
@@ -75,7 +76,8 @@ private class RippleInstance(
 
 fun Modifier.shaderRipple(
     durationMillis: Int = 800,
-    maxRadius: Float = 2000f
+    maxRadius: Float = 2000f,
+    dark: Boolean = false
 ): Modifier = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
     composed {
         val ripples = remember { mutableStateListOf<RippleInstance>() }
@@ -117,6 +119,12 @@ fun Modifier.shaderRipple(
                     if (ripples.isNotEmpty()) {
                         shader.setFloatUniform("iResolution", size.width, size.height)
                         shader.setFloatUniform("maxRadius", maxRadius)
+                        shader.setFloatUniform(
+                            "rippleColor",
+                            if (dark) 0f else 1f,
+                            if (dark) 0f else 1f,
+                            if (dark) 0f else 1f
+                        )
 
                         val positions = FloatArray(20)
                         val progresses = FloatArray(10)
@@ -137,9 +145,17 @@ fun Modifier.shaderRipple(
                         shader.setFloatUniform("positions", positions)
                         shader.setFloatUniform("progresses", progresses)
 
+                        if (dark) {
+                            drawRect(
+                                brush = ShaderBrush(shader),
+                                blendMode = BlendMode.Overlay,
+                                alpha = 0.3f
+                            )
+                        }
                         drawRect(
                             brush = ShaderBrush(shader),
-                            blendMode = BlendMode.Plus
+                            blendMode = if (dark) BlendMode.SrcOver else BlendMode.Plus,
+                            alpha = if (dark) 0.03f else 0.08f
                         )
                     }
                 }

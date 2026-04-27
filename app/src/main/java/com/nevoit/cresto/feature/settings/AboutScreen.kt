@@ -55,8 +55,10 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.kyant.shapes.Capsule
 import com.nevoit.cresto.R
+import com.nevoit.cresto.feature.settings.util.SettingsViewModel
 import com.nevoit.cresto.theme.AppButtonColors
 import com.nevoit.cresto.theme.AppColors
 import com.nevoit.cresto.theme.AppSpecs
@@ -69,6 +71,7 @@ import com.nevoit.cresto.ui.components.glasense.isScrolledPast
 import com.nevoit.cresto.ui.components.packed.ConfigItemContainer
 import com.nevoit.cresto.ui.components.packed.PageContent
 import com.nevoit.cresto.ui.components.packed.VGap
+import com.nevoit.cresto.ui.modifier.pressIndentShaderEffect
 import com.nevoit.cresto.ui.modifier.shaderRipple
 import com.nevoit.cresto.ui.modifier.tiltOnPress
 import com.nevoit.glasense.theme.Amber400
@@ -98,7 +101,7 @@ import kotlin.time.Duration.Companion.seconds
  */
 @OptIn(ExperimentalHazeApi::class)
 @Composable
-fun AboutScreen() {
+fun AboutScreen(settingsViewModel: SettingsViewModel = viewModel()) {
     // Get the current activity instance to allow finishing the screen
     val activity = LocalActivity.current
 
@@ -135,6 +138,8 @@ fun AboutScreen() {
     var confettiBurstKey by remember { mutableIntStateOf(0) }
     val hapticController = LocalHapticFeedback.current
 
+    val isSuperGraphicUltraModernGirlEnabled by settingsViewModel.isSuperGraphicUltraModernGirlEnabled
+
     // Root container for the screen, filling the entire available space
     Box(
         modifier = Modifier
@@ -168,8 +173,17 @@ fun AboutScreen() {
                                 if (aboutCardTapCount >= 10) {
                                     aboutCardTapCount = 0
                                     confettiBurstKey += 1
+                                    settingsViewModel.unlockEasterEgg()
                                 }
                             }
+                            .then(
+                                if (isSuperGraphicUltraModernGirlEnabled) {
+                                    Modifier
+                                        .pressIndentShaderEffect()
+                                } else {
+                                    Modifier
+                                }
+                            )
                             .clip(shape)
                             .shaderRipple()
                             .paint(

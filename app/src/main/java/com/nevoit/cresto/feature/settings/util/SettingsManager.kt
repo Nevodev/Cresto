@@ -32,6 +32,8 @@ object SettingsManager {
     private const val KEY_AI_API_KEY = "ai_api_key"
     private const val KEY_AI_TEXT_MODEL = "ai_text_model"
     private const val KEY_AI_MULTIMODAL_MODEL = "ai_multimodal_model"
+    private const val KEY_EASTER_EGG = "easter_egg"
+    private const val KEY_SUPER_GRAPHIC_ULTRA_MODERN_GIRL = "super graphic ultra modern girl"
     private const val DEFAULT_AI_API_URL = "https://open.bigmodel.cn/api/paas/v4/chat/completions"
     private const val DEFAULT_AI_MODEL = "glm-4-flash"
 
@@ -56,11 +58,18 @@ object SettingsManager {
     val isDueTodayMarkerState = mutableStateOf(mmkv.decodeBool(KEY_DUE_TODAY_MARKER, true))
     val isOverdueMarkerState = mutableStateOf(mmkv.decodeBool(KEY_OVERDUE_MARKER, true))
     val isCompletionSoundEnabledState = mutableStateOf(mmkv.decodeBool(KEY_COMPLETION_SOUND, true))
-    val aiApiUrlState = mutableStateOf(resolveAiApiUrl(mmkv.decodeString(KEY_AI_API_URL, DEFAULT_AI_API_URL)))
+    val aiApiUrlState =
+        mutableStateOf(resolveAiApiUrl(mmkv.decodeString(KEY_AI_API_URL, DEFAULT_AI_API_URL)))
     val aiApiKeyState = mutableStateOf(mmkv.decodeString(KEY_AI_API_KEY, "") ?: "")
-    val aiTextModelState = mutableStateOf(mmkv.decodeString(KEY_AI_TEXT_MODEL, DEFAULT_AI_MODEL) ?: DEFAULT_AI_MODEL)
+    val aiTextModelState =
+        mutableStateOf(mmkv.decodeString(KEY_AI_TEXT_MODEL, DEFAULT_AI_MODEL) ?: DEFAULT_AI_MODEL)
     val aiMultimodalModelState =
-        mutableStateOf(mmkv.decodeString(KEY_AI_MULTIMODAL_MODEL, DEFAULT_AI_MODEL) ?: DEFAULT_AI_MODEL)
+        mutableStateOf(
+            mmkv.decodeString(KEY_AI_MULTIMODAL_MODEL, DEFAULT_AI_MODEL) ?: DEFAULT_AI_MODEL
+        )
+    val isEasterEggState = mutableStateOf(mmkv.decodeBool(KEY_EASTER_EGG, false))
+    val isSuperGraphicUltraModernGirlState =
+        mutableStateOf(mmkv.decodeBool(KEY_SUPER_GRAPHIC_ULTRA_MODERN_GIRL, false))
 
     var isCustomPrimaryColorEnabled: Boolean
         get() = mmkv.decodeBool(KEY_CUSTOM_PRIMARY_COLOR_ENABLED, false)
@@ -181,6 +190,20 @@ object SettingsManager {
         set(value) {
             mmkv.encode(KEY_AI_MULTIMODAL_MODEL, value)
             aiMultimodalModelState.value = value
+        }
+
+    var isEasterEggEnabled: Boolean
+        get() = mmkv.decodeBool(KEY_EASTER_EGG, false)
+        set(value) {
+            mmkv.encode(KEY_EASTER_EGG, value)
+            isEasterEggState.value = value
+        }
+
+    var isSuperGraphicUltraModernGirlEnabled: Boolean
+        get() = mmkv.decodeBool(KEY_SUPER_GRAPHIC_ULTRA_MODERN_GIRL, false)
+        set(value) {
+            mmkv.encode(KEY_SUPER_GRAPHIC_ULTRA_MODERN_GIRL, value)
+            isSuperGraphicUltraModernGirlState.value = value
         }
 
     fun resetAiSettingsToDefaults() {

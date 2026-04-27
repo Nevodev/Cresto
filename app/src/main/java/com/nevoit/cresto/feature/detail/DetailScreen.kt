@@ -69,14 +69,15 @@ import com.nevoit.cresto.data.todo.SubTodoItem
 import com.nevoit.cresto.data.todo.TodoItem
 import com.nevoit.cresto.data.todo.TodoViewModel
 import com.nevoit.cresto.feature.main.rememberFlagMenuItems
+import com.nevoit.cresto.feature.settings.util.SettingsViewModel
 import com.nevoit.cresto.theme.AppButtonColors
 import com.nevoit.cresto.theme.AppColors
 import com.nevoit.cresto.theme.AppSpecs
 import com.nevoit.cresto.theme.getFlagColor
+import com.nevoit.cresto.theme.isAppInDarkTheme
 import com.nevoit.cresto.ui.components.glasense.DialogItemData
 import com.nevoit.cresto.ui.components.glasense.DialogState
 import com.nevoit.cresto.ui.components.glasense.DimIndication
-import com.nevoit.cresto.ui.components.glasense.DueDatePicker
 import com.nevoit.cresto.ui.components.glasense.GlasenseBottomBar
 import com.nevoit.cresto.ui.components.glasense.GlasenseButton
 import com.nevoit.cresto.ui.components.glasense.GlasenseDialog
@@ -89,11 +90,14 @@ import com.nevoit.cresto.ui.components.glasense.ZeroHeightDivider
 import com.nevoit.cresto.ui.components.glasense.extend.overscrollSpacer
 import com.nevoit.cresto.ui.components.glasense.isScrolledPast
 import com.nevoit.cresto.ui.components.glasense.rememberSwipeableListState
+import com.nevoit.cresto.ui.components.packed.DueDatePicker
 import com.nevoit.cresto.ui.components.packed.PageContent
 import com.nevoit.cresto.ui.components.packed.SubTodoItemRowAdd
 import com.nevoit.cresto.ui.components.packed.SwipeableSubTodoItemRowEditable
 import com.nevoit.cresto.ui.components.packed.TodoItemRowEditable
 import com.nevoit.cresto.ui.components.packed.VGap
+import com.nevoit.cresto.ui.modifier.pressIndentShaderEffect
+import com.nevoit.cresto.ui.modifier.shaderRipple
 import com.nevoit.cresto.util.formatRelativeTime
 import com.nevoit.glasense.component.GlasenseActivityIndicator
 import com.nevoit.glasense.theme.Springs
@@ -236,11 +240,22 @@ fun DetailScreen(
         }
     }
 
+    val settingsViewModel: SettingsViewModel = viewModel()
+    val isSuperGraphicUltraModernGirlEnabled by settingsViewModel.isSuperGraphicUltraModernGirlEnabled
+
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(surfaceColor)
-            .layerBackdrop(backdrop)
+            .then(
+                if (isSuperGraphicUltraModernGirlEnabled) {
+                    Modifier
+                        .shaderRipple(dark = !isAppInDarkTheme())
+                        .pressIndentShaderEffect()
+                } else {
+                    Modifier
+                }
+            )
     ) {
         if (currentItem == null) {
             Box(
@@ -253,6 +268,7 @@ fun DetailScreen(
             PageContent(
                 state = lazyListState,
                 modifier = Modifier
+                    .layerBackdrop(backdrop)
                     .hazeSource(hazeState, 0f)
                     .imePadding(),
                 tabPadding = false,
@@ -621,31 +637,30 @@ fun DetailScreen(
             }
 
         }
+        GlasenseDialog(
+            dialogState = dialogState,
+            backdrop = backdrop,
+            onDismiss = { dismissDialog() },
+            modifier = Modifier
+        )
+
+        GlasenseMenu(
+            menuState = menuState,
+            backdrop = backdrop,
+            onDismiss = dismissMenu
+        )
+
+        DueDatePicker(
+            isVisible = isDatePickerVisible,
+            anchorBounds = dateButtonBounds,
+            initialDate = finalDate,
+            onDismiss = { isDatePickerVisible = false },
+            onDateSelected = { date ->
+                finalDate = date
+            },
+            direction = PopupDirection.Up
+        )
     }
-
-    GlasenseDialog(
-        dialogState = dialogState,
-        backdrop = backdrop,
-        onDismiss = { dismissDialog() },
-        modifier = Modifier
-    )
-
-    GlasenseMenu(
-        menuState = menuState,
-        backdrop = backdrop,
-        onDismiss = dismissMenu
-    )
-
-    DueDatePicker(
-        isVisible = isDatePickerVisible,
-        anchorBounds = dateButtonBounds,
-        initialDate = finalDate,
-        onDismiss = { isDatePickerVisible = false },
-        onDateSelected = { date ->
-            finalDate = date
-        },
-        direction = PopupDirection.Up
-    )
 }
 
 @Composable

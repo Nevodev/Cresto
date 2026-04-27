@@ -62,6 +62,7 @@ import com.nevoit.cresto.feature.settings.util.SettingsViewModel
 import com.nevoit.cresto.theme.AppButtonColors
 import com.nevoit.cresto.theme.AppColors
 import com.nevoit.cresto.theme.LocalGlasenseSettings
+import com.nevoit.cresto.theme.isAppInDarkTheme
 import com.nevoit.cresto.theme.linearGradientMaskB2T70
 import com.nevoit.cresto.theme.linearGradientMaskB2T90
 import com.nevoit.cresto.toolkit.gaussiangradient.smoothGradientMask
@@ -69,7 +70,6 @@ import com.nevoit.cresto.toolkit.gaussiangradient.smoothGradientMaskFallback
 import com.nevoit.cresto.ui.components.bottomsheet.BottomSheet
 import com.nevoit.cresto.ui.components.glasense.DialogItemData
 import com.nevoit.cresto.ui.components.glasense.DialogState
-import com.nevoit.cresto.ui.components.glasense.DueDatePicker
 import com.nevoit.cresto.ui.components.glasense.GlasenseButtonAdaptable
 import com.nevoit.cresto.ui.components.glasense.GlasenseButtonToolBar
 import com.nevoit.cresto.ui.components.glasense.GlasenseDialog
@@ -78,6 +78,9 @@ import com.nevoit.cresto.ui.components.glasense.GlasenseMenuItem
 import com.nevoit.cresto.ui.components.glasense.GlasenseNavigationButton
 import com.nevoit.cresto.ui.components.glasense.MenuState
 import com.nevoit.cresto.ui.components.glasense.PopupDirection
+import com.nevoit.cresto.ui.components.packed.DueDatePicker
+import com.nevoit.cresto.ui.modifier.pressIndentShaderEffect
+import com.nevoit.cresto.ui.modifier.shaderRipple
 import dev.chrisbanes.haze.ExperimentalHazeApi
 import dev.chrisbanes.haze.HazeInputScale
 import dev.chrisbanes.haze.HazeProgressive
@@ -103,6 +106,7 @@ fun MainScreen() {
     val settingsViewModel: SettingsViewModel = viewModel()
 
     val liquidGlass by settingsViewModel.isLiquidGlass
+    val isSuperGraphicUltraModernGirlEnabled by settingsViewModel.isSuperGraphicUltraModernGirlEnabled
 
     val hazeState = rememberHazeState()
     val backdrop = rememberLayerBackdrop {
@@ -241,6 +245,15 @@ fun MainScreen() {
         modifier = Modifier
             .fillMaxSize()
             .background(surfaceColor)
+            .then(
+                if (isSuperGraphicUltraModernGirlEnabled) {
+                    Modifier
+                        .shaderRipple(dark = !isAppInDarkTheme())
+                        .pressIndentShaderEffect()
+                } else {
+                    Modifier
+                }
+            )
     ) {
         Box(
             modifier = Modifier

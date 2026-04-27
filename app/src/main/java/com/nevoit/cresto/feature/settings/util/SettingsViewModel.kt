@@ -13,6 +13,8 @@ class SettingsViewModel : ViewModel() {
     val isDueTodayMarker = SettingsManager.isDueTodayMarkerState
     val isOverdueMarker = SettingsManager.isOverdueMarkerState
     val isCompletionSoundEnabled = SettingsManager.isCompletionSoundEnabledState
+    val isEasterEggEnabled = SettingsManager.isEasterEggState
+    val isSuperGraphicUltraModernGirlEnabled = SettingsManager.isSuperGraphicUltraModernGirlState
 
     fun onCustomPrimaryColorChanged(isEnabled: Boolean) {
         SettingsManager.isCustomPrimaryColorEnabled = isEnabled
@@ -51,5 +53,13 @@ class SettingsViewModel : ViewModel() {
 
     fun onCompletionSoundChanged(isEnabled: Boolean) {
         SettingsManager.isCompletionSoundEnabled = isEnabled
+    }
+
+    fun unlockEasterEgg() {
+        SettingsManager.isEasterEggEnabled = true
+    }
+
+    fun onSuperGraphicUltraModernGirlChanged(isEnabled: Boolean) {
+        SettingsManager.isSuperGraphicUltraModernGirlEnabled = isEnabled
     }
 }

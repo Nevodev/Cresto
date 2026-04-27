@@ -31,7 +31,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
@@ -82,17 +81,17 @@ import com.nevoit.cresto.toolkit.gradientmapping.GradientMappedImage
 import com.nevoit.cresto.ui.components.CustomAnimatedVisibility
 import com.nevoit.cresto.ui.components.glasense.GlasenseButtonAlt
 import com.nevoit.cresto.ui.components.glasense.glasenseHighlight
-import com.nevoit.cresto.ui.components.glasense.isScrolledPast
 import com.nevoit.cresto.ui.components.packed.VGap
+import com.nevoit.cresto.ui.modifier.tiltOnPress
 import com.nevoit.glasense.theme.Blue500
 import com.nevoit.glasense.theme.Indigo500
 import com.nevoit.glasense.theme.Pink400
 import com.nevoit.glasense.theme.Pink500
 import com.nevoit.glasense.theme.Purple500
-import dev.chrisbanes.haze.rememberHazeState
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.math.sqrt
+import kotlin.time.Duration.Companion.milliseconds
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -100,18 +99,7 @@ fun GuideScreen(onFinish: () -> Unit) {
     val statusBarHeight = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
     val navigationBarHeight = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
 
-    val density = LocalDensity.current
-
-    val hazeState = rememberHazeState()
-
-    val onSurfaceContainer = AppColors.scrimNormal
-    val onBackground = AppColors.content
     val surfaceColor = AppColors.pageBackground
-    val hierarchicalSurfaceColor = AppColors.cardBackground
-
-    val lazyListState = rememberLazyListState()
-
-    val isSmallTitleVisible by lazyListState.isScrolledPast(statusBarHeight + 24.dp)
 
     val pagerState = rememberPagerState(pageCount = { 2 })
     val scope = rememberCoroutineScope()
@@ -120,7 +108,7 @@ fun GuideScreen(onFinish: () -> Unit) {
 
     LaunchedEffect(Unit) {
         scope.launch {
-            delay(2500)
+            delay(2500.milliseconds)
             showButton = true
         }
     }
@@ -130,7 +118,7 @@ fun GuideScreen(onFinish: () -> Unit) {
             .background(surfaceColor)
     ) {
 
-        Column() {
+        Column {
             Spacer(Modifier.height(statusBarHeight))
             HorizontalPager(
                 state = pagerState,
@@ -286,12 +274,6 @@ fun WelcomePage() {
             val innerRadius2 = with(density) {
                 8.dp.toPx()
             }
-            val borderBlurRadius = with(density) {
-                1.dp.toPx()
-            }
-            val width = with(density) {
-                1.dp.toPx()
-            }
             val innerPaint = remember {
                 Paint().apply {
                     blendMode = BlendMode.DstOut
@@ -350,6 +332,7 @@ fun WelcomePage() {
             Box(
                 modifier = Modifier
                     .size(96.dp)
+                    .tiltOnPress()
                     .clip(RoundedRectangle(24.dp))
             ) {
                 val backdrop = rememberLayerBackdrop()
@@ -361,7 +344,7 @@ fun WelcomePage() {
                         .graphicsLayer {
                             this.alpha = colorLightAlpha.value
                         }
-                        .drawWithContent() {
+                        .drawWithContent {
                             val outline = RoundedRectangle(24.dp).createOutline(
                                 size = size,
                                 layoutDirection,
@@ -394,7 +377,7 @@ fun WelcomePage() {
                     contentDescription = stringResource(R.string.app_icon),
                     modifier = Modifier
                         .fillMaxSize()
-                        .drawWithContent() {
+                        .drawWithContent {
                             val outline = RoundedRectangle(24.dp).createOutline(
                                 size = size,
                                 layoutDirection,
