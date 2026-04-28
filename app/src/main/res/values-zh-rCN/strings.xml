@@ -183,4 +183,10 @@
     <string name="confirm_action_title">%1$s?</string>
     <string name="sort">排序</string>
     <string name="select_due_date">选择截止日期</string>
+    <string name="planned">计划中</string>
+    <string name="repeat_none">重复</string>
+    <string name="repeat_daily">每天</string>
+    <string name="repeat_weekly">每周</string>
+    <string name="repeat_monthly">每月</string>
+    <string name="repeat_yearly">每年</string>
 </resources>

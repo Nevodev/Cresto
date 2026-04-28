@@ -18,6 +18,9 @@ interface TodoDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertTodo(item: TodoItem)
 
+    @Insert(onConflict = OnConflictStrategy.ABORT)
+    suspend fun insertTodoReturningId(item: TodoItem): Long
+
     // Inserts a list of todo items, ignoring any that already exist.
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertAll(items: List<TodoItem>)
@@ -155,4 +158,37 @@ interface TodoDao {
         """
     )
     fun searchTodosWithSubTodos(query: String): Flow<List<TodoItemWithSubTodos>>
+
+    @Query("SELECT COUNT(*) FROM todo_items WHERE recurringRuleId = :ruleId AND isCompleted = 0")
+    suspend fun getIncompleteCountByRecurringRuleId(ruleId: Int): Int
+
+    @Query(
+        """
+        SELECT * FROM todo_items
+        WHERE recurringRuleId = :ruleId
+            AND isCompleted = 0
+            AND dueDate IS NOT NULL
+            AND dueDate > :afterDate
+        ORDER BY dueDate ASC, id ASC
+        LIMIT 1
+        """
+    )
+    suspend fun getNextIncompleteRecurringTodoAfter(
+        ruleId: Int,
+        afterDate: java.time.LocalDate
+    ): TodoItem?
+
+    @Query(
+        """
+        SELECT COUNT(*) FROM todo_items
+        WHERE recurringRuleId = :ruleId
+            AND isCompleted = 1
+            AND dueDate IS NOT NULL
+            AND dueDate > :afterDate
+        """
+    )
+    suspend fun getCompletedRecurringTodoCountAfter(
+        ruleId: Int,
+        afterDate: java.time.LocalDate
+    ): Int
 }

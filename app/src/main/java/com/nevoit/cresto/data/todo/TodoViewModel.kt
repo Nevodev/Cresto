@@ -174,26 +174,45 @@ class TodoViewModel(private val repository: TodoRepository) : ViewModel() {
         repository.insert(item)
     }
 
+    fun insertRecurringTodo(
+        title: String,
+        dueDate: java.time.LocalDate,
+        flag: Int,
+        rrule: String
+    ) = viewModelScope.launch {
+        repository.insertRecurringTodo(
+            title = title,
+            dueDate = dueDate,
+            flag = flag,
+            rrule = rrule
+        )
+    }
+
+    fun completeTodo(item: TodoItem) = viewModelScope.launch {
+        repository.completeTodo(item)
+    }
+
+    fun uncompleteTodo(item: TodoItem) = viewModelScope.launch {
+        repository.uncompleteTodo(item)
+    }
+
     fun update(item: TodoItem) = viewModelScope.launch {
-        viewModelScope.launch {
-            val itemToPersist = when {
-                item.isCompleted && item.completedDateTime == null -> {
-                    item.copy(
-                        completedDateTime = LocalDateTime.now()
-                    )
-                }
-
-                !item.isCompleted -> {
-                    item.copy(
-                        completedDateTime = null
-                    )
-                }
-
-                else -> item
+        val itemToPersist = when {
+            item.isCompleted && item.completedDateTime == null -> {
+                item.copy(
+                    completedDateTime = LocalDateTime.now()
+                )
             }
-            repository.update(itemToPersist)
-        }
 
+            !item.isCompleted -> {
+                item.copy(
+                    completedDateTime = null
+                )
+            }
+
+            else -> item
+        }
+        repository.update(itemToPersist)
     }
 
     fun delete(item: TodoItem) = viewModelScope.launch {

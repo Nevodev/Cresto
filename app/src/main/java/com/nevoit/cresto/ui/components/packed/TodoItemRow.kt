@@ -95,6 +95,7 @@ fun TodoItemRow(
     item: TodoItemWithSubTodos,
     isDueTodayMarkerEnabled: Boolean,
     isOverdueMarkerEnabled: Boolean,
+    isRepeatMarkerEnabled: Boolean,
     onCheckedChange: (Boolean) -> Unit,
     onCheckboxTapPosition: (Offset) -> Unit = {},
     modifier: Modifier
@@ -146,11 +147,34 @@ fun TodoItemRow(
                     .weight(1f)
                     .padding(vertical = 12.dp)
             ) {
-                LineThroughText(
-                    text = item.title,
-                    style = MaterialTheme.typography.bodyMedium,
-                    lineThrough = item.isCompleted
-                )
+                if (isRepeatMarkerEnabled) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .weight(1f)
+                    ) {
+                        Icon(
+                            painter = painterResource(R.drawable.ic_repeat),
+                            contentDescription = null,
+                            tint = AppColors.contentVariant,
+                            modifier = Modifier
+                                .size(density.run { 18.sp.toDp() })
+                                .align(Alignment.CenterVertically)
+                        )
+                        Spacer(modifier = Modifier.width(2.dp))
+                        LineThroughText(
+                            text = item.title,
+                            style = MaterialTheme.typography.bodyMedium,
+                            lineThrough = item.isCompleted
+                        )
+                    }
+                } else {
+                    LineThroughText(
+                        text = item.title,
+                        style = MaterialTheme.typography.bodyMedium,
+                        lineThrough = item.isCompleted
+                    )
+                }
                 Spacer(modifier = Modifier.height(2.dp))
                 val metadataStyle = MaterialTheme.typography.bodyMedium
                 val metadataFontSize = 14.sp
@@ -548,10 +572,45 @@ fun SwipeableTodoItem(
             item = item,
             isDueTodayMarkerEnabled = isDueTodayMarkerEnabled,
             isOverdueMarkerEnabled = isOverdueMarkerEnabled,
+            isRepeatMarkerEnabled = item.todoItem.recurringRuleId != null,
             onCheckedChange = onCheckedChange,
             onCheckboxTapPosition = onCheckboxTapPosition,
             modifier = modifier
         )
+    }
+}
+
+@Composable
+fun RepeatTodoItemRowDisplay(
+    item: TodoItem,
+    onCheckedChange: (Boolean) -> Unit,
+    modifier: Modifier,
+) {
+    Row(
+        modifier = modifier
+            .defaultMinSize(minHeight = 68.dp)
+            .fillMaxWidth()
+            .background(
+                color = AppColors.cardBackground,
+                shape = AppSpecs.cardShape,
+            ),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Spacer(modifier = Modifier.width(12.dp))
+        GlasenseCheckbox(
+            checked = item.isCompleted,
+            onCheckedChange = onCheckedChange
+        )
+        Spacer(modifier = Modifier.width(12.dp))
+        LineThroughText(
+            text = item.title,
+            style = MaterialTheme.typography.bodyMedium,
+            lineThrough = item.isCompleted,
+            modifier = Modifier
+                .weight(1f)
+                .padding(vertical = 12.dp)
+        )
+        Spacer(modifier = Modifier.width(12.dp))
     }
 }
 

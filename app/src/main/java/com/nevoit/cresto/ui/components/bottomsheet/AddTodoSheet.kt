@@ -4,6 +4,7 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.LocalOverscrollFactory
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -72,7 +73,7 @@ import kotlin.time.Duration.Companion.milliseconds
  * Enum to represent the currently selected button in the AddTodoSheet.
  */
 enum class SelectedButton {
-    DUE_DATE, FLAG, NONE
+    DUE_DATE, FLAG, REPEAT, NONE
 }
 
 /**
@@ -84,7 +85,7 @@ enum class SelectedButton {
  */
 @Composable
 fun AddTodoSheet(
-    onAddClick: (String, Int, LocalDate?) -> Unit,
+    onAddClick: (String, Int, LocalDate?, String?) -> Unit,
     onClose: () -> Unit,
     onRequestCustomDate: (Rect, LocalDate?, (LocalDate?) -> Unit) -> Unit
 ) {
@@ -96,6 +97,7 @@ fun AddTodoSheet(
     val focusRequester = remember { FocusRequester() }
     var selectedIndex by remember { mutableIntStateOf(0) }
     var finalDate by remember { mutableStateOf<LocalDate?>(LocalDate.now()) }
+    var repeatOption by remember { mutableStateOf(RepeatOption.NONE) }
 
     val keyboardController = LocalSoftwareKeyboardController.current
 
@@ -103,7 +105,7 @@ fun AddTodoSheet(
         val text = state.text.toString()
         if (text.isNotBlank()) {
             keyboardController?.hide()
-            onAddClick(text, selectedIndex, finalDate)
+            onAddClick(text, selectedIndex, finalDate, repeatOption.rrule)
         }
     }
 
@@ -203,6 +205,7 @@ fun AddTodoSheet(
                 targetValue = when (selectedButton) {
                     SelectedButton.DUE_DATE -> 1f
                     SelectedButton.FLAG -> -1f
+                    SelectedButton.REPEAT -> 0f
                     SelectedButton.NONE -> 0f
                 },
                 animationSpec = spring(
@@ -380,6 +383,73 @@ fun AddTodoSheet(
                 layout(totalWidth, constraints.maxHeight) {
                     dueDatePlaceable.placeRelative(0, 0)
                     flagPlaceable.placeRelative(dueDateWidth + spacerPx, 0)
+                }
+            }
+            VGap()
+            GlasenseButtonAlt(
+                enabled = true,
+                shape = Capsule(),
+                onClick = {
+                    hapticController.performHapticFeedback(HapticFeedbackType.ContextClick)
+                    selectedButton = if (selectedButton == SelectedButton.REPEAT) {
+                        SelectedButton.NONE
+                    } else {
+                        SelectedButton.REPEAT
+                    }
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(48.dp),
+                colors = AppButtonColors.secondary(),
+            ) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CustomAnimatedVisibility(
+                        visible = selectedButton != SelectedButton.REPEAT,
+                        enter = defaultEnterTransition,
+                        exit = defaultExitTransition
+                    ) {
+                        Text(
+                            text = stringResource(repeatOption.labelRes),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = if (repeatOption == RepeatOption.NONE) {
+                                AppColors.content.copy(alpha = 0.5F)
+                            } else {
+                                AppColors.primary
+                            }
+                        )
+                    }
+                    CustomAnimatedVisibility(
+                        visible = selectedButton == SelectedButton.REPEAT,
+                        enter = defaultEnterTransition,
+                        exit = defaultExitTransition
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            RepeatOption.selectableEntries.forEach { option ->
+                                Text(
+                                    text = stringResource(option.labelRes),
+                                    modifier = Modifier
+                                        .padding(horizontal = 12.dp)
+                                        .clickable {
+                                            repeatOption = if (repeatOption == option) {
+                                                RepeatOption.NONE
+                                            } else {
+                                                option
+                                            }
+                                            selectedButton = SelectedButton.NONE
+                                        },
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = if (repeatOption == option) {
+                                        AppColors.primary
+                                    } else {
+                                        AppColors.content.copy(alpha = 0.5F)
+                                    }
+                                )
+                            }
+                        }
+                    }
                 }
             }
         }

@@ -23,6 +23,7 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawOutline
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.translate
@@ -139,6 +140,7 @@ fun LazyItemScope.TodoListItemRow(
 @Composable
 fun LazyItemScope.TodoListSectionHead(
     title: String,
+    color: Color = Color.Unspecified,
     isExpanded: Boolean,
     onExpandedChange: () -> Unit
 ) {
@@ -151,6 +153,7 @@ fun LazyItemScope.TodoListSectionHead(
         }
     }
     val interactionSource = remember { MutableInteractionSource() }
+    val resolvedColor = if (color != Color.Unspecified) color else AppColors.contentVariant
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -170,7 +173,7 @@ fun LazyItemScope.TodoListSectionHead(
             fontSize = 14.sp,
             lineHeight = 14.sp,
             fontWeight = FontWeight.Normal,
-            color = AppColors.contentVariant
+            color = resolvedColor
         )
         Icon(
             painter = painterResource(R.drawable.ic_forward_nav),

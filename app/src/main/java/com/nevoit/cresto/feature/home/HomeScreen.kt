@@ -129,9 +129,22 @@ fun BoxScope.HomeScreen(
     val (rawIncompleteTodos, rawCompleteTodos) = remember(todoList) {
         todoList.partition { !it.todoItem.isCompleted }
     }
-    val incompleteTodos = remember(rawIncompleteTodos, currentSortOption, currentSortOrder) {
+    val (rawPlannedTodos, rawCurrentTodos) = remember(rawIncompleteTodos) {
+        rawIncompleteTodos.partition { todo ->
+            todo.todoItem.recurringRuleId != null
+        }
+    }
+    val currentTodos = remember(rawCurrentTodos, currentSortOption, currentSortOrder) {
         sortTodos(
-            list = rawIncompleteTodos,
+            list = rawCurrentTodos,
+            option = currentSortOption,
+            order = currentSortOrder,
+            type = TodoListType.INCOMPLETED
+        )
+    }
+    val plannedTodos = remember(rawPlannedTodos, currentSortOption, currentSortOrder) {
+        sortTodos(
+            list = rawPlannedTodos,
             option = currentSortOption,
             order = currentSortOrder,
             type = TodoListType.INCOMPLETED
@@ -146,13 +159,14 @@ fun BoxScope.HomeScreen(
         )
     }
     var completedVisible by remember { mutableStateOf(true) }
+    var plannedVisible by remember { mutableStateOf(true) }
     var showConfetti by remember { mutableStateOf(false) }
     var confettiHideJob by remember { mutableStateOf<Job?>(null) }
     var latestCheckboxTapPosition by remember { mutableStateOf(Offset.Unspecified) }
     var confettiTriggerPosition by remember { mutableStateOf(Offset.Unspecified) }
     val pendingUpdateJobs = remember { mutableStateMapOf<Int, Job>() }
 
-    val incompleteCount = incompleteTodos.size
+    val incompleteCount = currentTodos.size
 
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()
@@ -201,7 +215,7 @@ fun BoxScope.HomeScreen(
         }
 
         itemsIndexed(
-            items = incompleteTodos,
+            items = currentTodos,
             key = { _, item -> item.todoItem.id },
         ) { index, item ->
             var isChecked by remember(item.todoItem.id) { mutableStateOf(item.todoItem.isCompleted) }
@@ -271,7 +285,11 @@ fun BoxScope.HomeScreen(
                     isChecked = checked
                     val updateJob = scope.launch {
                         delay(300.milliseconds)
-                        viewModel.update(item.todoItem.copy(isCompleted = checked))
+                        if (checked) {
+                            viewModel.completeTodo(item.todoItem)
+                        } else {
+                            viewModel.uncompleteTodo(item.todoItem)
+                        }
                     }
                     pendingUpdateJobs[todoId] = updateJob
                     updateJob.invokeOnCompletion {
@@ -283,8 +301,83 @@ fun BoxScope.HomeScreen(
                 onDelete = { viewModel.delete(item.todoItem) }
             )
 
-            if (completeTodos.isNotEmpty() || index != incompleteTodos.lastIndex) {
+            if (plannedTodos.isNotEmpty() || completeTodos.isNotEmpty() || index != currentTodos.lastIndex) {
                 VGap()
+            }
+        }
+
+        if (plannedTodos.isNotEmpty()) {
+            item(key = "planned_title") {
+                TodoListSectionHead(
+                    title = stringResource(R.string.planned),
+                    isExpanded = plannedVisible,
+                    onExpandedChange = {
+                        plannedVisible = !plannedVisible
+                    }
+                )
+            }
+            if (plannedVisible) {
+                itemsIndexed(
+                    items = plannedTodos,
+                    key = { _, item -> item.todoItem.id },
+                ) { index, item ->
+                    var isChecked by remember(item.todoItem.id) { mutableStateOf(item.todoItem.isCompleted) }
+
+                    // Keep local state in sync with source of truth when there's no pending optimistic update.
+                    LaunchedEffect(item.todoItem.isCompleted) {
+                        if (pendingUpdateJobs[item.todoItem.id] == null) {
+                            isChecked = item.todoItem.isCompleted
+                        }
+                    }
+
+                    val displayItem = remember(item, isChecked) {
+                        if (item.todoItem.isCompleted == isChecked) item
+                        else item.copy(todoItem = item.todoItem.copy(isCompleted = isChecked))
+                    }
+
+                    TodoListItemRow(
+                        item = displayItem,
+                        isDueTodayMarkerEnabled = isDueTodayMarkerEnabled,
+                        isOverdueMarkerEnabled = isOverdueMarkerEnabled,
+                        isSelected = item.todoItem.id in selectedItemIds,
+                        isSelectionModeActive = isSelectionModeActive,
+                        overlayInteractionSource = interactionSource,
+                        swipeListState = swipeListState,
+                        onEnterSelection = { viewModel.enterSelectionMode(item.todoItem.id) },
+                        onToggleSelection = { viewModel.toggleSelection(item.todoItem.id) },
+                        onOpenDetail = {
+                            val intent = Intent(context, DetailActivity::class.java).apply {
+                                putExtra(EXTRA_TODO_ID, item.todoItem.id)
+                            }
+                            launcher.launch(intent)
+                        },
+                        onCheckedChange = { checked ->
+                            val todoId = item.todoItem.id
+                            pendingUpdateJobs[todoId]?.cancel()
+
+                            isChecked = checked
+                            val updateJob = scope.launch {
+                                delay(300.milliseconds)
+                                if (checked) {
+                                    viewModel.completeTodo(item.todoItem)
+                                } else {
+                                    viewModel.uncompleteTodo(item.todoItem)
+                                }
+                            }
+                            pendingUpdateJobs[todoId] = updateJob
+                            updateJob.invokeOnCompletion {
+                                if (pendingUpdateJobs[todoId] === updateJob) {
+                                    pendingUpdateJobs.remove(todoId)
+                                }
+                            }
+                        },
+                        onDelete = { viewModel.delete(item.todoItem) }
+                    )
+
+                    if (completeTodos.isNotEmpty() || index != plannedTodos.lastIndex) {
+                        VGap()
+                    }
+                }
             }
         }
 
@@ -319,7 +412,11 @@ fun BoxScope.HomeScreen(
                             launcher.launch(intent)
                         },
                         onCheckedChange = { isChecked ->
-                            viewModel.update(item.todoItem.copy(isCompleted = isChecked))
+                            if (isChecked) {
+                                viewModel.completeTodo(item.todoItem)
+                            } else {
+                                viewModel.uncompleteTodo(item.todoItem)
+                            }
                         },
                         onDelete = { viewModel.delete(item.todoItem) }
                     )

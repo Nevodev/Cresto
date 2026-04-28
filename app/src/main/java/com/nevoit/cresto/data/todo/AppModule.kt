@@ -19,6 +19,7 @@ val appModule = module {
     }
 
     single { get<TodoDatabase>().todoDao() }
+    single { get<TodoDatabase>().recurringTodoRuleDao() }
     singleOf(::TodoRepository)
     viewModelOf(::TodoViewModel)
 }

@@ -193,4 +193,10 @@
     <string name="confirm_action_title">%1$s?</string>
     <string name="sort">Sort</string>
     <string name="select_due_date">Select Due Date</string>
+    <string name="planned">Planned</string>
+    <string name="repeat_none">Repeat</string>
+    <string name="repeat_daily">Daily</string>
+    <string name="repeat_weekly">Weekly</string>
+    <string name="repeat_monthly">Monthly</string>
+    <string name="repeat_yearly">Yearly</string>
 </resources>
