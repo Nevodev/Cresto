@@ -567,23 +567,14 @@ fun MainScreen() {
         if (bottomSheetState.isVisible) {
             BottomSheet(
                 onDismiss = { viewModel.hideBottomSheet() },
-                onAddClick = { title, flagIndex, finalDate, rrule ->
-                    if (rrule != null && finalDate != null) {
-                        viewModel.insertRecurringTodo(
+                onAddClick = { title, flagIndex, finalDate ->
+                    viewModel.insert(
+                        TodoItem(
                             title = title,
-                            dueDate = finalDate,
                             flag = flagIndex,
-                            rrule = rrule
+                            dueDate = finalDate
                         )
-                    } else {
-                        viewModel.insert(
-                            TodoItem(
-                                title = title,
-                                flag = flagIndex,
-                                dueDate = finalDate
-                            )
-                        )
-                    }
+                    )
                 },
                 showDialog = showDialog,
                 onRequestCustomDate = { bounds, initialDate, onSelected ->

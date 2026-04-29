@@ -92,7 +92,6 @@ import com.nevoit.cresto.ui.components.glasense.isScrolledPast
 import com.nevoit.cresto.ui.components.glasense.rememberSwipeableListState
 import com.nevoit.cresto.ui.components.packed.DueDatePicker
 import com.nevoit.cresto.ui.components.packed.PageContent
-import com.nevoit.cresto.ui.components.packed.RepeatTodoItemRowDisplay
 import com.nevoit.cresto.ui.components.packed.SubTodoItemRowAdd
 import com.nevoit.cresto.ui.components.packed.SwipeableSubTodoItemRowEditable
 import com.nevoit.cresto.ui.components.packed.TodoItemRowEditable
@@ -266,14 +265,6 @@ fun DetailScreen(
                 GlasenseActivityIndicator(modifier = Modifier.fillMaxSize())
             }
         } else {
-            val isRecurringTodo = currentItem.todoItem.recurringRuleId != null
-            val onCheckedChange: (Boolean) -> Unit = { isChecked ->
-                if (isChecked) {
-                    viewModel.completeTodo(currentItem.todoItem)
-                } else {
-                    viewModel.uncompleteTodo(currentItem.todoItem)
-                }
-            }
             PageContent(
                 state = lazyListState,
                 modifier = Modifier
@@ -291,23 +282,17 @@ fun DetailScreen(
                     )
                 }
                 item(key = "edit") {
-                    if (isRecurringTodo) {
-                        RepeatTodoItemRowDisplay(
-                            item = currentItem.todoItem,
-                            onCheckedChange = onCheckedChange,
-                            modifier = Modifier.animateItem(placementSpec = Springs.crisp())
-                        )
-                    } else {
-                        TodoItemRowEditable(
-                            item = currentItem.todoItem,
-                            onCheckedChange = onCheckedChange,
-                            modifier = Modifier.animateItem(placementSpec = Springs.crisp()),
-                            onEditEnd = { string ->
-                                // if update here will cause conflict
-                                title = string
-                            }
-                        )
-                    }
+                    TodoItemRowEditable(
+                        item = currentItem.todoItem,
+                        onCheckedChange = { isChecked ->
+                            viewModel.update(currentItem.todoItem.copy(isCompleted = isChecked))
+                        },
+                        modifier = Modifier.animateItem(placementSpec = Springs.crisp()),
+                        onEditEnd = { string ->
+                            // if update here will cause conflict
+                            title = string
+                        }
+                    )
                     VGap()
                 }
                 item(key = "information") {
@@ -353,18 +338,16 @@ fun DetailScreen(
                                         }
                                         .align(Alignment.CenterVertically)
                                         .wrapContentSize()
-                                        .then(
-                                            if (!isRecurringTodo) Modifier
-                                                .clip(Capsule())
-                                                .background(
-                                                    color = AppColors.scrimNormal
-                                                )
-                                                .clickable(
-                                                    interactionSource = remember { MutableInteractionSource() },
-                                                    indication = DimIndication()
-                                                ) {
-                                                    isDatePickerVisible = true
-                                                } else Modifier)
+                                        .clip(Capsule())
+                                        .background(
+                                            color = AppColors.scrimNormal
+                                        )
+                                        .clickable(
+                                            interactionSource = remember { MutableInteractionSource() },
+                                            indication = DimIndication()
+                                        ) {
+                                            isDatePickerVisible = true
+                                        }
                                 ) {
                                     Text(
                                         text = finalDate?.format(DateTimeFormatter.ofPattern("yyyy/M/d"))

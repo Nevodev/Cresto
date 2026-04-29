@@ -2,7 +2,6 @@ package com.nevoit.cresto.data.todo
 
 import androidx.room.withTransaction
 import com.nevoit.cresto.data.statistics.DailyStat
-import com.nevoit.cresto.data.todo.backup.RecurringTodoRuleBackupDto
 import com.nevoit.cresto.data.todo.backup.SubTodoBackupDto
 import com.nevoit.cresto.data.todo.backup.TodoBackupDto
 import com.nevoit.cresto.data.todo.backup.TodoBackupFile
@@ -31,7 +30,6 @@ data class ImportResult(
  */
 class TodoRepository(
     private val todoDao: TodoDao,
-    private val recurringTodoRuleDao: RecurringTodoRuleDao,
     private val todoDatabase: TodoDatabase
 ) {
 
@@ -51,115 +49,6 @@ class TodoRepository(
 
     suspend fun update(item: TodoItem) {
         todoDao.updateTodo(item)
-    }
-
-    suspend fun insertRecurringTodo(
-        title: String,
-        dueDate: LocalDate,
-        flag: Int,
-        rrule: String
-    ) {
-        todoDatabase.withTransaction {
-            val ruleId = recurringTodoRuleDao.insert(
-                RecurringTodoRule(
-                    title = title,
-                    rrule = rrule,
-                    startDate = dueDate,
-                    nextDueDate = dueDate,
-                    flag = flag
-                )
-            ).toInt()
-
-            todoDao.insertTodoReturningId(
-                TodoItem(
-                    title = title,
-                    dueDate = dueDate,
-                    flag = flag,
-                    recurringRuleId = ruleId
-                )
-            )
-        }
-    }
-
-    suspend fun completeTodo(item: TodoItem) {
-        val completedDateTime = LocalDateTime.now()
-        val itemToPersist = item.copy(
-            isCompleted = true,
-            completedDateTime = item.completedDateTime ?: completedDateTime
-        )
-
-        todoDatabase.withTransaction {
-            todoDao.updateTodo(itemToPersist)
-
-            val ruleId = item.recurringRuleId ?: return@withTransaction
-            val rule = recurringTodoRuleDao.getById(ruleId) ?: return@withTransaction
-            if (!rule.isActive) return@withTransaction
-
-            val baseDate = item.dueDate ?: rule.nextDueDate ?: rule.startDate
-            val nextDate = RecurrenceCalculator.nextDate(
-                rrule = rule.rrule,
-                after = baseDate,
-                startDate = rule.startDate,
-                endDate = rule.endDate
-            )
-
-            if (nextDate == null) {
-                recurringTodoRuleDao.update(
-                    rule.copy(
-                        nextDueDate = null,
-                        isActive = false,
-                        updatedDateTime = LocalDateTime.now()
-                    )
-                )
-                return@withTransaction
-            }
-
-            val hasPendingInstance = todoDao.getIncompleteCountByRecurringRuleId(ruleId) > 0
-            if (!hasPendingInstance) {
-                todoDao.insertTodoReturningId(
-                    TodoItem(
-                        title = rule.title,
-                        dueDate = nextDate,
-                        flag = rule.flag,
-                        recurringRuleId = rule.id
-                    )
-                )
-            }
-
-            recurringTodoRuleDao.update(
-                rule.copy(
-                    nextDueDate = nextDate,
-                    updatedDateTime = LocalDateTime.now()
-                )
-            )
-        }
-    }
-
-    suspend fun uncompleteTodo(item: TodoItem) {
-        val itemToPersist = item.copy(
-            isCompleted = false,
-            completedDateTime = null
-        )
-
-        todoDatabase.withTransaction {
-            todoDao.updateTodo(itemToPersist)
-
-            val ruleId = item.recurringRuleId ?: return@withTransaction
-            val dueDate = item.dueDate ?: return@withTransaction
-            val hasLaterCompletedInstance = todoDao.getCompletedRecurringTodoCountAfter(
-                ruleId = ruleId,
-                afterDate = dueDate
-            ) > 0
-            if (hasLaterCompletedInstance) return@withTransaction
-
-            val nextPendingInstance = todoDao.getNextIncompleteRecurringTodoAfter(
-                ruleId = ruleId,
-                afterDate = dueDate
-            )
-            if (nextPendingInstance != null) {
-                todoDao.deleteTodo(nextPendingInstance)
-            }
-        }
     }
 
     suspend fun delete(item: TodoItem) {
@@ -247,8 +136,7 @@ class TodoRepository(
                     id = 0,
                     creationDateTime = now.plusNanos(index * 1000000L),
                     isCompleted = false,
-                    completedDateTime = null,
-                    recurringRuleId = null
+                    completedDateTime = null
                 )
             }
 
@@ -349,7 +237,6 @@ class TodoRepository(
         val isCompleted: Boolean,
         val flag: Int,
         val completedDateTime: String?,
-        val recurringRuleId: Int?,
         val subTodos: List<SubTodoFingerprint>
     )
 
@@ -361,10 +248,9 @@ class TodoRepository(
     suspend fun exportToJson(): String {
         val todos = todoDao.getAllTodosSnapshot()
         val subTodos = todoDao.getAllSubTodosSnapshot()
-        val recurringRules = recurringTodoRuleDao.getAllSnapshot()
 
         val backup = TodoBackupFile(
-            schemaVersion = 2,
+            schemaVersion = 1,
             exportedAt = LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME),
             todos = todos.map {
                 TodoBackupDto(
@@ -374,8 +260,7 @@ class TodoRepository(
                     creationDateTime = it.creationDateTime.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME),
                     isCompleted = it.isCompleted,
                     flag = it.flag,
-                    completedDateTime = it.completedDateTime?.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME),
-                    recurringRuleId = it.recurringRuleId
+                    completedDateTime = it.completedDateTime?.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)
                 )
             },
             subTodos = subTodos.map {
@@ -384,20 +269,6 @@ class TodoRepository(
                     parentId = it.parentId,
                     description = it.description,
                     isCompleted = it.isCompleted
-                )
-            },
-            recurringRules = recurringRules.map {
-                RecurringTodoRuleBackupDto(
-                    id = it.id,
-                    title = it.title,
-                    rrule = it.rrule,
-                    startDate = it.startDate.toString(),
-                    endDate = it.endDate?.toString(),
-                    nextDueDate = it.nextDueDate?.toString(),
-                    flag = it.flag,
-                    isActive = it.isActive,
-                    creationDateTime = it.creationDateTime.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME),
-                    updatedDateTime = it.updatedDateTime.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)
                 )
             }
         )
@@ -412,27 +283,6 @@ class TodoRepository(
         val backup = backupJson.decodeFromString<TodoBackupFile>(json)
 
         val subTodosByParent = backup.subTodos.groupBy { it.parentId }
-        val recurringRuleIdMap = mutableMapOf<Int, Int>()
-
-        todoDatabase.withTransaction {
-            backup.recurringRules.forEach { ruleDto ->
-                val newRuleId = recurringTodoRuleDao.insert(
-                    RecurringTodoRule(
-                        id = 0,
-                        title = ruleDto.title,
-                        rrule = ruleDto.rrule,
-                        startDate = LocalDate.parse(ruleDto.startDate),
-                        endDate = ruleDto.endDate?.let(LocalDate::parse),
-                        nextDueDate = ruleDto.nextDueDate?.let(LocalDate::parse),
-                        flag = ruleDto.flag,
-                        isActive = ruleDto.isActive,
-                        creationDateTime = LocalDateTime.parse(ruleDto.creationDateTime),
-                        updatedDateTime = LocalDateTime.parse(ruleDto.updatedDateTime)
-                    )
-                ).toInt()
-                recurringRuleIdMap[ruleDto.id] = newRuleId
-            }
-        }
 
         val existingFingerprints = todoDao.getAllTodosWithSubTodosSnapshot()
             .map { it.toFingerprint() }
@@ -458,8 +308,7 @@ class TodoRepository(
                     creationDateTime = LocalDateTime.parse(todoDto.creationDateTime),
                     isCompleted = todoDto.isCompleted,
                     flag = todoDto.flag,
-                    completedDateTime = todoDto.completedDateTime?.let(LocalDateTime::parse),
-                    recurringRuleId = todoDto.recurringRuleId?.let(recurringRuleIdMap::get)
+                    completedDateTime = todoDto.completedDateTime?.let(LocalDateTime::parse)
                 )
             ).toInt()
 
@@ -495,7 +344,6 @@ class TodoRepository(
             isCompleted = todoItem.isCompleted,
             flag = todoItem.flag,
             completedDateTime = todoItem.completedDateTime?.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME),
-            recurringRuleId = todoItem.recurringRuleId,
             subTodos = subTodos
                 .map { SubTodoFingerprint(it.description, it.isCompleted) }
                 .sortedWith(
@@ -519,7 +367,6 @@ class TodoRepository(
             isCompleted = todo.isCompleted,
             flag = todo.flag,
             completedDateTime = todo.completedDateTime,
-            recurringRuleId = todo.recurringRuleId,
             subTodos = subTodos
                 .map { SubTodoFingerprint(it.description, it.isCompleted) }
                 .sortedWith(

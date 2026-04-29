@@ -18,10 +18,7 @@ import java.time.LocalDateTime
  */
 @Entity(
     tableName = "todo_items",
-    indices = [
-        Index(value = ["isCompleted", "completedDateTime"]),
-        Index(value = ["recurringRuleId"])
-    ]
+    indices = [Index(value = ["isCompleted", "completedDateTime"])]
 )
 data class TodoItem(
     @PrimaryKey(autoGenerate = true)
@@ -31,8 +28,7 @@ data class TodoItem(
     val creationDateTime: LocalDateTime = LocalDateTime.now(),
     val isCompleted: Boolean = false,
     val flag: Int = 0,
-    val completedDateTime: LocalDateTime? = null,
-    val recurringRuleId: Int? = null
+    val completedDateTime: LocalDateTime? = null
 )
 
 const val EXTRA_DELETE_ID = "extra_delete_id"

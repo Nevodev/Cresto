@@ -113,7 +113,7 @@ import kotlin.time.Duration.Companion.milliseconds
 @Composable
 fun BottomSheet(
     onDismiss: () -> Unit,
-    onAddClick: (String, Int, LocalDate?, String?) -> Unit,
+    onAddClick: (String, Int, LocalDate?) -> Unit,
     aiViewModel: AiViewModel = viewModel(),
     showDialog: (items: List<DialogItemData>, title: String, message: String?) -> Unit,
     onRequestCustomDate: (Rect, LocalDate?, (LocalDate?) -> Unit) -> Unit
@@ -563,7 +563,7 @@ fun BottomSheet(
                     .fillMaxWidth()
             ) {
                 // The actual sheet content.
-                AddTodoSheet(onAddClick = { title, flagIndex, finalDate, rrule ->
+                AddTodoSheet(onAddClick = { title, flagIndex, finalDate ->
                     scope.launch {
                         isVisible = false
                         // Animate the sheet out of view.
@@ -583,7 +583,7 @@ fun BottomSheet(
                                 easing = FastOutSlowInEasing
                             )
                         )
-                        onAddClick(title, flagIndex, finalDate, rrule)
+                        onAddClick(title, flagIndex, finalDate)
                         onDismiss()
                     }
                 }, onClose = {
