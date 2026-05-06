@@ -26,7 +26,7 @@ import com.nevoit.glasense.theme.GlasenseSpecs
 import com.nevoit.glasense.theme.GlasenseSpecsStandard
 import com.nevoit.glasense.theme.GlasenseSpecsVariant
 import com.nevoit.glasense.theme.LocalGlasenseColors
-import com.nevoit.glasense.theme.LocalGlasenseIsDarkTheme
+import com.nevoit.glasense.theme.LocalGlasenseDarkTheme
 import com.nevoit.glasense.theme.LocalGlasenseSpecs
 import com.nevoit.glasense.theme.glasenseColorsFromScheme
 
@@ -134,7 +134,7 @@ fun GlasenseTheme(
                 LocalGlasenseColors provides glasenseColors,
                 LocalGlasenseSpecs provides glasenseSpecs,
                 LocalGlasenseSettings provides glasenseSettings,
-                LocalGlasenseIsDarkTheme provides useDarkTheme
+                LocalGlasenseDarkTheme provides useDarkTheme
             ) {
                 content()
             }

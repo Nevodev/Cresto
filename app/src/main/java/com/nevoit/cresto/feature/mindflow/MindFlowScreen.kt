@@ -76,7 +76,7 @@ import com.nevoit.cresto.ui.components.packed.PageContent
 import com.nevoit.cresto.ui.components.packed.StrictText
 import com.nevoit.cresto.ui.components.packed.ZenCirclesBreathing
 import com.nevoit.cresto.ui.viewmodel.ModeTimerViewModel
-import com.nevoit.glasense.component.GlasenseActivityIndicator
+import com.nevoit.glasense.component.ProgressView
 import com.nevoit.glasense.theme.Blue600
 import com.nevoit.glasense.theme.Cyan500
 import com.nevoit.glasense.theme.Green500
@@ -567,9 +567,8 @@ fun BoxScope.MindFlowScreen(
                         icon = painterResource(R.drawable.ic_mini_analytics),
                         modifier = Modifier.weight(1f)
                     ) {
-                        GlasenseActivityIndicator(
-                            modifier = Modifier.fillMaxSize(),
-                            size = 24.dp
+                        ProgressView(
+                            modifier = Modifier.size(24.dp)
                         )
                     }
                 }

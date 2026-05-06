@@ -10,7 +10,7 @@ object GlasenseThemeMode {
     const val SYSTEM = 2
 }
 
-val LocalGlasenseIsDarkTheme = compositionLocalOf { false }
+val LocalGlasenseDarkTheme = compositionLocalOf { false }
 
 fun resolveDarkTheme(mode: Int, systemInDarkTheme: Boolean): Boolean {
     return when (mode) {

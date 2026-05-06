@@ -99,7 +99,7 @@ import com.nevoit.cresto.ui.components.packed.VGap
 import com.nevoit.cresto.ui.modifier.pressIndentShaderEffect
 import com.nevoit.cresto.ui.modifier.shaderRipple
 import com.nevoit.cresto.util.formatRelativeTime
-import com.nevoit.glasense.component.GlasenseActivityIndicator
+import com.nevoit.glasense.component.ProgressView
 import com.nevoit.glasense.theme.Springs
 import dev.chrisbanes.haze.ExperimentalHazeApi
 import dev.chrisbanes.haze.hazeSource
@@ -262,7 +262,7 @@ fun DetailScreen(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
             ) {
-                GlasenseActivityIndicator(modifier = Modifier.fillMaxSize())
+                ProgressView()
             }
         } else {
             PageContent(
