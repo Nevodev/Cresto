@@ -24,6 +24,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         // This makes the app display behind the system bars.
+
         WindowCompat.setDecorFitsSystemWindows(window, false)
         enableEdgeToEdge()
 
@@ -39,12 +40,10 @@ class MainActivity : ComponentActivity() {
             GlasenseTheme {
                 val overscrollFactory = rememberOffsetOverscrollFactory(Orientation.Vertical)
 
-                // Provide the custom overscroll factory to the composable tree.
                 CompositionLocalProvider(
                     LocalOverscrollFactory provides overscrollFactory,
-                    LocalContentColor provides AppColors.content
+                    LocalContentColor provides AppColors.content //provide content color
                 ) {
-                    // Display the main screen of the application.
                     MainScreen()
                 }
             }
