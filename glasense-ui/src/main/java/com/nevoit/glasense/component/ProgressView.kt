@@ -32,7 +32,7 @@ import com.nevoit.glasense.theme.LocalGlasenseColors
 import com.nevoit.glasense.theme.LocalGlasenseDarkTheme
 import com.nevoit.glasense.theme.Springs
 
-private val TrackAlpha = 0.3f
+private const val TrackAlpha = 0.3f
 
 enum class ProgressViewStyle {
     Circular,
