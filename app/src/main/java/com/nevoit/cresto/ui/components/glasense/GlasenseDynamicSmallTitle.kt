@@ -2,6 +2,7 @@ package com.nevoit.cresto.ui.components.glasense
 
 import android.os.Build
 import androidx.compose.animation.core.CubicBezierEasing
+import androidx.compose.animation.core.EaseInQuad
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -108,7 +109,7 @@ fun GlasenseDynamicSmallTitle(
                 0.9f
             ) + myFadeIn(tween(100)),
             exit = myScaleOut(
-                tween(200, 0, CubicBezierEasing(0.2f, 0.2f, 0f, 1f)),
+                tween(200, 0, EaseInQuad),
                 0.9f
             ) + myFadeOut(tween(200)),
             modifier = Modifier

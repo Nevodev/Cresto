@@ -15,8 +15,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.graphicsLayer
 import com.nevoit.cresto.data.todo.TodoViewModel
+import com.nevoit.cresto.feature.calendar.CalendarScreen
 import com.nevoit.cresto.feature.home.HomeScreen
-import com.nevoit.cresto.feature.mindflow.MindFlowScreen
 import com.nevoit.cresto.feature.settings.SettingsScreen
 import com.nevoit.cresto.ui.components.glasense.GlasenseMenuItem
 import kotlinx.coroutines.delay
@@ -46,8 +46,8 @@ fun BoxScope.NavContainer(
         visible = currentRoute == Screen.Star.route
     ) {
         saveableStateHolder.SaveableStateProvider(key = Screen.Star.route) {
-            MindFlowScreen(viewModel)
-
+            //MindFlowScreen(viewModel)
+            CalendarScreen()
         }
     }
 

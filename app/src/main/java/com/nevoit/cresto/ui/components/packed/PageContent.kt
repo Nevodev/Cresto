@@ -18,6 +18,7 @@ fun PageContent(
     state: LazyListState,
     modifier: Modifier = Modifier,
     tabPadding: Boolean = true,
+    topPadding: Dp = 0.dp,
     bottomPadding: Dp? = null,
     content: LazyListScope.() -> Unit
 ) {
@@ -30,7 +31,7 @@ fun PageContent(
             .fillMaxSize(),
         contentPadding = PaddingValues(
             start = 12.dp,
-            top = 0.dp,
+            top = topPadding,
             end = 12.dp,
             bottom = if (tabPadding) 120.dp + navigationBarHeight else bottomPadding
                 ?: navigationBarHeight
