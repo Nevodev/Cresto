@@ -215,7 +215,7 @@ internal fun CircularDeterminateProgressView(
             drawArc(
                 color = color,
                 startAngle = -90f,
-                sweepAngle = -360f * animatedProgress,
+                sweepAngle = 360f * animatedProgress,
                 useCenter = false,
                 style = Stroke(
                     width = strokeWidth,
