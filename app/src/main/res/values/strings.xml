@@ -193,4 +193,5 @@
     <string name="confirm_action_title">%1$s?</string>
     <string name="sort">Sort</string>
     <string name="select_due_date">Select Due Date</string>
+    <string name="calendar_view">Calendar View</string>
 </resources>

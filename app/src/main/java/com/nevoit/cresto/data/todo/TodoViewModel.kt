@@ -18,10 +18,12 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.time.LocalDate
 import java.time.LocalDateTime
 
 data class BottomSheetUiState(
-    val isVisible: Boolean = false
+    val isVisible: Boolean = false,
+    val initialDate: LocalDate? = null
 )
 
 data class BackupUiState(
@@ -234,12 +236,12 @@ class TodoViewModel(private val repository: TodoRepository) : ViewModel() {
     private val _bottomSheetState = MutableStateFlow(BottomSheetUiState())
     val bottomSheetState = _bottomSheetState.asStateFlow()
 
-    fun showBottomSheet() {
-        _bottomSheetState.update { it.copy(isVisible = true) }
+    fun showBottomSheet(date: LocalDate? = null) {
+        _bottomSheetState.update { it.copy(isVisible = true, initialDate = date) }
     }
 
     fun hideBottomSheet() {
-        _bottomSheetState.update { it.copy(isVisible = false) }
+        _bottomSheetState.update { it.copy(isVisible = false, initialDate = null) }
     }
 
     val statistics: StateFlow<TodoStat> = combine(
@@ -407,4 +409,16 @@ class TodoViewModel(private val repository: TodoRepository) : ViewModel() {
     fun updateSearchQuery(query: String) {
         _searchQuery.value = query
     }
+
+    fun getTodosByDate(date: LocalDate): Flow<List<TodoItemWithSubTodos>> {
+        return repository.getTodosByDate(date)
+    }
+
+    val datesWithTodo: StateFlow<Set<LocalDate>> = repository.getDatesWithTodo()
+        .map { it.toSet() }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptySet()
+        )
 }

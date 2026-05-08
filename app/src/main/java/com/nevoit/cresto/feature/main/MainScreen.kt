@@ -539,8 +539,8 @@ fun MainScreen() {
                         liquidGlass = liquidGlass
                     ) {
                         Icon(
-                            painter = painterResource(id = R.drawable.ic_star),
-                            contentDescription = stringResource(R.string.mind_flow)
+                            painter = painterResource(id = R.drawable.ic_time_line),
+                            contentDescription = stringResource(R.string.calendar_view)
                         )
                     }
                     Spacer(modifier = Modifier.width(8.dp))

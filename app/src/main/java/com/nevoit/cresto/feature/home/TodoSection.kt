@@ -47,6 +47,7 @@ import com.nevoit.glasense.theme.Springs
 @Composable
 fun LazyItemScope.TodoListItemRow(
     item: TodoItemWithSubTodos,
+    showDate: Boolean = true,
     isDueTodayMarkerEnabled: Boolean,
     isOverdueMarkerEnabled: Boolean,
     isSelected: Boolean,
@@ -97,6 +98,7 @@ fun LazyItemScope.TodoListItemRow(
     ) {
         SwipeableTodoItem(
             item = item,
+            showDate = showDate,
             isDueTodayMarkerEnabled = isDueTodayMarkerEnabled,
             isOverdueMarkerEnabled = isOverdueMarkerEnabled,
             onCheckboxTapPosition = onCheckboxTapPosition ?: {},

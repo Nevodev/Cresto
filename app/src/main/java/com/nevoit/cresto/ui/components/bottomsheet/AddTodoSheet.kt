@@ -84,6 +84,7 @@ enum class SelectedButton {
  */
 @Composable
 fun AddTodoSheet(
+    initialDate: LocalDate?,
     onAddClick: (String, Int, LocalDate?) -> Unit,
     onClose: () -> Unit,
     onRequestCustomDate: (Rect, LocalDate?, (LocalDate?) -> Unit) -> Unit
@@ -95,7 +96,7 @@ fun AddTodoSheet(
     // Focus requester to programmatically request focus for the text field.
     val focusRequester = remember { FocusRequester() }
     var selectedIndex by remember { mutableIntStateOf(0) }
-    var finalDate by remember { mutableStateOf<LocalDate?>(LocalDate.now()) }
+    var finalDate by remember { mutableStateOf<LocalDate?>(initialDate ?: LocalDate.now()) }
 
     val keyboardController = LocalSoftwareKeyboardController.current
 

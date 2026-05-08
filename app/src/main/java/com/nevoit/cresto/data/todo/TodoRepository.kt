@@ -35,6 +35,14 @@ class TodoRepository(
 
     val allTodos: Flow<List<TodoItemWithSubTodos>> = todoDao.getAllTodosWithSubTodos()
 
+    fun getTodosByDate(date: LocalDate): Flow<List<TodoItemWithSubTodos>> {
+        return todoDao.getTodosByDate(date)
+    }
+
+    fun getDatesWithTodo(): Flow<List<LocalDate>> {
+        return todoDao.getDatesWithTodo()
+    }
+
     fun getTodoById(id: Int): Flow<TodoItemWithSubTodos?> {
         return todoDao.getTodoWithSubTodosById(id)
     }
@@ -170,11 +178,16 @@ class TodoRepository(
             val orderedSourceTodos = ids.mapNotNull(sourceTodosById::get)
             if (orderedSourceTodos.isEmpty()) return@withTransaction 0
 
+            val latestDueDate = orderedSourceTodos
+                .mapNotNull { it.todoItem.dueDate }
+                .maxOrNull()
+
             val newTodoId = todoDao.insertTodoForMerge(
                 TodoItem(
                     id = 0,
                     title = newTodoTitle,
-                    creationDateTime = LocalDateTime.now()
+                    creationDateTime = LocalDateTime.now(),
+                    dueDate = latestDueDate
                 )
             ).toInt()
 

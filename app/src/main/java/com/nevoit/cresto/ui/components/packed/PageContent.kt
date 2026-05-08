@@ -9,8 +9,10 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 
 @Composable
@@ -18,24 +20,28 @@ fun PageContent(
     state: LazyListState,
     modifier: Modifier = Modifier,
     tabPadding: Boolean = true,
-    topPadding: Dp = 0.dp,
+    topPadding: () -> Dp = { 0.dp },
     bottomPadding: Dp? = null,
     content: LazyListScope.() -> Unit
 ) {
     val navigationBarHeight = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
     val flingBehavior = rememberCupertinoFlingBehavior()
 
+    val paddingValues = remember(tabPadding, bottomPadding, navigationBarHeight) {
+        object : PaddingValues {
+            override fun calculateLeftPadding(layoutDirection: LayoutDirection) = 12.dp
+            override fun calculateTopPadding() = topPadding()
+            override fun calculateRightPadding(layoutDirection: LayoutDirection) = 12.dp
+            override fun calculateBottomPadding() = if (tabPadding) 120.dp + navigationBarHeight else bottomPadding
+                ?: navigationBarHeight
+        }
+    }
+
     LazyColumn(
         state = state,
         modifier = modifier
             .fillMaxSize(),
-        contentPadding = PaddingValues(
-            start = 12.dp,
-            top = topPadding,
-            end = 12.dp,
-            bottom = if (tabPadding) 120.dp + navigationBarHeight else bottomPadding
-                ?: navigationBarHeight
-        ),
+        contentPadding = paddingValues,
         flingBehavior = flingBehavior
     ) {
         content()

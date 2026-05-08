@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
@@ -28,11 +29,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.layout.Layout
+import androidx.compose.ui.layout.MeasurePolicy
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.constrainHeight
 import androidx.compose.ui.unit.constrainWidth
@@ -49,6 +53,7 @@ import kotlin.math.roundToInt
 fun MonthlyPagerCalendar(
     modifier: Modifier = Modifier,
     selectedDate: LocalDate,
+    datesWithTodo: Set<LocalDate> = emptySet(),
     onDateSelected: (LocalDate) -> Unit,
     onMonthChanged: (YearMonth) -> Unit,
     collapseFractionProvider: () -> Float,
@@ -140,6 +145,7 @@ fun MonthlyPagerCalendar(
             MonthGrid(
                 yearMonth = pageMonth,
                 selectedDate = selectedDate,
+                datesWithTodo = datesWithTodo,
                 onDayClick = onDateSelected
             )
         }
@@ -173,6 +179,7 @@ internal fun WeekDaysIndicator() {
 private fun MonthGrid(
     yearMonth: YearMonth,
     selectedDate: LocalDate,
+    datesWithTodo: Set<LocalDate>,
     onDayClick: (LocalDate) -> Unit
 ) {
     val daysInCurrentMonth = yearMonth.lengthOfMonth()
@@ -217,6 +224,7 @@ private fun MonthGrid(
 
                     val isSelected = date == selectedDate
                     val isToday = date == LocalDate.now()
+                    val hasTodo = datesWithTodo.contains(date)
 
                     Box(
                         modifier = Modifier
@@ -229,6 +237,7 @@ private fun MonthGrid(
                             isSelected = isSelected,
                             isToday = isToday,
                             isCurrentMonth = isCurrentMonth,
+                            hasTodo = hasTodo,
                             onClick = { onDayClick(date) }
                         )
                     }
@@ -244,40 +253,56 @@ private fun DayCell(
     isSelected: Boolean,
     isToday: Boolean,
     isCurrentMonth: Boolean,
+    hasTodo: Boolean,
     onClick: () -> Unit
 ) {
     val backgroundColor = when {
         isSelected -> AppColors.primary
+        isToday -> AppColors.scrimNormal
         else -> Color.Transparent
     }
 
     val textColor = when {
         isSelected -> AppColors.onPrimary
-        isToday -> AppColors.primary
         isCurrentMonth -> AppColors.content
         else -> AppColors.contentVariant
     }
 
     val interactionSource = remember { MutableInteractionSource() }
 
-    Box(
+    Layout(
         modifier = Modifier
             .fillMaxSize()
             .padding(2.dp)
-            .background(backgroundColor, CircleShape)
+            .then(
+                if (isSelected || isToday) Modifier.background(
+                    backgroundColor,
+                    CircleShape
+                ) else Modifier
+            )
             .clickable(
                 interactionSource = interactionSource,
                 indication = null
             ) { onClick() },
-        contentAlignment = Alignment.Center
-    ) {
-        Text(
-            text = date.dayOfMonth.toString(),
-            fontSize = 14.sp,
-            fontWeight = FontWeight.Normal,
-            color = textColor
-        )
-    }
+        measurePolicy = centerFirstColumnMeasurePolicy,
+        content = {
+            Text(
+                text = date.dayOfMonth.toString(),
+                fontSize = 14.sp,
+                lineHeight = 12.sp,
+                fontWeight = FontWeight.Normal,
+                color = textColor
+            )
+
+            if (hasTodo && !isSelected) {
+                Box(
+                    modifier = Modifier
+                        .size(4.dp)
+                        .background(AppColors.primary, CircleShape)
+                )
+            }
+        }
+    )
 }
 
 private fun calculateRowIndex(pageMonth: YearMonth, selectedDate: LocalDate): Int {
@@ -377,5 +402,45 @@ fun Modifier.topAlignedFixedHeight(height: Dp) = layout { measurable, constraint
 
     layout(reportedWidth, reportedHeight) {
         placeable.placeRelative(0, 0)
+    }
+}
+
+val centerFirstColumnMeasurePolicy = MeasurePolicy { measurables, constraints ->
+    val childConstraints = constraints.copy(
+        minWidth = 0,
+        minHeight = 0,
+        maxHeight = Constraints.Infinity
+    )
+
+    val placeables = measurables.map { it.measure(childConstraints) }
+
+    val layoutWidth =
+        if (constraints.hasBoundedWidth) constraints.maxWidth else (placeables.firstOrNull()?.width
+            ?: 0)
+    val layoutHeight =
+        if (constraints.hasBoundedHeight) constraints.maxHeight else (placeables.firstOrNull()?.height
+            ?: 0)
+
+    layout(layoutWidth, layoutHeight) {
+        if (placeables.isEmpty()) return@layout
+
+        val firstPlaceable = placeables[0]
+
+        val firstX = (layoutWidth - firstPlaceable.width) / 2
+        val firstY = (layoutHeight - firstPlaceable.height) / 2
+
+        firstPlaceable.placeRelative(x = firstX, y = firstY)
+
+        var currentY = firstY + firstPlaceable.height
+
+        for (i in 1 until placeables.size) {
+            val placeable = placeables[i]
+
+            val x = (layoutWidth - placeable.width) / 2
+
+            placeable.placeRelative(x = x, y = currentY)
+
+            currentY += placeable.height
+        }
     }
 }

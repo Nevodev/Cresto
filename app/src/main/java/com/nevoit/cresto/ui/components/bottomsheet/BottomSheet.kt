@@ -158,6 +158,8 @@ fun BottomSheet(
     val state = rememberTextFieldState()
     val viewModel: TodoViewModel = koinViewModel()
 
+    val bottomSheetUiState by viewModel.bottomSheetState.collectAsState()
+
     val errorDialogItems = listOf(
         DialogItemData(
             stringResource(R.string.ok),
@@ -563,7 +565,9 @@ fun BottomSheet(
                     .fillMaxWidth()
             ) {
                 // The actual sheet content.
-                AddTodoSheet(onAddClick = { title, flagIndex, finalDate ->
+                AddTodoSheet(
+                    initialDate = bottomSheetUiState.initialDate,
+                    onAddClick = { title, flagIndex, finalDate ->
                     scope.launch {
                         isVisible = false
                         // Animate the sheet out of view.

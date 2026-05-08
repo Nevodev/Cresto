@@ -1,7 +1,11 @@
 package com.nevoit.cresto.feature.calendar
 
+import android.app.Activity
+import android.content.Intent
 import android.os.Build
-import androidx.compose.animation.core.tween
+import androidx.activity.compose.BackHandler
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
@@ -20,10 +24,14 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.Saver
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -32,6 +40,7 @@ import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -42,7 +51,10 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.kyant.shapes.Capsule
 import com.nevoit.cresto.R
+import com.nevoit.cresto.data.todo.EXTRA_TODO_ID
 import com.nevoit.cresto.data.todo.TodoViewModel
+import com.nevoit.cresto.feature.detail.DetailActivity
+import com.nevoit.cresto.feature.home.TodoListItemRow
 import com.nevoit.cresto.feature.settings.util.SettingsViewModel
 import com.nevoit.cresto.theme.AppButtonColors
 import com.nevoit.cresto.theme.AppColors
@@ -52,12 +64,11 @@ import com.nevoit.cresto.toolkit.gaussiangradient.smoothGradientMask
 import com.nevoit.cresto.toolkit.gaussiangradient.smoothGradientMaskFallbackInvert
 import com.nevoit.cresto.ui.components.CustomAnimatedVisibility
 import com.nevoit.cresto.ui.components.glasense.GlasenseButtonToolBar
+import com.nevoit.cresto.ui.components.glasense.rememberSwipeableListState
 import com.nevoit.cresto.ui.components.myFadeIn
 import com.nevoit.cresto.ui.components.myFadeOut
 import com.nevoit.cresto.ui.components.packed.PageContent
-import com.nevoit.cresto.ui.components.packed.TodoItemRow
 import com.nevoit.cresto.ui.components.packed.VGap
-import com.nevoit.glasense.theme.Springs
 import dev.chrisbanes.haze.ExperimentalHazeApi
 import dev.chrisbanes.haze.HazeInputScale
 import dev.chrisbanes.haze.HazeStyle
@@ -74,19 +85,66 @@ import kotlin.math.abs
 fun BoxScope.CalendarScreen() {
     val lazyListState = rememberLazyListState()
 
-    var selectedDate by remember { mutableStateOf(LocalDate.now()) }
-    var displayMonth by remember { mutableStateOf(YearMonth.from(selectedDate)) }
+    val localDateSaver = Saver<LocalDate, String>(
+        save = { it.toString() },
+        restore = { LocalDate.parse(it) }
+    )
+    val yearMonthSaver = Saver<YearMonth, String>(
+        save = { it.toString() },
+        restore = { YearMonth.parse(it) }
+    )
+
+    var selectedDate by rememberSaveable(stateSaver = localDateSaver) { mutableStateOf(LocalDate.now()) }
+    var displayMonth by rememberSaveable(stateSaver = yearMonthSaver) {
+        mutableStateOf(
+            YearMonth.from(
+                selectedDate
+            )
+        )
+    }
 
     val viewModel: TodoViewModel = viewModel()
     val settingsViewModel: SettingsViewModel = viewModel()
 
-    val allTodos by viewModel.allTodos.collectAsStateWithLifecycle()
-    val isDueTodayMarkerEnabled by settingsViewModel.isDueTodayMarker
+    val datesWithTodo by viewModel.datesWithTodo.collectAsStateWithLifecycle()
+
+    val todosForSelectedDate by remember(selectedDate) {
+        viewModel.getTodosByDate(selectedDate)
+    }.collectAsStateWithLifecycle(initialValue = emptyList())
+
     val isOverdueMarkerEnabled by settingsViewModel.isOverdueMarker
 
-    val todosForSelectedDate = remember(allTodos, selectedDate) {
-        allTodos.filter { it.todoItem.dueDate == selectedDate }
-            .sortedByDescending { it.todoItem.creationDateTime }
+    val selectedItemIds by viewModel.selectedItemIds.collectAsStateWithLifecycle()
+    val isSelectionModeActive by viewModel.isSelectionModeActive.collectAsStateWithLifecycle()
+
+    val interactionSource = remember { MutableInteractionSource() }
+    val swipeListState = rememberSwipeableListState()
+
+    LaunchedEffect(lazyListState.isScrollInProgress) {
+        if (lazyListState.isScrollInProgress) {
+            swipeListState.close()
+        }
+    }
+    LaunchedEffect(isSelectionModeActive) {
+        if (!isSelectionModeActive) {
+            swipeListState.close()
+        }
+    }
+
+    if (isSelectionModeActive) {
+        BackHandler { viewModel.clearSelections() }
+    }
+
+    val context = LocalContext.current
+    val launcher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            val deleteId = result.data?.getIntExtra("extra_delete_id", -1) ?: -1
+            if (deleteId != -1) {
+                viewModel.deleteById(deleteId)
+            }
+        }
     }
 
     val metrics = rememberCalendarMetrics()
@@ -129,6 +187,13 @@ fun BoxScope.CalendarScreen() {
     val hazeState = rememberHazeState()
     val backgroundColor = AppColors.pageBackground
     val blur = !LocalGlasenseSettings.current.liteMode
+
+    val isBlurVisible by remember {
+        derivedStateOf {
+            lazyListState.canScrollBackward && calendarOffsetPx <= -metrics.maxCollapseOffsetPx || calendarOffsetPx > -metrics.maxCollapseOffsetPx && lazyListState.canScrollBackward
+        }
+    }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -140,24 +205,34 @@ fun BoxScope.CalendarScreen() {
                 .fillMaxSize()
                 .hazeSource(hazeState, 0f),
             tabPadding = true,
-            topPadding = with(density) { headerHeightPx.toDp() }
+            topPadding = { with(density) { headerHeightPx.toDp() } }
         ) {
             itemsIndexed(
                 items = todosForSelectedDate,
                 key = { _, item -> item.todoItem.id }
             ) { index, item ->
-                TodoItemRow(
+                TodoListItemRow(
                     item = item,
-                    isDueTodayMarkerEnabled = isDueTodayMarkerEnabled,
+                    showDate = false,
+                    isDueTodayMarkerEnabled = false,
                     isOverdueMarkerEnabled = isOverdueMarkerEnabled,
                     onCheckedChange = { isChecked ->
                         viewModel.update(item.todoItem.copy(isCompleted = isChecked))
                     },
-                    modifier = Modifier.animateItem(
-                        placementSpec = Springs.crisp(),
-                        fadeInSpec = tween(300),
-                        fadeOutSpec = tween(300)
-                    )
+                    isSelected = item.todoItem.id in selectedItemIds,
+                    isSelectionModeActive = isSelectionModeActive,
+                    overlayInteractionSource = interactionSource,
+                    swipeListState = swipeListState,
+                    onEnterSelection = { viewModel.enterSelectionMode(item.todoItem.id) },
+                    onToggleSelection = { viewModel.toggleSelection(item.todoItem.id) },
+                    onOpenDetail = {
+                        val intent = Intent(context, DetailActivity::class.java).apply {
+                            putExtra(EXTRA_TODO_ID, item.todoItem.id)
+                        }
+                        launcher.launch(intent)
+                    },
+                    onDelete = { viewModel.delete(item.todoItem) },
+                    onCheckboxTapPosition = { }
                 )
                 if (index != todosForSelectedDate.lastIndex) {
                     VGap()
@@ -165,7 +240,7 @@ fun BoxScope.CalendarScreen() {
             }
         }
         CustomAnimatedVisibility(
-            visible = lazyListState.canScrollBackward && calendarOffsetPx <= -metrics.maxCollapseOffsetPx,
+            visible = isBlurVisible,
             enter = myFadeIn(),
             exit = myFadeOut()
         ) {
@@ -238,13 +313,13 @@ fun BoxScope.CalendarScreen() {
                                     interactionSource = sharedInteractionSource,
                                     indication = null
                                 ) {
-
+                                    viewModel.showBottomSheet(date = selectedDate)
                                 },
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
-                                painter = painterResource(id = R.drawable.ic_ellipsis),
-                                contentDescription = stringResource(R.string.more),
+                                painter = painterResource(id = R.drawable.ic_add_large),
+                                contentDescription = stringResource(R.string.add_new_todo),
                                 modifier = Modifier.width(32.dp),
                                 tint = AppColors.primary
                             )
@@ -257,6 +332,7 @@ fun BoxScope.CalendarScreen() {
             Spacer(Modifier.height(4.dp))
             MonthlyPagerCalendar(
                 selectedDate = selectedDate,
+                datesWithTodo = datesWithTodo,
                 onDateSelected = { selectedDate = it },
                 onMonthChanged = { displayMonth = it },
                 collapseFractionProvider = { abs(calendarOffsetPx) / metrics.maxCollapseOffsetPx }

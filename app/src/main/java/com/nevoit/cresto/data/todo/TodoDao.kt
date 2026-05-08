@@ -56,6 +56,13 @@ interface TodoDao {
     @Query("SELECT * FROM todo_items ORDER BY dueDate IS NULL, dueDate ASC")
     fun getAllTodosWithSubTodosSortedByDueDate(): Flow<List<TodoItemWithSubTodos>>
 
+    @Transaction
+    @Query("SELECT * FROM todo_items WHERE dueDate = :date ORDER BY creationDateTime DESC")
+    fun getTodosByDate(date: java.time.LocalDate): Flow<List<TodoItemWithSubTodos>>
+
+    @Query("SELECT DISTINCT dueDate FROM todo_items WHERE dueDate IS NOT NULL")
+    fun getDatesWithTodo(): Flow<List<java.time.LocalDate>>
+
     // Fetches a single todo item with its sub-todos by ID.
     @Transaction
     @Query("SELECT * FROM todo_items WHERE id = :id")
