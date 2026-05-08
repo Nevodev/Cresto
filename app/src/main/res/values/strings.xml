@@ -194,4 +194,7 @@
     <string name="sort">Sort</string>
     <string name="select_due_date">Select Due Date</string>
     <string name="calendar_view">Calendar View</string>
+    <string name="no_task_this_day">No task this day</string>
+    <string name="take_a_break">Take a break</string>
+    <string name="quick_return_to_today">Tap here to quickly return to today</string>
 </resources>

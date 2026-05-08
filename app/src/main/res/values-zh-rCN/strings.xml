@@ -184,4 +184,7 @@
     <string name="sort">排序</string>
     <string name="select_due_date">选择截止日期</string>
     <string name="calendar_view">日历视图</string>
+    <string name="no_task_this_day">这一天无任务</string>
+    <string name="take_a_break">放松一下吧</string>
+    <string name="quick_return_to_today">点击此处可快速返回今日</string>
 </resources>

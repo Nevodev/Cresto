@@ -54,6 +54,7 @@ import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 import kotlin.math.abs
 import kotlin.random.Random
+import kotlin.time.Duration.Companion.milliseconds
 
 enum class SwipeState {
     /**
@@ -154,7 +155,7 @@ fun SwipeableContainer(
             coroutineScope.launch {
                 repeat(5) {
                     haptic.performHapticFeedback(HapticFeedbackType.SegmentFrequentTick)
-                    delay(Random.nextLong(50, 70))
+                    delay(Random.nextLong(50, 70).milliseconds)
                 }
             }
             coroutineScope.launch {

@@ -34,7 +34,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
@@ -42,6 +41,7 @@ import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.layout.IntrinsicMeasurable
 import androidx.compose.ui.layout.IntrinsicMeasureScope
 import androidx.compose.ui.layout.Layout
@@ -145,6 +145,63 @@ fun TodoItemRow(
                     .padding(vertical = 12.dp)
             )
         } else {
+            val today = remember { LocalDate.now() }
+            val isToday = itemTodo.dueDate == today
+            val isExpired = itemTodo.dueDate?.let { it < today } == true
+
+            val rawFormattedDate = remember(itemTodo.dueDate, today) {
+                itemTodo.dueDate?.let { dueDate ->
+                    if (dueDate.year == today.year) {
+                        dueDate.format(thisYearFormatter)
+                    } else {
+                        dueDate.format(otherYearFormatter)
+                    }
+                }
+            }
+
+            val dueDateText: String? = when {
+                rawFormattedDate == null -> null
+                isToday && isDueTodayMarkerEnabled && !itemTodo.isCompleted -> dueTodayText
+                isExpired && isOverdueMarkerEnabled && !itemTodo.isCompleted -> {
+                    stringResource(R.string.overdue_with_date, rawFormattedDate)
+                }
+
+                else -> rawFormattedDate
+            }
+
+            val harmonizedYellow = harmonize(Yellow500)
+            val harmonizedRed = harmonize(Red500)
+
+            val dueDateColor = remember(
+                itemTodo.dueDate,
+                itemTodo.isCompleted,
+                isDueTodayMarkerEnabled,
+                isOverdueMarkerEnabled,
+                isToday,
+                isExpired
+            ) {
+                when {
+                    itemTodo.dueDate == null -> contentColor.copy(alpha = 0.4f)
+                    isToday -> if (isDueTodayMarkerEnabled && !itemTodo.isCompleted) {
+                        harmonizedYellow
+                    } else {
+                        contentColor.copy(alpha = 0.4f)
+                    }
+
+                    isExpired -> if (isOverdueMarkerEnabled && !itemTodo.isCompleted) {
+                        harmonizedRed
+                    } else {
+                        contentColor.copy(alpha = 0.4f)
+                    }
+
+                    else -> contentColor.copy(alpha = 0.4f)
+                }
+            }
+
+            val metadataStyle = MaterialTheme.typography.bodyMedium
+            val metadataFontSize = 14.sp
+            val areCompleted = totalTaskCount > 0 && totalTaskCount == completedTaskCount
+
             Column(
                 modifier = Modifier
                     .weight(1f)
@@ -156,45 +213,40 @@ fun TodoItemRow(
                     lineThrough = itemTodo.isCompleted
                 )
                 Spacer(modifier = Modifier.height(2.dp))
-                val metadataStyle = MaterialTheme.typography.bodyMedium
-                val metadataFontSize = 14.sp
-
-                val today = LocalDate.now()
-                val isToday = itemTodo.dueDate == today
-                val isExpired = itemTodo.dueDate?.let { it < today } == true
-                val dueDateText: String? = itemTodo.dueDate?.let { dueDate ->
-                    val formattedDate = if (dueDate.year == today.year) {
-                        dueDate.format(thisYearFormatter)
-                    } else {
-                        dueDate.format(otherYearFormatter)
-                    }
-
-                    when {
-                        isToday -> if (isDueTodayMarkerEnabled && !itemTodo.isCompleted) dueTodayText else formattedDate
-                        isExpired -> if (isOverdueMarkerEnabled && !itemTodo.isCompleted) {
-                            stringResource(R.string.overdue_with_date, formattedDate)
-                        } else {
-                            formattedDate
-                        }
-
-                        else -> formattedDate
-                    }
-                }
-                val dueDateColor = when {
-                    itemTodo.dueDate == null -> AppColors.content.copy(.4f)
-                    isToday -> if (isDueTodayMarkerEnabled && !itemTodo.isCompleted) harmonize(Yellow500) else AppColors.content.copy(
-                        .4f
-                    )
-
-                    isExpired -> if (isOverdueMarkerEnabled && !itemTodo.isCompleted) harmonize(Red500) else AppColors.content.copy(
-                        .4f
-                    )
-
-                    else -> AppColors.content.copy(.4f)
-                }
-
-                val areCompleted = totalTaskCount > 0 && totalTaskCount == completedTaskCount
-
+//                val dueDateText: String? = itemTodo.dueDate?.let { dueDate ->
+//                    val formattedDate = if (dueDate.year == today.year) {
+//                        dueDate.format(thisYearFormatter)
+//                    } else {
+//                        dueDate.format(otherYearFormatter)
+//                    }
+//
+//                    when {
+//                        isToday -> if (isDueTodayMarkerEnabled && !itemTodo.isCompleted) dueTodayText else formattedDate
+//                        isExpired -> if (isOverdueMarkerEnabled && !itemTodo.isCompleted) {
+//                            stringResource(R.string.overdue_with_date, formattedDate)
+//                        } else {
+//                            formattedDate
+//                        }
+//
+//                        else -> formattedDate
+//                    }
+//                }
+//                val dueDateColor = when {
+//                    itemTodo.dueDate == null -> AppColors.content.copy(.4f)
+//                    isToday -> if (isDueTodayMarkerEnabled && !itemTodo.isCompleted) harmonize(
+//                        Yellow500
+//                    ) else AppColors.content.copy(
+//                        .4f
+//                    )
+//
+//                    isExpired -> if (isOverdueMarkerEnabled && !itemTodo.isCompleted) harmonize(
+//                        Red500
+//                    ) else AppColors.content.copy(
+//                        .4f
+//                    )
+//
+//                    else -> AppColors.content.copy(.4f)
+//                }
                 TodoItemMetadataLayout(
                     modifier = Modifier.fillMaxWidth(),
                     showDueDate = (dueDateText != null && showDate) || (isExpired),
@@ -214,7 +266,7 @@ fun TodoItemRow(
                             text = " · ",
                             style = metadataStyle,
                             fontSize = metadataFontSize,
-                            modifier = Modifier.alpha(0.4f)
+                            color = contentColor.copy(0.4f)
                         )
                     },
                     taskContent = {
@@ -263,60 +315,9 @@ private fun TodoItemMetadataLayout(
 ) {
     val density = LocalDensity.current
     val lineSpacingPx = with(density) { lineSpacing.roundToPx() }
+
     val measurePolicy = remember(showDueDate, showTasks, lineSpacingPx) {
         object : MeasurePolicy {
-            private fun resolveContentHeight(
-                widthLimit: Int,
-                hasBoundedWidth: Boolean,
-                dueW: Int,
-                dueH: Int,
-                dotW: Int,
-                taskW: Int,
-                taskH: Int,
-                hasDue: Boolean,
-                hasTask: Boolean,
-            ): Pair<Boolean, Int> {
-                if (!hasDue && !hasTask) return false to 0
-                if (!hasDue) return false to taskH
-                if (!hasTask) return false to dueH
-
-                val inlineWidth = dueW + dotW + taskW
-                val placeInline = !hasBoundedWidth || inlineWidth <= widthLimit
-                return if (placeInline) {
-                    true to maxOf(dueH, taskH)
-                } else {
-                    false to (dueH + lineSpacingPx + taskH)
-                }
-            }
-
-            private fun intrinsicHeight(
-                width: Int,
-                measurables: List<IntrinsicMeasurable>,
-            ): Int {
-                var index = 0
-                val due = if (showDueDate) measurables[index++] else null
-                val dot = if (showDueDate && showTasks) measurables[index++] else null
-                val task = if (showTasks) measurables[index] else null
-                val dueW = due?.maxIntrinsicWidth(Int.MAX_VALUE) ?: 0
-                val dotW = dot?.maxIntrinsicWidth(Int.MAX_VALUE) ?: 0
-                val taskW = task?.maxIntrinsicWidth(Int.MAX_VALUE) ?: 0
-                val dueH = due?.maxIntrinsicHeight(width) ?: 0
-                val taskH = task?.maxIntrinsicHeight(width) ?: 0
-
-                val (_, contentHeight) = resolveContentHeight(
-                    widthLimit = width,
-                    hasBoundedWidth = width != Int.MAX_VALUE,
-                    dueW = dueW,
-                    dueH = dueH,
-                    dotW = dotW,
-                    taskW = taskW,
-                    taskH = taskH,
-                    hasDue = due != null,
-                    hasTask = task != null,
-                )
-                return contentHeight
-            }
-
             override fun MeasureScope.measure(
                 measurables: List<Measurable>,
                 constraints: Constraints,
@@ -326,6 +327,7 @@ private fun TodoItemMetadataLayout(
                 val dueMeasurable = if (showDueDate) measurables[index++] else null
                 val dotMeasurable = if (showDueDate && showTasks) measurables[index++] else null
                 val taskMeasurable = if (showTasks) measurables[index] else null
+
                 val duePlaceable = dueMeasurable?.measure(looseConstraints)
                 val dotPlaceable = dotMeasurable?.measure(looseConstraints)
                 val taskPlaceable = taskMeasurable?.measure(looseConstraints)
@@ -339,21 +341,22 @@ private fun TodoItemMetadataLayout(
                 val hasDue = duePlaceable != null
                 val hasTask = taskPlaceable != null
 
-                val (placeInline, contentHeight) = resolveContentHeight(
-                    widthLimit = constraints.maxWidth,
-                    hasBoundedWidth = constraints.hasBoundedWidth,
-                    dueW = dueW,
-                    dueH = dueH,
-                    dotW = dotW,
-                    taskW = taskW,
-                    taskH = taskH,
-                    hasDue = hasDue,
-                    hasTask = hasTask,
-                )
+                // 直接计算，不生成 Pair 对象
+                val inlineWidth = dueW + dotW + taskW
+                val placeInline =
+                    !constraints.hasBoundedWidth || inlineWidth <= constraints.maxWidth
 
-                val contentWidth = when {
-                    hasDue && hasTask && placeInline -> dueW + dotW + taskW
-                    else -> maxOf(dueW, taskW)
+                val contentHeight = if (placeInline) {
+                    maxOf(dueH, taskH)
+                } else {
+                    val spacing = if (hasDue && hasTask) lineSpacingPx else 0
+                    dueH + spacing + taskH
+                }
+
+                val contentWidth = if (placeInline) {
+                    if (hasDue && hasTask) dueW + dotW + taskW else maxOf(dueW, taskW)
+                } else {
+                    maxOf(dueW, taskW)
                 }
 
                 val layoutWidth = if (constraints.hasBoundedWidth) {
@@ -418,15 +421,53 @@ private fun TodoItemMetadataLayout(
                 return if (due != null && task != null) dueW + dotW + taskW else dueW + taskW
             }
 
+            // 内联 intrinsicHeight，移除原有的 Pair
             override fun IntrinsicMeasureScope.minIntrinsicHeight(
                 measurables: List<IntrinsicMeasurable>,
                 width: Int,
-            ): Int = intrinsicHeight(width = width, measurables = measurables)
+            ): Int {
+                var index = 0
+                val due = if (showDueDate) measurables[index++] else null
+                val dot = if (showDueDate && showTasks) measurables[index++] else null
+                val task = if (showTasks) measurables[index] else null
+                val dueW = due?.maxIntrinsicWidth(Int.MAX_VALUE) ?: 0
+                val dotW = dot?.maxIntrinsicWidth(Int.MAX_VALUE) ?: 0
+                val taskW = task?.maxIntrinsicWidth(Int.MAX_VALUE) ?: 0
+                val dueH = due?.maxIntrinsicHeight(width) ?: 0
+                val taskH = task?.maxIntrinsicHeight(width) ?: 0
+
+                val inlineWidth = dueW + dotW + taskW
+                val placeInline = width == Int.MAX_VALUE || inlineWidth <= width
+                return if (placeInline) {
+                    maxOf(dueH, taskH)
+                } else {
+                    dueH + (if (due != null && task != null) lineSpacingPx else 0) + taskH
+                }
+            }
 
             override fun IntrinsicMeasureScope.maxIntrinsicHeight(
                 measurables: List<IntrinsicMeasurable>,
                 width: Int,
-            ): Int = intrinsicHeight(width = width, measurables = measurables)
+            ): Int {
+                // 逻辑与 min 一样
+                var index = 0
+                val due = if (showDueDate) measurables[index++] else null
+                val dot = if (showDueDate && showTasks) measurables[index++] else null
+                val task = if (showTasks) measurables[index] else null
+                val dueW = due?.maxIntrinsicWidth(Int.MAX_VALUE) ?: 0
+                val dotW = dot?.maxIntrinsicWidth(Int.MAX_VALUE) ?: 0
+                val taskW = task?.maxIntrinsicWidth(Int.MAX_VALUE) ?: 0
+                val dueH = due?.maxIntrinsicHeight(width) ?: 0
+                val taskH = task?.maxIntrinsicHeight(width) ?: 0
+
+                val inlineWidth = dueW + dotW + taskW
+                val placeInline = width == Int.MAX_VALUE || inlineWidth <= width
+                return if (placeInline) {
+                    maxOf(dueH, taskH)
+                } else {
+                    dueH + (if (due != null && task != null) lineSpacingPx else 0) + taskH
+                }
+            }
         }
     }
 
@@ -481,13 +522,13 @@ private fun TodoItemTaskMeta(
     metadataFontSize: androidx.compose.ui.unit.TextUnit,
     density: androidx.compose.ui.unit.Density,
 ) {
+    val color = contentColor.copy(0.4f).compositeOver(AppColors.cardBackground)
 
     Row(
         modifier = Modifier
-            .alpha(0.4f)
             .then(
                 if (areCompleted) Modifier.lineThrough(
-                    contentColor,
+                    color,
                     width = 1.5.dp
                 ) else Modifier
             )
@@ -495,7 +536,7 @@ private fun TodoItemTaskMeta(
         Icon(
             painter = painterResource(R.drawable.ic_list_bullet_clipboard),
             contentDescription = null,
-            tint = contentColor,
+            tint = color,
             modifier = Modifier
                 .size(density.run { 18.sp.toDp() })
                 .align(Alignment.CenterVertically)
@@ -505,13 +546,13 @@ private fun TodoItemTaskMeta(
             text = "$completedText ",
             style = metadataStyle,
             fontSize = metadataFontSize,
-            color = contentColor
+            color = color
         )
         Text(
             text = "$completedCount/$totalTaskCount",
             style = metadataStyle,
             fontSize = metadataFontSize,
-            color = contentColor
+            color = color
         )
     }
 }

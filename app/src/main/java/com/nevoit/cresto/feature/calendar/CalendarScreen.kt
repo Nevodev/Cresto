@@ -48,6 +48,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.BlurEffect
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.TileMode
@@ -56,11 +58,13 @@ import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInWindow
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -82,6 +86,9 @@ import com.nevoit.cresto.toolkit.gaussiangradient.smoothGradientMaskFallbackInve
 import com.nevoit.cresto.ui.components.CustomAnimatedVisibility
 import com.nevoit.cresto.ui.components.glasense.GlasenseButtonAdaptable
 import com.nevoit.cresto.ui.components.glasense.GlasenseButtonToolBar
+import com.nevoit.cresto.ui.components.glasense.GlasensePopup
+import com.nevoit.cresto.ui.components.glasense.PopupDirection
+import com.nevoit.cresto.ui.components.glasense.PopupState
 import com.nevoit.cresto.ui.components.glasense.rememberSwipeableListState
 import com.nevoit.cresto.ui.components.myFadeIn
 import com.nevoit.cresto.ui.components.myFadeOut
@@ -100,6 +107,7 @@ import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.YearMonth
 import java.time.format.DateTimeFormatter
+import java.util.Locale
 import kotlin.math.abs
 
 @OptIn(ExperimentalHazeApi::class)
@@ -132,7 +140,7 @@ fun BoxScope.CalendarScreen() {
 
     val todosForSelectedDate by remember(selectedDate) {
         viewModel.getTodosByDate(selectedDate)
-    }.collectAsStateWithLifecycle(initialValue = emptyList())
+    }.collectAsStateWithLifecycle(initialValue = null)
 
     val isOverdueMarkerEnabled by settingsViewModel.isOverdueMarker
 
@@ -202,7 +210,7 @@ fun BoxScope.CalendarScreen() {
         }
     }
 
-    val monthFormatter = remember { DateTimeFormatter.ofPattern("M月") }
+    val monthFormatter = remember { DateTimeFormatter.ofPattern("MMMM", Locale.getDefault()) }
 
     val density = LocalDensity.current
     var headerHeightPx by remember { mutableFloatStateOf(0f) }
@@ -222,6 +230,12 @@ fun BoxScope.CalendarScreen() {
         16.dp.toPx()
     }
     val topBarAlphaAnimation = remember { Animatable(if (isSelectionModeActive) 1f else 0f) }
+
+    var popupAnchorBounds by remember { mutableStateOf(Rect.Zero) }
+    val hasReturned by settingsViewModel.hasReturnedToTodayByTitle
+    val showTooltip by remember(hasReturned, selectedDate) {
+        derivedStateOf { !hasReturned && selectedDate != LocalDate.now() }
+    }
 
     val topBarBlurAnimation =
         remember { Animatable(if (isSelectionModeActive) 0f else targetBlurRadius) }
@@ -260,13 +274,13 @@ fun BoxScope.CalendarScreen() {
             tabPadding = true,
             topPadding = { with(density) { headerHeightPx.toDp() } }
         ) {
-            if (todosForSelectedDate.isEmpty()) {
+            if (todosForSelectedDate != null && todosForSelectedDate!!.isEmpty()) {
                 item {
                     Box(
                         modifier = Modifier
                             .animateItem(placementSpec = Springs.crisp())
-                            .fillMaxWidth()
-                            .fillParentMaxHeight(0.95f),
+                            .padding(top = 48.dp)
+                            .fillMaxWidth(),
                         contentAlignment = Alignment.Center
                     ) {
                         Column(
@@ -281,14 +295,15 @@ fun BoxScope.CalendarScreen() {
                                 colorFilter = ColorFilter.tint(AppColors.primary)
                             )
                             Text(
-                                text = "这一天无任务",
+                                text = stringResource(id = R.string.no_task_this_day),
                                 color = AppColors.content,
                                 fontSize = 16.sp,
                                 lineHeight = 16.sp,
-                                modifier = Modifier.padding(top = 4.dp)
+                                modifier = Modifier.padding(top = 4.dp),
+                                fontWeight = FontWeight.Medium
                             )
                             Text(
-                                text = "放松一下吧",
+                                text = stringResource(id = R.string.take_a_break),
                                 color = AppColors.contentVariant.copy(.4f),
                                 fontSize = 14.sp,
                                 lineHeight = 14.sp,
@@ -298,9 +313,10 @@ fun BoxScope.CalendarScreen() {
 
                     }
                 }
-            } else {
+            } else if (todosForSelectedDate != null) {
+                val todos = todosForSelectedDate!!
                 itemsIndexed(
-                    items = todosForSelectedDate,
+                    items = todos,
                     key = { _, item -> item.todoItem.id }
                 ) { index, item ->
                     TodoListItemRow(
@@ -326,7 +342,7 @@ fun BoxScope.CalendarScreen() {
                         onDelete = { viewModel.delete(item.todoItem) },
                         onCheckboxTapPosition = { }
                     )
-                    if (index != todosForSelectedDate.lastIndex) {
+                    if (index != todos.lastIndex) {
                         VGap()
                     }
                 }
@@ -409,18 +425,38 @@ fun BoxScope.CalendarScreen() {
                                 null
                             }
                         }
-                        .weight(1f)
-                        .padding(horizontal = 12.dp),
+                        .onGloballyPositioned { coordinates ->
+                            popupAnchorBounds = Rect(
+                                offset = coordinates.positionInWindow(),
+                                size = Size(
+                                    coordinates.size.width.toFloat(),
+                                    coordinates.size.height.toFloat()
+                                )
+                            )
+                        }
+                        .padding(horizontal = 12.dp)
+                        .clickable(
+                            interactionSource = remember { MutableInteractionSource() },
+                            indication = null
+                        ) {
+                            if (selectedDate != LocalDate.now()) {
+                                settingsViewModel.setHasReturnedToTodayByTitle(true)
+                                val today = LocalDate.now()
+                                selectedDate = today
+                                displayMonth = YearMonth.from(today)
+                            }
+                        },
                     maxLines = 1,
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Medium
                 )
 
-                val sharedInteractionSource = remember { MutableInteractionSource() }
+                Spacer(modifier = Modifier.weight(1f))
+                val rightInteractionSource = remember { MutableInteractionSource() }
 
                 GlasenseButtonToolBar(
                     enabled = true,
-                    interactionSource = sharedInteractionSource,
+                    interactionSource = rightInteractionSource,
                     shape = Capsule(),
                     onClick = {},
                     colors = AppButtonColors.action(),
@@ -447,7 +483,7 @@ fun BoxScope.CalendarScreen() {
                                 .height(48.dp)
                                 .width(48.dp)
                                 .clickable(
-                                    interactionSource = sharedInteractionSource,
+                                    interactionSource = rightInteractionSource,
                                     indication = null
                                 ) {
                                     viewModel.showBottomSheet(date = selectedDate)
@@ -536,7 +572,10 @@ fun BoxScope.CalendarScreen() {
                     height = { 48.dp },
                     enabled = true,
                     shape = CircleShape,
-                    onClick = { viewModel.toggleSelectAllItems(todosForSelectedDate.map { it.todoItem.id }) },
+                    onClick = {
+                        viewModel.toggleSelectAllItems(
+                            (todosForSelectedDate ?: emptyList()).map { it.todoItem.id })
+                    },
                     modifier = Modifier
                         .graphicsLayer {
                             alpha = topBarAlphaAnimation.value
@@ -561,5 +600,29 @@ fun BoxScope.CalendarScreen() {
                 }
             }
         }
+    }
+
+    GlasensePopup(
+        popupState = PopupState(
+            isVisible = showTooltip,
+            anchorBounds = popupAnchorBounds
+        ),
+        onDismiss = {
+            settingsViewModel.setHasReturnedToTodayByTitle(true)
+        },
+        popupMargin = 12.dp,
+        anchorGap = 8.dp,
+        direction = PopupDirection.UpLeft,
+        shape = Capsule()
+    ) {
+        Text(
+            text = stringResource(R.string.quick_return_to_today),
+            color = AppColors.content,
+            fontSize = 14.sp,
+            lineHeight = 14.sp,
+            fontWeight = FontWeight.Medium,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.padding(horizontal = 4.dp)
+        )
     }
 }

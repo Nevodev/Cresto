@@ -1,22 +1,15 @@
 package com.nevoit.cresto.feature.calendar
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
@@ -24,19 +17,19 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshotFlow
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.layout.Layout
-import androidx.compose.ui.layout.MeasurePolicy
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalWindowInfo
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.constrainHeight
 import androidx.compose.ui.unit.constrainWidth
@@ -45,9 +38,12 @@ import androidx.compose.ui.unit.sp
 import com.nevoit.cresto.theme.AppColors
 import com.nevoit.glasense.theme.Springs
 import kotlinx.coroutines.flow.distinctUntilChanged
+import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.YearMonth
+import java.util.Locale
 import kotlin.math.roundToInt
+import java.time.format.TextStyle as TimeTextStyle
 
 @Composable
 fun MonthlyPagerCalendar(
@@ -152,24 +148,47 @@ fun MonthlyPagerCalendar(
     }
 }
 
-private val daysOfWeek = listOf("一", "二", "三", "四", "五", "六", "日")
-
 @Composable
 internal fun WeekDaysIndicator() {
-    Row(
+    val daysOfWeek = remember {
+        DayOfWeek.entries.map { day ->
+            day.getDisplayName(TimeTextStyle.NARROW, Locale.getDefault())
+        }
+    }
+
+    val textMeasurer = rememberTextMeasurer()
+    val spacing = 8.dp
+    val textColor = AppColors.contentVariant
+    val textStyle = TextStyle(
+        fontSize = 12.sp,
+        fontWeight = FontWeight.Medium,
+        textAlign = TextAlign.Center
+    )
+
+    Canvas(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 12.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
+            .padding(horizontal = 12.dp)
+            .height(24.dp)
     ) {
-        daysOfWeek.forEach { day ->
-            Text(
+        val spacingPx = spacing.toPx()
+        val cellWidth = (size.width - spacingPx * 6) / 7f
+
+        daysOfWeek.forEachIndexed { col, day ->
+            val textLayoutResult = textMeasurer.measure(
                 text = day,
-                modifier = Modifier.weight(1f),
-                textAlign = TextAlign.Center,
-                fontSize = 12.sp,
-                color = AppColors.contentVariant,
-                fontWeight = FontWeight.Medium
+                style = textStyle.copy(color = textColor)
+            )
+
+            val x = col * (cellWidth + spacingPx)
+            val centerY = size.height / 2f
+
+            drawText(
+                textLayoutResult = textLayoutResult,
+                topLeft = Offset(
+                    x + cellWidth / 2f - textLayoutResult.size.width / 2f,
+                    centerY - textLayoutResult.size.height / 2f
+                )
             )
         }
     }
@@ -191,118 +210,138 @@ private fun MonthGrid(
     val nextMonth = yearMonth.plusMonths(1)
     val daysInPreviousMonth = previousMonth.lengthOfMonth()
 
-    Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        for (row in 0 until 6) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                for (col in 0 until 7) {
-                    val cellIndex = row * 7 + col
-                    val date: LocalDate
-                    val isCurrentMonth: Boolean
+    val textMeasurer = rememberTextMeasurer()
+    val spacing = 8.dp
 
-                    when {
+    val today = LocalDate.now()
+
+    val selectedBgColor = AppColors.primary
+    val todayBgColor = AppColors.scrimNormal
+
+    val selectedTextColor = AppColors.onPrimary
+    val currentMonthTextColor = AppColors.content
+    val otherMonthTextColor = AppColors.contentVariant
+
+    val textStyle = TextStyle(
+        fontSize = 14.sp,
+        lineHeight = 12.sp,
+        fontWeight = FontWeight.Normal
+    )
+
+    Canvas(
+        modifier = Modifier
+            .fillMaxWidth()
+            .aspectRatio(7f / 6f)
+            .pointerInput(yearMonth, selectedDate) {
+                detectTapGestures { offset ->
+                    val spacingPx = spacing.toPx()
+                    val cellWidth = (size.width - spacingPx * 6) / 7f
+                    val cellHeight = (size.height - spacingPx * 5) / 6f
+
+                    val col = (offset.x / (cellWidth + spacingPx)).toInt().coerceIn(0, 6)
+                    val row = (offset.y / (cellHeight + spacingPx)).toInt().coerceIn(0, 5)
+
+                    val cellIndex = row * 7 + col
+                    val date = when {
                         cellIndex < emptyDaysBefore -> {
                             val day = daysInPreviousMonth - emptyDaysBefore + cellIndex + 1
-                            date = previousMonth.atDay(day)
-                            isCurrentMonth = false
+                            previousMonth.atDay(day)
                         }
 
                         cellIndex < emptyDaysBefore + daysInCurrentMonth -> {
                             val day = cellIndex - emptyDaysBefore + 1
-                            date = yearMonth.atDay(day)
-                            isCurrentMonth = true
+                            yearMonth.atDay(day)
                         }
 
                         else -> {
                             val day = cellIndex - emptyDaysBefore - daysInCurrentMonth + 1
-                            date = nextMonth.atDay(day)
-                            isCurrentMonth = false
+                            nextMonth.atDay(day)
                         }
                     }
+                    onDayClick(date)
+                }
+            }
+    ) {
+        val spacingPx = spacing.toPx()
+        val cellWidth = (size.width - spacingPx * 6) / 7f
+        val cellHeight = cellWidth
 
-                    val isSelected = date == selectedDate
-                    val isToday = date == LocalDate.now()
-                    val hasTodo = datesWithTodo.contains(date)
+        for (row in 0 until 6) {
+            for (col in 0 until 7) {
+                val cellIndex = row * 7 + col
+                val date: LocalDate
+                val isCurrentMonth: Boolean
 
-                    Box(
-                        modifier = Modifier
-                            .weight(1f)
-                            .aspectRatio(1f),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        DayCell(
-                            date = date,
-                            isSelected = isSelected,
-                            isToday = isToday,
-                            isCurrentMonth = isCurrentMonth,
-                            hasTodo = hasTodo,
-                            onClick = { onDayClick(date) }
-                        )
+                when {
+                    cellIndex < emptyDaysBefore -> {
+                        val day = daysInPreviousMonth - emptyDaysBefore + cellIndex + 1
+                        date = previousMonth.atDay(day)
+                        isCurrentMonth = false
                     }
+
+                    cellIndex < emptyDaysBefore + daysInCurrentMonth -> {
+                        val day = cellIndex - emptyDaysBefore + 1
+                        date = yearMonth.atDay(day)
+                        isCurrentMonth = true
+                    }
+
+                    else -> {
+                        val day = cellIndex - emptyDaysBefore - daysInCurrentMonth + 1
+                        date = nextMonth.atDay(day)
+                        isCurrentMonth = false
+                    }
+                }
+
+                val isSelected = date == selectedDate
+                val isToday = date == today
+                val hasTodo = datesWithTodo.contains(date)
+
+                val x = col * (cellWidth + spacingPx)
+                val y = row * (cellHeight + spacingPx)
+                val cellCenter = Offset(x + cellWidth / 2f, y + cellHeight / 2f)
+
+                if (isSelected || isToday) {
+                    val bgColor = if (isSelected) selectedBgColor else todayBgColor
+                    drawCircle(
+                        color = bgColor,
+                        radius = cellWidth / 2f - 2.dp.toPx(),
+                        center = cellCenter
+                    )
+                }
+
+                val textColor = when {
+                    isSelected -> selectedTextColor
+                    isCurrentMonth -> currentMonthTextColor
+                    else -> otherMonthTextColor
+                }
+
+                val text = date.dayOfMonth.toString()
+                val textLayoutResult = textMeasurer.measure(
+                    text = text,
+                    style = textStyle.copy(color = textColor)
+                )
+
+                drawText(
+                    textLayoutResult = textLayoutResult,
+                    topLeft = Offset(
+                        cellCenter.x - textLayoutResult.size.width / 2f,
+                        cellCenter.y - textLayoutResult.size.height / 2f
+                    )
+                )
+
+                if (hasTodo && !isSelected) {
+                    drawCircle(
+                        color = selectedBgColor,
+                        radius = 2.dp.toPx(),
+                        center = Offset(
+                            cellCenter.x,
+                            cellCenter.y + textLayoutResult.size.height / 2f + 4.dp.toPx()
+                        )
+                    )
                 }
             }
         }
     }
-}
-
-@Composable
-private fun DayCell(
-    date: LocalDate,
-    isSelected: Boolean,
-    isToday: Boolean,
-    isCurrentMonth: Boolean,
-    hasTodo: Boolean,
-    onClick: () -> Unit
-) {
-    val backgroundColor = when {
-        isSelected -> AppColors.primary
-        isToday -> AppColors.scrimNormal
-        else -> Color.Transparent
-    }
-
-    val textColor = when {
-        isSelected -> AppColors.onPrimary
-        isCurrentMonth -> AppColors.content
-        else -> AppColors.contentVariant
-    }
-
-    val interactionSource = remember { MutableInteractionSource() }
-
-    Layout(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(2.dp)
-            .then(
-                if (isSelected || isToday) Modifier.background(
-                    backgroundColor,
-                    CircleShape
-                ) else Modifier
-            )
-            .clickable(
-                interactionSource = interactionSource,
-                indication = null
-            ) { onClick() },
-        measurePolicy = centerFirstColumnMeasurePolicy,
-        content = {
-            Text(
-                text = date.dayOfMonth.toString(),
-                fontSize = 14.sp,
-                lineHeight = 12.sp,
-                fontWeight = FontWeight.Normal,
-                color = textColor
-            )
-
-            if (hasTodo && !isSelected) {
-                Box(
-                    modifier = Modifier
-                        .size(4.dp)
-                        .background(AppColors.primary, CircleShape)
-                )
-            }
-        }
-    )
 }
 
 private fun calculateRowIndex(pageMonth: YearMonth, selectedDate: LocalDate): Int {
@@ -402,45 +441,5 @@ fun Modifier.topAlignedFixedHeight(height: Dp) = layout { measurable, constraint
 
     layout(reportedWidth, reportedHeight) {
         placeable.placeRelative(0, 0)
-    }
-}
-
-val centerFirstColumnMeasurePolicy = MeasurePolicy { measurables, constraints ->
-    val childConstraints = constraints.copy(
-        minWidth = 0,
-        minHeight = 0,
-        maxHeight = Constraints.Infinity
-    )
-
-    val placeables = measurables.map { it.measure(childConstraints) }
-
-    val layoutWidth =
-        if (constraints.hasBoundedWidth) constraints.maxWidth else (placeables.firstOrNull()?.width
-            ?: 0)
-    val layoutHeight =
-        if (constraints.hasBoundedHeight) constraints.maxHeight else (placeables.firstOrNull()?.height
-            ?: 0)
-
-    layout(layoutWidth, layoutHeight) {
-        if (placeables.isEmpty()) return@layout
-
-        val firstPlaceable = placeables[0]
-
-        val firstX = (layoutWidth - firstPlaceable.width) / 2
-        val firstY = (layoutHeight - firstPlaceable.height) / 2
-
-        firstPlaceable.placeRelative(x = firstX, y = firstY)
-
-        var currentY = firstY + firstPlaceable.height
-
-        for (i in 1 until placeables.size) {
-            val placeable = placeables[i]
-
-            val x = (layoutWidth - placeable.width) / 2
-
-            placeable.placeRelative(x = x, y = currentY)
-
-            currentY += placeable.height
-        }
     }
 }

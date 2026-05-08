@@ -15,6 +15,7 @@ class SettingsViewModel : ViewModel() {
     val isCompletionSoundEnabled = SettingsManager.isCompletionSoundEnabledState
     val isEasterEggEnabled = SettingsManager.isEasterEggState
     val isSuperGraphicUltraModernGirlEnabled = SettingsManager.isSuperGraphicUltraModernGirlState
+    val hasReturnedToTodayByTitle = SettingsManager.hasReturnedToTodayByTitleState
 
     fun onCustomPrimaryColorChanged(isEnabled: Boolean) {
         SettingsManager.isCustomPrimaryColorEnabled = isEnabled
@@ -61,5 +62,9 @@ class SettingsViewModel : ViewModel() {
 
     fun onSuperGraphicUltraModernGirlChanged(isEnabled: Boolean) {
         SettingsManager.isSuperGraphicUltraModernGirlEnabled = isEnabled
+    }
+
+    fun setHasReturnedToTodayByTitle(value: Boolean) {
+        SettingsManager.hasReturnedToTodayByTitle = value
     }
 }

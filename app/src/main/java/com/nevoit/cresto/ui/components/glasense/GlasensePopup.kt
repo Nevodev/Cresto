@@ -58,11 +58,8 @@ data class PopupState(
 )
 
 enum class PopupDirection {
-    Up, Down, Auto
+    Up, Down, Left, Right, UpLeft, UpRight, DownLeft, DownRight, Auto
 }
-
-@Suppress("unused")
-private enum class AnchorPopupCorner { LeftTop, RightTop, RightBottom, LeftBottom }
 
 private data class AnchorPopupPlacement(
     val x: Float,
@@ -88,36 +85,71 @@ private fun pickPopupPlacement(
 
     val anchorCenterX = (anchorBounds.left + anchorBounds.right) / 2f
     val anchorCenterY = (anchorBounds.top + anchorBounds.bottom) / 2f
-    val targetX = anchorCenterX - popupSize.width / 2f
+    
+    val targetXCenter = anchorCenterX - popupSize.width / 2f
+    val targetYCenter = anchorCenterY - popupSize.height / 2f
 
     val topPos = anchorBounds.top - popupSize.height - gapPx
     val bottomPos = anchorBounds.bottom + gapPx
+    val leftPos = anchorBounds.left - popupSize.width - gapPx
+    val rightPos = anchorBounds.right + gapPx
+    
+    val alignLeft = anchorBounds.left
+    val alignRight = anchorBounds.right - popupSize.width
 
     val candidates = when (preferredDirection) {
         PopupDirection.Up -> listOf(
-            AnchorPopupCorner.LeftBottom to Offset(targetX, topPos),
-            AnchorPopupCorner.LeftTop to Offset(targetX, bottomPos)
+            Offset(targetXCenter, topPos),
+            Offset(targetXCenter, bottomPos)
         )
-
         PopupDirection.Down -> listOf(
-            AnchorPopupCorner.LeftTop to Offset(targetX, bottomPos),
-            AnchorPopupCorner.LeftBottom to Offset(targetX, topPos)
+            Offset(targetXCenter, bottomPos),
+            Offset(targetXCenter, topPos)
         )
-
+        PopupDirection.Left -> listOf(
+            Offset(leftPos, targetYCenter),
+            Offset(rightPos, targetYCenter)
+        )
+        PopupDirection.Right -> listOf(
+            Offset(rightPos, targetYCenter),
+            Offset(leftPos, targetYCenter)
+        )
+        PopupDirection.UpLeft -> listOf(
+            Offset(alignLeft, topPos),
+            Offset(alignLeft, bottomPos),
+            Offset(alignRight, topPos)
+        )
+        PopupDirection.UpRight -> listOf(
+            Offset(alignRight, topPos),
+            Offset(alignRight, bottomPos),
+            Offset(alignLeft, topPos)
+        )
+        PopupDirection.DownLeft -> listOf(
+            Offset(alignLeft, bottomPos),
+            Offset(alignLeft, topPos),
+            Offset(alignRight, bottomPos)
+        )
+        PopupDirection.DownRight -> listOf(
+            Offset(alignRight, bottomPos),
+            Offset(alignRight, topPos),
+            Offset(alignLeft, bottomPos)
+        )
         PopupDirection.Auto -> listOf(
-            AnchorPopupCorner.LeftTop to Offset(targetX, bottomPos),
-            AnchorPopupCorner.LeftBottom to Offset(targetX, topPos)
+            Offset(targetXCenter, bottomPos),
+            Offset(targetXCenter, topPos),
+            Offset(leftPos, targetYCenter),
+            Offset(rightPos, targetYCenter)
         )
     }
 
-    val chosen = candidates.firstOrNull { (_, p) -> overflow(p.x, p.y) == 0f }
-        ?: candidates.minBy { (_, p) -> overflow(p.x, p.y) }
+    val chosen = candidates.firstOrNull { p -> overflow(p.x, p.y) == 0f }
+        ?: candidates.minBy { p -> overflow(p.x, p.y) }
 
-    val clampedX = chosen.second.x.coerceIn(
+    val clampedX = chosen.x.coerceIn(
         marginPx,
         (viewport.width - popupSize.width - marginPx).coerceAtLeast(marginPx)
     )
-    val clampedY = chosen.second.y.coerceIn(
+    val clampedY = chosen.y.coerceIn(
         marginPx,
         (viewport.height - popupSize.height - marginPx).coerceAtLeast(marginPx)
     )
@@ -294,4 +326,3 @@ fun GlasensePopup(
         }
     }
 }
-
