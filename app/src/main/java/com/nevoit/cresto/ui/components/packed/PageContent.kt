@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.rememberOverscrollEffect
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -23,6 +24,7 @@ fun PageContent(
     topPadding: () -> Dp = { 0.dp },
     horizontalPadding: Boolean = true,
     bottomPadding: Dp? = null,
+    overscroll: Boolean = true,
     content: LazyListScope.() -> Unit
 ) {
     val navigationBarHeight = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
@@ -48,7 +50,8 @@ fun PageContent(
         modifier = modifier
             .fillMaxSize(),
         contentPadding = paddingValues,
-        flingBehavior = flingBehavior
+        flingBehavior = flingBehavior,
+        overscrollEffect = if (overscroll) rememberOverscrollEffect() else null
     ) {
         content()
     }

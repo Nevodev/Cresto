@@ -11,6 +11,7 @@ import androidx.compose.animation.core.CubicBezierEasing
 import androidx.compose.animation.core.EaseInQuad
 import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
@@ -45,8 +46,10 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.BlurEffect
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.TileMode
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
@@ -86,6 +89,7 @@ import com.nevoit.cresto.ui.components.myScaleIn
 import com.nevoit.cresto.ui.components.myScaleOut
 import com.nevoit.cresto.ui.components.packed.PageContent
 import com.nevoit.cresto.ui.components.packed.VGap
+import com.nevoit.glasense.theme.Springs
 import dev.chrisbanes.haze.ExperimentalHazeApi
 import dev.chrisbanes.haze.HazeInputScale
 import dev.chrisbanes.haze.HazeStyle
@@ -256,35 +260,75 @@ fun BoxScope.CalendarScreen() {
             tabPadding = true,
             topPadding = { with(density) { headerHeightPx.toDp() } }
         ) {
-            itemsIndexed(
-                items = todosForSelectedDate,
-                key = { _, item -> item.todoItem.id }
-            ) { index, item ->
-                TodoListItemRow(
-                    item = item,
-                    showDate = false,
-                    isDueTodayMarkerEnabled = false,
-                    isOverdueMarkerEnabled = isOverdueMarkerEnabled,
-                    onCheckedChange = { isChecked ->
-                        viewModel.update(item.todoItem.copy(isCompleted = isChecked))
-                    },
-                    isSelected = item.todoItem.id in selectedItemIds,
-                    isSelectionModeActive = isSelectionModeActive,
-                    overlayInteractionSource = interactionSource,
-                    swipeListState = swipeListState,
-                    onEnterSelection = { viewModel.enterSelectionMode(item.todoItem.id) },
-                    onToggleSelection = { viewModel.toggleSelection(item.todoItem.id) },
-                    onOpenDetail = {
-                        val intent = Intent(context, DetailActivity::class.java).apply {
-                            putExtra(EXTRA_TODO_ID, item.todoItem.id)
+            if (todosForSelectedDate.isEmpty()) {
+                item {
+                    Box(
+                        modifier = Modifier
+                            .animateItem(placementSpec = Springs.crisp())
+                            .fillMaxWidth()
+                            .fillParentMaxHeight(0.95f),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Image(
+                                painter = painterResource(id = R.drawable.no_task_artwork),
+                                contentDescription = null,
+                                modifier = Modifier
+                                    .width(96.dp)
+                                    .scale(1.2f),
+                                colorFilter = ColorFilter.tint(AppColors.primary)
+                            )
+                            Text(
+                                text = "这一天无任务",
+                                color = AppColors.content,
+                                fontSize = 16.sp,
+                                lineHeight = 16.sp,
+                                modifier = Modifier.padding(top = 4.dp)
+                            )
+                            Text(
+                                text = "放松一下吧",
+                                color = AppColors.contentVariant.copy(.4f),
+                                fontSize = 14.sp,
+                                lineHeight = 14.sp,
+                                modifier = Modifier.padding(top = 4.dp)
+                            )
                         }
-                        launcher.launch(intent)
-                    },
-                    onDelete = { viewModel.delete(item.todoItem) },
-                    onCheckboxTapPosition = { }
-                )
-                if (index != todosForSelectedDate.lastIndex) {
-                    VGap()
+
+                    }
+                }
+            } else {
+                itemsIndexed(
+                    items = todosForSelectedDate,
+                    key = { _, item -> item.todoItem.id }
+                ) { index, item ->
+                    TodoListItemRow(
+                        item = item,
+                        showDate = false,
+                        isDueTodayMarkerEnabled = false,
+                        isOverdueMarkerEnabled = isOverdueMarkerEnabled,
+                        onCheckedChange = { isChecked ->
+                            viewModel.update(item.todoItem.copy(isCompleted = isChecked))
+                        },
+                        isSelected = item.todoItem.id in selectedItemIds,
+                        isSelectionModeActive = isSelectionModeActive,
+                        overlayInteractionSource = interactionSource,
+                        swipeListState = swipeListState,
+                        onEnterSelection = { viewModel.enterSelectionMode(item.todoItem.id) },
+                        onToggleSelection = { viewModel.toggleSelection(item.todoItem.id) },
+                        onOpenDetail = {
+                            val intent = Intent(context, DetailActivity::class.java).apply {
+                                putExtra(EXTRA_TODO_ID, item.todoItem.id)
+                            }
+                            launcher.launch(intent)
+                        },
+                        onDelete = { viewModel.delete(item.todoItem) },
+                        onCheckboxTapPosition = { }
+                    )
+                    if (index != todosForSelectedDate.lastIndex) {
+                        VGap()
+                    }
                 }
             }
         }
