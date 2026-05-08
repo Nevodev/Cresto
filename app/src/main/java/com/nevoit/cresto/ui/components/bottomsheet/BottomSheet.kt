@@ -559,7 +559,7 @@ fun BottomSheet(
                             bottomLeft = false,
                             bottomRight = false
                         ),
-                        color = MaterialTheme.colorScheme.surface
+                        color = AppColors.pageBackground
                     )
                     .navigationBarsPadding()
                     .fillMaxWidth()
@@ -568,52 +568,53 @@ fun BottomSheet(
                 AddTodoSheet(
                     initialDate = bottomSheetUiState.initialDate,
                     onAddClick = { title, flagIndex, finalDate ->
-                    scope.launch {
-                        isVisible = false
-                        // Animate the sheet out of view.
                         scope.launch {
-                            scaleAnimation.animateTo(
-                                targetValue = 0f,
-                                animationSpec = tween(200)
+                            isVisible = false
+                            // Animate the sheet out of view.
+                            scope.launch {
+                                scaleAnimation.animateTo(
+                                    targetValue = 0f,
+                                    animationSpec = tween(200)
+                                )
+                                aiViewModel.cancelRequest()
+                                aiViewModel.clearState()
+                            }
+                            offset.animateTo(
+                                targetValue = columnHeightPx.toFloat(),
+                                animationSpec = tween(
+                                    durationMillis = 200,
+                                    delayMillis = if (isImeVisible) 100 else 0, // If the keyboard is visible, animating the bottom sheet too quick can feel jarring and unsmooth.
+                                    easing = FastOutSlowInEasing
+                                )
                             )
-                            aiViewModel.cancelRequest()
-                            aiViewModel.clearState()
+                            onAddClick(title, flagIndex, finalDate)
+                            onDismiss()
                         }
-                        offset.animateTo(
-                            targetValue = columnHeightPx.toFloat(),
-                            animationSpec = tween(
-                                durationMillis = 200,
-                                delayMillis = if (isImeVisible) 100 else 0, // If the keyboard is visible, animating the bottom sheet too quick can feel jarring and unsmooth.
-                                easing = FastOutSlowInEasing
-                            )
-                        )
-                        onAddClick(title, flagIndex, finalDate)
-                        onDismiss()
-                    }
-                }, onClose = {
-                    keyboardController?.hide()
-                    scope.launch {
-                        isVisible = false
-                        // Animate the sheet out of view.
+                    }, onClose = {
+                        keyboardController?.hide()
                         scope.launch {
-                            scaleAnimation.animateTo(
-                                targetValue = 0f,
-                                animationSpec = tween(200)
+                            isVisible = false
+                            // Animate the sheet out of view.
+                            scope.launch {
+                                scaleAnimation.animateTo(
+                                    targetValue = 0f,
+                                    animationSpec = tween(200)
+                                )
+                                aiViewModel.cancelRequest()
+                                aiViewModel.clearState()
+                            }
+                            offset.animateTo(
+                                targetValue = columnHeightPx.toFloat(),
+                                animationSpec = tween(
+                                    durationMillis = 200,
+                                    delayMillis = if (isImeVisible) 100 else 0,
+                                    easing = FastOutSlowInEasing
+                                )
                             )
-                            aiViewModel.cancelRequest()
-                            aiViewModel.clearState()
+                            onDismiss()
                         }
-                        offset.animateTo(
-                            targetValue = columnHeightPx.toFloat(),
-                            animationSpec = tween(
-                                durationMillis = 200,
-                                delayMillis = if (isImeVisible) 100 else 0,
-                                easing = FastOutSlowInEasing
-                            )
-                        )
-                        onDismiss()
-                    }
-                }, onRequestCustomDate = onRequestCustomDate)
+                    }, onRequestCustomDate = onRequestCustomDate
+                )
             }
         }
     }

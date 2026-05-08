@@ -54,6 +54,7 @@ import androidx.compose.ui.graphics.BlurEffect
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.TileMode
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -61,6 +62,7 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInWindow
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -261,6 +263,8 @@ fun BoxScope.CalendarScreen() {
         lastNonZeroSelected = selectedItemCount
     }
 
+    val hapticController = LocalHapticFeedback.current
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -395,7 +399,10 @@ fun BoxScope.CalendarScreen() {
             MonthlyPagerCalendar(
                 selectedDate = selectedDate,
                 datesWithTodo = datesWithTodo,
-                onDateSelected = { selectedDate = it },
+                onDateSelected = {
+                    hapticController.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                    selectedDate = it
+                },
                 onMonthChanged = { displayMonth = it },
                 collapseFractionProvider = { abs(calendarOffsetPx) / metrics.maxCollapseOffsetPx }
             )

@@ -4,10 +4,13 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.LocalOverscrollFactory
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -18,6 +21,7 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -31,6 +35,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.geometry.Rect
@@ -43,10 +48,12 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.kyant.shapes.Capsule
 import com.nevoit.cresto.R
 import com.nevoit.cresto.theme.AppButtonColors
@@ -56,6 +63,7 @@ import com.nevoit.cresto.theme.defaultEnterTransition
 import com.nevoit.cresto.theme.defaultExitTransition
 import com.nevoit.cresto.theme.getFlagColor
 import com.nevoit.cresto.ui.components.CustomAnimatedVisibility
+import com.nevoit.cresto.ui.components.glasense.DimIndication
 import com.nevoit.cresto.ui.components.glasense.GlasenseButton
 import com.nevoit.cresto.ui.components.glasense.GlasenseButtonAlt
 import com.nevoit.cresto.ui.components.glasense.glasenseHighlight
@@ -177,7 +185,7 @@ fun AddTodoSheet(
             modifier = Modifier
                 .height(48.dp)
                 .background(
-                    AppColors.content.copy(alpha = 0.05F),
+                    AppColors.scrimNormal,
                     AppSpecs.textFieldShape
                 ),
             contentAlignment = Alignment.CenterStart
@@ -228,7 +236,8 @@ fun AddTodoSheet(
                             }
                         },
                         modifier = Modifier.height(48.dp),
-                        colors = AppButtonColors.secondary(),
+                        colors = AppButtonColors.secondary()
+                            .copy(containerColor = AppColors.scrimNormal),
                         indication = true
                     ) {
                         Box(
@@ -301,7 +310,8 @@ fun AddTodoSheet(
                             }
                         },
                         modifier = Modifier.height(48.dp),
-                        colors = AppButtonColors.secondary(),
+                        colors = AppButtonColors.secondary()
+                            .copy(containerColor = AppColors.scrimNormal),
                     ) {
                         Box(
                             modifier = Modifier.fillMaxSize(),
@@ -381,6 +391,56 @@ fun AddTodoSheet(
                 layout(totalWidth, constraints.maxHeight) {
                     dueDatePlaceable.placeRelative(0, 0)
                     flagPlaceable.placeRelative(dueDateWidth + spacerPx, 0)
+                }
+            }
+        }
+        VGap()
+        CompositionLocalProvider(
+            LocalContentColor provides AppColors.contentVariant
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(AppSpecs.cardShape)
+                    .background(
+                        color = AppColors.scrimNormal
+                    )
+                    .clickable(
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = DimIndication()
+                    ) {
+
+                    }
+                    .padding(horizontal = 12.dp)
+            ) {
+                Row(
+                    modifier = Modifier.padding(vertical = 12.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        painter =
+                            painterResource(id = R.drawable.ic_sliders),
+                        contentDescription = "高级",
+                        modifier = Modifier
+                            .padding(end = 8.dp)
+                            .width(28.dp)
+                    )
+                    Text(
+                        text = "高级",
+                        fontSize = 16.sp,
+                        lineHeight = 18.sp,
+                        fontWeight = FontWeight.Normal,
+                        modifier = Modifier
+                            .align(Alignment.CenterVertically)
+                    )
+                    Spacer(modifier = Modifier.weight(1f))
+                    Icon(
+                        painter =
+                            painterResource(id = R.drawable.ic_chevron_forward_compact),
+                        contentDescription = "高级",
+                        modifier = Modifier.height(20.dp),
+                        tint = AppColors.contentVariant.copy(alpha = 0.3f)
+                    )
                 }
             }
         }
