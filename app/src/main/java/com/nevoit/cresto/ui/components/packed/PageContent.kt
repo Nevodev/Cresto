@@ -21,6 +21,7 @@ fun PageContent(
     modifier: Modifier = Modifier,
     tabPadding: Boolean = true,
     topPadding: () -> Dp = { 0.dp },
+    horizontalPadding: Boolean = true,
     bottomPadding: Dp? = null,
     content: LazyListScope.() -> Unit
 ) {
@@ -29,11 +30,16 @@ fun PageContent(
 
     val paddingValues = remember(tabPadding, bottomPadding, navigationBarHeight) {
         object : PaddingValues {
-            override fun calculateLeftPadding(layoutDirection: LayoutDirection) = 12.dp
+            override fun calculateLeftPadding(layoutDirection: LayoutDirection) =
+                if (horizontalPadding) 12.dp else 0.dp
+
             override fun calculateTopPadding() = topPadding()
-            override fun calculateRightPadding(layoutDirection: LayoutDirection) = 12.dp
-            override fun calculateBottomPadding() = if (tabPadding) 120.dp + navigationBarHeight else bottomPadding
-                ?: navigationBarHeight
+            override fun calculateRightPadding(layoutDirection: LayoutDirection) =
+                if (horizontalPadding) 12.dp else 0.dp
+
+            override fun calculateBottomPadding() =
+                if (tabPadding) 120.dp + navigationBarHeight else bottomPadding
+                    ?: navigationBarHeight
         }
     }
 
@@ -42,34 +48,6 @@ fun PageContent(
         modifier = modifier
             .fillMaxSize(),
         contentPadding = paddingValues,
-        flingBehavior = flingBehavior
-    ) {
-        content()
-    }
-}
-
-@Composable
-fun PageContentNoPadding(
-    state: LazyListState,
-    modifier: Modifier = Modifier,
-    tabPadding: Boolean = true,
-    bottomPadding: Dp? = null,
-    content: LazyListScope.() -> Unit
-) {
-    val navigationBarHeight = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
-    val flingBehavior = rememberCupertinoFlingBehavior()
-
-    LazyColumn(
-        state = state,
-        modifier = modifier
-            .fillMaxSize(),
-        contentPadding = PaddingValues(
-            start = 0.dp,
-            top = 0.dp,
-            end = 0.dp,
-            bottom = if (tabPadding) 120.dp + navigationBarHeight else bottomPadding
-                ?: navigationBarHeight
-        ),
         flingBehavior = flingBehavior
     ) {
         content()

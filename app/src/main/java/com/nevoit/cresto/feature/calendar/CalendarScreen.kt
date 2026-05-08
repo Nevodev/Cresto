@@ -6,6 +6,11 @@ import android.os.Build
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.CubicBezierEasing
+import androidx.compose.animation.core.EaseInQuad
+import androidx.compose.animation.core.MutableTransitionState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
@@ -21,21 +26,29 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.BlurEffect
+import androidx.compose.ui.graphics.TileMode
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -45,6 +58,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -63,10 +77,13 @@ import com.nevoit.cresto.theme.linearGradientMaskT2B70
 import com.nevoit.cresto.toolkit.gaussiangradient.smoothGradientMask
 import com.nevoit.cresto.toolkit.gaussiangradient.smoothGradientMaskFallbackInvert
 import com.nevoit.cresto.ui.components.CustomAnimatedVisibility
+import com.nevoit.cresto.ui.components.glasense.GlasenseButtonAdaptable
 import com.nevoit.cresto.ui.components.glasense.GlasenseButtonToolBar
 import com.nevoit.cresto.ui.components.glasense.rememberSwipeableListState
 import com.nevoit.cresto.ui.components.myFadeIn
 import com.nevoit.cresto.ui.components.myFadeOut
+import com.nevoit.cresto.ui.components.myScaleIn
+import com.nevoit.cresto.ui.components.myScaleOut
 import com.nevoit.cresto.ui.components.packed.PageContent
 import com.nevoit.cresto.ui.components.packed.VGap
 import dev.chrisbanes.haze.ExperimentalHazeApi
@@ -75,6 +92,7 @@ import dev.chrisbanes.haze.HazeStyle
 import dev.chrisbanes.haze.hazeEffect
 import dev.chrisbanes.haze.hazeSource
 import dev.chrisbanes.haze.rememberHazeState
+import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.YearMonth
 import java.time.format.DateTimeFormatter
@@ -194,6 +212,37 @@ fun BoxScope.CalendarScreen() {
         }
     }
 
+    var isComposed by remember { mutableStateOf(isSelectionModeActive) }
+    var isGone by remember { mutableStateOf(isSelectionModeActive) }
+    val targetBlurRadius = with(density) {
+        16.dp.toPx()
+    }
+    val topBarAlphaAnimation = remember { Animatable(if (isSelectionModeActive) 1f else 0f) }
+
+    val topBarBlurAnimation =
+        remember { Animatable(if (isSelectionModeActive) 0f else targetBlurRadius) }
+
+    val scope = rememberCoroutineScope()
+    LaunchedEffect(isSelectionModeActive) {
+        if (isSelectionModeActive) {
+            isComposed = true
+            scope.launch { topBarAlphaAnimation.animateTo(1f, tween(300)) }
+            topBarBlurAnimation.animateTo(0f, tween(300))
+            isGone = true
+        } else {
+            isGone = false
+            scope.launch { topBarAlphaAnimation.animateTo(0f, tween(300)) }
+            topBarBlurAnimation.animateTo(targetBlurRadius, tween(300))
+            isComposed = false
+        }
+    }
+
+    var lastNonZeroSelected by remember { mutableIntStateOf(1) }
+    val selectedItemCount by viewModel.selectedItemCount.collectAsState()
+    if (selectedItemCount != 0) {
+        lastNonZeroSelected = selectedItemCount
+    }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -275,6 +324,24 @@ fun BoxScope.CalendarScreen() {
                     headerHeightPx = coordinates.size.height.toFloat()
                 }
         ) {
+            Spacer(
+                Modifier
+                    .statusBarsPadding()
+                    .height(48.dp)
+            )
+            VGap()
+            WeekDaysIndicator()
+            Spacer(Modifier.height(4.dp))
+            MonthlyPagerCalendar(
+                selectedDate = selectedDate,
+                datesWithTodo = datesWithTodo,
+                onDateSelected = { selectedDate = it },
+                onMonthChanged = { displayMonth = it },
+                collapseFractionProvider = { abs(calendarOffsetPx) / metrics.maxCollapseOffsetPx }
+            )
+            Spacer(Modifier.height(8.dp))
+        }
+        if (!isGone) {
             Row(
                 modifier = Modifier
                     .statusBarsPadding()
@@ -285,6 +352,19 @@ fun BoxScope.CalendarScreen() {
                 Text(
                     text = displayMonth.format(monthFormatter),
                     modifier = Modifier
+                        .graphicsLayer {
+                            alpha = 1 - topBarAlphaAnimation.value
+                            val blurRadius = targetBlurRadius - topBarBlurAnimation.value
+                            renderEffect = if (blurRadius > 0f) {
+                                BlurEffect(
+                                    radiusX = blurRadius,
+                                    radiusY = blurRadius,
+                                    edgeTreatment = TileMode.Decal
+                                )
+                            } else {
+                                null
+                            }
+                        }
                         .weight(1f)
                         .padding(horizontal = 12.dp),
                     maxLines = 1,
@@ -299,7 +379,20 @@ fun BoxScope.CalendarScreen() {
                     interactionSource = sharedInteractionSource,
                     shape = Capsule(),
                     onClick = {},
-                    colors = AppButtonColors.action()
+                    colors = AppButtonColors.action(),
+                    modifier = Modifier.graphicsLayer {
+                        alpha = 1 - topBarAlphaAnimation.value
+                        val blurRadius = targetBlurRadius - topBarBlurAnimation.value
+                        renderEffect = if (blurRadius > 0f) {
+                            BlurEffect(
+                                radiusX = blurRadius,
+                                radiusY = blurRadius,
+                                edgeTreatment = TileMode.Decal
+                            )
+                        } else {
+                            null
+                        }
+                    }
                 ) {
                     Row(
                         modifier = Modifier
@@ -327,17 +420,102 @@ fun BoxScope.CalendarScreen() {
                     }
                 }
             }
-            VGap()
-            WeekDaysIndicator()
-            Spacer(Modifier.height(4.dp))
-            MonthlyPagerCalendar(
-                selectedDate = selectedDate,
-                datesWithTodo = datesWithTodo,
-                onDateSelected = { selectedDate = it },
-                onMonthChanged = { displayMonth = it },
-                collapseFractionProvider = { abs(calendarOffsetPx) / metrics.maxCollapseOffsetPx }
-            )
-            Spacer(Modifier.height(8.dp))
+        }
+        if (isComposed) {
+            val titleVisibleState = remember {
+                MutableTransitionState(false).apply {
+                    targetState = isSelectionModeActive
+                }
+            }
+            titleVisibleState.targetState = isSelectionModeActive
+
+            Box(
+                modifier = Modifier
+                    .statusBarsPadding()
+                    .fillMaxWidth()
+                    .padding(horizontal = 12.dp)
+            ) {
+                GlasenseButtonAdaptable(
+                    width = { 48.dp },
+                    height = { 48.dp },
+                    enabled = true,
+                    shape = CircleShape,
+                    onClick = { viewModel.clearSelections() },
+                    modifier = Modifier
+                        .graphicsLayer {
+                            alpha = topBarAlphaAnimation.value
+                            renderEffect = if (topBarBlurAnimation.value > 0f) {
+                                BlurEffect(
+                                    radiusX = topBarBlurAnimation.value,
+                                    radiusY = topBarBlurAnimation.value,
+                                    edgeTreatment = TileMode.Decal
+                                )
+                            } else {
+                                null
+                            }
+                        }
+                        .align(Alignment.TopStart),
+                    colors = AppButtonColors.action()
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_cross),
+                        contentDescription = stringResource(R.string.exit_selection_mode),
+                        modifier = Modifier.width(32.dp)
+                    )
+                }
+                CustomAnimatedVisibility(
+                    visibleState = titleVisibleState,
+                    enter = myScaleIn(
+                        tween(200, 0, CubicBezierEasing(0.2f, 0.2f, 0f, 1f)),
+                        0.9f
+                    ) + myFadeIn(tween(100)),
+                    exit = myScaleOut(
+                        tween(200, 0, EaseInQuad),
+                        0.9f
+                    ) + myFadeOut(tween(200)),
+                    modifier = Modifier
+                        .align(Alignment.Center)
+                ) {
+                    Text(
+                        text = stringResource(
+                            R.string.selected_todos,
+                            lastNonZeroSelected
+                        ),
+                        style = MaterialTheme.typography.headlineSmall.copy(fontFeatureSettings = "tnum"),
+                        maxLines = 1,
+                        modifier = Modifier.padding(horizontal = 80.dp),
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                }
+                GlasenseButtonAdaptable(
+                    width = { 48.dp },
+                    height = { 48.dp },
+                    enabled = true,
+                    shape = CircleShape,
+                    onClick = { viewModel.toggleSelectAllItems(todosForSelectedDate.map { it.todoItem.id }) },
+                    modifier = Modifier
+                        .graphicsLayer {
+                            alpha = topBarAlphaAnimation.value
+                            renderEffect = if (topBarBlurAnimation.value > 0f) {
+                                BlurEffect(
+                                    radiusX = topBarBlurAnimation.value,
+                                    radiusY = topBarBlurAnimation.value,
+                                    edgeTreatment = TileMode.Decal
+                                )
+                            } else {
+                                null
+                            }
+                        }
+                        .align(Alignment.TopEnd),
+                    colors = AppButtonColors.action()
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_square_dashed),
+                        contentDescription = stringResource(R.string.select_all),
+                        modifier = Modifier.width(32.dp)
+                    )
+                }
+            }
         }
     }
 }

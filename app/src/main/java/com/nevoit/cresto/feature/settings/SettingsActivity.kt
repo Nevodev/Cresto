@@ -73,4 +73,3 @@ class SettingsActivity : ComponentActivity() {
         window.setBackgroundDrawable(null)
     }
 }
-

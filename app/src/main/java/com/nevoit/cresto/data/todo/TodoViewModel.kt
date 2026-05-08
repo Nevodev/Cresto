@@ -88,6 +88,21 @@ class TodoViewModel(private val repository: TodoRepository) : ViewModel() {
         _isSelectionModeActive.value = _selectedItemIds.value.isNotEmpty()
     }
 
+    fun toggleSelectAllItems(visibleIds: Collection<Int>) {
+        if (visibleIds.isEmpty()) return
+
+        _selectedItemIds.update { currentIds ->
+            val isVisibleAllSelected = visibleIds.all(currentIds::contains)
+            if (isVisibleAllSelected) {
+                currentIds - visibleIds.toSet()
+            } else {
+                currentIds + visibleIds.toSet()
+            }
+        }
+
+        _isSelectionModeActive.value = _selectedItemIds.value.isNotEmpty()
+    }
+
     private fun getVisibleTodoIds(): Set<Int> {
         val visibleTodos = if (_searchQuery.value.isBlank()) {
             allTodos.value
