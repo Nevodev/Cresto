@@ -420,13 +420,13 @@ fun AddTodoSheet(
                     Icon(
                         painter =
                             painterResource(id = R.drawable.ic_sliders),
-                        contentDescription = "高级",
+                        contentDescription = stringResource(id = R.string.advanced),
                         modifier = Modifier
                             .padding(end = 8.dp)
                             .width(28.dp)
                     )
                     Text(
-                        text = "高级",
+                        text = stringResource(id = R.string.advanced),
                         fontSize = 16.sp,
                         lineHeight = 18.sp,
                         fontWeight = FontWeight.Normal,
@@ -437,7 +437,7 @@ fun AddTodoSheet(
                     Icon(
                         painter =
                             painterResource(id = R.drawable.ic_chevron_forward_compact),
-                        contentDescription = "高级",
+                        contentDescription = stringResource(id = R.string.advanced),
                         modifier = Modifier.height(20.dp),
                         tint = AppColors.contentVariant.copy(alpha = 0.3f)
                     )
