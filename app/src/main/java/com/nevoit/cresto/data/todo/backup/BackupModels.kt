@@ -18,7 +18,9 @@ data class TodoBackupDto(
     val creationDateTime: String,   // ISO_LOCAL_DATE_TIME
     val isCompleted: Boolean,
     val flag: Int,
-    val completedDateTime: String?  // ISO_LOCAL_DATE_TIME
+    val completedDateTime: String?,  // ISO_LOCAL_DATE_TIME
+    val startTime: String?,     // ISO_LOCAL_TIME
+    val endTime: String?        // ISO_LOCAL_TIME
 )
 
 @Serializable

@@ -5,6 +5,7 @@ import androidx.room.Index
 import androidx.room.PrimaryKey
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.LocalTime
 
 /**
  * Represents a single to-do item entity for the Room database.
@@ -29,7 +30,9 @@ data class TodoItem(
     val isCompleted: Boolean = false,
     val flag: Int = 0,
     val completedDateTime: LocalDateTime? = null,
-    val notes: String = ""
+    val notes: String = "",
+    val startTime: LocalTime? = null,
+    val endTime: LocalTime? = null
 )
 
 const val EXTRA_DELETE_ID = "extra_delete_id"

@@ -198,4 +198,15 @@
     <string name="take_a_break">Take a break</string>
     <string name="quick_return_to_today">Tap here to quickly return to today</string>
     <string name="notes">Notes</string>
+    <string name="time">Time</string>
+    <string name="select_time">Select Time</string>
+    <string name="time_range">Time Range</string>
+    <string name="all_day">All Day</string>
+    <string name="reminder">Reminder</string>
+    <string name="reminder_timing">Reminder Timing</string>
+    <string name="persistent_reminder">Persistent Reminder</string>
+    <string name="strong_reminder">Strong Reminder</string>
+    <string name="repeat">Repeat</string>
+    <string name="repeat_cycle">Repeat Cycle</string>
+    <string name="postpone_after_expiry">Postpone After Expiry</string>
 </resources>

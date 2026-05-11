@@ -79,6 +79,7 @@ import com.nevoit.cresto.ui.components.glasense.GlasenseNavigationButton
 import com.nevoit.cresto.ui.components.glasense.MenuState
 import com.nevoit.cresto.ui.components.glasense.PopupDirection
 import com.nevoit.cresto.ui.components.packed.DueDatePicker
+import com.nevoit.cresto.ui.components.packed.TimePicker
 import com.nevoit.cresto.ui.modifier.pressIndentShaderEffect
 import com.nevoit.cresto.ui.modifier.shaderRipple
 import dev.chrisbanes.haze.ExperimentalHazeApi
@@ -91,6 +92,7 @@ import dev.chrisbanes.haze.rememberHazeState
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 import java.time.LocalDate
+import java.time.LocalTime
 
 sealed class Screen(val route: String) {
     object Home : Screen("home")
@@ -152,6 +154,10 @@ fun MainScreen() {
     var dateButtonBounds by remember { mutableStateOf(Rect.Zero) }
     var sheetFinalDate by remember { mutableStateOf<LocalDate?>(null) }
     var onDateSelectedCallback by remember { mutableStateOf<(LocalDate?) -> Unit>({}) }
+    var isTimePickerVisible by remember { mutableStateOf(false) }
+    var timeButtonBounds by remember { mutableStateOf(Rect.Zero) }
+    var sheetFinalTime by remember { mutableStateOf<LocalTime?>(null) }
+    var onTimeSelectedCallback by remember { mutableStateOf<(LocalTime?) -> Unit>({}) }
 
     val navigationBarHeight = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
 
@@ -567,13 +573,15 @@ fun MainScreen() {
         if (bottomSheetState.isVisible) {
             BottomSheet(
                 onDismiss = { viewModel.hideBottomSheet() },
-                onAddClick = { title, notes, flagIndex, finalDate ->
+                onAddClick = { title, notes, flagIndex, finalDate, startTime, endTime ->
                     viewModel.insert(
                         TodoItem(
                             title = title,
                             notes = notes,
                             flag = flagIndex,
-                            dueDate = finalDate
+                            dueDate = finalDate,
+                            startTime = startTime,
+                            endTime = endTime
                         )
                     )
                 },
@@ -583,6 +591,12 @@ fun MainScreen() {
                     sheetFinalDate = initialDate
                     onDateSelectedCallback = onSelected
                     isDatePickerVisible = true
+                },
+                onRequestCustomTime = { bounds, initialTime, onSelected ->
+                    timeButtonBounds = bounds
+                    sheetFinalTime = initialTime
+                    onTimeSelectedCallback = onSelected
+                    isTimePickerVisible = true
                 }
             )
         }
@@ -606,6 +620,17 @@ fun MainScreen() {
             onDismiss = { isDatePickerVisible = false },
             onDateSelected = { date ->
                 onDateSelectedCallback(date)
+            },
+            direction = PopupDirection.Up
+        )
+
+        TimePicker(
+            isVisible = isTimePickerVisible,
+            anchorBounds = timeButtonBounds,
+            initialTime = sheetFinalTime,
+            onDismiss = { isTimePickerVisible = false },
+            onTimeSelected = { time ->
+                onTimeSelectedCallback(time)
             },
             direction = PopupDirection.Up
         )

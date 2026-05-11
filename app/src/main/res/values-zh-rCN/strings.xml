@@ -188,4 +188,15 @@
     <string name="take_a_break">放松一下吧</string>
     <string name="quick_return_to_today">点击此处可快速返回今日</string>
     <string name="notes">备注</string>
+    <string name="time">时间</string>
+    <string name="select_time">选择时间</string>
+    <string name="time_range">时间段</string>
+    <string name="all_day">全天</string>
+    <string name="reminder">提醒</string>
+    <string name="reminder_timing">提醒时机</string>
+    <string name="persistent_reminder">持续提醒</string>
+    <string name="strong_reminder">强提醒</string>
+    <string name="repeat">重复</string>
+    <string name="repeat_cycle">重复周期</string>
+    <string name="postpone_after_expiry">过期后顺延</string>
 </resources>

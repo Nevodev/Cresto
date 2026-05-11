@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.serialization.json.Json
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
 enum class DuplicatePolicy {
@@ -250,6 +251,8 @@ class TodoRepository(
         val isCompleted: Boolean,
         val flag: Int,
         val completedDateTime: String?,
+        val startTime: String?,
+        val endTime: String?,
         val subTodos: List<SubTodoFingerprint>
     )
 
@@ -273,7 +276,9 @@ class TodoRepository(
                     creationDateTime = it.creationDateTime.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME),
                     isCompleted = it.isCompleted,
                     flag = it.flag,
-                    completedDateTime = it.completedDateTime?.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)
+                    completedDateTime = it.completedDateTime?.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME),
+                    startTime = it.startTime?.format(DateTimeFormatter.ISO_LOCAL_TIME),
+                    endTime = it.endTime?.format(DateTimeFormatter.ISO_LOCAL_TIME)
                 )
             },
             subTodos = subTodos.map {
@@ -321,7 +326,9 @@ class TodoRepository(
                     creationDateTime = LocalDateTime.parse(todoDto.creationDateTime),
                     isCompleted = todoDto.isCompleted,
                     flag = todoDto.flag,
-                    completedDateTime = todoDto.completedDateTime?.let(LocalDateTime::parse)
+                    completedDateTime = todoDto.completedDateTime?.let(LocalDateTime::parse),
+                    startTime = todoDto.startTime?.let(LocalTime::parse),
+                    endTime = todoDto.endTime?.let(LocalTime::parse)
                 )
             ).toInt()
 
@@ -357,6 +364,8 @@ class TodoRepository(
             isCompleted = todoItem.isCompleted,
             flag = todoItem.flag,
             completedDateTime = todoItem.completedDateTime?.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME),
+            startTime = todoItem.startTime?.format(DateTimeFormatter.ISO_LOCAL_TIME),
+            endTime = todoItem.endTime?.format(DateTimeFormatter.ISO_LOCAL_TIME),
             subTodos = subTodos
                 .map { SubTodoFingerprint(it.description, it.isCompleted) }
                 .sortedWith(
@@ -380,6 +389,8 @@ class TodoRepository(
             isCompleted = todo.isCompleted,
             flag = todo.flag,
             completedDateTime = todo.completedDateTime,
+            startTime = todo.startTime,
+            endTime = todo.endTime,
             subTodos = subTodos
                 .map { SubTodoFingerprint(it.description, it.isCompleted) }
                 .sortedWith(
