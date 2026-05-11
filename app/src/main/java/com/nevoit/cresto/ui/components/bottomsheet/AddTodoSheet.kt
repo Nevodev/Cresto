@@ -92,8 +92,12 @@ enum class SelectedButton {
  */
 @Composable
 fun AddTodoSheet(
+    modifier: Modifier = Modifier,
     initialDate: LocalDate?,
+    focusRequester: FocusRequester = remember { FocusRequester() },
+    autoRequestFocus: Boolean = true,
     onAddClick: (String, Int, LocalDate?) -> Unit,
+    onNavigate: () -> Unit,
     onClose: () -> Unit,
     onRequestCustomDate: (Rect, LocalDate?, (LocalDate?) -> Unit) -> Unit
 ) {
@@ -101,8 +105,6 @@ fun AddTodoSheet(
     var selectedButton by remember { mutableStateOf(SelectedButton.NONE) }
 
     val state = rememberTextFieldState()
-    // Focus requester to programmatically request focus for the text field.
-    val focusRequester = remember { FocusRequester() }
     var selectedIndex by remember { mutableIntStateOf(0) }
     var finalDate by remember { mutableStateOf<LocalDate?>(initialDate ?: LocalDate.now()) }
 
@@ -124,7 +126,7 @@ fun AddTodoSheet(
     )
     // Main layout
     Column(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .padding(12.dp, 0.dp, 12.dp, 12.dp),
         horizontalAlignment = Alignment.CenterHorizontally
@@ -409,7 +411,7 @@ fun AddTodoSheet(
                         interactionSource = remember { MutableInteractionSource() },
                         indication = DimIndication()
                     ) {
-
+                        onNavigate()
                     }
                     .padding(horizontal = 12.dp)
             ) {
@@ -445,8 +447,10 @@ fun AddTodoSheet(
             }
         }
         // Request focus for the text field when the sheet is launched.
-        LaunchedEffect(Unit) {
-            focusRequester.requestFocus()
+        LaunchedEffect(autoRequestFocus) {
+            if (autoRequestFocus) {
+                focusRequester.requestFocus()
+            }
         }
     }
 }

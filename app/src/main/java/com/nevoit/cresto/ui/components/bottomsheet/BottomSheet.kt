@@ -9,6 +9,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.CubicBezierEasing
 import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
@@ -17,8 +18,10 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.exclude
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -26,13 +29,11 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.isImeVisible
 import androidx.compose.foundation.layout.navigationBars
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material3.Icon
@@ -50,51 +51,36 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.geometry.Rect
-import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.RectangleShape
-import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.graphics.TileMode
-import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.kyant.backdrop.backdrops.rememberLayerBackdrop
-import com.kyant.backdrop.drawPlainBackdrop
-import com.kyant.backdrop.effects.blur
-import com.kyant.backdrop.effects.colorControls
-import com.kyant.shapes.Capsule
 import com.nevoit.cresto.R
 import com.nevoit.cresto.data.todo.TodoViewModel
 import com.nevoit.cresto.theme.AppButtonColors
 import com.nevoit.cresto.theme.AppColors
-import com.nevoit.cresto.theme.defaultEnterTransition
-import com.nevoit.cresto.theme.defaultExitTransition
-import com.nevoit.cresto.theme.gradientColorsDark
-import com.nevoit.cresto.theme.gradientColorsLight
-import com.nevoit.cresto.theme.highlightColorsDark
-import com.nevoit.cresto.theme.highlightColorsLight
-import com.nevoit.cresto.theme.isAppInDarkTheme
-import com.nevoit.cresto.ui.components.CustomAnimatedVisibility
 import com.nevoit.cresto.ui.components.glasense.DialogItemData
 import com.nevoit.cresto.ui.components.glasense.GlasenseButton
-import com.nevoit.cresto.ui.components.glasense.RotatingGlow
-import com.nevoit.cresto.ui.components.glasense.RotatingGlowBorder
-import com.nevoit.cresto.ui.components.glasense.glasenseHighlight
-import com.nevoit.cresto.ui.components.myFadeIn
-import com.nevoit.cresto.ui.components.myFadeOut
+import com.nevoit.cresto.ui.components.packed.ConfigTextField
+import com.nevoit.cresto.ui.components.packed.VGap
 import com.nevoit.cresto.ui.viewmodel.AiSideEffect
 import com.nevoit.cresto.ui.viewmodel.AiViewModel
 import com.nevoit.cresto.ui.viewmodel.UiState
 import com.nevoit.cresto.util.deviceCornerShape
+import com.nevoit.glasense.theme.Springs
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -102,6 +88,8 @@ import kotlinx.coroutines.withContext
 import org.koin.androidx.compose.koinViewModel
 import java.time.LocalDate
 import kotlin.time.Duration.Companion.milliseconds
+
+enum class SheetInputMode { Basic, Advanced }
 
 /**
  * A composable function that displays a bottom sheet with custom animations.
@@ -118,43 +106,36 @@ fun BottomSheet(
     showDialog: (items: List<DialogItemData>, title: String, message: String?) -> Unit,
     onRequestCustomDate: (Rect, LocalDate?, (LocalDate?) -> Unit) -> Unit
 ) {
-    val uiState by aiViewModel.uiState.collectAsState()
-
-    var columnHeightPx by remember { mutableIntStateOf(0) }
-    // State to control the visibility of the bottom sheet and its scrim.
-    var isVisible by remember { mutableStateOf(false) }
-    // Animatable for the vertical offset of the bottom sheet.
-    val offset = remember { Animatable(Float.MAX_VALUE) }
-
-    val scaleAnimation = remember { Animatable(0f) }
-
-    // Coroutine scope for launching animations.
     val scope = rememberCoroutineScope()
 
     val density = LocalDensity.current
     val context = LocalContext.current
 
+    val uiState by aiViewModel.uiState.collectAsState()
+    val windowInfo = LocalWindowInfo.current
+
+    // State to control the visibility of the bottom sheet and its scrim.
+    var isVisible by remember { mutableStateOf(false) }
+    var hasSlidedIn by remember { mutableStateOf(false) }
+
+    var currentInputMode by remember { mutableStateOf(SheetInputMode.Basic) }
+    var isReturningFromAdvanced by remember { mutableStateOf(false) }
+    val basicFocusRequester = remember { FocusRequester() }
+
+    val bottomSheetHeight =
+        windowInfo.containerDpSize.height - WindowInsets.statusBars.asPaddingValues()
+            .calculateTopPadding()
+    val bottomSheetHeightPx = with(density) { bottomSheetHeight.toPx() }
+    var innerHeightPx by remember { mutableIntStateOf(0) }
+
+    val scaleAnimation = remember { Animatable(0f) }
+
+    // Coroutine scope for launching animations.
+
     val keyboardController = LocalSoftwareKeyboardController.current
 
     val isImeVisible = WindowInsets.isImeVisible
 
-    val darkTheme = isAppInDarkTheme()
-
-    val gradientColors = if (darkTheme) {
-        gradientColorsDark
-    } else {
-        gradientColorsLight
-    }
-
-    val highlightColors = if (darkTheme) {
-        highlightColorsDark
-    } else {
-        highlightColorsLight
-    }
-
-    val backdrop = rememberLayerBackdrop {
-        drawContent()
-    }
     val state = rememberTextFieldState()
     val viewModel: TodoViewModel = koinViewModel()
 
@@ -171,7 +152,31 @@ fun BottomSheet(
     val isLoading = uiState is UiState.Loading
     val errorTitle = stringResource(R.string.error)
 
-    val imeHeight = WindowInsets.ime.exclude(WindowInsets.navigationBars).getBottom(density)
+    val offset = remember { Animatable(bottomSheetHeightPx) }
+    val totalOffset = remember { Animatable(bottomSheetHeightPx) }
+
+    val imeHeight =
+        WindowInsets.ime.exclude(WindowInsets.navigationBars).getBottom(density).toFloat()
+
+    LaunchedEffect(offset.value, imeHeight) {
+        if (currentInputMode == SheetInputMode.Basic) {
+            totalOffset.snapTo(offset.value - imeHeight)
+        }
+    }
+
+    LaunchedEffect(currentInputMode) {
+        if (currentInputMode == SheetInputMode.Advanced) {
+            totalOffset.animateTo(
+                targetValue = 0f,
+                animationSpec = Springs.smooth(300)
+            )
+        } else if (currentInputMode == SheetInputMode.Basic) {
+            totalOffset.animateTo(
+                targetValue = offset.value - imeHeight,
+                animationSpec = Springs.smooth(300)
+            )
+        }
+    }
 
     val imagePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
@@ -210,19 +215,45 @@ fun BottomSheet(
         }
     }
 
+    val navigationBarHeight = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+    val navigationBarHeightPx = WindowInsets.navigationBars.getBottom(density).toFloat()
+
     LaunchedEffect(Unit) {
         isVisible = true
     }
     // Animate the bottom sheet into view when its height is measured.
-    LaunchedEffect(columnHeightPx) {
-        if (columnHeightPx > 0) {
+    var isReady by remember { mutableStateOf(false) }
+
+    var composeAiInput by remember { mutableStateOf(false) }
+
+    fun closeAiInput() {
+        scope.launch {
+            scaleAnimation.animateTo(
+                targetValue = 0f,
+                animationSpec = tween(200)
+            )
+            composeAiInput = false
+        }
+    }
+
+    fun showAiInput() {
+        scope.launch {
+            composeAiInput = true
+            delay(300.milliseconds)
+            scaleAnimation.animateTo(
+                targetValue = 1f,
+                animationSpec = spring(0.8f, 300f, 0.001f)
+            )
+        }
+    }
+
+    LaunchedEffect(isReady) {
+        if (isReady) {
             isVisible = true
+            hasSlidedIn = true
             scope.launch {
-                // Snap to the initial off-screen position.
-                offset.snapTo(targetValue = columnHeightPx.toFloat())
-                // Animate to the on-screen position.
                 offset.animateTo(
-                    targetValue = 0f,
+                    targetValue = bottomSheetHeightPx - innerHeightPx - navigationBarHeightPx,
                     animationSpec = tween(
                         durationMillis = 200,
                         delayMillis = 100,
@@ -230,391 +261,294 @@ fun BottomSheet(
                     )
                 )
             }
-            scope.launch {
-                delay(300.milliseconds)
-                scaleAnimation.animateTo(
-                    targetValue = 1f,
-                    animationSpec = spring(0.8f, 300f, 0.001f)
-                )
-            }
-
+            showAiInput()
         }
     }
-    BackHandler {
+
+    var showAdvancedPage by remember { mutableStateOf(false) }
+
+    val screenWidth = with(density) { windowInfo.containerDpSize.width.toPx() }
+    val advancedPageHorizontalOffset = remember { Animatable(screenWidth) }
+    val basicScrimAlpha = remember { Animatable(0f) }
+
+    fun slideAdvancedPage(isIn: Boolean = true) {
+        if (isIn) {
+            showAdvancedPage = true
+            scope.launch {
+                advancedPageHorizontalOffset.animateTo(0f, Springs.smooth(300))
+            }
+            scope.launch {
+                basicScrimAlpha.animateTo(0.2f, tween(300))
+            }
+        } else {
+            scope.launch {
+                advancedPageHorizontalOffset.animateTo(screenWidth, tween(300))
+                showAdvancedPage = false
+            }
+            scope.launch {
+                basicScrimAlpha.animateTo(0f, tween(300))
+            }
+        }
+    }
+
+    fun navigateToBasic() {
+        currentInputMode = SheetInputMode.Basic
+        showAiInput()
+        slideAdvancedPage(false)
+    }
+
+    fun navigateToAdvanced() {
+        keyboardController?.hide()
+        isReturningFromAdvanced = true
+        currentInputMode = SheetInputMode.Advanced
+        closeAiInput()
+        slideAdvancedPage(true)
+    }
+
+    fun slideOut() {
         scope.launch {
             isVisible = false
-            // Animate the sheet out of view.
             scope.launch {
-                scaleAnimation.animateTo(
-                    targetValue = 0f,
-                    animationSpec = tween(200)
-                )
+                closeAiInput()
+                aiViewModel.cancelRequest()
+                aiViewModel.clearState()
             }
             offset.animateTo(
-                targetValue = columnHeightPx.toFloat(),
+                targetValue = bottomSheetHeightPx,
                 animationSpec = tween(
                     durationMillis = 200,
+                    delayMillis = 0,
                     easing = FastOutSlowInEasing
                 )
             )
             onDismiss()
         }
     }
+
+    BackHandler {
+        slideOut()
+    }
+
     // Main container for the bottom sheet and scrim.
     Box(modifier = Modifier.fillMaxSize()) {
-        // Scrim with animated visibility.
-        CustomAnimatedVisibility(
-            visible = isVisible,
-            enter = myFadeIn(tween(200)),
-            exit = myFadeOut(tween(200))
-        ) {
-            // Background scrim that dismisses the sheet on click.
-            Box(
-                modifier = Modifier
-                    .clickable(
-                        interactionSource = remember { MutableInteractionSource() },
-                        indication = null,
-                        enabled = true,
-                        onClick = {
-                            if (isImeVisible) {
-                                // Close keyboard first.
-                                keyboardController?.hide()
-                            } else {
-                                scope.launch {
-                                    isVisible = false
-                                    // Animate the sheet out of view.
-                                    scope.launch {
-                                        scaleAnimation.animateTo(
-                                            targetValue = 0f,
-                                            animationSpec = tween(200)
-                                        )
-                                        aiViewModel.cancelRequest()
-                                        aiViewModel.clearState()
-                                    }
-                                    offset.animateTo(
-                                        targetValue = columnHeightPx.toFloat(),
-                                        animationSpec = tween(
-                                            durationMillis = 200,
-                                            delayMillis = if (isImeVisible) 100 else 0,
-                                            easing = FastOutSlowInEasing
-                                        )
-                                    )
-                                    onDismiss()
-                                }
-                            }
-                        }
-                    )
-                    .background(Color.Black.copy(alpha = 0.4f))
-                    .fillMaxSize()
-            )
+        DismissScrim(visible = isVisible) {
+            if (isImeVisible) {
+                keyboardController?.hide()
+            } else {
+                slideOut()
+            }
         }
 
         // The bottom sheet content itself.
         Column(
             modifier = Modifier
-                // Empty clickable to prevent clicks from passing through to the scrim.
-                .align(alignment = Alignment.BottomCenter)
-                // Apply the vertical offset animation.
                 .graphicsLayer {
-                    translationY = offset.value - imeHeight
+                    translationY = totalOffset.value
+                }
+                .layout { measurable, constraints ->
+                    val unboundedConstraints = constraints.copy(maxHeight = Constraints.Infinity)
+                    val placeable = measurable.measure(unboundedConstraints)
+                    isReady = true
+                    layout(placeable.width, constraints.maxHeight) {
+                        placeable.place(0, constraints.maxHeight - placeable.height)
+                    }
                 }
         ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 12.dp)
-                    .graphicsLayer {
+            Box(modifier = Modifier.height(300.dp))
+            if (composeAiInput) {
+                AiInputBox(
+                    modifier = Modifier.graphicsLayer {
                         scaleX = scaleAnimation.value
                         scaleY = scaleAnimation.value
                     },
-                contentAlignment = Alignment.Center
-            ) {
-                RotatingGlow(
-                    modifier = Modifier
-                        .height(64.dp)
-                        .padding(horizontal = 8.dp)
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(28.dp)),
-                    blurRadius = 16.dp,
-                    shape = RectangleShape,
-                    colors = gradientColors,
-                    timeMillis = 5000,
-                    backdrop = backdrop
+                    isLoading = isLoading,
+                    textFieldState = state,
+                    aiViewModel = aiViewModel,
+                    imagePickerLauncher = imagePickerLauncher
                 )
-                Box(
-                    modifier = Modifier
-                        .height(56.dp)
-                        .padding(horizontal = 12.dp)
-                        .fillMaxWidth()
-                        .drawPlainBackdrop(
-                            backdrop = backdrop,
-                            shape = { Capsule() },
-                            effects = {
-                                blur(64f.dp.toPx(), TileMode.Clamp)
-                                colorControls(saturation = 1.1f)
-                            }, onDrawSurface = {
-                                // The drawing logic is different for light and dark themes.
-                                if (!darkTheme) {
-                                    drawRect(
-                                        brush = SolidColor(Color(0xFF272727).copy(alpha = 0.2f)),
-                                        style = Fill,
-                                        blendMode = BlendMode.Luminosity,
-                                    )
-                                    drawRect(
-                                        brush = SolidColor(Color(0xFF252525).copy(alpha = 1f)),
-                                        style = Fill,
-                                        blendMode = BlendMode.Plus,
-                                    )
-                                    drawRect(
-                                        brush = SolidColor(Color(0xFF555555).copy(alpha = 0.5f)),
-                                        style = Fill,
-                                        blendMode = BlendMode.ColorDodge,
-                                    )
-                                    drawRect(
-                                        brush = SolidColor(Color(0xFFFFFFFF).copy(alpha = 0.2f)),
-                                        style = Fill,
-                                        blendMode = BlendMode.SrcOver,
-                                    )
-                                } else {
-                                    drawRect(
-                                        brush = SolidColor(Color(0xFF000000).copy(alpha = 0.5f)),
-                                        style = Fill,
-                                        blendMode = BlendMode.Luminosity,
-                                    )
-                                    drawRect(
-                                        brush = SolidColor(Color(0xFF252525).copy(alpha = 1f)),
-                                        style = Fill,
-                                        blendMode = BlendMode.Plus,
-                                    )
-                                    drawRect(
-                                        brush = SolidColor(Color(0xFF4B4B4B).copy(alpha = 0.5f)),
-                                        style = Fill,
-                                        blendMode = BlendMode.ColorDodge,
-                                    )
-                                }
-                            })
-                        .glasenseHighlight(56.dp)
-                        .clip(Capsule())
-                ) {
-                    RotatingGlowBorder(
-                        modifier = Modifier.fillMaxSize(),
-                        strokeWidth = 4.dp,
-                        blurRadius = 4.dp,
-                        shape = Capsule(),
-                        colors = highlightColors,
-                        timeMillis = 3000
-                    )
-                    if (!isLoading) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxSize()
-                        ) {
-                            Box(modifier = Modifier.weight(1f)) {
-                                Box(
-                                    modifier = Modifier
-                                        .fillMaxSize()
-                                        .padding(start = 16.dp)
-                                ) {
-                                    BasicTextField(
-                                        state = state,
-                                        modifier = Modifier
-                                            .align(Alignment.CenterStart)
-                                            .fillMaxWidth(),
-                                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-                                        onKeyboardAction = {
-                                            aiViewModel.generateContent(state.text.toString())
-                                        },
-                                        textStyle = MaterialTheme.typography.bodyLarge.copy(
-                                            color = AppColors.content
-                                        ),
-                                        cursorBrush = SolidColor(AppColors.primary)
-                                    )
-                                    if (state.text.isBlank()) {
-                                        Text(
-                                            stringResource(R.string.extract_from_text),
-                                            modifier = Modifier
-                                                .align(Alignment.CenterStart)
-                                                .fillMaxWidth()
-                                                .graphicsLayer {
-                                                    alpha = 0.5f
-                                                    blendMode =
-                                                        if (darkTheme) BlendMode.Plus else BlendMode.Luminosity
-                                                },
-                                            style = MaterialTheme.typography.bodyLarge,
-                                            color = if (!darkTheme) Color(0xFF545454) else MaterialTheme.typography.bodyLarge.color
-                                        )
-                                    }
-                                }
-                            }
-                            Box(
-                                modifier = Modifier.size(56.dp),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                CustomAnimatedVisibility(
-                                    visible = !state.text.isBlank(),
-                                    enter = defaultEnterTransition,
-                                    exit = defaultExitTransition
-                                ) {
-                                    GlasenseButton(
-                                        enabled = true,
-                                        shape = CircleShape,
-                                        onClick = {
-                                            aiViewModel.generateContent(state.text.toString())
-                                        },
-                                        modifier = Modifier
-                                            .width(40.dp)
-                                            .height(40.dp)
-                                            .align(Alignment.Center),
-                                        colors = AppButtonColors.primary()
-                                    ) {
-                                        Box(
-                                            modifier = Modifier
-                                                .fillMaxSize()
-                                                .glasenseHighlight(40.dp),
-                                            contentAlignment = Alignment.Center
-                                        ) {
-                                            Icon(
-                                                painter = painterResource(id = R.drawable.ic_arrow_up),
-                                                contentDescription = stringResource(R.string.extract),
-                                                modifier = Modifier.width(28.dp)
-                                            )
-                                        }
-                                    }
-                                }
-                                CustomAnimatedVisibility(
-                                    visible = state.text.isBlank(),
-                                    enter = defaultEnterTransition,
-                                    exit = defaultExitTransition
-                                ) {
-                                    GlasenseButton(
-                                        enabled = true,
-                                        shape = CircleShape,
-                                        onClick = { imagePickerLauncher.launch("image/*") },
-                                        modifier = Modifier
-                                            .width(40.dp)
-                                            .height(40.dp)
-                                            .align(Alignment.Center),
-                                        colors = AppButtonColors.primary().copy(
-                                            containerColor = Color.Transparent,
-                                            contentColor = AppColors.content
-                                        )
-                                    ) {
-                                        Icon(
-                                            painter = painterResource(R.drawable.ic_photo),
-                                            contentDescription = stringResource(R.string.extract_from_image),
-                                            modifier = Modifier
-                                                .size(32.dp)
-                                                .graphicsLayer {
-                                                    alpha = 0.5f
-                                                }
-                                        )
-                                    }
-                                }
-                            }
-                        }
-                    } else {
-                        Box(
-                            modifier = Modifier.fillMaxSize(),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            RotatingGlowBorder(
-                                modifier = Modifier.fillMaxSize(),
-                                strokeWidth = 8.dp,
-                                blurRadius = 8.dp,
-                                shape = Capsule(),
-                                colors = highlightColors,
-                                timeMillis = 3000
-                            )
-                            Text(
-                                stringResource(R.string.extracting),
-                                modifier = Modifier
-                                    .align(Alignment.Center)
-                                    .graphicsLayer {
-                                        alpha = 0.5f
-                                        blendMode =
-                                            if (darkTheme) BlendMode.Plus else BlendMode.Luminosity
-                                    },
-                                style = MaterialTheme.typography.bodyLarge,
-                                color = if (!darkTheme) Color(0xFF545454) else MaterialTheme.typography.bodyLarge.color
-                            )
-                        }
-                    }
-                }
             }
             // Container for the AddTodoSheet content.
             Box(
                 modifier = Modifier
-                    .onSizeChanged { size ->
-                        // Measure the height of the content.
-                        columnHeightPx = size.height
-                    }
+                    .height(bottomSheetHeight)
                     .clickable(
                         interactionSource = remember { MutableInteractionSource() },
                         indication = null,
                         enabled = true,
                         onClick = {}
                     )
-                    .background(
-                        shape = deviceCornerShape(
+                    .clip(
+                        deviceCornerShape(
                             bottomLeft = false,
                             bottomRight = false
-                        ),
+                        )
+                    )
+                    .background(
                         color = AppColors.pageBackground
                     )
-                    .navigationBarsPadding()
                     .fillMaxWidth()
             ) {
-                // The actual sheet content.
                 AddTodoSheet(
+                    modifier = Modifier.layout { measurable, constraints ->
+                        val placeable = measurable.measure(constraints)
+                        innerHeightPx = placeable.measuredHeight
+                        layout(placeable.width, placeable.height) {
+                            placeable.place(0, 0)
+                        }
+                    },
                     initialDate = bottomSheetUiState.initialDate,
+                    focusRequester = basicFocusRequester,
+                    autoRequestFocus = !isReturningFromAdvanced,
                     onAddClick = { title, flagIndex, finalDate ->
                         scope.launch {
-                            isVisible = false
-                            // Animate the sheet out of view.
-                            scope.launch {
-                                scaleAnimation.animateTo(
-                                    targetValue = 0f,
-                                    animationSpec = tween(200)
-                                )
-                                aiViewModel.cancelRequest()
-                                aiViewModel.clearState()
-                            }
-                            offset.animateTo(
-                                targetValue = columnHeightPx.toFloat(),
-                                animationSpec = tween(
-                                    durationMillis = 200,
-                                    delayMillis = if (isImeVisible) 100 else 0, // If the keyboard is visible, animating the bottom sheet too quick can feel jarring and unsmooth.
-                                    easing = FastOutSlowInEasing
-                                )
-                            )
+                            slideOut()
                             onAddClick(title, flagIndex, finalDate)
-                            onDismiss()
                         }
                     }, onClose = {
                         keyboardController?.hide()
-                        scope.launch {
-                            isVisible = false
-                            // Animate the sheet out of view.
-                            scope.launch {
-                                scaleAnimation.animateTo(
-                                    targetValue = 0f,
-                                    animationSpec = tween(200)
-                                )
-                                aiViewModel.cancelRequest()
-                                aiViewModel.clearState()
-                            }
-                            offset.animateTo(
-                                targetValue = columnHeightPx.toFloat(),
-                                animationSpec = tween(
-                                    durationMillis = 200,
-                                    delayMillis = if (isImeVisible) 100 else 0,
-                                    easing = FastOutSlowInEasing
-                                )
-                            )
-                            onDismiss()
-                        }
-                    }, onRequestCustomDate = onRequestCustomDate
+                        slideOut()
+                    }, onRequestCustomDate = onRequestCustomDate,
+                    onNavigate = {
+                        navigateToAdvanced()
+                    }
                 )
+
+                if (showAdvancedPage) {
+                    BackHandler {
+                        navigateToBasic()
+                    }
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .graphicsLayer {
+                                this.alpha = basicScrimAlpha.value
+                            }
+                            .background(Color.Black))
+                    Box(
+                        modifier = Modifier
+                            .graphicsLayer {
+                                translationX = advancedPageHorizontalOffset.value
+                            }
+                            .fillMaxSize()
+                            .background(AppColors.pageBackground)
+                            .padding(horizontal = 12.dp)
+                    ) {
+                        LazyColumn(
+                            modifier = Modifier.fillMaxSize(),
+                            contentPadding = PaddingValues(bottom = navigationBarHeight)
+                        ) {
+                            item { Spacer(Modifier.height(48.dp + 12.dp + 12.dp)) }
+                            item {
+                                ConfigTextField(
+                                    value = "",
+                                    onValueChange = {},
+                                    backgroundColor = AppColors.cardBackground,
+                                    singleLine = false,
+                                    decorateText = "备注",
+                                    keyboardOptions = KeyboardOptions(
+                                        keyboardType = KeyboardType.Uri,
+                                        imeAction = ImeAction.Done
+                                    )
+                                )
+                                VGap()
+                            }
+                            item {
+                                Text(
+                                    text = "日期",
+                                    fontSize = 14.sp,
+                                    lineHeight = 14.sp,
+                                    color = AppColors.contentVariant,
+                                    modifier = Modifier
+                                        .padding(
+                                            start = 12.dp,
+                                            top = 0.dp,
+                                            end = 12.dp,
+                                            bottom = 12.dp
+                                        )
+                                        .fillMaxWidth()
+                                )
+                            }
+                            item {
+                                Text(
+                                    text = "时间",
+                                    fontSize = 14.sp,
+                                    lineHeight = 14.sp,
+                                    color = AppColors.contentVariant,
+                                    modifier = Modifier
+                                        .padding(
+                                            start = 12.dp,
+                                            top = 0.dp,
+                                            end = 12.dp,
+                                            bottom = 12.dp
+                                        )
+                                        .fillMaxWidth()
+                                )
+                            }
+                            item {
+                                Text(
+                                    text = "提醒",
+                                    fontSize = 14.sp,
+                                    lineHeight = 14.sp,
+                                    color = AppColors.contentVariant,
+                                    modifier = Modifier
+                                        .padding(
+                                            start = 12.dp,
+                                            top = 0.dp,
+                                            end = 12.dp,
+                                            bottom = 12.dp
+                                        )
+                                        .fillMaxWidth()
+                                )
+                            }
+                            item {
+                                Text(
+                                    text = "重复",
+                                    fontSize = 14.sp,
+                                    lineHeight = 14.sp,
+                                    color = AppColors.contentVariant,
+                                    modifier = Modifier
+                                        .padding(
+                                            start = 12.dp,
+                                            top = 0.dp,
+                                            end = 12.dp,
+                                            bottom = 12.dp
+                                        )
+                                        .fillMaxWidth()
+                                )
+                            }
+                            item {
+                                VGap()
+                            }
+                        }
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(top = 12.dp)
+                                .height(48.dp)
+                        ) {
+                            GlasenseButton(
+                                enabled = true,
+                                shape = CircleShape,
+                                onClick = { navigateToBasic() },
+                                modifier = Modifier
+                                    .width(48.dp)
+                                    .height(48.dp),
+                                colors = AppButtonColors.secondary(),
+                            ) {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.ic_forward_nav),
+                                    contentDescription = stringResource(R.string.back),
+                                    modifier = Modifier.width(28.dp)
+                                )
+                            }
+                            Text(
+                                text = stringResource(R.string.advanced),
+                                modifier = Modifier.align(Alignment.Center),
+                                style = MaterialTheme.typography.headlineSmall
+                            )
+                        }
+                    }
+                }
             }
         }
     }
@@ -631,4 +565,30 @@ private fun Uri.toImageDataUrl(context: Context): String {
 
     val base64 = Base64.encodeToString(bytes, Base64.NO_WRAP)
     return "data:$mime;base64,$base64"
+}
+
+@Composable
+fun DismissScrim(
+    visible: Boolean,
+    onDismiss: () -> Unit
+) {
+    val alpha by animateFloatAsState(
+        targetValue = if (visible) 0.4f else 0f,
+        animationSpec = tween(200)
+    )
+    Box(
+        modifier = Modifier
+            .graphicsLayer {
+                this.alpha = alpha
+            }
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null,
+                enabled = true,
+                onClick = {
+                    onDismiss()
+                }
+            )
+            .background(Color.Black)
+            .fillMaxSize())
 }
