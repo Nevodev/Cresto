@@ -28,7 +28,8 @@ data class TodoItem(
     val creationDateTime: LocalDateTime = LocalDateTime.now(),
     val isCompleted: Boolean = false,
     val flag: Int = 0,
-    val completedDateTime: LocalDateTime? = null
+    val completedDateTime: LocalDateTime? = null,
+    val notes: String = ""
 )
 
 const val EXTRA_DELETE_ID = "extra_delete_id"

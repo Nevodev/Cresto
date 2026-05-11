@@ -113,7 +113,7 @@ enum class SheetInputMode { Basic, Advanced }
 @Composable
 fun BottomSheet(
     onDismiss: () -> Unit,
-    onAddClick: (String, Int, LocalDate?) -> Unit,
+    onAddClick: (String, String, Int, LocalDate?) -> Unit,
     aiViewModel: AiViewModel = viewModel(),
     showDialog: (items: List<DialogItemData>, title: String, message: String?) -> Unit,
     onRequestCustomDate: (Rect, LocalDate?, (LocalDate?) -> Unit) -> Unit
@@ -176,17 +176,25 @@ fun BottomSheet(
         }
     }
 
-    LaunchedEffect(currentInputMode) {
-        if (currentInputMode == SheetInputMode.Advanced) {
-            totalOffset.animateTo(
-                targetValue = 0f,
-                animationSpec = Springs.smooth(350)
-            )
-        } else if (currentInputMode == SheetInputMode.Basic) {
-            totalOffset.animateTo(
-                targetValue = offset.value - imeHeight,
-                animationSpec = Springs.smooth(300)
-            )
+    fun adjustOffset() {
+        when (currentInputMode) {
+            SheetInputMode.Basic -> {
+                scope.launch {
+                    totalOffset.animateTo(
+                        targetValue = offset.value - imeHeight,
+                        animationSpec = Springs.smooth(300)
+                    )
+                }
+            }
+
+            SheetInputMode.Advanced -> {
+                scope.launch {
+                    totalOffset.animateTo(
+                        targetValue = 0f,
+                        animationSpec = Springs.smooth(350)
+                    )
+                }
+            }
         }
     }
 
@@ -227,7 +235,6 @@ fun BottomSheet(
         }
     }
 
-    val navigationBarHeight = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
     val navigationBarHeightPx = WindowInsets.navigationBars.getBottom(density).toFloat()
 
     LaunchedEffect(Unit) {
@@ -237,6 +244,7 @@ fun BottomSheet(
     var isReady by remember { mutableStateOf(false) }
 
     var composeAiInput by remember { mutableStateOf(false) }
+    var notesText by remember { mutableStateOf("") }
 
     fun closeAiInput() {
         scope.launch {
@@ -293,6 +301,7 @@ fun BottomSheet(
             showAdvancedPage = true
             if (animateAdvancedPage) {
                 closeAiInput()
+                adjustOffset()
                 scope.launch {
                     advancedPageHorizontalOffset.animateTo(0f, Springs.smooth(400))
                 }
@@ -302,6 +311,7 @@ fun BottomSheet(
             }
         } else {
             showAiInput()
+            adjustOffset()
             scope.launch {
                 advancedPageHorizontalOffset.animateTo(screenWidth, Springs.smooth(300))
                 showAdvancedPage = false
@@ -316,6 +326,7 @@ fun BottomSheet(
     LaunchedEffect(animateAdvancedPage) {
         if (animateAdvancedPage) {
             closeAiInput()
+            adjustOffset()
             launch {
                 advancedPageHorizontalOffset.animateTo(0f, Springs.smooth(400))
             }
@@ -385,7 +396,7 @@ fun BottomSheet(
                 .layout { measurable, constraints ->
                     val unboundedConstraints = constraints.copy(maxHeight = Constraints.Infinity)
                     val placeable = measurable.measure(unboundedConstraints)
-                    isReady = true
+                    if (!isReady) isReady = true
                     layout(placeable.width, constraints.maxHeight) {
                         placeable.place(0, constraints.maxHeight - placeable.height)
                     }
@@ -425,7 +436,7 @@ fun BottomSheet(
                 AddTodoSheet(
                     modifier = Modifier.layout { measurable, constraints ->
                         val placeable = measurable.measure(constraints)
-                        innerHeightPx = placeable.measuredHeight
+                        if (innerHeightPx != placeable.measuredHeight) innerHeightPx = placeable.measuredHeight
                         layout(placeable.width, placeable.height) {
                             placeable.place(0, 0)
                         }
@@ -436,7 +447,7 @@ fun BottomSheet(
                     onAddClick = { title, flagIndex, finalDate ->
                         scope.launch {
                             slideOut()
-                            onAddClick(title, flagIndex, finalDate)
+                            onAddClick(title, notesText, flagIndex, finalDate)
                         }
                     }, onClose = {
                         keyboardController?.hide()
@@ -458,209 +469,23 @@ fun BottomSheet(
                                 this.alpha = basicScrimAlpha.value
                             }
                             .background(Color.Black))
-                    Box(
+                    AdvancedPage(
                         modifier = Modifier
                             .graphicsLayer {
                                 translationX = advancedPageHorizontalOffset.value
                             }
                             .layout { measurable, constraints ->
                                 val placeable = measurable.measure(constraints)
-                                animateAdvancedPage = true
+                                if (!animateAdvancedPage) animateAdvancedPage = true
                                 layout(placeable.width, placeable.height) {
                                     placeable.place(0, 0)
                                 }
-                            }
-                            .fillMaxSize()
-                            .background(AppColors.pageBackground)
-                            .padding(horizontal = 12.dp)
-                    ) {
-                        val lazyListState = rememberLazyListState()
-
-                        LazyColumn(
-                            state = lazyListState,
-                            modifier = Modifier.fillMaxSize(),
-                            contentPadding = PaddingValues(bottom = navigationBarHeight)
-                        ) {
-                            item { Spacer(Modifier.height(48.dp + 12.dp + 12.dp)) }
-                            item {
-                                ConfigTextField(
-                                    value = "",
-                                    onValueChange = {},
-                                    backgroundColor = AppColors.cardBackground,
-                                    singleLine = false,
-                                    decorateText = "备注",
-                                    keyboardOptions = KeyboardOptions(
-                                        keyboardType = KeyboardType.Uri,
-                                        imeAction = ImeAction.Done
-                                    )
-                                )
-                                VGap()
-                            }
-                            item {
-                                Text(
-                                    text = "日期",
-                                    fontSize = 14.sp,
-                                    lineHeight = 14.sp,
-                                    color = AppColors.contentVariant,
-                                    modifier = Modifier
-                                        .padding(
-                                            start = 12.dp,
-                                            top = 0.dp,
-                                            end = 12.dp,
-                                            bottom = 12.dp
-                                        )
-                                        .fillMaxWidth()
-                                )
-                            }
-                            item {
-                                ConfigItemContainer(
-                                    backgroundColor = AppColors.cardBackground,
-                                    title = "时间"
-                                ) {
-                                    Column {
-                                        val style = TextStyle(
-                                            fontFeatureSettings = "tnum",
-                                            fontWeight = FontWeight.Medium,
-                                            fontSize = 24.sp,
-                                            lineHeight = 24.sp
-                                        )
-
-                                        Row(
-                                            horizontalArrangement = Arrangement.spacedBy(
-                                                8.dp,
-                                                Alignment.CenterHorizontally
-                                            ),
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .padding(vertical = 12.dp),
-                                            verticalAlignment = Alignment.CenterVertically
-                                        ) {
-                                            Box(
-                                                modifier = Modifier
-                                                    .clip(AppSpecs.cardShape)
-                                                    .background(color = AppColors.scrimNormal)
-                                                    .clickable(
-                                                        interactionSource = remember { MutableInteractionSource() },
-                                                        indication = DimIndication()
-                                                    ) {
-
-                                                    }
-                                                    .padding(horizontal = 16.dp, vertical = 8.dp)
-                                            ) {
-                                                Text(
-                                                    text = "13" + "∶" + "00",
-                                                    modifier = Modifier.align(Alignment.Center),
-                                                    style = style
-                                                )
-                                            }
-                                        }
-                                        Spacer(modifier = Modifier.height(8.dp))
-                                        ZeroHeightDivider()
-                                        Spacer(modifier = Modifier.height(8.dp))
-                                        ConfigItem(title = "时间段") {
-                                            GlasenseSwitch(
-                                                backgroundColor = AppColors.cardBackground,
-                                                checked = false,
-                                                onCheckedChange = { })
-                                        }
-                                        Spacer(modifier = Modifier.height(8.dp))
-                                        ZeroHeightDivider()
-                                        Spacer(modifier = Modifier.height(8.dp))
-                                        ConfigItem(title = "全天") {
-                                            GlasenseSwitch(
-                                                backgroundColor = AppColors.cardBackground,
-                                                checked = false,
-                                                onCheckedChange = { })
-                                        }
-                                    }
-                                }
-                                VGap()
-                            }
-                            item {
-                                ConfigItemContainer(
-                                    backgroundColor = AppColors.cardBackground,
-                                    title = "提醒"
-                                ) {
-                                    Column {
-                                        ConfigItem(title = "提醒时机") {
-
-                                        }
-                                        Spacer(modifier = Modifier.height(8.dp))
-                                        ZeroHeightDivider()
-                                        Spacer(modifier = Modifier.height(8.dp))
-                                        ConfigItem(title = "持续提醒") {
-                                            GlasenseSwitch(
-                                                backgroundColor = AppColors.cardBackground,
-                                                checked = false,
-                                                onCheckedChange = { })
-                                        }
-                                        Spacer(modifier = Modifier.height(8.dp))
-                                        ZeroHeightDivider()
-                                        Spacer(modifier = Modifier.height(8.dp))
-                                        ConfigItem(title = "强提醒") {
-                                            GlasenseSwitch(
-                                                backgroundColor = AppColors.cardBackground,
-                                                checked = false,
-                                                onCheckedChange = { })
-                                        }
-                                    }
-                                }
-                                VGap()
-                            }
-                            item {
-                                ConfigItemContainer(
-                                    backgroundColor = AppColors.cardBackground,
-                                    title = "重复"
-                                ) {
-                                    Column {
-                                        ConfigItem(title = "重复周期") {
-
-                                        }
-                                        Spacer(modifier = Modifier.height(8.dp))
-                                        ZeroHeightDivider()
-                                        Spacer(modifier = Modifier.height(8.dp))
-                                        ConfigItem(title = "过期后顺延") {
-                                            GlasenseSwitch(
-                                                backgroundColor = AppColors.cardBackground,
-                                                checked = false,
-                                                onCheckedChange = { })
-                                        }
-                                    }
-                                }
-                            }
-                            item {
-                                VGap()
-                            }
-                            overscrollSpacer(lazyListState)
-                        }
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(top = 12.dp)
-                                .height(48.dp)
-                        ) {
-                            GlasenseButton(
-                                enabled = true,
-                                shape = CircleShape,
-                                onClick = { navigateToBasic() },
-                                modifier = Modifier
-                                    .width(48.dp)
-                                    .height(48.dp),
-                                colors = AppButtonColors.secondary(),
-                            ) {
-                                Icon(
-                                    painter = painterResource(id = R.drawable.ic_forward_nav),
-                                    contentDescription = stringResource(R.string.back),
-                                    modifier = Modifier.width(28.dp)
-                                )
-                            }
-                            Text(
-                                text = stringResource(R.string.advanced),
-                                modifier = Modifier.align(Alignment.Center),
-                                style = MaterialTheme.typography.headlineSmall
-                            )
-                        }
-                    }
+                            },
+                        notesText = notesText,
+                        onNotesChange = { notesText = it },
+                        navigateToBasic = {
+                            navigateToBasic()
+                        })
                 }
             }
         }
@@ -704,4 +529,208 @@ fun DismissScrim(
             )
             .background(Color.Black)
             .fillMaxSize())
+}
+
+@Composable
+fun AdvancedPage(
+    modifier: Modifier = Modifier,
+    notesText: String,
+    onNotesChange: (String) -> Unit,
+    navigateToBasic: () -> Unit
+) {
+    val navigationBarHeight = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+
+    Box(
+        modifier = modifier
+            .fillMaxSize()
+            .background(AppColors.pageBackground)
+            .padding(horizontal = 12.dp)
+    ) {
+        val lazyListState = rememberLazyListState()
+
+        LazyColumn(
+            state = lazyListState,
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(bottom = navigationBarHeight)
+        ) {
+            item { Spacer(Modifier.height(48.dp + 12.dp + 12.dp)) }
+            item {
+                ConfigTextField(
+                    value = notesText,
+                    onValueChange = onNotesChange,
+                    backgroundColor = AppColors.cardBackground,
+                    singleLine = false,
+                    decorateText = "备注",
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Text,
+                        imeAction = ImeAction.Default
+                    )
+                )
+                VGap()
+            }
+            item {
+                Text(
+                    text = "日期",
+                    fontSize = 14.sp,
+                    lineHeight = 14.sp,
+                    color = AppColors.contentVariant,
+                    modifier = Modifier
+                        .padding(
+                            start = 12.dp,
+                            top = 0.dp,
+                            end = 12.dp,
+                            bottom = 12.dp
+                        )
+                        .fillMaxWidth()
+                )
+            }
+            item {
+                ConfigItemContainer(
+                    backgroundColor = AppColors.cardBackground,
+                    title = "时间"
+                ) {
+                    Column {
+                        val style = TextStyle(
+                            fontFeatureSettings = "tnum",
+                            fontWeight = FontWeight.Medium,
+                            fontSize = 24.sp,
+                            lineHeight = 24.sp
+                        )
+
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(
+                                8.dp,
+                                Alignment.CenterHorizontally
+                            ),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 12.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .clip(AppSpecs.cardShape)
+                                    .background(color = AppColors.scrimNormal)
+                                    .clickable(
+                                        interactionSource = remember { MutableInteractionSource() },
+                                        indication = DimIndication()
+                                    ) {
+
+                                    }
+                                    .padding(horizontal = 16.dp, vertical = 8.dp)
+                            ) {
+                                Text(
+                                    text = "13" + "∶" + "00",
+                                    modifier = Modifier.align(Alignment.Center),
+                                    style = style
+                                )
+                            }
+                        }
+                        Spacer(modifier = Modifier.height(8.dp))
+                        ZeroHeightDivider()
+                        Spacer(modifier = Modifier.height(8.dp))
+                        ConfigItem(title = "时间段") {
+                            GlasenseSwitch(
+                                backgroundColor = AppColors.cardBackground,
+                                checked = false,
+                                onCheckedChange = { })
+                        }
+                        Spacer(modifier = Modifier.height(8.dp))
+                        ZeroHeightDivider()
+                        Spacer(modifier = Modifier.height(8.dp))
+                        ConfigItem(title = "全天") {
+                            GlasenseSwitch(
+                                backgroundColor = AppColors.cardBackground,
+                                checked = false,
+                                onCheckedChange = { })
+                        }
+                    }
+                }
+                VGap()
+            }
+            item {
+                ConfigItemContainer(
+                    backgroundColor = AppColors.cardBackground,
+                    title = "提醒"
+                ) {
+                    Column {
+                        ConfigItem(title = "提醒时机") {
+
+                        }
+                        Spacer(modifier = Modifier.height(8.dp))
+                        ZeroHeightDivider()
+                        Spacer(modifier = Modifier.height(8.dp))
+                        ConfigItem(title = "持续提醒") {
+                            GlasenseSwitch(
+                                backgroundColor = AppColors.cardBackground,
+                                checked = false,
+                                onCheckedChange = { })
+                        }
+                        Spacer(modifier = Modifier.height(8.dp))
+                        ZeroHeightDivider()
+                        Spacer(modifier = Modifier.height(8.dp))
+                        ConfigItem(title = "强提醒") {
+                            GlasenseSwitch(
+                                backgroundColor = AppColors.cardBackground,
+                                checked = false,
+                                onCheckedChange = { })
+                        }
+                    }
+                }
+                VGap()
+            }
+            item {
+                ConfigItemContainer(
+                    backgroundColor = AppColors.cardBackground,
+                    title = "重复"
+                ) {
+                    Column {
+                        ConfigItem(title = "重复周期") {
+
+                        }
+                        Spacer(modifier = Modifier.height(8.dp))
+                        ZeroHeightDivider()
+                        Spacer(modifier = Modifier.height(8.dp))
+                        ConfigItem(title = "过期后顺延") {
+                            GlasenseSwitch(
+                                backgroundColor = AppColors.cardBackground,
+                                checked = false,
+                                onCheckedChange = { })
+                        }
+                    }
+                }
+            }
+            item {
+                VGap()
+            }
+            overscrollSpacer(lazyListState)
+        }
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 12.dp)
+                .height(48.dp)
+        ) {
+            GlasenseButton(
+                enabled = true,
+                shape = CircleShape,
+                onClick = { navigateToBasic() },
+                modifier = Modifier
+                    .width(48.dp)
+                    .height(48.dp),
+                colors = AppButtonColors.secondary(),
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_forward_nav),
+                    contentDescription = stringResource(R.string.back),
+                    modifier = Modifier.width(28.dp)
+                )
+            }
+            Text(
+                text = stringResource(R.string.advanced),
+                modifier = Modifier.align(Alignment.Center),
+                style = MaterialTheme.typography.headlineSmall
+            )
+        }
+    }
 }

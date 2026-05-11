@@ -27,6 +27,7 @@ import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
@@ -56,6 +57,8 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -90,6 +93,7 @@ import com.nevoit.cresto.ui.components.glasense.ZeroHeightDivider
 import com.nevoit.cresto.ui.components.glasense.extend.overscrollSpacer
 import com.nevoit.cresto.ui.components.glasense.isScrolledPast
 import com.nevoit.cresto.ui.components.glasense.rememberSwipeableListState
+import com.nevoit.cresto.ui.components.packed.ConfigTextField
 import com.nevoit.cresto.ui.components.packed.DueDatePicker
 import com.nevoit.cresto.ui.components.packed.PageContent
 import com.nevoit.cresto.ui.components.packed.SubTodoItemRowAdd
@@ -147,6 +151,16 @@ fun DetailScreen(
     var finalDate by remember { mutableStateOf<LocalDate?>(null) }
     var selectedIndex by remember { mutableIntStateOf(0) }
     var title by remember { mutableStateOf("") }
+    var notesText by remember { mutableStateOf("") }
+
+    var isInitialized by remember { mutableStateOf(false) }
+    if (itemWithSubTodos != null && !isInitialized) {
+        finalDate = itemWithSubTodos?.todoItem?.dueDate
+        selectedIndex = itemWithSubTodos?.todoItem?.flag ?: 0
+        title = itemWithSubTodos?.todoItem?.title ?: ""
+        notesText = itemWithSubTodos?.todoItem?.notes ?: ""
+        isInitialized = true
+    }
 
     var ticker by remember { mutableIntStateOf(0) }
 
@@ -210,7 +224,7 @@ fun DetailScreen(
 
     LaunchedEffect(Unit) {
         while (true) {
-            delay(1.minutes) // 1 minute
+            delay(1.minutes)
             ticker++
         }
     }
@@ -220,6 +234,9 @@ fun DetailScreen(
             finalDate = itemWithSubTodos?.todoItem?.dueDate
             selectedIndex = itemWithSubTodos?.todoItem?.flag ?: 0
             title = itemWithSubTodos?.todoItem?.title ?: ""
+            if (notesText.isEmpty() && !itemWithSubTodos?.todoItem?.notes.isNullOrEmpty()) {
+                notesText = itemWithSubTodos?.todoItem?.notes ?: ""
+            }
         }
     }
 
@@ -231,6 +248,11 @@ fun DetailScreen(
     LaunchedEffect(title) {
         itemWithSubTodos?.let {
             viewModel.update(it.todoItem.copy(title = title))
+        }
+    }
+    LaunchedEffect(notesText) {
+        itemWithSubTodos?.let {
+            viewModel.update(it.todoItem.copy(notes = notesText))
         }
     }
 
@@ -292,6 +314,20 @@ fun DetailScreen(
                             // if update here will cause conflict
                             title = string
                         }
+                    )
+                    VGap()
+                }
+                item(key = "notes") {
+                    ConfigTextField(
+                        value = notesText,
+                        onValueChange = { notesText = it },
+                        backgroundColor = AppColors.cardBackground,
+                        singleLine = false,
+                        decorateText = "备注",
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = KeyboardType.Text,
+                            imeAction = ImeAction.Default
+                        )
                     )
                     VGap()
                 }

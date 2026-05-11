@@ -567,10 +567,11 @@ fun MainScreen() {
         if (bottomSheetState.isVisible) {
             BottomSheet(
                 onDismiss = { viewModel.hideBottomSheet() },
-                onAddClick = { title, flagIndex, finalDate ->
+                onAddClick = { title, notes, flagIndex, finalDate ->
                     viewModel.insert(
                         TodoItem(
                             title = title,
+                            notes = notes,
                             flag = flagIndex,
                             dueDate = finalDate
                         )
