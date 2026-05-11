@@ -15,10 +15,12 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
@@ -33,6 +35,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.input.rememberTextFieldState
@@ -62,6 +65,8 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.Constraints
@@ -72,8 +77,15 @@ import com.nevoit.cresto.R
 import com.nevoit.cresto.data.todo.TodoViewModel
 import com.nevoit.cresto.theme.AppButtonColors
 import com.nevoit.cresto.theme.AppColors
+import com.nevoit.cresto.theme.AppSpecs
 import com.nevoit.cresto.ui.components.glasense.DialogItemData
+import com.nevoit.cresto.ui.components.glasense.DimIndication
 import com.nevoit.cresto.ui.components.glasense.GlasenseButton
+import com.nevoit.cresto.ui.components.glasense.GlasenseSwitch
+import com.nevoit.cresto.ui.components.glasense.ZeroHeightDivider
+import com.nevoit.cresto.ui.components.glasense.extend.overscrollSpacer
+import com.nevoit.cresto.ui.components.packed.ConfigItem
+import com.nevoit.cresto.ui.components.packed.ConfigItemContainer
 import com.nevoit.cresto.ui.components.packed.ConfigTextField
 import com.nevoit.cresto.ui.components.packed.VGap
 import com.nevoit.cresto.ui.viewmodel.AiSideEffect
@@ -168,7 +180,7 @@ fun BottomSheet(
         if (currentInputMode == SheetInputMode.Advanced) {
             totalOffset.animateTo(
                 targetValue = 0f,
-                animationSpec = Springs.smooth(300)
+                animationSpec = Springs.smooth(350)
             )
         } else if (currentInputMode == SheetInputMode.Basic) {
             totalOffset.animateTo(
@@ -247,25 +259,30 @@ fun BottomSheet(
         }
     }
 
-    LaunchedEffect(isReady) {
+    LaunchedEffect(isReady, bottomSheetHeightPx, innerHeightPx, navigationBarHeightPx) {
         if (isReady) {
             isVisible = true
-            hasSlidedIn = true
             scope.launch {
-                offset.animateTo(
-                    targetValue = bottomSheetHeightPx - innerHeightPx - navigationBarHeightPx,
-                    animationSpec = tween(
-                        durationMillis = 200,
-                        delayMillis = 100,
-                        easing = CubicBezierEasing(.2f, .2f, 0f, 1f)
+                if (!hasSlidedIn) {
+                    showAiInput()
+                    offset.animateTo(
+                        targetValue = bottomSheetHeightPx - innerHeightPx - navigationBarHeightPx,
+                        animationSpec = tween(
+                            durationMillis = 200,
+                            delayMillis = 100,
+                            easing = CubicBezierEasing(.2f, .2f, 0f, 1f)
+                        )
                     )
-                )
+                    hasSlidedIn = true
+                } else {
+                    offset.snapTo(bottomSheetHeightPx - innerHeightPx - navigationBarHeightPx)
+                }
             }
-            showAiInput()
         }
     }
 
     var showAdvancedPage by remember { mutableStateOf(false) }
+    var animateAdvancedPage by remember { mutableStateOf(false) }
 
     val screenWidth = with(density) { windowInfo.containerDpSize.width.toPx() }
     val advancedPageHorizontalOffset = remember { Animatable(screenWidth) }
@@ -274,16 +291,21 @@ fun BottomSheet(
     fun slideAdvancedPage(isIn: Boolean = true) {
         if (isIn) {
             showAdvancedPage = true
-            scope.launch {
-                advancedPageHorizontalOffset.animateTo(0f, Springs.smooth(300))
-            }
-            scope.launch {
-                basicScrimAlpha.animateTo(0.2f, tween(300))
+            if (animateAdvancedPage) {
+                closeAiInput()
+                scope.launch {
+                    advancedPageHorizontalOffset.animateTo(0f, Springs.smooth(400))
+                }
+                scope.launch {
+                    basicScrimAlpha.animateTo(0.3f, tween(300))
+                }
             }
         } else {
+            showAiInput()
             scope.launch {
-                advancedPageHorizontalOffset.animateTo(screenWidth, tween(300))
+                advancedPageHorizontalOffset.animateTo(screenWidth, Springs.smooth(300))
                 showAdvancedPage = false
+                animateAdvancedPage = false
             }
             scope.launch {
                 basicScrimAlpha.animateTo(0f, tween(300))
@@ -291,9 +313,19 @@ fun BottomSheet(
         }
     }
 
+    LaunchedEffect(animateAdvancedPage) {
+        if (animateAdvancedPage) {
+            closeAiInput()
+            launch {
+                advancedPageHorizontalOffset.animateTo(0f, Springs.smooth(400))
+            }
+            launch {
+                basicScrimAlpha.animateTo(0.3f, tween(300))
+            }
+        }
+    }
     fun navigateToBasic() {
         currentInputMode = SheetInputMode.Basic
-        showAiInput()
         slideAdvancedPage(false)
     }
 
@@ -301,7 +333,7 @@ fun BottomSheet(
         keyboardController?.hide()
         isReturningFromAdvanced = true
         currentInputMode = SheetInputMode.Advanced
-        closeAiInput()
+
         slideAdvancedPage(true)
     }
 
@@ -324,6 +356,11 @@ fun BottomSheet(
             onDismiss()
         }
     }
+
+    val bottomSheetShape = deviceCornerShape(
+        bottomLeft = false,
+        bottomRight = false
+    )
 
     BackHandler {
         slideOut()
@@ -378,10 +415,7 @@ fun BottomSheet(
                         onClick = {}
                     )
                     .clip(
-                        deviceCornerShape(
-                            bottomLeft = false,
-                            bottomRight = false
-                        )
+                        bottomSheetShape
                     )
                     .background(
                         color = AppColors.pageBackground
@@ -429,11 +463,21 @@ fun BottomSheet(
                             .graphicsLayer {
                                 translationX = advancedPageHorizontalOffset.value
                             }
+                            .layout { measurable, constraints ->
+                                val placeable = measurable.measure(constraints)
+                                animateAdvancedPage = true
+                                layout(placeable.width, placeable.height) {
+                                    placeable.place(0, 0)
+                                }
+                            }
                             .fillMaxSize()
                             .background(AppColors.pageBackground)
                             .padding(horizontal = 12.dp)
                     ) {
+                        val lazyListState = rememberLazyListState()
+
                         LazyColumn(
+                            state = lazyListState,
                             modifier = Modifier.fillMaxSize(),
                             contentPadding = PaddingValues(bottom = navigationBarHeight)
                         ) {
@@ -469,56 +513,125 @@ fun BottomSheet(
                                 )
                             }
                             item {
-                                Text(
-                                    text = "时间",
-                                    fontSize = 14.sp,
-                                    lineHeight = 14.sp,
-                                    color = AppColors.contentVariant,
-                                    modifier = Modifier
-                                        .padding(
-                                            start = 12.dp,
-                                            top = 0.dp,
-                                            end = 12.dp,
-                                            bottom = 12.dp
+                                ConfigItemContainer(
+                                    backgroundColor = AppColors.cardBackground,
+                                    title = "时间"
+                                ) {
+                                    Column {
+                                        val style = TextStyle(
+                                            fontFeatureSettings = "tnum",
+                                            fontWeight = FontWeight.Medium,
+                                            fontSize = 24.sp,
+                                            lineHeight = 24.sp
                                         )
-                                        .fillMaxWidth()
-                                )
+
+                                        Row(
+                                            horizontalArrangement = Arrangement.spacedBy(
+                                                8.dp,
+                                                Alignment.CenterHorizontally
+                                            ),
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .padding(vertical = 12.dp),
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Box(
+                                                modifier = Modifier
+                                                    .clip(AppSpecs.cardShape)
+                                                    .background(color = AppColors.scrimNormal)
+                                                    .clickable(
+                                                        interactionSource = remember { MutableInteractionSource() },
+                                                        indication = DimIndication()
+                                                    ) {
+
+                                                    }
+                                                    .padding(horizontal = 16.dp, vertical = 8.dp)
+                                            ) {
+                                                Text(
+                                                    text = "13" + "∶" + "00",
+                                                    modifier = Modifier.align(Alignment.Center),
+                                                    style = style
+                                                )
+                                            }
+                                        }
+                                        Spacer(modifier = Modifier.height(8.dp))
+                                        ZeroHeightDivider()
+                                        Spacer(modifier = Modifier.height(8.dp))
+                                        ConfigItem(title = "时间段") {
+                                            GlasenseSwitch(
+                                                backgroundColor = AppColors.cardBackground,
+                                                checked = false,
+                                                onCheckedChange = { })
+                                        }
+                                        Spacer(modifier = Modifier.height(8.dp))
+                                        ZeroHeightDivider()
+                                        Spacer(modifier = Modifier.height(8.dp))
+                                        ConfigItem(title = "全天") {
+                                            GlasenseSwitch(
+                                                backgroundColor = AppColors.cardBackground,
+                                                checked = false,
+                                                onCheckedChange = { })
+                                        }
+                                    }
+                                }
+                                VGap()
                             }
                             item {
-                                Text(
-                                    text = "提醒",
-                                    fontSize = 14.sp,
-                                    lineHeight = 14.sp,
-                                    color = AppColors.contentVariant,
-                                    modifier = Modifier
-                                        .padding(
-                                            start = 12.dp,
-                                            top = 0.dp,
-                                            end = 12.dp,
-                                            bottom = 12.dp
-                                        )
-                                        .fillMaxWidth()
-                                )
+                                ConfigItemContainer(
+                                    backgroundColor = AppColors.cardBackground,
+                                    title = "提醒"
+                                ) {
+                                    Column {
+                                        ConfigItem(title = "提醒时机") {
+
+                                        }
+                                        Spacer(modifier = Modifier.height(8.dp))
+                                        ZeroHeightDivider()
+                                        Spacer(modifier = Modifier.height(8.dp))
+                                        ConfigItem(title = "持续提醒") {
+                                            GlasenseSwitch(
+                                                backgroundColor = AppColors.cardBackground,
+                                                checked = false,
+                                                onCheckedChange = { })
+                                        }
+                                        Spacer(modifier = Modifier.height(8.dp))
+                                        ZeroHeightDivider()
+                                        Spacer(modifier = Modifier.height(8.dp))
+                                        ConfigItem(title = "强提醒") {
+                                            GlasenseSwitch(
+                                                backgroundColor = AppColors.cardBackground,
+                                                checked = false,
+                                                onCheckedChange = { })
+                                        }
+                                    }
+                                }
+                                VGap()
                             }
                             item {
-                                Text(
-                                    text = "重复",
-                                    fontSize = 14.sp,
-                                    lineHeight = 14.sp,
-                                    color = AppColors.contentVariant,
-                                    modifier = Modifier
-                                        .padding(
-                                            start = 12.dp,
-                                            top = 0.dp,
-                                            end = 12.dp,
-                                            bottom = 12.dp
-                                        )
-                                        .fillMaxWidth()
-                                )
+                                ConfigItemContainer(
+                                    backgroundColor = AppColors.cardBackground,
+                                    title = "重复"
+                                ) {
+                                    Column {
+                                        ConfigItem(title = "重复周期") {
+
+                                        }
+                                        Spacer(modifier = Modifier.height(8.dp))
+                                        ZeroHeightDivider()
+                                        Spacer(modifier = Modifier.height(8.dp))
+                                        ConfigItem(title = "过期后顺延") {
+                                            GlasenseSwitch(
+                                                backgroundColor = AppColors.cardBackground,
+                                                checked = false,
+                                                onCheckedChange = { })
+                                        }
+                                    }
+                                }
                             }
                             item {
                                 VGap()
                             }
+                            overscrollSpacer(lazyListState)
                         }
                         Box(
                             modifier = Modifier
