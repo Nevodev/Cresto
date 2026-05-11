@@ -34,15 +34,18 @@ import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -58,7 +61,9 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.layout
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
@@ -73,6 +78,7 @@ import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.kyant.shapes.Capsule
 import com.nevoit.cresto.R
 import com.nevoit.cresto.data.todo.TodoViewModel
 import com.nevoit.cresto.theme.AppButtonColors
@@ -99,6 +105,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.koin.androidx.compose.koinViewModel
 import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 import kotlin.time.Duration.Companion.milliseconds
 
 enum class SheetInputMode { Basic, Advanced }
@@ -152,6 +159,12 @@ fun BottomSheet(
     val viewModel: TodoViewModel = koinViewModel()
 
     val bottomSheetUiState by viewModel.bottomSheetState.collectAsState()
+
+    var finalDate by remember {
+        mutableStateOf<LocalDate?>(
+            bottomSheetUiState.initialDate ?: LocalDate.now()
+        )
+    }
 
     val errorDialogItems = listOf(
         DialogItemData(
@@ -436,18 +449,20 @@ fun BottomSheet(
                 AddTodoSheet(
                     modifier = Modifier.layout { measurable, constraints ->
                         val placeable = measurable.measure(constraints)
-                        if (innerHeightPx != placeable.measuredHeight) innerHeightPx = placeable.measuredHeight
+                        if (innerHeightPx != placeable.measuredHeight) innerHeightPx =
+                            placeable.measuredHeight
                         layout(placeable.width, placeable.height) {
                             placeable.place(0, 0)
                         }
                     },
-                    initialDate = bottomSheetUiState.initialDate,
+                    finalDate = finalDate,
+                    onFinalDateChange = { finalDate = it },
                     focusRequester = basicFocusRequester,
                     autoRequestFocus = !isReturningFromAdvanced,
-                    onAddClick = { title, flagIndex, finalDate ->
+                    onAddClick = { title, flagIndex, date ->
                         scope.launch {
                             slideOut()
-                            onAddClick(title, notesText, flagIndex, finalDate)
+                            onAddClick(title, notesText, flagIndex, date)
                         }
                     }, onClose = {
                         keyboardController?.hide()
@@ -483,6 +498,9 @@ fun BottomSheet(
                             },
                         notesText = notesText,
                         onNotesChange = { notesText = it },
+                        finalDate = finalDate,
+                        onFinalDateChange = { finalDate = it },
+                        onRequestCustomDate = onRequestCustomDate,
                         navigateToBasic = {
                             navigateToBasic()
                         })
@@ -536,9 +554,14 @@ fun AdvancedPage(
     modifier: Modifier = Modifier,
     notesText: String,
     onNotesChange: (String) -> Unit,
+    finalDate: LocalDate?,
+    onFinalDateChange: (LocalDate?) -> Unit,
+    onRequestCustomDate: (Rect, LocalDate?, (LocalDate?) -> Unit) -> Unit,
     navigateToBasic: () -> Unit
 ) {
     val navigationBarHeight = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+
+    var dateButtonBounds by remember { mutableStateOf(Rect.Zero) }
 
     Box(
         modifier = modifier
@@ -560,7 +583,7 @@ fun AdvancedPage(
                     onValueChange = onNotesChange,
                     backgroundColor = AppColors.cardBackground,
                     singleLine = false,
-                    decorateText = "备注",
+                    decorateText = stringResource(R.string.notes),
                     keyboardOptions = KeyboardOptions(
                         keyboardType = KeyboardType.Text,
                         imeAction = ImeAction.Default
@@ -569,20 +592,80 @@ fun AdvancedPage(
                 VGap()
             }
             item {
-                Text(
-                    text = "日期",
-                    fontSize = 14.sp,
-                    lineHeight = 14.sp,
-                    color = AppColors.contentVariant,
-                    modifier = Modifier
-                        .padding(
-                            start = 12.dp,
-                            top = 0.dp,
-                            end = 12.dp,
-                            bottom = 12.dp
-                        )
-                        .fillMaxWidth()
-                )
+                CompositionLocalProvider(
+                    LocalContentColor provides AppColors.contentVariant
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(
+                                color = AppColors.cardBackground,
+                                shape = AppSpecs.cardShape
+                            )
+                            .padding(horizontal = 12.dp)
+
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(vertical = 12.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                painter =
+                                    painterResource(id = R.drawable.ic_calendar),
+                                contentDescription = stringResource(R.string.due_date),
+                                modifier = Modifier
+                                    .padding(end = 8.dp)
+                                    .width(28.dp)
+                            )
+                            Text(
+                                text = stringResource(R.string.due_date),
+                                fontSize = 16.sp,
+                                lineHeight = 18.sp,
+                                fontWeight = FontWeight.Normal,
+                                modifier = Modifier
+                                    .align(Alignment.CenterVertically)
+                            )
+                            Spacer(modifier = Modifier.weight(1f))
+                            Box(
+                                modifier = Modifier
+                                    .onGloballyPositioned { coordinates ->
+                                        dateButtonBounds = coordinates.boundsInWindow()
+                                    }
+                                    .align(Alignment.CenterVertically)
+                                    .wrapContentSize()
+                                    .clip(Capsule())
+                                    .background(
+                                        color = AppColors.scrimNormal
+                                    )
+                                    .clickable(
+                                        interactionSource = remember { MutableInteractionSource() },
+                                        indication = DimIndication()
+                                    ) {
+                                        onRequestCustomDate(
+                                            dateButtonBounds,
+                                            finalDate
+                                        ) { newDate ->
+                                            onFinalDateChange(newDate)
+                                        }
+                                    }
+                            ) {
+                                Text(
+                                    text = finalDate?.format(DateTimeFormatter.ofPattern("yyyy/M/d"))
+                                        ?: stringResource(R.string.none),
+                                    fontSize = 16.sp,
+                                    lineHeight = 18.sp,
+                                    fontWeight = FontWeight.Normal,
+                                    modifier = Modifier.padding(
+                                        horizontal = 8.dp,
+                                        vertical = 4.dp
+                                    ),
+                                    color = AppColors.content
+                                )
+                            }
+                        }
+                    }
+                }
+                VGap()
             }
             item {
                 ConfigItemContainer(

@@ -323,7 +323,7 @@ fun DetailScreen(
                         onValueChange = { notesText = it },
                         backgroundColor = AppColors.cardBackground,
                         singleLine = false,
-                        decorateText = "备注",
+                        decorateText = stringResource(R.string.notes),
                         keyboardOptions = KeyboardOptions(
                             keyboardType = KeyboardType.Text,
                             imeAction = ImeAction.Default

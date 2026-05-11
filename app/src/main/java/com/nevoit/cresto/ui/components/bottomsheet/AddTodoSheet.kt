@@ -93,7 +93,8 @@ enum class SelectedButton {
 @Composable
 fun AddTodoSheet(
     modifier: Modifier = Modifier,
-    initialDate: LocalDate?,
+    finalDate: LocalDate?,
+    onFinalDateChange: (LocalDate?) -> Unit,
     focusRequester: FocusRequester = remember { FocusRequester() },
     autoRequestFocus: Boolean = true,
     onAddClick: (String, Int, LocalDate?) -> Unit,
@@ -106,7 +107,6 @@ fun AddTodoSheet(
 
     val state = rememberTextFieldState()
     var selectedIndex by remember { mutableIntStateOf(0) }
-    var finalDate by remember { mutableStateOf<LocalDate?>(initialDate ?: LocalDate.now()) }
 
     val keyboardController = LocalSoftwareKeyboardController.current
 
@@ -276,7 +276,7 @@ fun AddTodoSheet(
                                 HorizontalPresetDatePicker(
                                     initialDate = finalDate,
                                     onDateSelected = {
-                                        finalDate = it
+                                        onFinalDateChange(it)
                                         selectedButton = SelectedButton.NONE
                                     },
                                     onRequestCustomDate = { coordinates ->
@@ -284,7 +284,7 @@ fun AddTodoSheet(
                                             coordinates.boundsInWindow(),
                                             finalDate
                                         ) { newDate ->
-                                            finalDate = newDate
+                                            onFinalDateChange(newDate)
                                             scope.launch {
                                                 delay(100.milliseconds)
                                                 selectedButton = SelectedButton.NONE

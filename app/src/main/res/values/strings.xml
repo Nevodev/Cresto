@@ -197,4 +197,5 @@
     <string name="no_task_this_day">No task this day</string>
     <string name="take_a_break">Take a break</string>
     <string name="quick_return_to_today">Tap here to quickly return to today</string>
+    <string name="notes">Notes</string>
 </resources>
