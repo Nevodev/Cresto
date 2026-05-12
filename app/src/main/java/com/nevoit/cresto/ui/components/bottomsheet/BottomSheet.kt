@@ -125,7 +125,7 @@ fun BottomSheet(
     aiViewModel: AiViewModel = viewModel(),
     showDialog: (items: List<DialogItemData>, title: String, message: String?) -> Unit,
     onRequestCustomDate: (Rect, LocalDate?, (LocalDate?) -> Unit) -> Unit,
-    onRequestCustomTime: (Rect, LocalTime?, (LocalTime?) -> Unit) -> Unit
+    onRequestCustomTime: (Rect, LocalTime?, LocalTime?, LocalTime?, (LocalTime?) -> Unit) -> Unit
 ) {
     val scope = rememberCoroutineScope()
 
@@ -262,7 +262,6 @@ fun BottomSheet(
     var notesText by remember { mutableStateOf("") }
     var isTimeRangeEnabled by remember { mutableStateOf(false) }
     var isAllDayEnabled by remember { mutableStateOf(true) }
-    var singleTime by remember { mutableStateOf(LocalTime.of(13, 0)) }
     var rangeStartTime by remember { mutableStateOf(LocalTime.of(13, 0)) }
     var rangeEndTime by remember { mutableStateOf(LocalTime.of(14, 0)) }
 
@@ -323,7 +322,7 @@ fun BottomSheet(
                 closeAiInput()
                 adjustOffset()
                 scope.launch {
-                    advancedPageHorizontalOffset.animateTo(0f, Springs.smooth(400))
+                    advancedPageHorizontalOffset.animateTo(0f, Springs.smooth(300))
                 }
                 scope.launch {
                     basicScrimAlpha.animateTo(0.3f, tween(300))
@@ -348,7 +347,7 @@ fun BottomSheet(
             closeAiInput()
             adjustOffset()
             launch {
-                advancedPageHorizontalOffset.animateTo(0f, Springs.smooth(400))
+                advancedPageHorizontalOffset.animateTo(0f, Springs.smooth(300))
             }
             launch {
                 basicScrimAlpha.animateTo(0.3f, tween(300))
@@ -471,8 +470,7 @@ fun BottomSheet(
                             slideOut()
                             val startTime = when {
                                 isAllDayEnabled -> null
-                                isTimeRangeEnabled -> rangeStartTime
-                                else -> singleTime
+                                else -> rangeStartTime
                             }
                             val endTime = when {
                                 isAllDayEnabled -> null
@@ -519,7 +517,6 @@ fun BottomSheet(
                         onFinalDateChange = { finalDate = it },
                         isTimeRangeEnabled = isTimeRangeEnabled,
                         isAllDayEnabled = isAllDayEnabled,
-                        singleTime = singleTime,
                         rangeStartTime = rangeStartTime,
                         rangeEndTime = rangeEndTime,
                         onTimeRangeEnabledChange = { enabled ->
@@ -529,12 +526,6 @@ fun BottomSheet(
                         onAllDayEnabledChange = { enabled ->
                             isAllDayEnabled = enabled
                             if (enabled) isTimeRangeEnabled = false
-                        },
-                        onSingleTimeChange = { newTime ->
-                            if (newTime != null) {
-                                singleTime = newTime
-                                isAllDayEnabled = false
-                            }
                         },
                         onRangeStartTimeChange = { newTime ->
                             if (newTime != null) {
@@ -607,22 +598,19 @@ fun AdvancedPage(
     onFinalDateChange: (LocalDate?) -> Unit,
     isTimeRangeEnabled: Boolean,
     isAllDayEnabled: Boolean,
-    singleTime: LocalTime,
     rangeStartTime: LocalTime,
     rangeEndTime: LocalTime,
     onTimeRangeEnabledChange: (Boolean) -> Unit,
     onAllDayEnabledChange: (Boolean) -> Unit,
-    onSingleTimeChange: (LocalTime?) -> Unit,
     onRangeStartTimeChange: (LocalTime?) -> Unit,
     onRangeEndTimeChange: (LocalTime?) -> Unit,
     onRequestCustomDate: (Rect, LocalDate?, (LocalDate?) -> Unit) -> Unit,
-    onRequestCustomTime: (Rect, LocalTime?, (LocalTime?) -> Unit) -> Unit,
+    onRequestCustomTime: (Rect, LocalTime?, LocalTime?, LocalTime?, (LocalTime?) -> Unit) -> Unit,
     navigateToBasic: () -> Unit
 ) {
     val navigationBarHeight = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
 
     var dateButtonBounds by remember { mutableStateOf(Rect.Zero) }
-    var singleTimeButtonBounds by remember { mutableStateOf(Rect.Zero) }
     var rangeStartTimeButtonBounds by remember { mutableStateOf(Rect.Zero) }
     var rangeEndTimeButtonBounds by remember { mutableStateOf(Rect.Zero) }
 
@@ -736,6 +724,28 @@ fun AdvancedPage(
                     title = stringResource(R.string.time)
                 ) {
                     Column {
+                        ConfigItem(title = stringResource(R.string.all_day)) {
+                            GlasenseSwitch(
+                                backgroundColor = AppColors.cardBackground,
+                                checked = isAllDayEnabled,
+                                onCheckedChange = { checked ->
+                                    onAllDayEnabledChange(checked)
+                                    if (checked) onTimeRangeEnabledChange(false)
+                                })
+                        }
+                        Spacer(modifier = Modifier.height(8.dp))
+                        ZeroHeightDivider()
+                        Spacer(modifier = Modifier.height(8.dp))
+                        ConfigItem(title = stringResource(R.string.time_range)) {
+                            GlasenseSwitch(
+                                backgroundColor = AppColors.cardBackground,
+                                checked = isTimeRangeEnabled,
+                                onCheckedChange = { checked ->
+                                    onTimeRangeEnabledChange(checked)
+                                    if (checked) onAllDayEnabledChange(false)
+                                }
+                            )
+                        }
                         val timeTextStyle = TextStyle(
                             fontFeatureSettings = "tnum",
                             fontWeight = FontWeight.Medium,
@@ -743,11 +753,13 @@ fun AdvancedPage(
                             lineHeight = 24.sp,
                             color = AppColors.content
                         )
-
+                        Spacer(modifier = Modifier.height(8.dp))
                         Row(
                             modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 12.dp),
+                                .graphicsLayer {
+                                    alpha = if (isAllDayEnabled) 0.5f else 1f
+                                }
+                                .fillMaxWidth(),
                             horizontalArrangement = Arrangement.spacedBy(
                                 12.dp,
                                 Alignment.CenterHorizontally
@@ -764,11 +776,14 @@ fun AdvancedPage(
                                         .background(color = AppColors.scrimNormal)
                                         .clickable(
                                             interactionSource = remember { MutableInteractionSource() },
-                                            indication = DimIndication()
+                                            indication = DimIndication(),
+                                            enabled = !isAllDayEnabled
                                         ) {
                                             onRequestCustomTime(
                                                 rangeStartTimeButtonBounds,
-                                                rangeStartTime
+                                                rangeStartTime,
+                                                null,
+                                                rangeEndTime
                                             ) { newTime ->
                                                 onRangeStartTimeChange(newTime)
                                             }
@@ -795,11 +810,14 @@ fun AdvancedPage(
                                         .background(color = AppColors.scrimNormal)
                                         .clickable(
                                             interactionSource = remember { MutableInteractionSource() },
-                                            indication = DimIndication()
+                                            indication = DimIndication(),
+                                            enabled = !isAllDayEnabled
                                         ) {
                                             onRequestCustomTime(
                                                 rangeEndTimeButtonBounds,
-                                                rangeEndTime
+                                                rangeEndTime,
+                                                rangeStartTime,
+                                                null
                                             ) { newTime ->
                                                 onRangeEndTimeChange(newTime)
                                             }
@@ -816,26 +834,29 @@ fun AdvancedPage(
                                 Box(
                                     modifier = Modifier
                                         .onGloballyPositioned { coordinates ->
-                                            singleTimeButtonBounds =
+                                            rangeStartTimeButtonBounds =
                                                 coordinates.boundsInWindow()
                                         }
                                         .clip(AppSpecs.cardShape)
                                         .background(color = AppColors.scrimNormal)
                                         .clickable(
                                             interactionSource = remember { MutableInteractionSource() },
-                                            indication = DimIndication()
+                                            indication = DimIndication(),
+                                            enabled = !isAllDayEnabled
                                         ) {
                                             onRequestCustomTime(
-                                                singleTimeButtonBounds,
-                                                singleTime
+                                                rangeStartTimeButtonBounds,
+                                                rangeStartTime,
+                                                null,
+                                                null
                                             ) { newTime ->
-                                                onSingleTimeChange(newTime)
+                                                onRangeStartTimeChange(newTime)
                                             }
                                         }
                                         .padding(horizontal = 16.dp, vertical = 8.dp)
                                 ) {
                                     Text(
-                                        text = singleTime.format(DateTimeFormatter.ofPattern("HH:mm")),
+                                        text = rangeStartTime.format(DateTimeFormatter.ofPattern("HH:mm")),
                                         modifier = Modifier.align(Alignment.Center),
                                         style = timeTextStyle
                                     )
@@ -843,30 +864,6 @@ fun AdvancedPage(
                             }
                         }
                         Spacer(modifier = Modifier.height(8.dp))
-                        ZeroHeightDivider()
-                        Spacer(modifier = Modifier.height(8.dp))
-                        ConfigItem(title = stringResource(R.string.time_range)) {
-                            GlasenseSwitch(
-                                backgroundColor = AppColors.cardBackground,
-                                checked = isTimeRangeEnabled,
-                                onCheckedChange = { checked ->
-                                    onTimeRangeEnabledChange(checked)
-                                    if (checked) onAllDayEnabledChange(false)
-                                }
-                            )
-                        }
-                        Spacer(modifier = Modifier.height(8.dp))
-                        ZeroHeightDivider()
-                        Spacer(modifier = Modifier.height(8.dp))
-                        ConfigItem(title = stringResource(R.string.all_day)) {
-                            GlasenseSwitch(
-                                backgroundColor = AppColors.cardBackground,
-                                checked = isAllDayEnabled,
-                                onCheckedChange = { checked ->
-                                    onAllDayEnabledChange(checked)
-                                    if (checked) onTimeRangeEnabledChange(false)
-                                })
-                        }
                     }
                 }
                 VGap()
@@ -878,7 +875,35 @@ fun AdvancedPage(
                 ) {
                     Column {
                         ConfigItem(title = stringResource(R.string.reminder_timing)) {
+                            Row(
+                                modifier = Modifier
+                                    .onGloballyPositioned { coordinates ->
+                                    }
+                                    .wrapContentSize()
+                                    .clip(Capsule())
+                                    .background(
+                                        color = AppColors.scrimNormal
+                                    )
+                                    .clickable(
+                                        interactionSource = remember { MutableInteractionSource() },
+                                        indication = DimIndication()
+                                    ) {
 
+                                    }
+                                    .padding(
+                                        horizontal = 8.dp,
+                                        vertical = 4.dp
+                                    ),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = "test",
+                                    fontSize = 16.sp,
+                                    lineHeight = 18.sp,
+                                    fontWeight = FontWeight.Normal,
+                                    color = AppColors.content
+                                )
+                            }
                         }
                         Spacer(modifier = Modifier.height(8.dp))
                         ZeroHeightDivider()

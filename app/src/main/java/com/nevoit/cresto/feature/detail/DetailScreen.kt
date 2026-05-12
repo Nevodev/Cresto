@@ -694,7 +694,7 @@ fun DetailScreen(
             onDateSelected = { date ->
                 finalDate = date
             },
-            direction = PopupDirection.Up
+            direction = PopupDirection.Down
         )
     }
 }

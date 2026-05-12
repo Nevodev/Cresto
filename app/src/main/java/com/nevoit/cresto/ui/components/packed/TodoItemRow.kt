@@ -81,10 +81,12 @@ import com.nevoit.cresto.ui.components.glasense.extend.LineThroughText
 import com.nevoit.glasense.theme.Red500
 import com.nevoit.glasense.theme.Yellow500
 import java.time.LocalDate
+import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
 private val thisYearFormatter = DateTimeFormatter.ofPattern("M/d")
 private val otherYearFormatter = DateTimeFormatter.ofPattern("yyyy/M/d")
+private val timeFormatter = DateTimeFormatter.ofPattern("HH:mm")
 
 /**
  * A composable function that displays a single to-do item with a checkbox, title, due date, flag.
@@ -146,6 +148,7 @@ fun TodoItemRow(
             )
         } else {
             val today = remember { LocalDate.now() }
+            val nowTime = remember { LocalTime.now() }
             val isToday = itemTodo.dueDate == today
             val isExpired = itemTodo.dueDate?.let { it < today } == true
 
@@ -159,9 +162,47 @@ fun TodoItemRow(
                 }
             }
 
+            val overdueText = stringResource(R.string.overdue)
+            val inProgressText = stringResource(R.string.todo_in_progress)
+
+            val timeString = remember(itemTodo.startTime, itemTodo.endTime) {
+                if (itemTodo.startTime != null && itemTodo.endTime != null) {
+                    "${itemTodo.startTime.format(timeFormatter)}-${
+                        itemTodo.endTime.format(
+                            timeFormatter
+                        )
+                    }"
+                } else if (itemTodo.startTime != null) {
+                    itemTodo.startTime.format(timeFormatter)
+                } else itemTodo.endTime?.format(timeFormatter)
+            }
+
             val dueDateText: String? = when {
                 rawFormattedDate == null -> null
-                isToday && isDueTodayMarkerEnabled && !itemTodo.isCompleted -> dueTodayText
+                isToday && !itemTodo.isCompleted -> {
+                    val baseText = if (isDueTodayMarkerEnabled) dueTodayText else rawFormattedDate
+                    if (timeString != null) {
+                        val isOverdueTime =
+                            (itemTodo.endTime != null && nowTime.isAfter(itemTodo.endTime)) ||
+                                    (itemTodo.endTime == null && itemTodo.startTime != null && nowTime.isAfter(
+                                        itemTodo.startTime
+                                    ))
+                        val isInProgressTime =
+                            itemTodo.startTime != null && itemTodo.endTime != null &&
+                                    !nowTime.isBefore(itemTodo.startTime) && !nowTime.isAfter(
+                                itemTodo.endTime
+                            )
+
+                        when {
+                            isOverdueTime -> "$overdueText · $timeString"
+                            isInProgressTime -> "$inProgressText · $timeString"
+                            else -> "$baseText · $timeString"
+                        }
+                    } else {
+                        baseText
+                    }
+                }
+
                 isExpired && isOverdueMarkerEnabled && !itemTodo.isCompleted -> {
                     stringResource(R.string.overdue_with_date, rawFormattedDate)
                 }
@@ -178,14 +219,27 @@ fun TodoItemRow(
                 isDueTodayMarkerEnabled,
                 isOverdueMarkerEnabled,
                 isToday,
-                isExpired
+                isExpired,
+                itemTodo.startTime,
+                itemTodo.endTime,
+                nowTime
             ) {
                 when {
                     itemTodo.dueDate == null -> contentColor.copy(alpha = 0.4f)
-                    isToday -> if (isDueTodayMarkerEnabled && !itemTodo.isCompleted) {
-                        harmonizedYellow
-                    } else {
-                        contentColor.copy(alpha = 0.4f)
+                    isToday -> {
+                        val isOverdueTime = !itemTodo.isCompleted && timeString != null && (
+                                (itemTodo.endTime != null && nowTime.isAfter(itemTodo.endTime)) ||
+                                        (itemTodo.endTime == null && itemTodo.startTime != null && nowTime.isAfter(
+                                            itemTodo.startTime
+                                        ))
+                                )
+                        if (isOverdueTime) {
+                            harmonizedRed
+                        } else if (isDueTodayMarkerEnabled && !itemTodo.isCompleted) {
+                            harmonizedYellow
+                        } else {
+                            contentColor.copy(alpha = 0.4f)
+                        }
                     }
 
                     isExpired -> if (isOverdueMarkerEnabled && !itemTodo.isCompleted) {
@@ -995,3 +1049,4 @@ fun Modifier.lineThrough(color: Color, width: Dp): Modifier = drawWithContent {
         cap = StrokeCap.Round
     )
 }
+

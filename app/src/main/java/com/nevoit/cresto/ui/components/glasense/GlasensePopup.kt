@@ -85,7 +85,7 @@ private fun pickPopupPlacement(
 
     val anchorCenterX = (anchorBounds.left + anchorBounds.right) / 2f
     val anchorCenterY = (anchorBounds.top + anchorBounds.bottom) / 2f
-    
+
     val targetXCenter = anchorCenterX - popupSize.width / 2f
     val targetYCenter = anchorCenterY - popupSize.height / 2f
 
@@ -93,7 +93,7 @@ private fun pickPopupPlacement(
     val bottomPos = anchorBounds.bottom + gapPx
     val leftPos = anchorBounds.left - popupSize.width - gapPx
     val rightPos = anchorBounds.right + gapPx
-    
+
     val alignLeft = anchorBounds.left
     val alignRight = anchorBounds.right - popupSize.width
 

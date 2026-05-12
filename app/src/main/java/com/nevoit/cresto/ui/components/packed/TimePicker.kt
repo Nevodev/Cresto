@@ -40,7 +40,7 @@ import com.nevoit.cresto.ui.components.glasense.PopupState
 import com.nevoit.cresto.ui.components.glasense.ZeroWidthDivider
 import com.nevoit.cresto.ui.components.glasense.glasenseHighlight
 import java.time.LocalTime
-import java.time.format.DateTimeFormatter
+import java.util.Locale
 
 @Composable
 fun TimePicker(
@@ -48,6 +48,8 @@ fun TimePicker(
     direction: PopupDirection = PopupDirection.Auto,
     anchorBounds: Rect,
     initialTime: LocalTime?,
+    minTime: LocalTime? = null,
+    maxTime: LocalTime? = null,
     onDismiss: () -> Unit,
     onTimeSelected: (LocalTime?) -> Unit
 ) {
@@ -66,9 +68,26 @@ fun TimePicker(
         }
     }
 
-    val hourOptions = remember { (0..23).map { String.format("%02d", it) } }
-    val minuteOptions = remember { (0..59).map { String.format("%02d", it) } }
-    val timeFormatter = remember { DateTimeFormatter.ofPattern("HH:mm") }
+    val effectiveMinTime = minTime?.plusMinutes(1)
+    val effectiveMaxTime = maxTime?.minusMinutes(1)
+
+    val rawMinHour = effectiveMinTime?.hour ?: 0
+    val rawMaxHour = effectiveMaxTime?.hour ?: 23
+    val minHour = minOf(rawMinHour, rawMaxHour)
+    val maxHour = maxOf(rawMinHour, rawMaxHour)
+    val validHours = remember(minHour, maxHour) { (minHour..maxHour).toList() }
+
+    val coercedHour = selectedHour.coerceIn(minHour, maxHour)
+    val rawMinMinute = if (effectiveMinTime != null && coercedHour == effectiveMinTime.hour) effectiveMinTime.minute else 0
+    val rawMaxMinute = if (effectiveMaxTime != null && coercedHour == effectiveMaxTime.hour) effectiveMaxTime.minute else 59
+    val minMinute = minOf(rawMinMinute, rawMaxMinute)
+    val maxMinute = maxOf(rawMinMinute, rawMaxMinute)
+    val validMinutes = remember(minMinute, maxMinute) { (minMinute..maxMinute).toList() }
+    val coercedMinute = selectedMinute.coerceIn(minMinute, maxMinute)
+
+    val locale = Locale.ROOT
+    val hourOptions = remember(validHours) { validHours.map { String.format(locale, "%02d", it) } }
+    val minuteOptions = remember(validMinutes) { validMinutes.map { String.format(locale, "%02d", it) } }
 
     val shape = AppSpecs.cardShape
     val color = AppColors.scrimNormal
@@ -113,7 +132,7 @@ fun TimePicker(
                 enabled = true,
                 shape = CircleShape,
                 onClick = {
-                    onTimeSelected(LocalTime.of(selectedHour, selectedMinute))
+                    onTimeSelected(LocalTime.of(coercedHour, coercedMinute))
                     onDismiss()
                 },
                 modifier = Modifier
@@ -158,17 +177,17 @@ fun TimePicker(
                     modifier = Modifier.weight(1f),
                     items = hourOptions,
                     indicator = false,
-                    currentSelected = selectedHour
+                    currentSelected = validHours.indexOf(coercedHour).coerceAtLeast(0)
                 ) { index ->
-                    selectedHour = index
+                    selectedHour = validHours[index]
                 }
                 GlasenseWheelPicker(
                     modifier = Modifier.weight(1f),
                     items = minuteOptions,
                     indicator = false,
-                    currentSelected = selectedMinute
+                    currentSelected = validMinutes.indexOf(coercedMinute).coerceAtLeast(0)
                 ) { index ->
-                    selectedMinute = index
+                    selectedMinute = validMinutes[index]
                 }
             }
         }

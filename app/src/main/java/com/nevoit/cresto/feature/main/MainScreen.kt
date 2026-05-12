@@ -157,6 +157,8 @@ fun MainScreen() {
     var isTimePickerVisible by remember { mutableStateOf(false) }
     var timeButtonBounds by remember { mutableStateOf(Rect.Zero) }
     var sheetFinalTime by remember { mutableStateOf<LocalTime?>(null) }
+    var sheetMinTime by remember { mutableStateOf<LocalTime?>(null) }
+    var sheetMaxTime by remember { mutableStateOf<LocalTime?>(null) }
     var onTimeSelectedCallback by remember { mutableStateOf<(LocalTime?) -> Unit>({}) }
 
     val navigationBarHeight = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
@@ -592,9 +594,11 @@ fun MainScreen() {
                     onDateSelectedCallback = onSelected
                     isDatePickerVisible = true
                 },
-                onRequestCustomTime = { bounds, initialTime, onSelected ->
+                onRequestCustomTime = { bounds, initialTime, minTime, maxTime, onSelected ->
                     timeButtonBounds = bounds
                     sheetFinalTime = initialTime
+                    sheetMinTime = minTime
+                    sheetMaxTime = maxTime
                     onTimeSelectedCallback = onSelected
                     isTimePickerVisible = true
                 }
@@ -621,18 +625,20 @@ fun MainScreen() {
             onDateSelected = { date ->
                 onDateSelectedCallback(date)
             },
-            direction = PopupDirection.Up
+            direction = PopupDirection.Down
         )
 
         TimePicker(
             isVisible = isTimePickerVisible,
             anchorBounds = timeButtonBounds,
             initialTime = sheetFinalTime,
+            minTime = sheetMinTime,
+            maxTime = sheetMaxTime,
             onDismiss = { isTimePickerVisible = false },
             onTimeSelected = { time ->
                 onTimeSelectedCallback(time)
             },
-            direction = PopupDirection.Up
+            direction = PopupDirection.Down
         )
     }
 }

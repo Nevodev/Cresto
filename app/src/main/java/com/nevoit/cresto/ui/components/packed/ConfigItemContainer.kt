@@ -35,7 +35,8 @@ import com.nevoit.cresto.theme.AppSpecs
 fun ConfigItemContainer(
     title: String? = null,
     backgroundColor: Color,
-    content: @Composable () -> Unit,
+    compact: Boolean = false,
+    content: @Composable () -> Unit
 ) {
     Column(modifier = Modifier.fillMaxWidth()) {
         // Display the title if it's provided.
@@ -64,7 +65,10 @@ fun ConfigItemContainer(
             // Inner box with padding for the content.
             Box(
                 modifier = Modifier
-                    .padding(horizontal = 16.dp, vertical = 8.dp)
+                    .padding(
+                        horizontal = if (compact) 12.dp else 16.dp,
+                        vertical = if (compact) 0.dp else 8.dp
+                    )
             ) {
                 content()
             }
