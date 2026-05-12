@@ -27,17 +27,15 @@ import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
-import com.kyant.backdrop.backdrops.LayerBackdrop
-import com.kyant.backdrop.backdrops.layerBackdrop
 
 @Composable
 fun RotatingGlow(
     modifier: Modifier,
     blurRadius: Dp,
+    edgeTreatment: BlurredEdgeTreatment = BlurredEdgeTreatment.Unbounded,
     shape: Shape,
     colors: List<Color>,
-    timeMillis: Int = 1000,
-    backdrop: LayerBackdrop
+    timeMillis: Int = 1000
 ) {
     val infiniteTransition = rememberInfiniteTransition(label = "shadow_rotation")
     val rotation by infiniteTransition.animateFloat(
@@ -56,9 +54,8 @@ fun RotatingGlow(
 
     Box(
         modifier = Modifier
-            .blur(blurRadius, edgeTreatment = BlurredEdgeTreatment.Unbounded)
+            .blur(blurRadius, edgeTreatment = edgeTreatment)
             .then(modifier)
-            .layerBackdrop(backdrop)
             .drawBehind {
                 val centerX = size.width / 2
                 val centerY = size.height / 2

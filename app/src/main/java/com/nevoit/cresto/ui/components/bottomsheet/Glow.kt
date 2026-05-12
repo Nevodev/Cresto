@@ -20,12 +20,13 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.BlurredEdgeTreatment
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.graphics.TileMode
 import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.painterResource
@@ -33,9 +34,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import com.kyant.backdrop.backdrops.rememberLayerBackdrop
-import com.kyant.backdrop.drawPlainBackdrop
-import com.kyant.backdrop.effects.blur
-import com.kyant.backdrop.effects.colorControls
 import com.kyant.shapes.Capsule
 import com.nevoit.cresto.R
 import com.nevoit.cresto.theme.AppButtonColors
@@ -85,22 +83,28 @@ fun GlowContainer(
             blurRadius = 16.dp,
             shape = RectangleShape,
             colors = glowColors,
-            timeMillis = 5000,
-            backdrop = backdrop
+            timeMillis = 5000
         )
         Box(
             modifier = Modifier
                 .height(56.dp)
                 .padding(horizontal = 12.dp)
                 .fillMaxWidth()
-                .drawPlainBackdrop(
-                    backdrop = backdrop,
-                    shape = { Capsule() },
-                    effects = {
-                        blur(64f.dp.toPx(), TileMode.Clamp)
-                        colorControls(saturation = 1.1f)
-                    }, onDrawSurface = {
-                        // The drawing logic is different for light and dark themes.
+                .clip(Capsule())
+                .glasenseHighlight(56.dp)
+        ) {
+            RotatingGlow(
+                modifier = Modifier.fillMaxSize(),
+                blurRadius = 32.dp,
+                edgeTreatment = BlurredEdgeTreatment.Rectangle,
+                shape = RectangleShape,
+                colors = glowColors,
+                timeMillis = 5000
+            )
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .drawBehind {
                         if (!darkTheme) {
                             drawRect(
                                 brush = SolidColor(Color(0xFF272727).copy(alpha = 0.2f)),
@@ -140,9 +144,6 @@ fun GlowContainer(
                             )
                         }
                     })
-                .glasenseHighlight(56.dp)
-                .clip(Capsule())
-        ) {
             RotatingGlowBorder(
                 modifier = Modifier.fillMaxSize(),
                 strokeWidth = 4.dp,
