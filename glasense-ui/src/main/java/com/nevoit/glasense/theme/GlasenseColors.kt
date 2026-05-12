@@ -23,6 +23,9 @@ data class GlasenseColors(
     val pageBackground: Color,
     val cardBackground: Color,
 
+    val pageBackgroundElevated: Color,
+    val cardBackgroundElevated: Color,
+
     val primary: Color,
     val onPrimary: Color,
 
@@ -40,6 +43,8 @@ val GlasenseLightPalette = GlasenseColors(
     inactiveThumb = Color.White,
     pageBackground = Color(0xFFF3F4F6),
     cardBackground = Color.White,
+    pageBackgroundElevated = Color(0xFFF3F4F6),
+    cardBackgroundElevated = Color.White,
     scrimLight = Color.Black.copy(alpha = 0.025f),
     scrimNormal = Color.Black.copy(alpha = 0.05f),
     scrimMedium = Color.Black.copy(alpha = 0.1f),
@@ -59,6 +64,8 @@ val GlasenseDarkPalette = GlasenseColors(
     inactiveThumb = Color.White,
     pageBackground = Color.Black,
     cardBackground = Color(0xFF1B1C1D),
+    pageBackgroundElevated = Color(0xFF1C1C1E),
+    cardBackgroundElevated = Color(0xFF2C2C2E),
     scrimLight = Color.White.copy(alpha = 0.05f),
     scrimNormal = Color.White.copy(alpha = 0.1f),
     scrimMedium = Color.White.copy(alpha = 0.2f),
@@ -75,6 +82,9 @@ fun glasenseColorsFromScheme(scheme: ColorScheme, isDark: Boolean): GlasenseColo
     val pageBackground = if (isDark) Color.Black else scheme.surfaceContainer
     val cardBackground = if (isDark) scheme.surfaceContainer else scheme.surface
 
+    val pageBackgroundElevated = if (isDark) scheme.surfaceContainer else pageBackground
+    val cardBackgroundElevated = if (isDark) scheme.surfaceContainerHigh else cardBackground
+
     val contentColor = if (isDark) Color.White else Color.Black
 
     val scrimLight = contentColor.copy(alpha = if (isDark) 0.05f else 0.025f)
@@ -89,6 +99,8 @@ fun glasenseColorsFromScheme(scheme: ColorScheme, isDark: Boolean): GlasenseColo
         inactiveThumb = scheme.outline,
         pageBackground = pageBackground,
         cardBackground = cardBackground,
+        pageBackgroundElevated = pageBackgroundElevated,
+        cardBackgroundElevated = cardBackgroundElevated,
         scrimLight = scrimLight,
         scrimNormal = scrimNormal,
         scrimMedium = scrimMedium,

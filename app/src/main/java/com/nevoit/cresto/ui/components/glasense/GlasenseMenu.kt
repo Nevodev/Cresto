@@ -72,7 +72,7 @@ import kotlin.time.Duration.Companion.milliseconds
 
 data class MenuItemData(
     val text: String,
-    val icon: Painter,
+    val icon: Painter? = null,
     val iconColor: Color = Color.Unspecified,
     val isDestructive: Boolean = false,
     val onClick: () -> Unit
@@ -82,7 +82,7 @@ object MenuDivider : GlasenseMenuItem
 
 data class SelectiveMenuItemData(
     val text: String,
-    val icon: Painter,
+    val icon: Painter? = null,
     val isSelected: () -> Boolean,
     val onClick: () -> Unit
 ) : GlasenseMenuItem
@@ -453,7 +453,7 @@ fun CustomMenuContent(items: List<GlasenseMenuItem>, onDismiss: () -> Unit) {
 @Composable
 private fun CustomMenuItem(
     text: String,
-    icon: Painter,
+    icon: Painter? = null,
     iconColor: Color,
     isDestructive: Boolean,
     onClick: () -> Unit
@@ -480,19 +480,21 @@ private fun CustomMenuItem(
             fontSize = 16.sp,
             lineHeight = 16.sp
         )
-        Icon(
-            painter = icon,
-            contentDescription = text,
-            tint = if (isDestructive) contentColor else if (iconColor == Color.Unspecified) AppColors.content else iconColor,
-            modifier = Modifier.size(24.dp),
-        )
+        if (icon != null) {
+            Icon(
+                painter = icon,
+                contentDescription = text,
+                tint = if (isDestructive) contentColor else if (iconColor == Color.Unspecified) AppColors.content else iconColor,
+                modifier = Modifier.size(24.dp),
+            )
+        }
     }
 }
 
 @Composable
 private fun CustomSelectiveMenuItem(
     text: String,
-    icon: Painter,
+    icon: Painter? = null,
     isSelected: () -> Boolean,
     onClick: () -> Unit
 ) {
@@ -531,11 +533,13 @@ private fun CustomSelectiveMenuItem(
             lineHeight = 16.sp,
             modifier = Modifier.weight(1f)
         )
-        Icon(
-            painter = icon,
-            contentDescription = text,
-            tint = contentColor,
-            modifier = Modifier.size(24.dp)
-        )
+        if (icon != null) {
+            Icon(
+                painter = icon,
+                contentDescription = text,
+                tint = contentColor,
+                modifier = Modifier.size(24.dp)
+            )
+        }
     }
 }

@@ -195,6 +195,12 @@
     <string name="all_day">全天</string>
     <string name="reminder">提醒</string>
     <string name="reminder_timing">提醒时机</string>
+    <string name="reminder_all_day_morning_8">当天上午 8 点</string>
+    <string name="reminder_before_1_minute">提前 1 分钟</string>
+    <string name="reminder_before_5_minutes">提前 5 分钟</string>
+    <string name="reminder_before_30_minutes">提前 30 分钟</string>
+    <string name="reminder_before_1_hour">提前 1 小时</string>
+    <string name="reminder_before_2_hours">提前 2 小时</string>
     <string name="persistent_reminder">持续提醒</string>
     <string name="strong_reminder">强提醒</string>
     <string name="repeat">重复</string>

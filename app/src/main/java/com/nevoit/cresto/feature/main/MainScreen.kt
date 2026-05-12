@@ -601,7 +601,8 @@ fun MainScreen() {
                     sheetMaxTime = maxTime
                     onTimeSelectedCallback = onSelected
                     isTimePickerVisible = true
-                }
+                },
+                showMenu = showMenu
             )
         }
 

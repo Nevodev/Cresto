@@ -78,7 +78,6 @@ import com.nevoit.cresto.ui.components.glasense.SwipeableContainer
 import com.nevoit.cresto.ui.components.glasense.SwipeableListState
 import com.nevoit.cresto.ui.components.glasense.extend.LineThroughBasicTextField
 import com.nevoit.cresto.ui.components.glasense.extend.LineThroughText
-import com.nevoit.glasense.theme.Red500
 import com.nevoit.glasense.theme.Yellow500
 import java.time.LocalDate
 import java.time.LocalTime
@@ -211,7 +210,7 @@ fun TodoItemRow(
             }
 
             val harmonizedYellow = harmonize(Yellow500)
-            val harmonizedRed = harmonize(Red500)
+            val errorColor = AppColors.error
 
             val dueDateColor = remember(
                 itemTodo.dueDate,
@@ -234,7 +233,7 @@ fun TodoItemRow(
                                         ))
                                 )
                         if (isOverdueTime) {
-                            harmonizedRed
+                            errorColor
                         } else if (isDueTodayMarkerEnabled && !itemTodo.isCompleted) {
                             harmonizedYellow
                         } else {
@@ -243,7 +242,7 @@ fun TodoItemRow(
                     }
 
                     isExpired -> if (isOverdueMarkerEnabled && !itemTodo.isCompleted) {
-                        harmonizedRed
+                        errorColor
                     } else {
                         contentColor.copy(alpha = 0.4f)
                     }

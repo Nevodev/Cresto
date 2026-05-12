@@ -87,7 +87,9 @@ import com.nevoit.cresto.theme.AppSpecs
 import com.nevoit.cresto.ui.components.glasense.DialogItemData
 import com.nevoit.cresto.ui.components.glasense.DimIndication
 import com.nevoit.cresto.ui.components.glasense.GlasenseButton
+import com.nevoit.cresto.ui.components.glasense.GlasenseMenuItem
 import com.nevoit.cresto.ui.components.glasense.GlasenseSwitch
+import com.nevoit.cresto.ui.components.glasense.MenuItemData
 import com.nevoit.cresto.ui.components.glasense.ZeroHeightDivider
 import com.nevoit.cresto.ui.components.glasense.extend.overscrollSpacer
 import com.nevoit.cresto.ui.components.packed.ConfigItem
@@ -124,6 +126,7 @@ fun BottomSheet(
     onAddClick: (String, String, Int, LocalDate?, LocalTime?, LocalTime?) -> Unit,
     aiViewModel: AiViewModel = viewModel(),
     showDialog: (items: List<DialogItemData>, title: String, message: String?) -> Unit,
+    showMenu: (anchorBounds: Rect, items: List<GlasenseMenuItem>) -> Unit,
     onRequestCustomDate: (Rect, LocalDate?, (LocalDate?) -> Unit) -> Unit,
     onRequestCustomTime: (Rect, LocalTime?, LocalTime?, LocalTime?, (LocalTime?) -> Unit) -> Unit
 ) {
@@ -448,7 +451,7 @@ fun BottomSheet(
                         bottomSheetShape
                     )
                     .background(
-                        color = AppColors.pageBackground
+                        color = AppColors.pageBackgroundElevated
                     )
                     .fillMaxWidth()
             ) {
@@ -539,6 +542,7 @@ fun BottomSheet(
                                 isAllDayEnabled = false
                             }
                         },
+                        showMenu = showMenu,
                         onRequestCustomDate = onRequestCustomDate,
                         onRequestCustomTime = onRequestCustomTime,
                         navigateToBasic = {
@@ -604,6 +608,7 @@ fun AdvancedPage(
     onAllDayEnabledChange: (Boolean) -> Unit,
     onRangeStartTimeChange: (LocalTime?) -> Unit,
     onRangeEndTimeChange: (LocalTime?) -> Unit,
+    showMenu: (anchorBounds: Rect, items: List<GlasenseMenuItem>) -> Unit,
     onRequestCustomDate: (Rect, LocalDate?, (LocalDate?) -> Unit) -> Unit,
     onRequestCustomTime: (Rect, LocalTime?, LocalTime?, LocalTime?, (LocalTime?) -> Unit) -> Unit,
     navigateToBasic: () -> Unit
@@ -613,11 +618,59 @@ fun AdvancedPage(
     var dateButtonBounds by remember { mutableStateOf(Rect.Zero) }
     var rangeStartTimeButtonBounds by remember { mutableStateOf(Rect.Zero) }
     var rangeEndTimeButtonBounds by remember { mutableStateOf(Rect.Zero) }
+    var reminderButtonBounds by remember { mutableStateOf(Rect.Zero) }
+    var reminderTimingText by remember { mutableStateOf<String?>(null) }
+
+    val noneText = stringResource(R.string.none)
+    val customText = stringResource(R.string.custom)
+    val allDayMorningText = stringResource(R.string.reminder_all_day_morning_8)
+    val oneMinuteBeforeText = stringResource(R.string.reminder_before_1_minute)
+    val fiveMinutesBeforeText = stringResource(R.string.reminder_before_5_minutes)
+    val thirtyMinutesBeforeText = stringResource(R.string.reminder_before_30_minutes)
+    val oneHourBeforeText = stringResource(R.string.reminder_before_1_hour)
+    val twoHoursBeforeText = stringResource(R.string.reminder_before_2_hours)
+    val reminderIcon = painterResource(R.drawable.ic_alarm)
+    val noneReminderIcon = painterResource(R.drawable.ic_alarm_slash)
+
+    val reminderMenuItems = remember(
+        isAllDayEnabled,
+        noneText,
+        customText,
+        allDayMorningText,
+        oneMinuteBeforeText,
+        fiveMinutesBeforeText,
+        thirtyMinutesBeforeText,
+        oneHourBeforeText,
+        twoHoursBeforeText,
+        reminderIcon,
+        noneReminderIcon
+    ) {
+        val labels = if (isAllDayEnabled) {
+            listOf(noneText, allDayMorningText, customText)
+        } else {
+            listOf(
+                noneText,
+                oneMinuteBeforeText,
+                fiveMinutesBeforeText,
+                thirtyMinutesBeforeText,
+                oneHourBeforeText,
+                twoHoursBeforeText,
+                customText
+            )
+        }
+        labels.map { label ->
+            MenuItemData(
+                text = label,
+                icon = if (label == noneText) noneReminderIcon else null,
+                onClick = { reminderTimingText = label }
+            )
+        }
+    }
 
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(AppColors.pageBackground)
+            .background(AppColors.pageBackgroundElevated)
             .padding(horizontal = 12.dp)
     ) {
         val lazyListState = rememberLazyListState()
@@ -632,7 +685,7 @@ fun AdvancedPage(
                 ConfigTextField(
                     value = notesText,
                     onValueChange = onNotesChange,
-                    backgroundColor = AppColors.cardBackground,
+                    backgroundColor = AppColors.cardBackgroundElevated,
                     singleLine = false,
                     decorateText = stringResource(R.string.notes),
                     keyboardOptions = KeyboardOptions(
@@ -650,7 +703,7 @@ fun AdvancedPage(
                         modifier = Modifier
                             .fillMaxWidth()
                             .background(
-                                color = AppColors.cardBackground,
+                                color = AppColors.cardBackgroundElevated,
                                 shape = AppSpecs.cardShape
                             )
                             .padding(horizontal = 12.dp)
@@ -720,13 +773,13 @@ fun AdvancedPage(
             }
             item {
                 ConfigItemContainer(
-                    backgroundColor = AppColors.cardBackground,
+                    backgroundColor = AppColors.cardBackgroundElevated,
                     title = stringResource(R.string.time)
                 ) {
                     Column {
                         ConfigItem(title = stringResource(R.string.all_day)) {
                             GlasenseSwitch(
-                                backgroundColor = AppColors.cardBackground,
+                                backgroundColor = AppColors.cardBackgroundElevated,
                                 checked = isAllDayEnabled,
                                 onCheckedChange = { checked ->
                                     onAllDayEnabledChange(checked)
@@ -738,7 +791,7 @@ fun AdvancedPage(
                         Spacer(modifier = Modifier.height(8.dp))
                         ConfigItem(title = stringResource(R.string.time_range)) {
                             GlasenseSwitch(
-                                backgroundColor = AppColors.cardBackground,
+                                backgroundColor = AppColors.cardBackgroundElevated,
                                 checked = isTimeRangeEnabled,
                                 onCheckedChange = { checked ->
                                     onTimeRangeEnabledChange(checked)
@@ -870,7 +923,7 @@ fun AdvancedPage(
             }
             item {
                 ConfigItemContainer(
-                    backgroundColor = AppColors.cardBackground,
+                    backgroundColor = AppColors.cardBackgroundElevated,
                     title = stringResource(R.string.reminder)
                 ) {
                     Column {
@@ -878,6 +931,7 @@ fun AdvancedPage(
                             Row(
                                 modifier = Modifier
                                     .onGloballyPositioned { coordinates ->
+                                        reminderButtonBounds = coordinates.boundsInWindow()
                                     }
                                     .wrapContentSize()
                                     .clip(Capsule())
@@ -888,7 +942,7 @@ fun AdvancedPage(
                                         interactionSource = remember { MutableInteractionSource() },
                                         indication = DimIndication()
                                     ) {
-
+                                        showMenu(reminderButtonBounds, reminderMenuItems)
                                     }
                                     .padding(
                                         horizontal = 8.dp,
@@ -897,7 +951,7 @@ fun AdvancedPage(
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Text(
-                                    text = "test",
+                                    text = reminderTimingText ?: noneText,
                                     fontSize = 16.sp,
                                     lineHeight = 18.sp,
                                     fontWeight = FontWeight.Normal,
@@ -910,7 +964,7 @@ fun AdvancedPage(
                         Spacer(modifier = Modifier.height(8.dp))
                         ConfigItem(title = stringResource(R.string.persistent_reminder)) {
                             GlasenseSwitch(
-                                backgroundColor = AppColors.cardBackground,
+                                backgroundColor = AppColors.cardBackgroundElevated,
                                 checked = false,
                                 onCheckedChange = { })
                         }
@@ -919,7 +973,7 @@ fun AdvancedPage(
                         Spacer(modifier = Modifier.height(8.dp))
                         ConfigItem(title = stringResource(R.string.strong_reminder)) {
                             GlasenseSwitch(
-                                backgroundColor = AppColors.cardBackground,
+                                backgroundColor = AppColors.cardBackgroundElevated,
                                 checked = false,
                                 onCheckedChange = { })
                         }
@@ -929,7 +983,7 @@ fun AdvancedPage(
             }
             item {
                 ConfigItemContainer(
-                    backgroundColor = AppColors.cardBackground,
+                    backgroundColor = AppColors.cardBackgroundElevated,
                     title = stringResource(R.string.repeat)
                 ) {
                     Column {
@@ -941,7 +995,7 @@ fun AdvancedPage(
                         Spacer(modifier = Modifier.height(8.dp))
                         ConfigItem(title = stringResource(R.string.postpone_after_expiry)) {
                             GlasenseSwitch(
-                                backgroundColor = AppColors.cardBackground,
+                                backgroundColor = AppColors.cardBackgroundElevated,
                                 checked = false,
                                 onCheckedChange = { })
                         }
@@ -966,12 +1020,12 @@ fun AdvancedPage(
                 modifier = Modifier
                     .width(48.dp)
                     .height(48.dp),
-                colors = AppButtonColors.secondary(),
+                colors = AppButtonColors.action(),
             ) {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_forward_nav),
                     contentDescription = stringResource(R.string.back),
-                    modifier = Modifier.width(28.dp)
+                    modifier = Modifier.width(32.dp)
                 )
             }
             Text(
