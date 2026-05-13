@@ -55,6 +55,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.nevoit.cresto.R
 import com.nevoit.cresto.data.todo.TodoViewModel
+import com.nevoit.cresto.ui.components.packed.TodoReminderConfig
 import com.nevoit.cresto.theme.AppColors
 import com.nevoit.cresto.ui.components.glasense.DialogItemData
 import com.nevoit.cresto.ui.components.glasense.GlasenseMenuItem
@@ -84,12 +85,13 @@ enum class SheetInputMode { Basic, Advanced }
 @Composable
 fun BottomSheet(
     onDismiss: () -> Unit,
-    onAddClick: (String, String, Int, LocalDate?, LocalTime?, LocalTime?) -> Unit,
+    onAddClick: (String, String, Int, LocalDate?, LocalTime?, LocalTime?, TodoReminderConfig?) -> Unit,
     aiViewModel: AiViewModel = viewModel(),
     showDialog: (items: List<DialogItemData>, title: String, message: String?) -> Unit,
     showMenu: (anchorBounds: Rect, items: List<GlasenseMenuItem>) -> Unit,
     onRequestCustomDate: (Rect, LocalDate?, (LocalDate?) -> Unit) -> Unit,
-    onRequestCustomTime: (Rect, LocalTime?, LocalTime?, LocalTime?, (LocalTime?) -> Unit) -> Unit
+    onRequestCustomTime: (Rect, LocalTime?, LocalTime?, LocalTime?, (LocalTime?) -> Unit) -> Unit,
+    onRequestCustomReminder: (Rect, (TodoReminderConfig) -> Unit) -> Unit
 ) {
     val scope = rememberCoroutineScope()
 
@@ -228,6 +230,9 @@ fun BottomSheet(
     var isAllDayEnabled by remember { mutableStateOf(true) }
     var rangeStartTime by remember { mutableStateOf(LocalTime.of(13, 0)) }
     var rangeEndTime by remember { mutableStateOf(LocalTime.of(14, 0)) }
+    var reminderConfig by remember { mutableStateOf<TodoReminderConfig?>(null) }
+    var reminderPersistent by remember { mutableStateOf(false) }
+    var reminderStrong by remember { mutableStateOf(false) }
 
     fun closeAiInput() {
         scope.launch {
@@ -441,7 +446,11 @@ fun BottomSheet(
                                 isTimeRangeEnabled -> rangeEndTime
                                 else -> null
                             }
-                            onAddClick(title, notesText, flagIndex, date, startTime, endTime)
+                            val reminder = reminderConfig?.copy(
+                                persistent = reminderPersistent,
+                                strong = reminderStrong
+                            )
+                            onAddClick(title, notesText, flagIndex, date, startTime, endTime, reminder)
                         }
                     }, onClose = {
                         keyboardController?.hide()
@@ -503,9 +512,20 @@ fun BottomSheet(
                                 isAllDayEnabled = false
                             }
                         },
+                        reminderConfig = reminderConfig,
+                        onReminderConfigChange = { reminderConfig = it },
+                        reminderPersistent = reminderPersistent,
+                        reminderStrong = reminderStrong,
+                        onReminderPersistentChange = { reminderPersistent = it },
+                        onReminderStrongChange = { reminderStrong = it },
                         showMenu = showMenu,
                         onRequestCustomDate = onRequestCustomDate,
                         onRequestCustomTime = onRequestCustomTime,
+                        onRequestCustomReminder = { bounds ->
+                            onRequestCustomReminder(bounds) { config ->
+                                reminderConfig = config
+                            }
+                        },
                         navigateToBasic = {
                             navigateToBasic()
                         })

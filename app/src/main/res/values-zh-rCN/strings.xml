@@ -201,6 +201,12 @@
     <string name="reminder_before_30_minutes">提前 30 分钟</string>
     <string name="reminder_before_1_hour">提前 1 小时</string>
     <string name="reminder_before_2_hours">提前 2 小时</string>
+    <string name="custom_reminder">自定义提醒</string>
+    <string name="by_hour">按小时</string>
+    <string name="by_day">按天</string>
+    <string name="reminder_before_prefix">提前</string>
+    <string name="reminder_due_day">当天</string>
+    <string name="reminder_days_before_format">提前 %1$d 天</string>
     <string name="persistent_reminder">持续提醒</string>
     <string name="strong_reminder">强提醒</string>
     <string name="repeat">重复</string>

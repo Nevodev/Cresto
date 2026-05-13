@@ -253,6 +253,12 @@ class TodoRepository(
         val completedDateTime: String?,
         val startTime: String?,
         val endTime: String?,
+        val reminderMode: String?,
+        val reminderOffsetMinutes: Int?,
+        val reminderDayOffset: Int?,
+        val reminderTime: String?,
+        val reminderPersistent: Boolean,
+        val reminderStrong: Boolean,
         val subTodos: List<SubTodoFingerprint>
     )
 
@@ -278,7 +284,13 @@ class TodoRepository(
                     flag = it.flag,
                     completedDateTime = it.completedDateTime?.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME),
                     startTime = it.startTime?.format(DateTimeFormatter.ISO_LOCAL_TIME),
-                    endTime = it.endTime?.format(DateTimeFormatter.ISO_LOCAL_TIME)
+                    endTime = it.endTime?.format(DateTimeFormatter.ISO_LOCAL_TIME),
+                    reminderMode = it.reminderMode?.name,
+                    reminderOffsetMinutes = it.reminderOffsetMinutes,
+                    reminderDayOffset = it.reminderDayOffset,
+                    reminderTime = it.reminderTime?.format(DateTimeFormatter.ISO_LOCAL_TIME),
+                    reminderPersistent = it.reminderPersistent,
+                    reminderStrong = it.reminderStrong
                 )
             },
             subTodos = subTodos.map {
@@ -322,13 +334,19 @@ class TodoRepository(
                 TodoItem(
                     id = 0, // auto-generate
                     title = todoDto.title,
-                    dueDate = todoDto.dueDate?.let(java.time.LocalDate::parse),
+                    dueDate = todoDto.dueDate?.let(LocalDate::parse),
                     creationDateTime = LocalDateTime.parse(todoDto.creationDateTime),
                     isCompleted = todoDto.isCompleted,
                     flag = todoDto.flag,
                     completedDateTime = todoDto.completedDateTime?.let(LocalDateTime::parse),
                     startTime = todoDto.startTime?.let(LocalTime::parse),
-                    endTime = todoDto.endTime?.let(LocalTime::parse)
+                    endTime = todoDto.endTime?.let(LocalTime::parse),
+                    reminderMode = todoDto.reminderMode?.let(TodoReminderMode::valueOf),
+                    reminderOffsetMinutes = todoDto.reminderOffsetMinutes,
+                    reminderDayOffset = todoDto.reminderDayOffset,
+                    reminderTime = todoDto.reminderTime?.let(LocalTime::parse),
+                    reminderPersistent = todoDto.reminderPersistent,
+                    reminderStrong = todoDto.reminderStrong
                 )
             ).toInt()
 
@@ -366,6 +384,12 @@ class TodoRepository(
             completedDateTime = todoItem.completedDateTime?.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME),
             startTime = todoItem.startTime?.format(DateTimeFormatter.ISO_LOCAL_TIME),
             endTime = todoItem.endTime?.format(DateTimeFormatter.ISO_LOCAL_TIME),
+            reminderMode = todoItem.reminderMode?.name,
+            reminderOffsetMinutes = todoItem.reminderOffsetMinutes,
+            reminderDayOffset = todoItem.reminderDayOffset,
+            reminderTime = todoItem.reminderTime?.format(DateTimeFormatter.ISO_LOCAL_TIME),
+            reminderPersistent = todoItem.reminderPersistent,
+            reminderStrong = todoItem.reminderStrong,
             subTodos = subTodos
                 .map { SubTodoFingerprint(it.description, it.isCompleted) }
                 .sortedWith(
@@ -391,6 +415,12 @@ class TodoRepository(
             completedDateTime = todo.completedDateTime,
             startTime = todo.startTime,
             endTime = todo.endTime,
+            reminderMode = todo.reminderMode,
+            reminderOffsetMinutes = todo.reminderOffsetMinutes,
+            reminderDayOffset = todo.reminderDayOffset,
+            reminderTime = todo.reminderTime,
+            reminderPersistent = todo.reminderPersistent,
+            reminderStrong = todo.reminderStrong,
             subTodos = subTodos
                 .map { SubTodoFingerprint(it.description, it.isCompleted) }
                 .sortedWith(

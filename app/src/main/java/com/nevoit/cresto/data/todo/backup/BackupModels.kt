@@ -20,7 +20,13 @@ data class TodoBackupDto(
     val flag: Int,
     val completedDateTime: String?,  // ISO_LOCAL_DATE_TIME
     val startTime: String?,     // ISO_LOCAL_TIME
-    val endTime: String?        // ISO_LOCAL_TIME
+    val endTime: String?,       // ISO_LOCAL_TIME
+    val reminderMode: String? = null,
+    val reminderOffsetMinutes: Int? = null,
+    val reminderDayOffset: Int? = null,
+    val reminderTime: String? = null, // ISO_LOCAL_TIME
+    val reminderPersistent: Boolean = false,
+    val reminderStrong: Boolean = false
 )
 
 @Serializable

@@ -7,6 +7,11 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 
+enum class TodoReminderMode {
+    BeforeStart,
+    BeforeDueDate
+}
+
 /**
  * Represents a single to-do item entity for the Room database.
  *
@@ -32,8 +37,34 @@ data class TodoItem(
     val completedDateTime: LocalDateTime? = null,
     val notes: String = "",
     val startTime: LocalTime? = null,
-    val endTime: LocalTime? = null
+    val endTime: LocalTime? = null,
+    val reminderMode: TodoReminderMode? = null,
+    val reminderOffsetMinutes: Int? = null,
+    val reminderDayOffset: Int? = null,
+    val reminderTime: LocalTime? = null,
+    val reminderPersistent: Boolean = false,
+    val reminderStrong: Boolean = false
 )
+
+fun TodoItem.reminderDateTime(): LocalDateTime? {
+    return when (reminderMode) {
+        TodoReminderMode.BeforeStart -> {
+            val date = dueDate ?: return null
+            val time = startTime ?: return null
+            val offset = reminderOffsetMinutes ?: return null
+            date.atTime(time).minusMinutes(offset.toLong())
+        }
+
+        TodoReminderMode.BeforeDueDate -> {
+            val date = dueDate ?: return null
+            val time = reminderTime ?: return null
+            val dayOffset = reminderDayOffset ?: return null
+            date.minusDays(dayOffset.toLong()).atTime(time)
+        }
+
+        null -> null
+    }
+}
 
 const val EXTRA_DELETE_ID = "extra_delete_id"
 

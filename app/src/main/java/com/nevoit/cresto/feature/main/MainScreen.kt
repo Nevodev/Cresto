@@ -58,6 +58,7 @@ import com.kyant.shapes.Capsule
 import com.nevoit.cresto.R
 import com.nevoit.cresto.data.todo.TodoItem
 import com.nevoit.cresto.data.todo.TodoViewModel
+import com.nevoit.cresto.ui.components.packed.TodoReminderConfig
 import com.nevoit.cresto.feature.settings.util.SettingsViewModel
 import com.nevoit.cresto.theme.AppButtonColors
 import com.nevoit.cresto.theme.AppColors
@@ -78,6 +79,7 @@ import com.nevoit.cresto.ui.components.glasense.GlasenseMenuItem
 import com.nevoit.cresto.ui.components.glasense.GlasenseNavigationButton
 import com.nevoit.cresto.ui.components.glasense.MenuState
 import com.nevoit.cresto.ui.components.glasense.PopupDirection
+import com.nevoit.cresto.ui.components.packed.CustomReminderPopup
 import com.nevoit.cresto.ui.components.packed.DueDatePicker
 import com.nevoit.cresto.ui.components.packed.TimePicker
 import com.nevoit.cresto.ui.modifier.pressIndentShaderEffect
@@ -160,6 +162,9 @@ fun MainScreen() {
     var sheetMinTime by remember { mutableStateOf<LocalTime?>(null) }
     var sheetMaxTime by remember { mutableStateOf<LocalTime?>(null) }
     var onTimeSelectedCallback by remember { mutableStateOf<(LocalTime?) -> Unit>({}) }
+    var isCustomReminderPopupVisible by remember { mutableStateOf(false) }
+    var reminderButtonBounds by remember { mutableStateOf(Rect.Zero) }
+    var onReminderSelectedCallback by remember { mutableStateOf<(TodoReminderConfig) -> Unit>({}) }
 
     val navigationBarHeight = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
 
@@ -575,7 +580,7 @@ fun MainScreen() {
         if (bottomSheetState.isVisible) {
             BottomSheet(
                 onDismiss = { viewModel.hideBottomSheet() },
-                onAddClick = { title, notes, flagIndex, finalDate, startTime, endTime ->
+                onAddClick = { title, notes, flagIndex, finalDate, startTime, endTime, reminder ->
                     viewModel.insert(
                         TodoItem(
                             title = title,
@@ -583,7 +588,13 @@ fun MainScreen() {
                             flag = flagIndex,
                             dueDate = finalDate,
                             startTime = startTime,
-                            endTime = endTime
+                            endTime = endTime,
+                            reminderMode = reminder?.mode,
+                            reminderOffsetMinutes = reminder?.offsetMinutes,
+                            reminderDayOffset = reminder?.dayOffset,
+                            reminderTime = reminder?.time,
+                            reminderPersistent = reminder?.persistent ?: false,
+                            reminderStrong = reminder?.strong ?: false
                         )
                     )
                 },
@@ -601,6 +612,11 @@ fun MainScreen() {
                     sheetMaxTime = maxTime
                     onTimeSelectedCallback = onSelected
                     isTimePickerVisible = true
+                },
+                onRequestCustomReminder = { bounds, onSelected ->
+                    reminderButtonBounds = bounds
+                    onReminderSelectedCallback = onSelected
+                    isCustomReminderPopupVisible = true
                 },
                 showMenu = showMenu
             )
@@ -640,6 +656,16 @@ fun MainScreen() {
                 onTimeSelectedCallback(time)
             },
             direction = PopupDirection.Down
+        )
+
+        CustomReminderPopup(
+            isVisible = isCustomReminderPopupVisible,
+            anchorBounds = reminderButtonBounds,
+            onDismiss = { isCustomReminderPopupVisible = false },
+            onConfirm = { config ->
+                onReminderSelectedCallback(config)
+                isCustomReminderPopupVisible = false
+            }
         )
     }
 }

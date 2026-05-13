@@ -1,6 +1,7 @@
 package com.nevoit.cresto.data.utils
 
 import androidx.room.TypeConverter
+import com.nevoit.cresto.data.todo.TodoReminderMode
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -45,5 +46,15 @@ class Converters {
     @TypeConverter
     fun timeToString(time: LocalTime?): String? {
         return time?.format(timeFormatter)
+    }
+
+    @TypeConverter
+    fun fromReminderMode(value: String?): TodoReminderMode? {
+        return value?.let(TodoReminderMode::valueOf)
+    }
+
+    @TypeConverter
+    fun reminderModeToString(mode: TodoReminderMode?): String? {
+        return mode?.name
     }
 }

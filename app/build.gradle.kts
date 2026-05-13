@@ -1,21 +1,19 @@
-import com.android.build.api.dsl.ApplicationExtension
 import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.util.Properties
 
-fun getVersionProps(project: Project): Properties {
-    val versionPropsFile = project.file("version.properties")
-    if (!versionPropsFile.canRead()) {
-        throw GradleException("Could not read version.properties!")
-    }
-    return Properties().apply {
-        load(FileInputStream(versionPropsFile))
-    }
+val versionPropsProvider =
+    providers.fileContents(layout.projectDirectory.file("version.properties"))
+
+val vCodeProvider = versionPropsProvider.asText.map { text ->
+    val props = Properties().apply { load(text.reader()) }
+    props.getProperty("VERSION_CODE", "1").toInt()
 }
 
-val versionProps = getVersionProps(project)
-val vCode = versionProps["VERSION_CODE"].toString().toInt()
-val vName = versionProps["VERSION_NAME"].toString()
+val vNameProvider = versionPropsProvider.asText.map { text ->
+    val props = Properties().apply { load(text.reader()) }
+    props.getProperty("VERSION_NAME", "1.0.0")
+}
 
 plugins {
     alias(libs.plugins.android.application)
@@ -25,18 +23,18 @@ plugins {
     alias(libs.plugins.aboutLibraries)
 }
 
-configure<ApplicationExtension> {
+android {
     namespace = "com.nevoit.cresto"
     compileSdk {
-        version = release(36)
+        version = release(37)
     }
 
     defaultConfig {
         applicationId = "com.nevoit.cresto"
         minSdk = 31
-        targetSdk = 36
-        versionCode = vCode
-        versionName = vName
+        targetSdk = 37
+        versionCode = vCodeProvider.get()
+        versionName = vNameProvider.get()
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         ndk {
@@ -55,27 +53,24 @@ configure<ApplicationExtension> {
         }
     }
 
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
+
     buildFeatures {
         buildConfig = true
-    }
-
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
-    }
-
-    buildFeatures {
         compose = true
     }
 }
 
 base {
-    archivesName.set("cresto-alpha${vCode}")
+    archivesName.set(vCodeProvider.map { "cresto-alpha$it" })
 }
 
 kotlin {
     compilerOptions {
-        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_11)
+        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
     }
 }
 
@@ -101,7 +96,6 @@ dependencies {
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
-    implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.lifecycle.runtime.compose)
     implementation(libs.androidx.room.runtime)
@@ -111,7 +105,6 @@ dependencies {
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.haze)
     implementation(libs.androidx.navigation.compose)
-    implementation(libs.androidx.lifecycle.runtime.compose)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.mmkv)
     implementation(libs.shapes)
@@ -126,6 +119,7 @@ dependencies {
 }
 
 tasks.register("incrementVersionCode") {
+    description = "Increments the version code in version.properties after a release build."
     val versionPropsFile = layout.projectDirectory.file("version.properties").asFile
 
     outputs.upToDateWhen { false }
@@ -153,14 +147,10 @@ tasks.register("incrementVersionCode") {
     }
 }
 
-tasks.configureEach {
-    val taskName = name.lowercase()
-    val isRelease = taskName.contains("release")
-    val isPackageTask = taskName.contains("assemble") || taskName.contains("bundle")
-
-    if (isRelease && isPackageTask) {
-        dependsOn("incrementVersionCode")
-    }
+tasks.matching { task ->
+    task.name == "assembleRelease" || task.name == "bundleRelease"
+}.configureEach {
+    finalizedBy("incrementVersionCode")
 }
 
 composeCompiler {

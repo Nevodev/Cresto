@@ -49,6 +49,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.kyant.shapes.Capsule
 import com.nevoit.cresto.R
+import com.nevoit.cresto.data.todo.TodoReminderMode
 import com.nevoit.cresto.theme.AppButtonColors
 import com.nevoit.cresto.theme.AppColors
 import com.nevoit.cresto.theme.AppSpecs
@@ -63,6 +64,7 @@ import com.nevoit.cresto.ui.components.glasense.extend.overscrollSpacer
 import com.nevoit.cresto.ui.components.packed.ConfigItem
 import com.nevoit.cresto.ui.components.packed.ConfigItemContainer
 import com.nevoit.cresto.ui.components.packed.ConfigTextField
+import com.nevoit.cresto.ui.components.packed.TodoReminderConfig
 import com.nevoit.cresto.ui.components.packed.VGap
 import java.time.LocalDate
 import java.time.LocalTime
@@ -83,9 +85,16 @@ fun AdvancedPage(
     onAllDayEnabledChange: (Boolean) -> Unit,
     onRangeStartTimeChange: (LocalTime?) -> Unit,
     onRangeEndTimeChange: (LocalTime?) -> Unit,
+    reminderConfig: TodoReminderConfig?,
+    onReminderConfigChange: (TodoReminderConfig?) -> Unit,
+    reminderPersistent: Boolean,
+    reminderStrong: Boolean,
+    onReminderPersistentChange: (Boolean) -> Unit,
+    onReminderStrongChange: (Boolean) -> Unit,
     showMenu: (anchorBounds: Rect, items: List<GlasenseMenuItem>) -> Unit,
     onRequestCustomDate: (Rect, LocalDate?, (LocalDate?) -> Unit) -> Unit,
     onRequestCustomTime: (Rect, LocalTime?, LocalTime?, LocalTime?, (LocalTime?) -> Unit) -> Unit,
+    onRequestCustomReminder: (Rect) -> Unit,
     navigateToBasic: () -> Unit
 ) {
     val navigationBarHeight = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
@@ -94,7 +103,6 @@ fun AdvancedPage(
     var rangeStartTimeButtonBounds by remember { mutableStateOf(Rect.Zero) }
     var rangeEndTimeButtonBounds by remember { mutableStateOf(Rect.Zero) }
     var reminderButtonBounds by remember { mutableStateOf(Rect.Zero) }
-    var reminderTimingText by remember { mutableStateOf<String?>(null) }
 
     val noneText = stringResource(R.string.none)
     val customText = stringResource(R.string.custom)
@@ -104,8 +112,35 @@ fun AdvancedPage(
     val thirtyMinutesBeforeText = stringResource(R.string.reminder_before_30_minutes)
     val oneHourBeforeText = stringResource(R.string.reminder_before_1_hour)
     val twoHoursBeforeText = stringResource(R.string.reminder_before_2_hours)
+    val reminderDueDay = stringResource(R.string.reminder_due_day)
+    val reminderDaysBeforeFormat = stringResource(R.string.reminder_days_before_format)
     val reminderIcon = painterResource(R.drawable.ic_alarm)
     val noneReminderIcon = painterResource(R.drawable.ic_alarm_slash)
+
+    val reminderTimingText = remember(
+        reminderConfig,
+        noneText,
+        allDayMorningText,
+        oneMinuteBeforeText,
+        fiveMinutesBeforeText,
+        thirtyMinutesBeforeText,
+        oneHourBeforeText,
+        twoHoursBeforeText,
+        reminderDueDay,
+        reminderDaysBeforeFormat
+    ) {
+        reminderConfig?.displayText(
+            noneText = noneText,
+            allDayMorningText = allDayMorningText,
+            oneMinuteBeforeText = oneMinuteBeforeText,
+            fiveMinutesBeforeText = fiveMinutesBeforeText,
+            thirtyMinutesBeforeText = thirtyMinutesBeforeText,
+            oneHourBeforeText = oneHourBeforeText,
+            twoHoursBeforeText = twoHoursBeforeText,
+            dueDayText = reminderDueDay,
+            daysBeforeFormat = reminderDaysBeforeFormat
+        ) ?: noneText
+    }
 
     val reminderMenuItems = remember(
         isAllDayEnabled,
@@ -125,43 +160,93 @@ fun AdvancedPage(
                 add(
                     MenuItemData(
                         text = allDayMorningText,
-                        onClick = { reminderTimingText = allDayMorningText })
+                        onClick = {
+                            onReminderConfigChange(
+                                TodoReminderConfig(
+                                    mode = TodoReminderMode.BeforeDueDate,
+                                    dayOffset = 0,
+                                    time = LocalTime.of(8, 0)
+                                )
+                            )
+                        })
                 )
             } else {
                 add(
                     MenuItemData(
                         text = oneMinuteBeforeText,
-                        onClick = { reminderTimingText = oneMinuteBeforeText })
+                        onClick = {
+                            onReminderConfigChange(
+                                TodoReminderConfig(
+                                    mode = TodoReminderMode.BeforeStart,
+                                    offsetMinutes = 1
+                                )
+                            )
+                        })
                 )
                 add(
                     MenuItemData(
                         text = fiveMinutesBeforeText,
-                        onClick = { reminderTimingText = fiveMinutesBeforeText })
+                        onClick = {
+                            onReminderConfigChange(
+                                TodoReminderConfig(
+                                    mode = TodoReminderMode.BeforeStart,
+                                    offsetMinutes = 5
+                                )
+                            )
+                        })
                 )
                 add(
                     MenuItemData(
                         text = thirtyMinutesBeforeText,
-                        onClick = { reminderTimingText = thirtyMinutesBeforeText })
+                        onClick = {
+                            onReminderConfigChange(
+                                TodoReminderConfig(
+                                    mode = TodoReminderMode.BeforeStart,
+                                    offsetMinutes = 30
+                                )
+                            )
+                        })
                 )
                 add(
                     MenuItemData(
                         text = oneHourBeforeText,
-                        onClick = { reminderTimingText = oneHourBeforeText })
+                        onClick = {
+                            onReminderConfigChange(
+                                TodoReminderConfig(
+                                    mode = TodoReminderMode.BeforeStart,
+                                    offsetMinutes = 60
+                                )
+                            )
+                        })
                 )
                 add(
                     MenuItemData(
                         text = twoHoursBeforeText,
-                        onClick = { reminderTimingText = twoHoursBeforeText })
+                        onClick = {
+                            onReminderConfigChange(
+                                TodoReminderConfig(
+                                    mode = TodoReminderMode.BeforeStart,
+                                    offsetMinutes = 120
+                                )
+                            )
+                        })
                 )
             }
             add(MenuDivider)
-            add(MenuItemData(text = customText, onClick = { reminderTimingText = customText }))
+            add(
+                MenuItemData(
+                    text = customText,
+                    onClick = {
+                        onRequestCustomReminder(reminderButtonBounds)
+                    }
+                )
+            )
             add(MenuDivider)
             add(
                 MenuItemData(
                     text = noneText,
                     icon = noneReminderIcon,
-                    onClick = { reminderTimingText = noneText }
+                    onClick = { onReminderConfigChange(null) }
                 )
             )
         }
@@ -451,7 +536,7 @@ fun AdvancedPage(
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Text(
-                                    text = reminderTimingText ?: noneText,
+                                    text = reminderTimingText,
                                     fontSize = 16.sp,
                                     lineHeight = 18.sp,
                                     fontWeight = FontWeight.Normal,
@@ -465,8 +550,8 @@ fun AdvancedPage(
                         ConfigItem(title = stringResource(R.string.persistent_reminder)) {
                             GlasenseSwitch(
                                 backgroundColor = AppColors.cardBackgroundElevated,
-                                checked = false,
-                                onCheckedChange = { })
+                                checked = reminderPersistent,
+                                onCheckedChange = onReminderPersistentChange)
                         }
                         Spacer(modifier = Modifier.height(8.dp))
                         ZeroHeightDivider()
@@ -474,8 +559,8 @@ fun AdvancedPage(
                         ConfigItem(title = stringResource(R.string.strong_reminder)) {
                             GlasenseSwitch(
                                 backgroundColor = AppColors.cardBackgroundElevated,
-                                checked = false,
-                                onCheckedChange = { })
+                                checked = reminderStrong,
+                                onCheckedChange = onReminderStrongChange)
                         }
                     }
                 }
@@ -533,6 +618,47 @@ fun AdvancedPage(
                 modifier = Modifier.align(Alignment.Center),
                 style = MaterialTheme.typography.headlineSmall
             )
+        }
+    }
+}
+
+private fun TodoReminderConfig.displayText(
+    noneText: String,
+    allDayMorningText: String,
+    oneMinuteBeforeText: String,
+    fiveMinutesBeforeText: String,
+    thirtyMinutesBeforeText: String,
+    oneHourBeforeText: String,
+    twoHoursBeforeText: String,
+    dueDayText: String,
+    daysBeforeFormat: String
+): String {
+    return when (mode) {
+        TodoReminderMode.BeforeStart -> when (offsetMinutes) {
+            1 -> oneMinuteBeforeText
+            5 -> fiveMinutesBeforeText
+            30 -> thirtyMinutesBeforeText
+            60 -> oneHourBeforeText
+            120 -> twoHoursBeforeText
+            null -> noneText
+            else -> {
+                val hours = offsetMinutes / 60
+                val minutes = offsetMinutes % 60
+                buildList {
+                    if (hours > 0) add("${hours}h")
+                    if (minutes > 0) add("${minutes}m")
+                }.joinToString(" ").ifBlank { noneText }
+            }
+        }
+
+        TodoReminderMode.BeforeDueDate -> {
+            val selectedTime = time ?: return noneText
+            if (dayOffset == 0 && selectedTime == LocalTime.of(8, 0)) {
+                allDayMorningText
+            } else {
+                val dayText = if (dayOffset == 0) dueDayText else daysBeforeFormat.format(dayOffset)
+                "$dayText ${selectedTime.format(DateTimeFormatter.ofPattern("HH:mm"))}"
+            }
         }
     }
 }

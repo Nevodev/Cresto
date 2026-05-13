@@ -212,6 +212,12 @@
     <string name="reminder_before_30_minutes">30 minutes before</string>
     <string name="reminder_before_1_hour">1 hour before</string>
     <string name="reminder_before_2_hours">2 hours before</string>
+    <string name="custom_reminder">Custom Reminder</string>
+    <string name="by_hour">By Hour</string>
+    <string name="by_day">By Day</string>
+    <string name="reminder_before_prefix">Before</string>
+    <string name="reminder_due_day">Due day</string>
+    <string name="reminder_days_before_format">%1$d days before</string>
     <string name="persistent_reminder">Persistent Reminder</string>
     <string name="strong_reminder">Strong Reminder</string>
     <string name="repeat">Repeat</string>
