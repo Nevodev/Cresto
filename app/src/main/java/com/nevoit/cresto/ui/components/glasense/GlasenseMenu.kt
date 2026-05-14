@@ -1,6 +1,8 @@
 package com.nevoit.cresto.ui.components.glasense
 
 import android.graphics.BlurMaskFilter
+import android.graphics.RenderEffect
+import android.graphics.RuntimeShader
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.spring
@@ -37,11 +39,9 @@ import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Outline
 import androidx.compose.ui.graphics.Paint
-import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.graphics.TileMode
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.asAndroidPath
-import androidx.compose.ui.graphics.drawscope.Fill
+import androidx.compose.ui.graphics.asComposeRenderEffect
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.nativeCanvas
@@ -61,6 +61,7 @@ import androidx.compose.ui.zIndex
 import com.kyant.backdrop.backdrops.LayerBackdrop
 import com.kyant.backdrop.drawPlainBackdrop
 import com.kyant.backdrop.effects.blur
+import com.kyant.backdrop.effects.effect
 import com.kyant.shapes.RoundedRectangle
 import com.nevoit.cresto.R
 import com.nevoit.cresto.theme.AppColors
@@ -233,6 +234,19 @@ fun GlasenseMenu(
 
     val shape = RoundedCornerShape(16.dp)
 
+    val curve = if (darkTheme) Recipes.RegularDark else Recipes.RegularLight
+    val shader = RuntimeShader(AGSL_CODE)
+
+    shader.setFloatUniform("curvePoints", curve.p0, curve.p1, curve.p2, curve.p3)
+    shader.setFloatUniform("intensity", curve.intensity)
+    shader.setFloatUniform("saturation", curve.saturation)
+    shader.setFloatUniform("brightness", curve.brightness)
+
+    val renderEffect = RenderEffect.createRuntimeShaderEffect(
+        shader,
+        "image"
+    ).asComposeRenderEffect()
+
     if (menuState.isVisible) {
         BackHandler { onDismiss() }
         Box(
@@ -312,54 +326,9 @@ fun GlasenseMenu(
                         alpha = alphaAni.value
                     },
                     effects = {
-                        blur(64f.dp.toPx(), TileMode.Mirror)
-                    },
-                    // Custom drawing on top of the blurred background to create stunning colors.
-                    onDrawSurface = {
-                        // The drawing logic is different for light and dark themes.
-                        if (!darkTheme) {
-                            drawRect(
-                                brush = SolidColor(Color(0xFF272727).copy(alpha = 0.2f)),
-                                style = Fill,
-                                blendMode = BlendMode.Luminosity,
-                            )
-                            drawRect(
-                                brush = SolidColor(Color(0xFF252525).copy(alpha = 1f)),
-                                style = Fill,
-                                blendMode = BlendMode.Plus,
-                            )
-                            drawRect(
-                                brush = SolidColor(Color(0xFF555555).copy(alpha = 0.5f)),
-                                style = Fill,
-                                blendMode = BlendMode.ColorDodge,
-                            )
-                            drawRect(
-                                brush = SolidColor(Color(0xFFFFFFFF).copy(alpha = 0.2f)),
-                                style = Fill,
-                                blendMode = BlendMode.SrcOver,
-                            )
-                        } else {
-                            drawRect(
-                                brush = SolidColor(Color(0xFF000000).copy(alpha = 0.5f)),
-                                style = Fill,
-                                blendMode = BlendMode.Luminosity,
-                            )
-                            drawRect(
-                                brush = SolidColor(Color(0xFF252525).copy(alpha = 1f)),
-                                style = Fill,
-                                blendMode = BlendMode.Plus,
-                            )
-                            drawRect(
-                                brush = SolidColor(Color(0xFF4B4B4B).copy(alpha = 0.5f)),
-                                style = Fill,
-                                blendMode = BlendMode.ColorDodge,
-                            )
-                            drawRect(
-                                brush = SolidColor(Color(0xFF000000).copy(alpha = 0.3f)),
-                                style = Fill,
-                                blendMode = BlendMode.SrcOver,
-                            )
-                        }
+                        padding = 50.dp.toPx() * 2
+                        effect(renderEffect)
+                        blur(50.dp.toPx())
                     }
                 )
                 .glasenseHighlight(16.dp)
