@@ -18,8 +18,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
@@ -104,17 +104,15 @@ fun AddTodoSheet(
 ) {
     // State for tracking the currently selected button (due date, flag, etc.)
     var selectedButton by remember { mutableStateOf(SelectedButton.NONE) }
-
-    val state = rememberTextFieldState()
+    var title by remember { mutableStateOf("") }
     var selectedIndex by remember { mutableIntStateOf(0) }
 
     val keyboardController = LocalSoftwareKeyboardController.current
 
     val onAdd = {
-        val text = state.text.toString()
-        if (text.isNotBlank()) {
+        if (title.isNotBlank()) {
             keyboardController?.hide()
-            onAddClick(text, selectedIndex, finalDate)
+            onAddClick(title, selectedIndex, finalDate)
         }
     }
 
@@ -193,15 +191,17 @@ fun AddTodoSheet(
             contentAlignment = Alignment.CenterStart
         ) {
             BasicTextField(
-                state = state,
+                value = title,
+                onValueChange = { title = it },
                 modifier = Modifier
-                    .padding(16.dp, 0.dp, 16.dp, 0.dp)
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
                     .fillMaxWidth()
                     .focusRequester(focusRequester),
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-                onKeyboardAction = { onAdd() },
+                keyboardActions = KeyboardActions(onDone = { onAdd() }),
                 textStyle = MaterialTheme.typography.bodyLarge.copy(color = AppColors.content),
-                cursorBrush = SolidColor(AppColors.primary)
+                cursorBrush = SolidColor(AppColors.primary),
+                singleLine = true
             )
         }
         VGap()
