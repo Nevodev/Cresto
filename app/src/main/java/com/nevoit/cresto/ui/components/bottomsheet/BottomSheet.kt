@@ -54,6 +54,7 @@ import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.nevoit.cresto.R
+import com.nevoit.cresto.data.todo.TodoReminderMode
 import com.nevoit.cresto.data.todo.TodoViewModel
 import com.nevoit.cresto.ui.components.packed.TodoReminderConfig
 import com.nevoit.cresto.theme.AppColors
@@ -75,6 +76,27 @@ import kotlin.time.Duration.Companion.milliseconds
 
 enum class SheetInputMode { Basic, Advanced }
 
+private fun defaultRangeStartTime(now: LocalTime = LocalTime.now()): LocalTime {
+    val hour = when {
+        now.hour >= 23 -> 23
+        now.minute >= 30 -> now.hour + 1
+        else -> now.hour
+    }
+    return LocalTime.of(hour, 0)
+}
+
+private fun defaultRangeEndTime(startTime: LocalTime): LocalTime {
+    return if (startTime.hour >= 23) {
+        LocalTime.of(23, 59)
+    } else {
+        startTime.plusHours(1)
+    }
+}
+
+private fun TodoReminderConfig?.compatibleWithAllDay(isAllDayEnabled: Boolean): TodoReminderConfig? {
+    return if (isAllDayEnabled && this?.mode == TodoReminderMode.BeforeStart) null else this
+}
+
 /**
  * A composable function that displays a bottom sheet with custom animations.
  *
@@ -91,7 +113,7 @@ fun BottomSheet(
     showMenu: (anchorBounds: Rect, items: List<GlasenseMenuItem>) -> Unit,
     onRequestCustomDate: (Rect, LocalDate?, (LocalDate?) -> Unit) -> Unit,
     onRequestCustomTime: (Rect, LocalTime?, LocalTime?, LocalTime?, (LocalTime?) -> Unit) -> Unit,
-    onRequestCustomReminder: (Rect, (TodoReminderConfig) -> Unit) -> Unit
+    onRequestCustomReminder: (Rect, Boolean, (TodoReminderConfig) -> Unit) -> Unit
 ) {
     val scope = rememberCoroutineScope()
 
@@ -228,8 +250,9 @@ fun BottomSheet(
     var notesText by remember { mutableStateOf("") }
     var isTimeRangeEnabled by remember { mutableStateOf(false) }
     var isAllDayEnabled by remember { mutableStateOf(true) }
-    var rangeStartTime by remember { mutableStateOf(LocalTime.of(13, 0)) }
-    var rangeEndTime by remember { mutableStateOf(LocalTime.of(14, 0)) }
+    val initialRangeStartTime = remember { defaultRangeStartTime() }
+    var rangeStartTime by remember { mutableStateOf(initialRangeStartTime) }
+    var rangeEndTime by remember { mutableStateOf(defaultRangeEndTime(initialRangeStartTime)) }
     var reminderConfig by remember { mutableStateOf<TodoReminderConfig?>(null) }
     var reminderPersistent by remember { mutableStateOf(false) }
     var reminderStrong by remember { mutableStateOf(false) }
@@ -449,7 +472,7 @@ fun BottomSheet(
                             val reminder = reminderConfig?.copy(
                                 persistent = reminderPersistent,
                                 strong = reminderStrong
-                            )
+                            ).compatibleWithAllDay(isAllDayEnabled)
                             onAddClick(title, notesText, flagIndex, date, startTime, endTime, reminder)
                         }
                     }, onClose = {
@@ -494,11 +517,17 @@ fun BottomSheet(
                         rangeEndTime = rangeEndTime,
                         onTimeRangeEnabledChange = { enabled ->
                             isTimeRangeEnabled = enabled
-                            if (enabled) isAllDayEnabled = false
+                            if (enabled) {
+                                isAllDayEnabled = false
+                                rangeEndTime = defaultRangeEndTime(rangeStartTime)
+                            }
                         },
                         onAllDayEnabledChange = { enabled ->
                             isAllDayEnabled = enabled
-                            if (enabled) isTimeRangeEnabled = false
+                            if (enabled) {
+                                isTimeRangeEnabled = false
+                                reminderConfig = reminderConfig.compatibleWithAllDay(isAllDayEnabled = true)
+                            }
                         },
                         onRangeStartTimeChange = { newTime ->
                             if (newTime != null) {
@@ -522,8 +551,8 @@ fun BottomSheet(
                         onRequestCustomDate = onRequestCustomDate,
                         onRequestCustomTime = onRequestCustomTime,
                         onRequestCustomReminder = { bounds ->
-                            onRequestCustomReminder(bounds) { config ->
-                                reminderConfig = config
+                            onRequestCustomReminder(bounds, isAllDayEnabled) { config ->
+                                reminderConfig = config.compatibleWithAllDay(isAllDayEnabled)
                             }
                         },
                         navigateToBasic = {

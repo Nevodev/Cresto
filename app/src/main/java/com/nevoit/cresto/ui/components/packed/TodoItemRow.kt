@@ -79,9 +79,11 @@ import com.nevoit.cresto.ui.components.glasense.SwipeableListState
 import com.nevoit.cresto.ui.components.glasense.extend.LineThroughBasicTextField
 import com.nevoit.cresto.ui.components.glasense.extend.LineThroughText
 import com.nevoit.glasense.theme.Yellow500
+import kotlinx.coroutines.delay
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
+import kotlin.time.Duration.Companion.milliseconds
 
 private val thisYearFormatter = DateTimeFormatter.ofPattern("M/d")
 private val otherYearFormatter = DateTimeFormatter.ofPattern("yyyy/M/d")
@@ -146,8 +148,18 @@ fun TodoItemRow(
                     .padding(vertical = 12.dp)
             )
         } else {
-            val today = remember { LocalDate.now() }
-            val nowTime = remember { LocalTime.now() }
+            var today by remember { mutableStateOf(LocalDate.now()) }
+            var nowTime by remember { mutableStateOf(LocalTime.now()) }
+
+            LaunchedEffect(Unit) {
+                while (true) {
+                    val delayToNextMinute = 60_000L - (System.currentTimeMillis() % 60_000L) + 100L
+                    delay(delayToNextMinute.milliseconds)
+                    today = LocalDate.now()
+                    nowTime = LocalTime.now()
+                }
+            }
+
             val isToday = itemTodo.dueDate == today
             val isExpired = itemTodo.dueDate?.let { it < today } == true
 
@@ -195,7 +207,7 @@ fun TodoItemRow(
                         when {
                             isOverdueTime -> "$overdueText · $timeString"
                             isInProgressTime -> "$inProgressText · $timeString"
-                            else -> "$baseText · $timeString"
+                            else -> timeString
                         }
                     } else {
                         baseText

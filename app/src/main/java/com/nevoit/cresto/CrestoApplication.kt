@@ -2,6 +2,7 @@ package com.nevoit.cresto
 
 import android.app.Application
 import com.nevoit.cresto.data.todo.appModule
+import com.nevoit.cresto.data.todo.reminder.TodoReminderNotifications
 import com.tencent.mmkv.MMKV
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.context.GlobalContext.startKoin
@@ -13,6 +14,7 @@ class CrestoApplication : Application() {
     override fun onCreate() {
         super.onCreate()
         MMKV.initialize(this)
+        TodoReminderNotifications.createChannel(this)
         startKoin {
             androidContext(this@CrestoApplication)
 

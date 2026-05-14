@@ -82,9 +82,9 @@ fun sortTodos(
                     -1
                 } else {
                     val flagCompare = if (currentSortOrder == SortOrder.ASCENDING) {
-                        flagA.compareTo(flagB)
-                    } else {
                         flagB.compareTo(flagA)
+                    } else {
+                        flagA.compareTo(flagB)
                     }
                     if (flagCompare != 0) flagCompare else compareByBaseDateTime
                 }

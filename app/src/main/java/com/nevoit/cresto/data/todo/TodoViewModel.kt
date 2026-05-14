@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.nevoit.cresto.data.statistics.DailyStat
 import com.nevoit.cresto.data.statistics.TodoStat
+import com.nevoit.cresto.data.todo.reminder.TodoAlarmScheduler
 import com.nevoit.cresto.data.utils.EventItem
 import com.tencent.mmkv.MMKV
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -40,7 +41,10 @@ data class ImportPreviewUiState(
     val errorMessage: String? = null
 )
 
-class TodoViewModel(private val repository: TodoRepository) : ViewModel() {
+class TodoViewModel(
+    private val repository: TodoRepository,
+    private val alarmScheduler: TodoAlarmScheduler
+) : ViewModel() {
     val allTodos: StateFlow<List<TodoItemWithSubTodos>> = repository.allTodos.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
@@ -188,37 +192,43 @@ class TodoViewModel(private val repository: TodoRepository) : ViewModel() {
 
     /*select*/
     fun insert(item: TodoItem) = viewModelScope.launch {
-        repository.insert(item)
+        val id = repository.insert(item).toInt()
+        alarmScheduler.schedule(item.copy(id = id))
     }
 
     fun update(item: TodoItem) = viewModelScope.launch {
-        viewModelScope.launch {
-            val itemToPersist = when {
-                item.isCompleted && item.completedDateTime == null -> {
-                    item.copy(
-                        completedDateTime = LocalDateTime.now()
-                    )
-                }
+        alarmScheduler.cancel(item)
 
-                !item.isCompleted -> {
-                    item.copy(
-                        completedDateTime = null
-                    )
-                }
-
-                else -> item
+        val itemToPersist = when {
+            item.isCompleted && item.completedDateTime == null -> {
+                item.copy(
+                    completedDateTime = LocalDateTime.now()
+                )
             }
-            repository.update(itemToPersist)
-        }
 
+            !item.isCompleted -> {
+                item.copy(
+                    completedDateTime = null
+                )
+            }
+
+            else -> item
+        }
+        repository.update(itemToPersist)
+
+        if (!itemToPersist.isCompleted) {
+            alarmScheduler.schedule(itemToPersist)
+        }
     }
 
     fun delete(item: TodoItem) = viewModelScope.launch {
+        alarmScheduler.cancel(item)
         repository.delete(item)
     }
 
     fun deleteById(id: Int) {
         viewModelScope.launch {
+            alarmScheduler.cancel(id)
             repository.deleteById(id)
         }
     }

@@ -16,7 +16,7 @@ import java.time.LocalDateTime
 interface TodoDao {
     // Inserts a todo item into the table, replacing it if it already exists.
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertTodo(item: TodoItem)
+    suspend fun insertTodo(item: TodoItem): Long
 
     // Inserts a list of todo items, ignoring any that already exist.
     @Insert(onConflict = OnConflictStrategy.IGNORE)
@@ -145,6 +145,9 @@ interface TodoDao {
 
     @Query("SELECT * FROM todo_items ORDER BY id ASC")
     suspend fun getAllTodosSnapshot(): List<TodoItem>
+
+    @Query("SELECT * FROM todo_items WHERE isCompleted = 0 AND reminderMode IS NOT NULL")
+    suspend fun getReminderTodosSnapshot(): List<TodoItem>
 
     @Transaction
     @Query("SELECT * FROM todo_items ORDER BY id ASC")

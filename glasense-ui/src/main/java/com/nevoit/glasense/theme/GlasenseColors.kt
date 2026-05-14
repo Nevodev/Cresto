@@ -33,7 +33,13 @@ data class GlasenseColors(
     val contentVariant: Color,
 
     val error: Color,
-    val onError: Color
+    val onError: Color,
+
+    // for segmented control
+    val segmentedControlBackground: Color = scrimNormal,
+    val onSegmentedControlBackground: Color = contentVariant,
+    val segmentedControlIndicator: Color,
+    val onSegmentedControlIndicator: Color = content
 )
 
 val GlasenseLightPalette = GlasenseColors(
@@ -54,7 +60,8 @@ val GlasenseLightPalette = GlasenseColors(
     content = Color.Black,
     contentVariant = Color.Black.copy(.5f),
     error = Red500,
-    onError = Color.White
+    onError = Color.White,
+    segmentedControlIndicator = Color.White
 )
 
 val GlasenseDarkPalette = GlasenseColors(
@@ -75,7 +82,8 @@ val GlasenseDarkPalette = GlasenseColors(
     content = Color.White,
     contentVariant = Color.White.copy(.5f),
     error = Red500,
-    onError = Color.White
+    onError = Color.White,
+    segmentedControlIndicator = Color(0xFF636366)
 )
 
 fun glasenseColorsFromScheme(scheme: ColorScheme, isDark: Boolean): GlasenseColors {
@@ -110,7 +118,11 @@ fun glasenseColorsFromScheme(scheme: ColorScheme, isDark: Boolean): GlasenseColo
         content = contentColor,
         contentVariant = contentColor.copy(.5f),
         error = scheme.error,
-        onError = scheme.onError
+        onError = scheme.onError,
+        segmentedControlBackground = scheme.secondaryContainer,
+        onSegmentedControlBackground = scheme.onSecondaryContainer,
+        segmentedControlIndicator = scheme.secondary,
+        onSegmentedControlIndicator = scheme.onSecondary
     )
 }
 

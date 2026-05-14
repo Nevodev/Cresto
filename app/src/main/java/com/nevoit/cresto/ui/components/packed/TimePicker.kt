@@ -78,8 +78,10 @@ fun TimePicker(
     val validHours = remember(minHour, maxHour) { (minHour..maxHour).toList() }
 
     val coercedHour = selectedHour.coerceIn(minHour, maxHour)
-    val rawMinMinute = if (effectiveMinTime != null && coercedHour == effectiveMinTime.hour) effectiveMinTime.minute else 0
-    val rawMaxMinute = if (effectiveMaxTime != null && coercedHour == effectiveMaxTime.hour) effectiveMaxTime.minute else 59
+    val rawMinMinute =
+        if (effectiveMinTime != null && coercedHour == effectiveMinTime.hour) effectiveMinTime.minute else 0
+    val rawMaxMinute =
+        if (effectiveMaxTime != null && coercedHour == effectiveMaxTime.hour) effectiveMaxTime.minute else 59
     val minMinute = minOf(rawMinMinute, rawMaxMinute)
     val maxMinute = maxOf(rawMinMinute, rawMaxMinute)
     val validMinutes = remember(minMinute, maxMinute) { (minMinute..maxMinute).toList() }
@@ -87,7 +89,8 @@ fun TimePicker(
 
     val locale = Locale.ROOT
     val hourOptions = remember(validHours) { validHours.map { String.format(locale, "%02d", it) } }
-    val minuteOptions = remember(validMinutes) { validMinutes.map { String.format(locale, "%02d", it) } }
+    val minuteOptions =
+        remember(validMinutes) { validMinutes.map { String.format(locale, "%02d", it) } }
 
     val shape = AppSpecs.cardShape
     val color = AppColors.scrimNormal
@@ -114,7 +117,7 @@ fun TimePicker(
                 modifier = Modifier
                     .width(48.dp)
                     .height(48.dp),
-                colors = AppButtonColors.secondary(),
+                colors = AppButtonColors.action(),
             ) {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_cross),

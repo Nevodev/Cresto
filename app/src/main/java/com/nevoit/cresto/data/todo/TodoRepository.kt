@@ -48,8 +48,8 @@ class TodoRepository(
         return todoDao.getTodoWithSubTodosById(id)
     }
 
-    suspend fun insert(item: TodoItem) {
-        todoDao.insertTodo(item)
+    suspend fun insert(item: TodoItem): Long {
+        return todoDao.insertTodo(item)
     }
 
     suspend fun insertAll(items: List<TodoItem>) {

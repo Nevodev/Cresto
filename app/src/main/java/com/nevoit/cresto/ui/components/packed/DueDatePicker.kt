@@ -133,7 +133,7 @@ fun DueDatePicker(
                 modifier = Modifier
                     .width(48.dp)
                     .height(48.dp),
-                colors = AppButtonColors.secondary(),
+                colors = AppButtonColors.action(),
             ) {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_cross),

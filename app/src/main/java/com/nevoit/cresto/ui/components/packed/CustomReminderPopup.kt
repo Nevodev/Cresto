@@ -40,6 +40,8 @@ import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.nativePaint
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -78,10 +80,13 @@ data class TodoReminderConfig(
 fun CustomReminderPopup(
     isVisible: Boolean,
     anchorBounds: Rect,
+    isAllDayEnabled: Boolean,
     onDismiss: () -> Unit,
     onConfirm: (TodoReminderConfig) -> Unit
 ) {
-    var selectedMode by remember { mutableStateOf(ReminderCustomMode.Hour) }
+    var selectedMode by remember(isAllDayEnabled) {
+        mutableStateOf(if (isAllDayEnabled) ReminderCustomMode.Day else ReminderCustomMode.Hour)
+    }
     var selectedHourBefore by remember { mutableIntStateOf(1) }
     var selectedMinuteBefore by remember { mutableIntStateOf(0) }
     var selectedDayBefore by remember { mutableIntStateOf(0) }
@@ -123,7 +128,7 @@ fun CustomReminderPopup(
                 modifier = Modifier
                     .width(48.dp)
                     .height(48.dp),
-                colors = AppButtonColors.secondary(),
+                colors = AppButtonColors.action(),
             ) {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_cross),
@@ -177,12 +182,14 @@ fun CustomReminderPopup(
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        CustomReminderSegmentedControl(
-            selectedMode = selectedMode,
-            onModeSelected = { selectedMode = it }
-        )
+        if (!isAllDayEnabled) {
+            CustomReminderSegmentedControl(
+                selectedMode = selectedMode,
+                onModeSelected = { selectedMode = it }
+            )
 
-        Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(12.dp))
+        }
 
         Box {
             Row(
@@ -296,14 +303,15 @@ private fun CustomReminderSegmentedControl(
 
     val darkTheme = isAppInDarkTheme()
 
+    val indicatorColor = AppColors.segmentedControlIndicator
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .clip(Capsule())
-            .background(AppColors.scrimNormal)
+            .background(AppColors.segmentedControlBackground)
             .padding(4.dp)
             .drawWithContent {
-                val indicatorColor = if (darkTheme) Color(0xFF636366) else Color.White
                 val shadowColor = Color.Black.copy(alpha = 0.08f)
                 val spacing = segmentSpacing.toPx()
                 val indicatorWidth = (size.width - spacing) / 2f
@@ -385,24 +393,32 @@ private fun CustomReminderSegment(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val fontColor =
+        if (selected) AppColors.onSegmentedControlIndicator else AppColors.onSegmentedControlBackground
+
+    val hapticController = LocalHapticFeedback.current
+
     Box(
         modifier = modifier
             .clip(Capsule())
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
                 indication = null,
-                onClick = onClick
+                onClick = {
+                    hapticController.performHapticFeedback(HapticFeedbackType.ContextClick)
+                    onClick()
+                }
             )
             .defaultMinSize(minHeight = 32.dp)
-            .padding(horizontal = 12.dp, vertical = 8.dp),
+            .padding(horizontal = 12.dp, vertical = 6.dp),
         contentAlignment = Alignment.Center
     ) {
         Text(
             text = text,
-            fontSize = 16.sp,
-            lineHeight = 18.sp,
+            fontSize = 13.sp,
+            lineHeight = 14.sp,
             fontWeight = if (selected) FontWeight.Medium else FontWeight.Normal,
-            color = if (selected) AppColors.content else AppColors.contentVariant
+            color = fontColor
         )
     }
 }

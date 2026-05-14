@@ -26,6 +26,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -157,6 +159,7 @@ fun MainScreen() {
     var sheetFinalDate by remember { mutableStateOf<LocalDate?>(null) }
     var onDateSelectedCallback by remember { mutableStateOf<(LocalDate?) -> Unit>({}) }
     var isTimePickerVisible by remember { mutableStateOf(false) }
+    var timePickerRequestKey by remember { mutableIntStateOf(0) }
     var timeButtonBounds by remember { mutableStateOf(Rect.Zero) }
     var sheetFinalTime by remember { mutableStateOf<LocalTime?>(null) }
     var sheetMinTime by remember { mutableStateOf<LocalTime?>(null) }
@@ -164,6 +167,7 @@ fun MainScreen() {
     var onTimeSelectedCallback by remember { mutableStateOf<(LocalTime?) -> Unit>({}) }
     var isCustomReminderPopupVisible by remember { mutableStateOf(false) }
     var reminderButtonBounds by remember { mutableStateOf(Rect.Zero) }
+    var sheetReminderIsAllDay by remember { mutableStateOf(true) }
     var onReminderSelectedCallback by remember { mutableStateOf<(TodoReminderConfig) -> Unit>({}) }
 
     val navigationBarHeight = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
@@ -606,6 +610,7 @@ fun MainScreen() {
                     isDatePickerVisible = true
                 },
                 onRequestCustomTime = { bounds, initialTime, minTime, maxTime, onSelected ->
+                    timePickerRequestKey++
                     timeButtonBounds = bounds
                     sheetFinalTime = initialTime
                     sheetMinTime = minTime
@@ -613,8 +618,9 @@ fun MainScreen() {
                     onTimeSelectedCallback = onSelected
                     isTimePickerVisible = true
                 },
-                onRequestCustomReminder = { bounds, onSelected ->
+                onRequestCustomReminder = { bounds, isAllDayEnabled, onSelected ->
                     reminderButtonBounds = bounds
+                    sheetReminderIsAllDay = isAllDayEnabled
                     onReminderSelectedCallback = onSelected
                     isCustomReminderPopupVisible = true
                 },
@@ -642,25 +648,28 @@ fun MainScreen() {
             onDateSelected = { date ->
                 onDateSelectedCallback(date)
             },
-            direction = PopupDirection.Down
+            direction = PopupDirection.Up
         )
 
-        TimePicker(
-            isVisible = isTimePickerVisible,
-            anchorBounds = timeButtonBounds,
-            initialTime = sheetFinalTime,
-            minTime = sheetMinTime,
-            maxTime = sheetMaxTime,
-            onDismiss = { isTimePickerVisible = false },
-            onTimeSelected = { time ->
-                onTimeSelectedCallback(time)
-            },
-            direction = PopupDirection.Down
-        )
+        key(timePickerRequestKey) {
+            TimePicker(
+                isVisible = isTimePickerVisible,
+                anchorBounds = timeButtonBounds,
+                initialTime = sheetFinalTime,
+                minTime = sheetMinTime,
+                maxTime = sheetMaxTime,
+                onDismiss = { isTimePickerVisible = false },
+                onTimeSelected = { time ->
+                    onTimeSelectedCallback(time)
+                },
+                direction = PopupDirection.Down
+            )
+        }
 
         CustomReminderPopup(
             isVisible = isCustomReminderPopupVisible,
             anchorBounds = reminderButtonBounds,
+            isAllDayEnabled = sheetReminderIsAllDay,
             onDismiss = { isCustomReminderPopupVisible = false },
             onConfirm = { config ->
                 onReminderSelectedCallback(config)
