@@ -53,9 +53,13 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.Constraints
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.Lifecycle
@@ -70,7 +74,6 @@ import com.nevoit.cresto.theme.AppSpecs
 import com.nevoit.cresto.theme.defaultEnterTransition
 import com.nevoit.cresto.theme.defaultExitTransition
 import com.nevoit.cresto.theme.getFlagColor
-import com.nevoit.cresto.theme.harmonize
 import com.nevoit.cresto.ui.components.CustomAnimatedVisibility
 import com.nevoit.cresto.ui.components.glasense.GlasenseCheckbox
 import com.nevoit.cresto.ui.components.glasense.SwipeableActionButton
@@ -78,7 +81,6 @@ import com.nevoit.cresto.ui.components.glasense.SwipeableContainer
 import com.nevoit.cresto.ui.components.glasense.SwipeableListState
 import com.nevoit.cresto.ui.components.glasense.extend.LineThroughBasicTextField
 import com.nevoit.cresto.ui.components.glasense.extend.LineThroughText
-import com.nevoit.glasense.theme.Yellow500
 import kotlinx.coroutines.delay
 import java.time.LocalDate
 import java.time.LocalTime
@@ -119,6 +121,13 @@ fun TodoItemRow(
     val density = LocalDensity.current
     val contentColor = AppColors.content
 
+    val todoTitleTextStyle = TextStyle(
+        fontSize = 16.sp,
+        lineHeight = 20.sp,
+        fontWeight = FontWeight.Normal,
+        letterSpacing = 0.sp
+    )
+
     Row(
         modifier = Modifier
             .defaultMinSize(minHeight = 68.dp)
@@ -141,7 +150,7 @@ fun TodoItemRow(
         if (itemTodo.dueDate == null && !hasTasks) {
             LineThroughText(
                 text = itemTodo.title,
-                style = MaterialTheme.typography.bodyMedium,
+                style = todoTitleTextStyle,
                 lineThrough = itemTodo.isCompleted,
                 modifier = Modifier
                     .weight(1f)
@@ -221,8 +230,8 @@ fun TodoItemRow(
                 else -> rawFormattedDate
             }
 
-            val harmonizedYellow = harmonize(Yellow500)
             val errorColor = AppColors.error
+            val highlightTextColor = AppColors.highlightText
 
             val dueDateColor = remember(
                 itemTodo.dueDate,
@@ -247,7 +256,7 @@ fun TodoItemRow(
                         if (isOverdueTime) {
                             errorColor
                         } else if (isDueTodayMarkerEnabled && !itemTodo.isCompleted) {
-                            harmonizedYellow
+                            highlightTextColor
                         } else {
                             contentColor.copy(alpha = 0.4f)
                         }
@@ -274,7 +283,7 @@ fun TodoItemRow(
             ) {
                 LineThroughText(
                     text = itemTodo.title,
-                    style = MaterialTheme.typography.bodyMedium,
+                    style = todoTitleTextStyle,
                     lineThrough = itemTodo.isCompleted
                 )
                 Spacer(modifier = Modifier.height(2.dp))
@@ -551,9 +560,9 @@ private fun TodoItemMetadataLayout(
 private fun TodoItemDueDateMeta(
     dueDateText: String?,
     dueDateColor: Color,
-    metadataStyle: androidx.compose.ui.text.TextStyle,
-    metadataFontSize: androidx.compose.ui.unit.TextUnit,
-    density: androidx.compose.ui.unit.Density,
+    metadataStyle: TextStyle,
+    metadataFontSize: TextUnit,
+    density: Density,
 ) {
     if (dueDateText == null) return
 
@@ -583,9 +592,9 @@ private fun TodoItemTaskMeta(
     completedText: String,
     completedCount: Int,
     totalTaskCount: Int,
-    metadataStyle: androidx.compose.ui.text.TextStyle,
-    metadataFontSize: androidx.compose.ui.unit.TextUnit,
-    density: androidx.compose.ui.unit.Density,
+    metadataStyle: TextStyle,
+    metadataFontSize: TextUnit,
+    density: Density,
 ) {
     val color = contentColor.copy(0.4f).compositeOver(AppColors.cardBackground)
 
@@ -639,6 +648,7 @@ fun SwipeableTodoItem(
         SwipeableActionButton(
             index = 0,
             color = AppColors.error,
+            iconColor = AppColors.onError,
             icon = painterResource(id = R.drawable.ic_trash),
             isDestructive = true
         )
@@ -703,6 +713,13 @@ fun TodoItemRowEditable(
         }
     }
 
+    val todoTitleTextStyle = TextStyle(
+        fontSize = 16.sp,
+        lineHeight = 20.sp,
+        fontWeight = FontWeight.Normal,
+        letterSpacing = 0.sp
+    )
+
     Row(
         modifier = modifier
             .defaultMinSize(minHeight = 68.dp)
@@ -743,9 +760,7 @@ fun TodoItemRowEditable(
                 onKeyboardAction = {
                     focusManager.clearFocus()
                 },
-                textStyle = MaterialTheme.typography.bodyMedium.copy(
-                    color = AppColors.content,
-                )
+                textStyle = todoTitleTextStyle.copy(color = AppColors.content)
             )
             if (!isFocused) {
                 Box(
@@ -801,6 +816,13 @@ fun SubTodoItemRowEditable(
         }
     }
 
+    val todoTitleTextStyle = TextStyle(
+        fontSize = 16.sp,
+        lineHeight = 20.sp,
+        fontWeight = FontWeight.Normal,
+        letterSpacing = 0.sp
+    )
+
     Row(
         modifier = Modifier
             .defaultMinSize(minHeight = 68.dp)
@@ -843,7 +865,7 @@ fun SubTodoItemRowEditable(
                 onKeyboardAction = {
                     focusManager.clearFocus()
                 },
-                textStyle = MaterialTheme.typography.bodyMedium.copy(
+                textStyle = todoTitleTextStyle.copy(
                     color = AppColors.content
                 ),
                 lineThrough = subTodo.isCompleted
@@ -909,6 +931,13 @@ fun SubTodoItemRowAdd(
 
     val addTaskText = stringResource(R.string.add_task)
 
+    val todoTitleTextStyle = TextStyle(
+        fontSize = 16.sp,
+        lineHeight = 20.sp,
+        fontWeight = FontWeight.Normal,
+        letterSpacing = 0.sp
+    )
+
     Row(
         modifier = modifier
             .defaultMinSize(minHeight = 68.dp)
@@ -969,14 +998,14 @@ fun SubTodoItemRowAdd(
                 onKeyboardAction = {
                     focusManager.clearFocus()
                 },
-                textStyle = MaterialTheme.typography.bodyMedium.copy(
+                textStyle = todoTitleTextStyle.copy(
                     color = AppColors.content
                 ),
                 decorator = { innerTextField ->
                     if (state.text.isEmpty() && !isFocused) {
                         Text(
                             text = addTaskText,
-                            style = MaterialTheme.typography.bodyMedium.copy(
+                            style = todoTitleTextStyle.copy(
                                 color = AppColors.content
                             ),
                             color = AppColors.primary,
@@ -1019,12 +1048,14 @@ fun SwipeableSubTodoItemRowEditable(
         SwipeableActionButton(
             index = 0,
             color = AppColors.primary,
+            iconColor = AppColors.onPrimary,
             icon = painterResource(id = R.drawable.ic_rectangle_on_rectangle_up),
             isDestructive = false
         ),
         SwipeableActionButton(
             index = 1,
             color = AppColors.error,
+            iconColor = AppColors.onError,
             icon = painterResource(id = R.drawable.ic_trash),
             isDestructive = true
         )

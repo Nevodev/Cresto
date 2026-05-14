@@ -32,6 +32,8 @@ data class GlasenseColors(
     val content: Color,
     val contentVariant: Color,
 
+    val highlightText: Color,
+
     val error: Color,
     val onError: Color,
 
@@ -59,6 +61,7 @@ val GlasenseLightPalette = GlasenseColors(
     onPrimary = Color.White,
     content = Color.Black,
     contentVariant = Color.Black.copy(.5f),
+    highlightText = Yellow500,
     error = Red500,
     onError = Color.White,
     segmentedControlIndicator = Color.White
@@ -81,6 +84,7 @@ val GlasenseDarkPalette = GlasenseColors(
     onPrimary = Color.White,
     content = Color.White,
     contentVariant = Color.White.copy(.5f),
+    highlightText = Yellow500,
     error = Red500,
     onError = Color.White,
     segmentedControlIndicator = Color(0xFF636366)
@@ -117,6 +121,7 @@ fun glasenseColorsFromScheme(scheme: ColorScheme, isDark: Boolean): GlasenseColo
         onPrimary = scheme.onPrimary,
         content = contentColor,
         contentVariant = contentColor.copy(.5f),
+        highlightText = scheme.tertiary,
         error = scheme.error,
         onError = scheme.onError,
         segmentedControlBackground = scheme.secondaryContainer,

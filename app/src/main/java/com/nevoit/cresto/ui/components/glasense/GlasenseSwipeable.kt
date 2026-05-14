@@ -285,6 +285,7 @@ fun SwipeableContainer(
                                     Icon(
                                         painter = action.icon,
                                         contentDescription = action.contentDescription,
+                                        tint = action.iconColor,
                                         modifier = Modifier
                                             .width(28.dp)
                                             .height(28.dp)
@@ -389,6 +390,7 @@ data class SwipeableActionButton(
     val index: Int,
     val color: Color,
     val icon: Painter,
+    val iconColor: Color = Color.White,
     val contentDescription: String? = null,
     val isDestructive: Boolean = false
 )
