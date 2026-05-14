@@ -17,14 +17,14 @@ import com.nevoit.glasense.theme.Yellow500
 fun getFlagColor(flag: Int): Color {
     return when (flag) {
         0 -> Color.Transparent
-        1 -> harmonize(Red500)
-        2 -> harmonize(Orange500)
-        3 -> harmonize(Yellow500)
-        4 -> harmonize(Green500)
-        5 -> harmonize(Blue500)
-        6 -> harmonize(Purple500)
-        7 -> harmonize(Gray500)
-        else -> harmonize(Gray500)
+        1 -> Red500
+        2 -> Orange500
+        3 -> Yellow500
+        4 -> Green500
+        5 -> Blue500
+        6 -> Purple500
+        7 -> Gray500
+        else -> Gray500
     }
 }
 

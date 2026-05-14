@@ -1,9 +1,16 @@
 package com.nevoit.glasense.theme
 
+import android.util.Log
 import androidx.compose.material3.ColorScheme
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.colorspace.ColorSpaces
+import kotlin.math.PI
+import kotlin.math.atan2
+import kotlin.math.cos
+import kotlin.math.hypot
+import kotlin.math.sin
 
 @Immutable
 data class GlasenseColors(
@@ -121,9 +128,9 @@ fun glasenseColorsFromScheme(scheme: ColorScheme, isDark: Boolean): GlasenseColo
         onPrimary = scheme.onPrimary,
         content = contentColor,
         contentVariant = contentColor.copy(.5f),
-        highlightText = scheme.tertiary,
-        error = scheme.error,
-        onError = scheme.onError,
+        highlightText = scheme.tertiary.purify(0.8f),
+        error = scheme.error.umamify(1.5f),
+        onError = scheme.onError.umamify(1.5f),
         segmentedControlBackground = scheme.secondaryContainer,
         onSegmentedControlBackground = scheme.onSecondaryContainer,
         segmentedControlIndicator = scheme.secondary,
@@ -133,3 +140,71 @@ fun glasenseColorsFromScheme(scheme: ColorScheme, isDark: Boolean): GlasenseColo
 
 val LocalGlasenseColors = staticCompositionLocalOf { GlasenseLightPalette }
 
+data class OklchColor(
+    val l: Float,
+    val c: Float,
+    val h: Float,
+    val alpha: Float = 1f
+) {
+    fun toColor(): Color {
+        val hRad = h * PI / 180.0
+
+        val a = (c * cos(hRad)).toFloat()
+        val b = (c * sin(hRad)).toFloat()
+
+        return Color(
+            colorSpace = ColorSpaces.Oklab,
+            red = l,
+            green = a,
+            blue = b,
+            alpha = alpha
+        ).convert(ColorSpaces.Srgb)
+    }
+}
+
+fun Color.toOklch(): OklchColor {
+    val oklab = this.convert(ColorSpaces.Oklab)
+
+    val l = oklab.component1()
+    val a = oklab.component2()
+    val b = oklab.component3()
+    val alpha = oklab.alpha
+
+    val c = hypot(a.toDouble(), b.toDouble()).toFloat()
+
+    var h = (atan2(b.toDouble(), a.toDouble()) * 180.0 / PI).toFloat()
+    if (h < 0f) {
+        h += 360f
+    }
+
+    return OklchColor(l, c, h, alpha)
+}
+
+fun Color.purify(factor: Float = 1f): Color {
+    val oklch = this.toOklch()
+
+    val purifiedL = if (oklch.l == 1f) 1f else (oklch.l - 0.75f) * (1f - factor) + 0.75f
+    val purifiedC = (oklch.c - 0.164f) * (1f - factor) + 0.164f
+
+    return OklchColor(purifiedL, purifiedC, oklch.h, oklch.alpha).toColor()
+}
+
+fun Color.printOklch() {
+    val oklch = this.toOklch()
+    Log.d(
+        "GlasenseColors",
+        "Color: $this, Oklch: L=${oklch.l}, C=${oklch.c}, H=${oklch.h}, alpha=${oklch.alpha}"
+    )
+}
+
+fun Color.umamify(factor: Float = 1f): Color {
+    val oklch = this.toOklch()
+
+    return OklchColor(oklch.l, oklch.c * factor, oklch.h, oklch.alpha).toColor()
+}
+
+fun Color.lumify(factor: Float = 1f): Color {
+    val oklch = this.toOklch()
+
+    return OklchColor((oklch.l * factor).coerceIn(0f, 1f), oklch.c, oklch.h, oklch.alpha).toColor()
+}

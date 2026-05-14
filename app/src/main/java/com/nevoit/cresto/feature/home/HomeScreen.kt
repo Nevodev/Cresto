@@ -27,6 +27,7 @@ import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Modifier
@@ -145,7 +146,8 @@ fun BoxScope.HomeScreen(
             type = TodoListType.COMPLETED
         )
     }
-    var completedVisible by remember { mutableStateOf(true) }
+    var completedVisible by rememberSaveable { mutableStateOf(true) }
+
     var showConfetti by remember { mutableStateOf(false) }
     var confettiHideJob by remember { mutableStateOf<Job?>(null) }
     var latestCheckboxTapPosition by remember { mutableStateOf(Offset.Unspecified) }

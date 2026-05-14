@@ -21,6 +21,7 @@ import com.nevoit.cresto.feature.settings.SettingsScreen
 import com.nevoit.cresto.ui.components.glasense.GlasenseMenuItem
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlin.time.Duration.Companion.milliseconds
 
 @Composable
 fun BoxScope.NavContainer(
@@ -71,11 +72,11 @@ private fun ManualAnimatedVisibility(
     LaunchedEffect(visible) {
         if (visible) {
             launch {
-                delay(100)
+                delay(100.milliseconds)
                 alpha.animateTo(1f, tween(200))
             }
             launch {
-                delay(100)
+                delay(100.milliseconds)
                 scale.animateTo(1f, tween(400, easing = EaseOutExpo))
             }
         } else {
