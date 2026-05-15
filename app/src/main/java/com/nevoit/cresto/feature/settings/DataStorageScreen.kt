@@ -423,6 +423,7 @@ fun DataStorageScreen() {
     Box(
         modifier = Modifier
             .fillMaxSize()
+            .background(AppColors.pageBackground)
             .layerBackdrop(backdrop)
     ) {
         // A vertically scrolling list that only composes and lays out the currently visible items
