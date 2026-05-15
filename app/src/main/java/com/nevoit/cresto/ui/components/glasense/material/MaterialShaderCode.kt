@@ -41,9 +41,10 @@ vec3 hsl2rgb(vec3 hsl) {
     return hsl.z + hsl.y * (rgb - 0.5) * (1.0 - abs(2.0 * hsl.z - 1.0));
 }
 
-float bezierBrightness(float t, vec4 p) {
+float bezierBrightness(float t, vec4 p, float intensity) {
     float u = 1.0 - t; float tt = t * t; float uu = u * u;
-    return (uu * u * p.x) + (3.0 * uu * t * p.y) + (3.0 * u * tt * p.z) + (tt * t * p.w);
+    float mapped = (uu * u * p.x) + (3.0 * uu * t * p.y) + (3.0 * u * tt * p.z) + (tt * t * p.w);
+    return mix(t, mapped, intensity);
 }
 
 half4 main(float2 fragCoord) {
@@ -51,14 +52,10 @@ half4 main(float2 fragCoord) {
 
     vec3 hsl = rgb2hsl(color.rgb);
 
-    hsl.z = clamp(bezierBrightness(hsl.z, curvePoints), 0.0, 1.0);
+    hsl.z = clamp(bezierBrightness(hsl.z, curvePoints, intensity), 0.0, 1.0);
     hsl.y = clamp(hsl.y * saturation, 0.0, 1.0);
     hsl.z = clamp(hsl.z * (1 + brightness), 0.0, 1.0);
-
-    half3 mappedColor = half3(hsl2rgb(hsl));
-
-    color.rgb = mix(color.rgb, mappedColor, intensity);
     
-    return color;
+    return half4(half3(hsl2rgb(hsl)), color.a);
 }
 """

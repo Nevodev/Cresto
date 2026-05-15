@@ -349,4 +349,45 @@ fun BoxScope.HomeScreen(
         backdrop = backdrop,
         viewModel = viewModel,
     )
+//    LazyColumn() {
+//        item {
+//            Box(
+//                modifier = Modifier
+//                    .size(64.dp, 32.dp)
+//            ) {
+//                Box(
+//                    modifier = Modifier
+//                        .fillMaxSize()
+//                        .background(color = Color(0xFF6ac5dd))
+//                )
+//            }
+//        }
+//        items(6) { i ->
+//            val materials = listOf(
+//                MaterialRecipes.UltraThinLight,
+//                MaterialRecipes.ThinLight,
+//                MaterialRecipes.RegularLight,
+//                MaterialRecipes.ThickLight,
+//                MaterialRecipes.ThickLight,
+//                MaterialRecipes.ChromeLight,
+//            )
+//
+//            val effect = rememberMaterialRenderEffect(materials[i])
+//
+//            Box(
+//                modifier = Modifier
+//                    .graphicsLayer {
+//                        renderEffect = effect
+//                        clip = true
+//                    }
+//                    .size(64.dp, 32.dp)
+//            ) {
+//                Box(
+//                    modifier = Modifier
+//                        .fillMaxSize()
+//                        .background(color = Color(0xFF59aec4))
+//                )
+//            }
+//        }
+//    }
 }
