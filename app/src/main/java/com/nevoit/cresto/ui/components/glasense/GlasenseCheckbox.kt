@@ -4,7 +4,6 @@ import androidx.annotation.DrawableRes
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.CubicBezierEasing
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.graphics.ExperimentalAnimationGraphicsApi
 import androidx.compose.animation.graphics.res.animatedVectorResource
 import androidx.compose.animation.graphics.res.rememberAnimatedVectorPainter
 import androidx.compose.animation.graphics.vector.AnimatedImageVector
@@ -44,6 +43,7 @@ import com.nevoit.cresto.R
 import com.nevoit.cresto.theme.AppColors
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlin.time.Duration.Companion.milliseconds
 
 private const val ANIMATION_DURATION_SIZE = 200
 private const val ANIMATION_DURATION_ALPHA_IN = 100
@@ -104,7 +104,7 @@ fun GlasenseCheckbox(
                 )
             }
             sizeAnim.snapTo(dimensions.checkedRadius)
-            delay(150)
+            delay(150.milliseconds)
             sizeAnim.snapTo(dimensions.uncheckedRadius)
         }
     }
@@ -168,7 +168,6 @@ fun GlasenseCheckbox(
     }
 }
 
-@OptIn(ExperimentalAnimationGraphicsApi::class)
 @Composable
 private fun CheckmarkContent(
     @DrawableRes iconRes: Int?,

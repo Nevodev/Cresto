@@ -9,7 +9,6 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
@@ -105,9 +104,6 @@ import com.nevoit.cresto.ui.modifier.shaderRipple
 import com.nevoit.cresto.util.formatRelativeTime
 import com.nevoit.glasense.component.ProgressView
 import com.nevoit.glasense.theme.Springs
-import dev.chrisbanes.haze.ExperimentalHazeApi
-import dev.chrisbanes.haze.hazeSource
-import dev.chrisbanes.haze.rememberHazeState
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.time.LocalDate
@@ -115,7 +111,6 @@ import java.time.format.DateTimeFormatter
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.minutes
 
-@OptIn(ExperimentalHazeApi::class, ExperimentalLayoutApi::class)
 @Composable
 fun DetailScreen(
     todoId: Int,
@@ -129,8 +124,6 @@ fun DetailScreen(
 
     val statusBarHeight = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
     val navigationBarHeight = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
-
-    val hazeState = rememberHazeState()
 
     val surfaceColor = AppColors.pageBackground
 
@@ -291,7 +284,6 @@ fun DetailScreen(
                 state = lazyListState,
                 modifier = Modifier
                     .layerBackdrop(backdrop)
-                    .hazeSource(hazeState, 0f)
                     .imePadding(),
                 tabPadding = false,
                 bottomPadding = 64.dp + navigationBarHeight * 2
@@ -540,7 +532,7 @@ fun DetailScreen(
             title = itemWithSubTodos?.todoItem?.title ?: stringResource(R.string.detail),
             statusBarHeight = statusBarHeight,
             isVisible = isSmallTitleVisible,
-            hazeState = hazeState,
+            backdrop = backdrop,
             surfaceColor = surfaceColor
         ) {
             // This lambda is empty as the component handles its own content
@@ -606,7 +598,7 @@ fun DetailScreen(
             modifier = Modifier.align(Alignment.BottomCenter),
             navigationBarHeight = navigationBarHeight,
             isVisible = true,
-            hazeState = hazeState,
+            backdrop = backdrop,
             surfaceColor = surfaceColor,
             height = 64.dp
         ) {

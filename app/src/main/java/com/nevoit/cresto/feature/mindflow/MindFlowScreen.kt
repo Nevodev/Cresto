@@ -23,7 +23,6 @@ import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -40,6 +39,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.BlurredEdgeTreatment
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.painterResource
@@ -51,6 +52,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.kyant.backdrop.backdrops.layerBackdrop
+import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import com.nevoit.cresto.R
 import com.nevoit.cresto.data.todo.TodoViewModel
 import com.nevoit.cresto.theme.AppButtonColors
@@ -82,13 +85,9 @@ import com.nevoit.glasense.theme.Cyan500
 import com.nevoit.glasense.theme.Green500
 import com.nevoit.glasense.theme.Rose500
 import com.nevoit.glasense.theme.Yellow500
-import dev.chrisbanes.haze.ExperimentalHazeApi
-import dev.chrisbanes.haze.hazeSource
-import dev.chrisbanes.haze.rememberHazeState
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalHazeApi::class)
 @Composable
 fun BoxScope.MindFlowScreen(
     viewModel: TodoViewModel,
@@ -96,11 +95,17 @@ fun BoxScope.MindFlowScreen(
 ) {
     val statusBarHeight = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
 
-    val hazeState = rememberHazeState()
-
-
     val backgroundColor = AppColors.pageBackground
     val surfaceColor = AppColors.cardBackground
+
+    val backdrop = rememberLayerBackdrop {
+        drawRect(
+            color = backgroundColor,
+            size = Size(this.size.width * 3, this.size.height * 3),
+            topLeft = Offset(-this.size.width, -this.size.height)
+        )
+        drawContent()
+    }
 
     val lazyListState = rememberLazyListState()
 
@@ -185,7 +190,7 @@ fun BoxScope.MindFlowScreen(
     PageContent(
         state = lazyListState,
         modifier = Modifier
-            .hazeSource(hazeState, 0f),
+            .layerBackdrop(backdrop),
         tabPadding = true
     ) {
         item {
@@ -581,7 +586,7 @@ fun BoxScope.MindFlowScreen(
         title = stringResource(R.string.mind_flow),
         statusBarHeight = statusBarHeight,
         isVisible = isSmallTitleVisible,
-        hazeState = hazeState,
+        backdrop = backdrop,
         surfaceColor = backgroundColor
     ) {
     }

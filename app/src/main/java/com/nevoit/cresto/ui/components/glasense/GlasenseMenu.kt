@@ -1,8 +1,6 @@
 package com.nevoit.cresto.ui.components.glasense
 
 import android.graphics.BlurMaskFilter
-import android.graphics.RenderEffect
-import android.graphics.RuntimeShader
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.spring
@@ -41,7 +39,6 @@ import androidx.compose.ui.graphics.Outline
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.asAndroidPath
-import androidx.compose.ui.graphics.asComposeRenderEffect
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.nativeCanvas
@@ -66,6 +63,8 @@ import com.kyant.shapes.RoundedRectangle
 import com.nevoit.cresto.R
 import com.nevoit.cresto.theme.AppColors
 import com.nevoit.cresto.theme.isAppInDarkTheme
+import com.nevoit.cresto.ui.components.glasense.material.MaterialRecipes
+import com.nevoit.cresto.ui.components.glasense.material.rememberMaterialRenderEffect
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -234,18 +233,7 @@ fun GlasenseMenu(
 
     val shape = RoundedCornerShape(16.dp)
 
-    val curve = if (darkTheme) Recipes.RegularDark else Recipes.RegularLight
-    val shader = RuntimeShader(AGSL_CODE)
-
-    shader.setFloatUniform("curvePoints", curve.p0, curve.p1, curve.p2, curve.p3)
-    shader.setFloatUniform("intensity", curve.intensity)
-    shader.setFloatUniform("saturation", curve.saturation)
-    shader.setFloatUniform("brightness", curve.brightness)
-
-    val renderEffect = RenderEffect.createRuntimeShaderEffect(
-        shader,
-        "image"
-    ).asComposeRenderEffect()
+    val renderEffect = rememberMaterialRenderEffect(MaterialRecipes.menu())
 
     if (menuState.isVisible) {
         BackHandler { onDismiss() }
@@ -262,9 +250,7 @@ fun GlasenseMenu(
     if (isMenuInComposition) {
         Box(
             modifier = modifier
-                .zIndex(99f) // Ensure the menu appears above other content.
-                .width(228.dp)
-                .onSizeChanged { menuSize = it }
+                .zIndex(99f)
                 .graphicsLayer {
                     translationX = placement.x
                     translationY = placement.y
@@ -272,6 +258,8 @@ fun GlasenseMenu(
                     scaleY = scaleAni.value
                     transformOrigin = placement.origin
                 }
+                .width(228.dp)
+                .onSizeChanged { menuSize = it }
                 .drawBehind {
                     val currentAlpha = alphaAni.value
 

@@ -22,18 +22,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.BlurredEdgeTreatment
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
-import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import com.kyant.shapes.Capsule
 import com.nevoit.cresto.R
 import com.nevoit.cresto.theme.AppButtonColors
@@ -50,6 +48,8 @@ import com.nevoit.cresto.ui.components.glasense.GlasenseButton
 import com.nevoit.cresto.ui.components.glasense.RotatingGlow
 import com.nevoit.cresto.ui.components.glasense.RotatingGlowBorder
 import com.nevoit.cresto.ui.components.glasense.glasenseHighlight
+import com.nevoit.cresto.ui.components.glasense.material.MaterialRecipes
+import com.nevoit.cresto.ui.components.glasense.material.rememberMaterialRenderEffect
 import com.nevoit.cresto.ui.viewmodel.AiViewModel
 
 @Composable
@@ -61,15 +61,13 @@ fun GlowContainer(
 ) {
     val darkTheme = isAppInDarkTheme()
 
-    val backdrop = rememberLayerBackdrop {
-        drawContent()
-    }
-
     val highlightColors = if (darkTheme) {
         highlightColorsDark
     } else {
         highlightColorsLight
     }
+
+    val material = rememberMaterialRenderEffect(MaterialRecipes.medium())
     Box(
         modifier = modifier,
         contentAlignment = Alignment.Center
@@ -94,58 +92,24 @@ fun GlowContainer(
                 .glasenseHighlight(56.dp)
         ) {
             RotatingGlow(
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .graphicsLayer {
+                        renderEffect = material
+                    },
                 blurRadius = 32.dp,
                 edgeTreatment = BlurredEdgeTreatment.Rectangle,
                 shape = RectangleShape,
                 colors = glowColors,
                 timeMillis = 5000
             )
-            Box(
+            RotatingGlowBorder(
                 modifier = Modifier
                     .fillMaxSize()
-                    .drawBehind {
-                        if (!darkTheme) {
-                            drawRect(
-                                brush = SolidColor(Color(0xFF272727).copy(alpha = 0.2f)),
-                                style = Fill,
-                                blendMode = BlendMode.Luminosity,
-                            )
-                            drawRect(
-                                brush = SolidColor(Color(0xFF252525).copy(alpha = 1f)),
-                                style = Fill,
-                                blendMode = BlendMode.Plus,
-                            )
-                            drawRect(
-                                brush = SolidColor(Color(0xFF555555).copy(alpha = 0.5f)),
-                                style = Fill,
-                                blendMode = BlendMode.ColorDodge,
-                            )
-                            drawRect(
-                                brush = SolidColor(Color(0xFFFFFFFF).copy(alpha = 0.2f)),
-                                style = Fill,
-                                blendMode = BlendMode.SrcOver,
-                            )
-                        } else {
-                            drawRect(
-                                brush = SolidColor(Color(0xFF000000).copy(alpha = 0.5f)),
-                                style = Fill,
-                                blendMode = BlendMode.Luminosity,
-                            )
-                            drawRect(
-                                brush = SolidColor(Color(0xFF252525).copy(alpha = 1f)),
-                                style = Fill,
-                                blendMode = BlendMode.Plus,
-                            )
-                            drawRect(
-                                brush = SolidColor(Color(0xFF4B4B4B).copy(alpha = 0.5f)),
-                                style = Fill,
-                                blendMode = BlendMode.ColorDodge,
-                            )
-                        }
-                    })
-            RotatingGlowBorder(
-                modifier = Modifier.fillMaxSize(),
+                    .drawWithContent {
+                        drawContent()
+                        if (darkTheme) drawContent()
+                    },
                 strokeWidth = 4.dp,
                 blurRadius = 4.dp,
                 shape = Capsule(),

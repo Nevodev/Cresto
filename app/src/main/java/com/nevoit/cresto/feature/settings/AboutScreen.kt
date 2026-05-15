@@ -37,6 +37,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.paint
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
@@ -56,6 +58,8 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.kyant.backdrop.backdrops.layerBackdrop
+import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import com.kyant.shapes.Capsule
 import com.nevoit.cresto.R
 import com.nevoit.cresto.feature.settings.util.SettingsViewModel
@@ -81,9 +85,6 @@ import com.nevoit.glasense.theme.Orange400
 import com.nevoit.glasense.theme.Pink400
 import com.nevoit.glasense.theme.Purple400
 import com.nevoit.glasense.theme.Rose400
-import dev.chrisbanes.haze.ExperimentalHazeApi
-import dev.chrisbanes.haze.hazeSource
-import dev.chrisbanes.haze.rememberHazeState
 import io.github.vinceglb.confettikit.compose.ConfettiKit
 import io.github.vinceglb.confettikit.core.Angle
 import io.github.vinceglb.confettikit.core.Party
@@ -99,7 +100,7 @@ import kotlin.time.Duration.Companion.seconds
  * It displays information about the app, developers, and version.
  * It uses an experimental API for Haze effects.
  */
-@OptIn(ExperimentalHazeApi::class)
+
 @Composable
 fun AboutScreen(settingsViewModel: SettingsViewModel = viewModel()) {
     // Get the current activity instance to allow finishing the screen
@@ -109,11 +110,8 @@ fun AboutScreen(settingsViewModel: SettingsViewModel = viewModel()) {
     val statusBarHeight = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
     val density = LocalDensity.current
 
-    // Remember the state for the Haze effect, a library for blurring content behind a surface
-    val hazeState = rememberHazeState()
-
     val onBackground = AppColors.content
-    val surfaceColor = AppColors.pageBackground
+    val backgroundColor = AppColors.pageBackground
     val hierarchicalSurfaceColor = AppColors.cardBackground
 
     // Remember the state for the lazy list to control scrolling
@@ -140,17 +138,26 @@ fun AboutScreen(settingsViewModel: SettingsViewModel = viewModel()) {
 
     val isSuperGraphicUltraModernGirlEnabled by settingsViewModel.isSuperGraphicUltraModernGirlEnabled
 
+    val backdrop = rememberLayerBackdrop {
+        drawRect(
+            color = backgroundColor,
+            size = Size(this.size.width * 3, this.size.height * 3),
+            topLeft = Offset(-this.size.width, -this.size.height)
+        )
+        drawContent()
+    }
+
     // Root container for the screen, filling the entire available space
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(surfaceColor)
+            .background(backgroundColor)
     ) {
         // A vertically scrolling list that only composes and lays out the currently visible items
         PageContent(
             state = lazyListState,
             modifier = Modifier
-                .hazeSource(hazeState, 0f),
+                .layerBackdrop(backdrop),
             tabPadding = false
         ) {
             // Spacer item at the top of the list to push content below the top bar and back button
@@ -496,8 +503,8 @@ fun AboutScreen(settingsViewModel: SettingsViewModel = viewModel()) {
             title = stringResource(R.string.about),
             statusBarHeight = statusBarHeight,
             isVisible = isSmallTitleVisible,
-            hazeState = hazeState,
-            surfaceColor = surfaceColor
+            backdrop = backdrop,
+            surfaceColor = backgroundColor
         ) {
         }
         // Back button positioned at the top-start of the screen

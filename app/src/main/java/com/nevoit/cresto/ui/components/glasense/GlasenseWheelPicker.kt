@@ -1,6 +1,5 @@
 package com.nevoit.cresto.ui.components.glasense
 
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.gestures.snapping.SnapLayoutInfoProvider
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
@@ -40,7 +39,6 @@ import com.nevoit.glasense.theme.Springs
 import kotlin.math.absoluteValue
 import kotlin.math.sin
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun GlasenseWheelPicker(
     modifier: Modifier = Modifier,

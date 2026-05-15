@@ -1,6 +1,5 @@
 package com.nevoit.cresto.feature.main
 
-import android.os.Build
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.spring
@@ -60,16 +59,11 @@ import com.kyant.shapes.Capsule
 import com.nevoit.cresto.R
 import com.nevoit.cresto.data.todo.TodoItem
 import com.nevoit.cresto.data.todo.TodoViewModel
-import com.nevoit.cresto.ui.components.packed.TodoReminderConfig
 import com.nevoit.cresto.feature.settings.util.SettingsViewModel
 import com.nevoit.cresto.theme.AppButtonColors
 import com.nevoit.cresto.theme.AppColors
-import com.nevoit.cresto.theme.LocalGlasenseSettings
 import com.nevoit.cresto.theme.isAppInDarkTheme
-import com.nevoit.cresto.theme.linearGradientMaskB2T70
-import com.nevoit.cresto.theme.linearGradientMaskB2T90
 import com.nevoit.cresto.toolkit.gaussiangradient.smoothGradientMask
-import com.nevoit.cresto.toolkit.gaussiangradient.smoothGradientMaskFallback
 import com.nevoit.cresto.ui.components.bottomsheet.BottomSheet
 import com.nevoit.cresto.ui.components.glasense.DialogItemData
 import com.nevoit.cresto.ui.components.glasense.DialogState
@@ -84,15 +78,9 @@ import com.nevoit.cresto.ui.components.glasense.PopupDirection
 import com.nevoit.cresto.ui.components.packed.CustomReminderPopup
 import com.nevoit.cresto.ui.components.packed.DueDatePicker
 import com.nevoit.cresto.ui.components.packed.TimePicker
+import com.nevoit.cresto.ui.components.packed.TodoReminderConfig
 import com.nevoit.cresto.ui.modifier.pressIndentShaderEffect
 import com.nevoit.cresto.ui.modifier.shaderRipple
-import dev.chrisbanes.haze.ExperimentalHazeApi
-import dev.chrisbanes.haze.HazeInputScale
-import dev.chrisbanes.haze.HazeProgressive
-import dev.chrisbanes.haze.HazeStyle
-import dev.chrisbanes.haze.hazeEffect
-import dev.chrisbanes.haze.hazeSource
-import dev.chrisbanes.haze.rememberHazeState
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 import java.time.LocalDate
@@ -104,7 +92,7 @@ sealed class Screen(val route: String) {
     object Settings : Screen("settings")
 }
 
-@OptIn(ExperimentalHazeApi::class)
+
 @Composable
 fun MainScreen() {
     val surfaceColor = AppColors.pageBackground
@@ -114,7 +102,6 @@ fun MainScreen() {
     val liquidGlass by settingsViewModel.isLiquidGlass
     val isSuperGraphicUltraModernGirlEnabled by settingsViewModel.isSuperGraphicUltraModernGirlEnabled
 
-    val hazeState = rememberHazeState()
     val backdrop = rememberLayerBackdrop {
         drawRect(
             color = surfaceColor,
@@ -276,7 +263,6 @@ fun MainScreen() {
             modifier = Modifier
                 .fillMaxSize()
                 .layerBackdrop(backdrop)
-                .hazeSource(hazeState, 0f)
         ) {
             NavContainer(
                 currentRoute = currentRoute,
@@ -290,33 +276,10 @@ fun MainScreen() {
                 .fillMaxWidth()
                 .height(120.dp + navigationBarHeight)
                 .align(Alignment.BottomCenter)
-                .then(
-                    if (LocalGlasenseSettings.current.liteMode) Modifier
-                    else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) Modifier.hazeEffect(
-                        hazeState
-                    ) {
-                        blurRadius = 10.dp
-                        progressive = HazeProgressive.verticalGradient(
-                            startIntensity = 0.2f,
-                            endIntensity = 0.6f
-                        )
-                        noiseFactor = 0f
-                        mask = linearGradientMaskB2T90
-                        inputScale = HazeInputScale.Fixed(0.5f)
-                        style = HazeStyle(backgroundColor = surfaceColor, tint = null)
-                    } else Modifier.hazeEffect(
-                        hazeState
-                    ) {
-                        blurRadius = 4.dp
-                        noiseFactor = 0f
-                        mask = linearGradientMaskB2T70
-                    })
-
-                .then(
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) Modifier.smoothGradientMask(
-                        surfaceColor.copy(alpha = 0f), surfaceColor.copy(alpha = 1f), 0f, 1f, 0.6f
-                    ) else Modifier.smoothGradientMaskFallback(surfaceColor, 0.6f)
+                .smoothGradientMask(
+                    surfaceColor.copy(alpha = 0f), surfaceColor.copy(alpha = 1f), -0.1f, 0.8f, 0.7f
                 )
+
         ) {
             if (isComposed) {
                 Row(

@@ -31,11 +31,15 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.kyant.backdrop.backdrops.layerBackdrop
+import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import com.mikepenz.aboutlibraries.entity.Library
 import com.mikepenz.aboutlibraries.ui.compose.android.produceLibraries
 import com.nevoit.cresto.R
@@ -53,29 +57,28 @@ import com.nevoit.cresto.ui.components.packed.PageContent
 import com.nevoit.cresto.ui.components.packed.VGap
 import com.nevoit.glasense.theme.Slate500
 import com.nevoit.glasense.theme.Springs
-import dev.chrisbanes.haze.ExperimentalHazeApi
-import dev.chrisbanes.haze.hazeSource
-import dev.chrisbanes.haze.rememberHazeState
 
-/**
- * This composable function defines the Credits screen.
- * It displays a list of open-source libraries used in the app.
- * It uses experimental APIs for Material 3 and Haze effects.
- */
-@OptIn(ExperimentalHazeApi::class)
 @Composable
 fun CreditsScreen() {
     val activity = LocalActivity.current
 
     val statusBarHeight = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
 
-    val hazeState = rememberHazeState()
-
     val lazyListState = rememberLazyListState()
 
     val isSmallTitleVisible by lazyListState.isScrolledPast(statusBarHeight + 24.dp)
 
     val libraries by produceLibraries(R.raw.aboutlibraries)
+
+    val backgroundColor = AppColors.pageBackground
+    val backdrop = rememberLayerBackdrop {
+        drawRect(
+            color = backgroundColor,
+            size = Size(this.size.width * 3, this.size.height * 3),
+            topLeft = Offset(-this.size.width, -this.size.height)
+        )
+        drawContent()
+    }
 
     Box(
         modifier = Modifier
@@ -85,7 +88,7 @@ fun CreditsScreen() {
         PageContent(
             state = lazyListState,
             modifier = Modifier
-                .hazeSource(hazeState, 0f),
+                .layerBackdrop(backdrop),
             tabPadding = false
         ) {
             item {
@@ -131,8 +134,7 @@ fun CreditsScreen() {
             title = stringResource(R.string.credits),
             statusBarHeight = statusBarHeight,
             isVisible = isSmallTitleVisible,
-            hazeState = hazeState,
-            surfaceColor = AppColors.pageBackground
+            backdrop = backdrop
         ) {
 
         }

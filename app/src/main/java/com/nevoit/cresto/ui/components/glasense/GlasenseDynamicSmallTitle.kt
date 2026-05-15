@@ -1,6 +1,6 @@
 package com.nevoit.cresto.ui.components.glasense
 
-import android.os.Build
+import android.graphics.RenderEffect
 import androidx.compose.animation.core.CubicBezierEasing
 import androidx.compose.animation.core.EaseInQuad
 import androidx.compose.animation.core.tween
@@ -17,25 +17,24 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.kyant.backdrop.Backdrop
+import com.kyant.backdrop.drawPlainBackdrop
+import com.kyant.backdrop.effects.blur
+import com.kyant.backdrop.effects.effect
+import com.nevoit.cresto.theme.AppColors
 import com.nevoit.cresto.theme.LocalGlasenseSettings
-import com.nevoit.cresto.theme.linearGradientMaskT2B70
-import com.nevoit.cresto.toolkit.gaussiangradient.smoothGradientMask
-import com.nevoit.cresto.toolkit.gaussiangradient.smoothGradientMaskFallbackInvert
 import com.nevoit.cresto.ui.components.CustomAnimatedVisibility
 import com.nevoit.cresto.ui.components.myFadeIn
 import com.nevoit.cresto.ui.components.myFadeOut
 import com.nevoit.cresto.ui.components.myScaleIn
 import com.nevoit.cresto.ui.components.myScaleOut
-import dev.chrisbanes.haze.ExperimentalHazeApi
-import dev.chrisbanes.haze.HazeInputScale
-import dev.chrisbanes.haze.HazeState
-import dev.chrisbanes.haze.HazeStyle
-import dev.chrisbanes.haze.hazeEffect
 
 /**
  * A dynamic small title bar that appears with an animation.
@@ -45,11 +44,10 @@ import dev.chrisbanes.haze.hazeEffect
  * @param title The text to display as the title.
  * @param statusBarHeight The height of the system status bar.
  * @param isVisible Whether the title should be visible.
- * @param hazeState The state for the haze effect.
+ * @param backdrop For blur effect.
  * @param surfaceColor The color of the surface behind the title.
  * @param content The main content to be displayed below the title bar.
  */
-@OptIn(ExperimentalHazeApi::class)
 @Composable
 fun GlasenseDynamicSmallTitle(
     modifier: Modifier,
@@ -57,8 +55,8 @@ fun GlasenseDynamicSmallTitle(
     textStyle: TextStyle = TextStyle(),
     statusBarHeight: Dp,
     isVisible: Boolean,
-    hazeState: HazeState,
-    surfaceColor: Color,
+    backdrop: Backdrop,
+    surfaceColor: Color = AppColors.pageBackground,
     titleHorizontalPadding: Dp = 80.dp,
     content: @Composable () -> Unit
 ) {
@@ -81,22 +79,44 @@ fun GlasenseDynamicSmallTitle(
                     .height(48.dp + statusBarHeight + 48.dp)
                     .fillMaxWidth()
                     .align(Alignment.TopCenter)
-                    .then(if (blur) Modifier.hazeEffect(hazeState) {
-                        blurRadius = 2.dp
-                        noiseFactor = 0f
-                        inputScale = HazeInputScale.Fixed(0.5f)
-                        mask = linearGradientMaskT2B70
-                        style = HazeStyle(backgroundColor = surfaceColor, tint = null)
-                    } else Modifier)
-                    .then(
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) Modifier.smoothGradientMask(
-                            surfaceColor.copy(alpha = 1f),
-                            surfaceColor.copy(alpha = 0f),
-                            0.5f,
-                            0.5f,
-                            0.7f
-                        ) else Modifier.smoothGradientMaskFallbackInvert(surfaceColor, 0.7f)
+                    .drawPlainBackdrop(
+                        backdrop = backdrop,
+                        shape = { RectangleShape },
+                        effects = {
+                            if (blur) blur(3f.dp.toPx())
+                            effect(
+                                RenderEffect.createRuntimeShaderEffect(
+                                    obtainRuntimeShader(
+                                        "AlphaMask",
+                                        """
+uniform shader content;
+
+uniform float2 size;
+layout(color) uniform half4 tint;
+uniform float tintIntensity;
+
+half4 main(float2 coord) {
+float blurAlpha = smoothstep(size.y, size.y * 0.7, coord.y);
+float tintAlpha = smoothstep(size.y, size.y * 0.6, coord.y);
+return mix(content.eval(coord) * blurAlpha, tint * tintAlpha, tintIntensity);
+}"""
+                                    ).apply {
+                                        setFloatUniform("size", size.width, size.height)
+                                        setColorUniform("tint", surfaceColor.toArgb())
+                                        setFloatUniform("tintIntensity", 0.7f)
+                                    },
+                                    "content"
+                                )
+                            )
+                        }
                     )
+//                    .smoothGradientMask(
+//                        surfaceColor.copy(alpha = 1f),
+//                        surfaceColor.copy(alpha = 0f),
+//                        0.5f,
+//                        0.5f,
+//                        0.7f
+//                    )
             ) {}
         }
         // The primary content of the screen.

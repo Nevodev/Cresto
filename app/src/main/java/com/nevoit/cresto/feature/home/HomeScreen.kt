@@ -16,7 +16,6 @@ import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -33,11 +32,14 @@ import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.kyant.backdrop.backdrops.layerBackdrop
+import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import com.nevoit.cresto.R
 import com.nevoit.cresto.data.todo.EXTRA_TODO_ID
 import com.nevoit.cresto.data.todo.TodoViewModel
@@ -46,6 +48,7 @@ import com.nevoit.cresto.feature.settings.util.SettingsManager
 import com.nevoit.cresto.feature.settings.util.SettingsViewModel
 import com.nevoit.cresto.feature.settings.util.SortOption
 import com.nevoit.cresto.feature.settings.util.SortOrder
+import com.nevoit.cresto.theme.AppColors
 import com.nevoit.cresto.ui.components.glasense.GlasenseMenuItem
 import com.nevoit.cresto.ui.components.glasense.GlasensePageHeader
 import com.nevoit.cresto.ui.components.glasense.extend.overscrollSpacer
@@ -54,17 +57,12 @@ import com.nevoit.cresto.ui.components.glasense.rememberSwipeableListState
 import com.nevoit.cresto.ui.components.packed.PageContent
 import com.nevoit.cresto.ui.components.packed.VGap
 import com.nevoit.glasense.theme.Springs
-import dev.chrisbanes.haze.ExperimentalHazeApi
-import dev.chrisbanes.haze.hazeSource
-import dev.chrisbanes.haze.rememberHazeState
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 
-
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalHazeApi::class)
 @Composable
 fun BoxScope.HomeScreen(
     showMenu: (anchorBounds: Rect, items: List<GlasenseMenuItem>) -> Unit,
@@ -88,8 +86,6 @@ fun BoxScope.HomeScreen(
     val isSearchBoxOpen by viewModel.isSearchBoxOpen.collectAsState()
 
     val statusBarHeight = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
-
-    val hazeState = rememberHazeState()
 
     // val colorMode = if (MaterialTheme.colorScheme.background == Color.White) true else false
 
@@ -177,10 +173,21 @@ fun BoxScope.HomeScreen(
             swipeListState.close()
         }
     }
+
+    val backdroundColor = AppColors.pageBackground
+
+    val backdrop = rememberLayerBackdrop {
+        drawRect(
+            color = backdroundColor,
+            size = Size(this.size.width * 3, this.size.height * 3),
+            topLeft = Offset(-this.size.width, -this.size.height)
+        )
+        drawContent()
+    }
+
     PageContent(
         state = lazyListState,
-        modifier = Modifier
-            .hazeSource(hazeState, 0f),
+        modifier = Modifier.layerBackdrop(backdrop),
         tabPadding = true
     ) {
 
@@ -339,7 +346,7 @@ fun BoxScope.HomeScreen(
         menuController = showMenu,
         menuItems = menuItemsSort,
         isTitleVisible = isSmallTitleVisible,
-        hazeState = hazeState,
+        backdrop = backdrop,
         viewModel = viewModel,
     )
 }

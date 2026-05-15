@@ -2,7 +2,7 @@ package com.nevoit.cresto.feature.calendar
 
 import android.app.Activity
 import android.content.Intent
-import android.os.Build
+import android.graphics.RenderEffect
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -15,7 +15,6 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -52,8 +51,10 @@ import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.BlurEffect
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.TileMode
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
@@ -72,6 +73,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.kyant.backdrop.backdrops.layerBackdrop
+import com.kyant.backdrop.backdrops.rememberLayerBackdrop
+import com.kyant.backdrop.drawPlainBackdrop
+import com.kyant.backdrop.effects.blur
+import com.kyant.backdrop.effects.effect
 import com.kyant.shapes.Capsule
 import com.nevoit.cresto.R
 import com.nevoit.cresto.data.todo.EXTRA_TODO_ID
@@ -82,9 +88,6 @@ import com.nevoit.cresto.feature.settings.util.SettingsViewModel
 import com.nevoit.cresto.theme.AppButtonColors
 import com.nevoit.cresto.theme.AppColors
 import com.nevoit.cresto.theme.LocalGlasenseSettings
-import com.nevoit.cresto.theme.linearGradientMaskT2B70
-import com.nevoit.cresto.toolkit.gaussiangradient.smoothGradientMask
-import com.nevoit.cresto.toolkit.gaussiangradient.smoothGradientMaskFallbackInvert
 import com.nevoit.cresto.ui.components.CustomAnimatedVisibility
 import com.nevoit.cresto.ui.components.glasense.GlasenseButtonAdaptable
 import com.nevoit.cresto.ui.components.glasense.GlasenseButtonToolBar
@@ -99,12 +102,6 @@ import com.nevoit.cresto.ui.components.myScaleOut
 import com.nevoit.cresto.ui.components.packed.PageContent
 import com.nevoit.cresto.ui.components.packed.VGap
 import com.nevoit.glasense.theme.Springs
-import dev.chrisbanes.haze.ExperimentalHazeApi
-import dev.chrisbanes.haze.HazeInputScale
-import dev.chrisbanes.haze.HazeStyle
-import dev.chrisbanes.haze.hazeEffect
-import dev.chrisbanes.haze.hazeSource
-import dev.chrisbanes.haze.rememberHazeState
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.YearMonth
@@ -112,9 +109,9 @@ import java.time.format.DateTimeFormatter
 import java.util.Locale
 import kotlin.math.abs
 
-@OptIn(ExperimentalHazeApi::class)
+
 @Composable
-fun BoxScope.CalendarScreen() {
+fun CalendarScreen() {
     val lazyListState = rememberLazyListState()
 
     val localDateSaver = Saver<LocalDate, String>(
@@ -216,7 +213,6 @@ fun BoxScope.CalendarScreen() {
 
     val density = LocalDensity.current
     var headerHeightPx by remember { mutableFloatStateOf(0f) }
-    val hazeState = rememberHazeState()
     val backgroundColor = AppColors.pageBackground
     val blur = !LocalGlasenseSettings.current.liteMode
 
@@ -265,6 +261,15 @@ fun BoxScope.CalendarScreen() {
 
     val hapticController = LocalHapticFeedback.current
 
+    val backdrop = rememberLayerBackdrop {
+        drawRect(
+            color = backgroundColor,
+            size = Size(this.size.width * 3, this.size.height * 3),
+            topLeft = Offset(-this.size.width, -this.size.height)
+        )
+        drawContent()
+    }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -274,7 +279,7 @@ fun BoxScope.CalendarScreen() {
             state = lazyListState,
             modifier = Modifier
                 .fillMaxSize()
-                .hazeSource(hazeState, 0f),
+                .layerBackdrop(backdrop),
             tabPadding = true,
             topPadding = { with(density) { headerHeightPx.toDp() } }
         ) {
@@ -360,24 +365,39 @@ fun BoxScope.CalendarScreen() {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .then(if (blur) Modifier.hazeEffect(hazeState) {
-                        blurRadius = 2.dp
-                        noiseFactor = 0f
-                        inputScale = HazeInputScale.Fixed(0.5f)
-                        mask = linearGradientMaskT2B70
-                        style = HazeStyle(backgroundColor = backgroundColor, tint = null)
-                    } else Modifier)
-                    .then(
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) Modifier.smoothGradientMask(
-                            backgroundColor.copy(alpha = 1f),
-                            backgroundColor.copy(alpha = 0f),
-                            0.5f,
-                            0.5f,
-                            0.7f
-                        ) else Modifier.smoothGradientMaskFallbackInvert(backgroundColor, 0.7f)
+                    .drawPlainBackdrop(
+                        backdrop = backdrop,
+                        shape = { RectangleShape },
+                        effects = {
+                            if (blur) blur(3f.dp.toPx())
+                            effect(
+                                RenderEffect.createRuntimeShaderEffect(
+                                    obtainRuntimeShader(
+                                        "AlphaMask",
+                                        """
+uniform shader content;
+
+uniform float2 size;
+layout(color) uniform half4 tint;
+uniform float tintIntensity;
+
+half4 main(float2 coord) {
+float blurAlpha = smoothstep(size.y, size.y * 0.7, coord.y);
+float tintAlpha = smoothstep(size.y, size.y * 0.6, coord.y);
+return mix(content.eval(coord) * blurAlpha, tint * tintAlpha, tintIntensity);
+}"""
+                                    ).apply {
+                                        setFloatUniform("size", size.width, size.height)
+                                        setColorUniform("tint", backgroundColor.toArgb())
+                                        setFloatUniform("tintIntensity", 0.7f)
+                                    },
+                                    "content"
+                                )
+                            )
+                        }
                     )
                     .statusBarsPadding()
-                    .height(with(density) { headerHeightPx.toDp() })
+                    .height(with(density) { headerHeightPx.toDp() + 24.dp })
             )
         }
 

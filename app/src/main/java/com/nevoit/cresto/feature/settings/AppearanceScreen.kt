@@ -27,7 +27,6 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -42,7 +41,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.toArgb
@@ -58,6 +59,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import com.nevoit.cresto.R
 import com.nevoit.cresto.feature.settings.util.SettingsViewModel
 import com.nevoit.cresto.theme.AppButtonColors
@@ -98,16 +100,7 @@ import com.nevoit.glasense.theme.Sky500
 import com.nevoit.glasense.theme.Teal500
 import com.nevoit.glasense.theme.Violet500
 import com.nevoit.glasense.theme.Yellow500
-import dev.chrisbanes.haze.ExperimentalHazeApi
-import dev.chrisbanes.haze.hazeSource
-import dev.chrisbanes.haze.rememberHazeState
 
-/**
- * This composable function defines the Appearance screen.
- * It allows users to customize the look and feel of the application.
- * It uses experimental APIs for Material 3 and Haze effects.
- */
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalHazeApi::class)
 @Composable
 fun AppearanceScreen(settingsViewModel: SettingsViewModel = viewModel()) {
     // Get the current activity instance to allow finishing the screen
@@ -118,11 +111,8 @@ fun AppearanceScreen(settingsViewModel: SettingsViewModel = viewModel()) {
     val density = LocalDensity.current
     // Calculate the scroll threshold in pixels for showing/hiding the small title
 
-    // Remember the state for the Haze effect, a library for blurring content behind a surface
-    val hazeState = rememberHazeState()
-
     // Get colors from the app's custom theme
-    val surfaceColor = AppColors.pageBackground
+    val backgroundColor = AppColors.pageBackground
     val hierarchicalSurfaceColor = AppColors.cardBackground
 
     // Remember the state for the lazy list to control scrolling
@@ -145,17 +135,24 @@ fun AppearanceScreen(settingsViewModel: SettingsViewModel = viewModel()) {
     var latestColorPickerTriggerBounds by remember { mutableStateOf<Rect?>(null) }
     var popupAnchorBounds by remember { mutableStateOf(Rect.Zero) }
 
+    val backdrop = rememberLayerBackdrop {
+        drawRect(
+            color = backgroundColor,
+            size = Size(this.size.width * 3, this.size.height * 3),
+            topLeft = Offset(-this.size.width, -this.size.height)
+        )
+        drawContent()
+    }
+
     // Root container for the screen, filling the entire available space
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(surfaceColor)
+            .background(backgroundColor)
     ) {
         // A vertically scrolling list that only composes and lays out the currently visible items
         PageContent(
             state = lazyListState,
-            modifier = Modifier
-                .hazeSource(hazeState, 0f),
             tabPadding = false
         ) {
             // Spacer item at the top of the list to push content below the top bar and back button
@@ -310,8 +307,8 @@ fun AppearanceScreen(settingsViewModel: SettingsViewModel = viewModel()) {
             title = stringResource(R.string.appearance),
             statusBarHeight = statusBarHeight,
             isVisible = isSmallTitleVisible,
-            hazeState = hazeState,
-            surfaceColor = surfaceColor
+            backdrop = backdrop,
+            surfaceColor = backgroundColor
         ) {
             // This lambda is empty as the component handles its own content
         }

@@ -24,7 +24,6 @@ import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -45,7 +44,6 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -79,9 +77,6 @@ import com.nevoit.glasense.theme.Amber400
 import com.nevoit.glasense.theme.Emerald400
 import com.nevoit.glasense.theme.Slate500
 import com.tencent.mmkv.MMKV
-import dev.chrisbanes.haze.ExperimentalHazeApi
-import dev.chrisbanes.haze.hazeSource
-import dev.chrisbanes.haze.rememberHazeState
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -90,11 +85,6 @@ import java.io.File
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
-/**
- * This composable function defines the Data & Storage screen.
- * It uses experimental APIs for Material 3 and Haze effects.
- */
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalHazeApi::class)
 @Composable
 fun DataStorageScreen() {
     val viewModel: TodoViewModel = koinViewModel()
@@ -138,7 +128,7 @@ fun DataStorageScreen() {
             // Calculate App Size (APK)
             val app = try {
                 File(context.applicationInfo.sourceDir).length()
-            } catch (e: Exception) {
+            } catch (_: Exception) {
                 0L
             }
 
@@ -157,14 +147,7 @@ fun DataStorageScreen() {
 
     // Calculate the height of the status bar to adjust layout
     val statusBarHeight = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
-    val density = LocalDensity.current
 
-    // Remember the state for the Haze effect, a library for blurring content behind a surface
-    val hazeState = rememberHazeState()
-
-    // Get colors from the app's custom theme
-    val onSurfaceContainer = AppColors.scrimNormal
-    val onBackground = AppColors.content
     val surfaceColor = AppColors.pageBackground
     val hierarchicalSurfaceColor = AppColors.cardBackground
 
@@ -173,11 +156,6 @@ fun DataStorageScreen() {
 
     // Determine if the small title should be visible based on the scroll position
     val isSmallTitleVisible by lazyListState.isScrolledPast(statusBarHeight + 24.dp)
-
-    // Get the pixel value for 1dp, used for drawing divider lines
-    val dp = with(density) {
-        1.dp.toPx()
-    }
 
     val backdrop = rememberLayerBackdrop {
         drawRect(surfaceColor)
@@ -440,18 +418,17 @@ fun DataStorageScreen() {
     val clearAllDataText = stringResource(R.string.clear_all_data)
     val clearContentText =
         stringResource(R.string.this_will_permanently_delete_all_application_data_including_todos_and_settings_this_action_cannot_be_undone)
+
     // Root container for the screen, filling the entire available space
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(surfaceColor)
             .layerBackdrop(backdrop)
     ) {
         // A vertically scrolling list that only composes and lays out the currently visible items
         PageContent(
             state = lazyListState,
-            modifier = Modifier
-                .hazeSource(hazeState, 0f),
+            modifier = Modifier,
             tabPadding = false
         ) {
             // Spacer item at the top of the list to push content below the top bar and back button
@@ -619,8 +596,7 @@ fun DataStorageScreen() {
             title = stringResource(R.string.data_storage),
             statusBarHeight = statusBarHeight,
             isVisible = isSmallTitleVisible,
-            hazeState = hazeState,
-            surfaceColor = surfaceColor
+            backdrop = backdrop
         ) {
             // This lambda is empty as the component handles its own content
         }

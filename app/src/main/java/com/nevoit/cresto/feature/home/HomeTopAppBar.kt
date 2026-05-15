@@ -38,7 +38,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
@@ -66,22 +65,28 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.kyant.backdrop.Backdrop
+import com.kyant.backdrop.backdrops.rememberLayerBackdrop
+import com.kyant.backdrop.drawBackdrop
+import com.kyant.backdrop.drawPlainBackdrop
+import com.kyant.backdrop.effects.blur
+import com.kyant.backdrop.effects.effect
+import com.kyant.backdrop.effects.lens
+import com.kyant.backdrop.highlight.Highlight
 import com.kyant.shapes.Capsule
 import com.nevoit.cresto.R
 import com.nevoit.cresto.data.todo.TodoViewModel
 import com.nevoit.cresto.theme.AppButtonColors
 import com.nevoit.cresto.theme.AppColors
+import com.nevoit.cresto.theme.LocalGlasenseSettings
 import com.nevoit.cresto.theme.isAppInDarkTheme
 import com.nevoit.cresto.ui.components.glasense.GlasenseButtonAdaptable
 import com.nevoit.cresto.ui.components.glasense.GlasenseButtonToolBar
 import com.nevoit.cresto.ui.components.glasense.GlasenseDynamicSmallTitle
 import com.nevoit.cresto.ui.components.glasense.GlasenseMenuItem
 import com.nevoit.cresto.ui.components.glasense.glasenseHighlight
-import com.nevoit.glasense.modifier.OverlayWeight
-import com.nevoit.glasense.modifier.glasenseOverlay
-import dev.chrisbanes.haze.HazeState
-import dev.chrisbanes.haze.HazeStyle
-import dev.chrisbanes.haze.hazeEffect
+import com.nevoit.cresto.ui.components.glasense.material.MaterialRecipes
+import com.nevoit.cresto.ui.components.glasense.material.rememberMaterialRenderEffect
 import kotlinx.coroutines.launch
 
 @Composable
@@ -89,7 +94,7 @@ fun BoxScope.HomeTopAppBar(
     menuController: (anchorBounds: Rect, items: List<GlasenseMenuItem>) -> Unit,
     menuItems: List<GlasenseMenuItem>,
     isTitleVisible: Boolean,
-    hazeState: HazeState,
+    backdrop: Backdrop,
     viewModel: TodoViewModel
 ) {
     val density = LocalDensity.current
@@ -165,6 +170,12 @@ fun BoxScope.HomeTopAppBar(
     val searchBoxBlurAnimation =
         remember { Animatable(if (isSearchBoxOpen) 0f else targetBlurRadius) }
 
+    val material = rememberMaterialRenderEffect(MaterialRecipes.appBar())
+
+    val glass = LocalGlasenseSettings.current.liquidGlass
+
+    val cardBackground = AppColors.cardBackground
+
     LaunchedEffect(isSearchBoxOpen) {
         if (isSearchBoxOpen) {
             isSearchBoxComposed = true
@@ -186,7 +197,7 @@ fun BoxScope.HomeTopAppBar(
         textStyle = TextStyle(fontFeatureSettings = "tnum"),
         statusBarHeight = statusBarHeight,
         isVisible = if (isSelectionModeActive) true else isTitleVisible,
-        hazeState = hazeState,
+        backdrop = backdrop,
         surfaceColor = AppColors.pageBackground
     ) {
         var coordinatesCaptured by remember { mutableStateOf<LayoutCoordinates?>(null) }
@@ -426,25 +437,50 @@ fun BoxScope.HomeTopAppBar(
                             edgeTreatment = TileMode.Decal
                         )
                     }
-                }
-                .clip(Capsule())
-                .graphicsLayer {
                     alpha = searchBoxAlphaAnimation.value
                 }
-                .hazeEffect(
-                    hazeState,
-                    HazeStyle(tint = null, backgroundColor = AppColors.pageBackground)
-                ) {
-                    blurRadius = 32.dp
-                    noiseFactor = .1f
-                }
-                .glasenseOverlay(dark = isAppInDarkTheme(), weight = OverlayWeight.Normal)
+                .drawPlainBackdrop(
+                    backdrop = backdrop,
+                    shape = { Capsule() },
+                    effects = {
+                        padding = 32.dp.toPx() * 2
+                        effect(material)
+                        blur(
+                            radius = if (glass) 8.dp.toPx() else 32.dp.toPx(),
+                            edgeTreatment = TileMode.Decal
+                        )
+                        if (glass) lens(16f.dp.toPx(), 48f.dp.toPx())
+                    },
+                    onDrawSurface = {
+                        drawRect(
+                            cardBackground, alpha = 0.3f
+                        )
+                    }
+                )
         ) {
-            Box(
-                modifier = Modifier
-                    .glasenseHighlight(cornerRadius = 100.dp)
-                    .fillMaxSize()
-            )
+            if (!glass) {
+                Box(
+                    modifier = Modifier
+                        .glasenseHighlight(cornerRadius = 100.dp)
+                        .fillMaxSize()
+                )
+            }
+            if (glass) {
+                Box(
+                    modifier = Modifier
+                        .drawBackdrop(
+                            backdrop = rememberLayerBackdrop { },
+                            shape = { Capsule() },
+                            shadow = null,
+                            innerShadow = null,
+                            highlight = { Highlight.Default },
+                            effects = {
+
+                            })
+                        .fillMaxSize()
+                )
+            }
+
             Box(
                 modifier = Modifier
                     .graphicsLayer {

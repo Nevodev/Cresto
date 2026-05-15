@@ -33,7 +33,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.SolidColor
@@ -54,9 +53,10 @@ import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.kyant.backdrop.backdrops.LayerBackdrop
+import com.kyant.backdrop.Backdrop
 import com.kyant.backdrop.drawBackdrop
 import com.kyant.backdrop.effects.blur
+import com.kyant.backdrop.effects.effect
 import com.kyant.backdrop.effects.lens
 import com.kyant.backdrop.highlight.Highlight
 import com.nevoit.cresto.feature.settings.util.SettingsManager
@@ -65,10 +65,13 @@ import com.nevoit.cresto.theme.AppColors
 import com.nevoit.cresto.theme.AppSpecs
 import com.nevoit.cresto.theme.LocalGlasenseSettings
 import com.nevoit.cresto.theme.isAppInDarkTheme
+import com.nevoit.cresto.ui.components.glasense.material.MaterialRecipes
+import com.nevoit.cresto.ui.components.glasense.material.rememberMaterialRenderEffect
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.random.Random
+import kotlin.time.Duration.Companion.milliseconds
 
 data class DialogItemData(
     val text: String,
@@ -134,7 +137,7 @@ fun GlasenseDialogButton(
 @Composable
 fun GlasenseDialog(
     dialogState: DialogState,
-    backdrop: LayerBackdrop,
+    backdrop: Backdrop,
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -142,8 +145,6 @@ fun GlasenseDialog(
     val surfaceColor = AppColors.cardBackground
 
     var liquidGlass by SettingsManager.isLiquidGlassState
-
-    val isDarkMode = isAppInDarkTheme()
 
     val blur = !LocalGlasenseSettings.current.liteMode
     val darkTheme = isAppInDarkTheme()
@@ -163,6 +164,8 @@ fun GlasenseDialog(
     }
     val scope = rememberCoroutineScope()
     val haptic = LocalHapticFeedback.current
+
+    val material = rememberMaterialRenderEffect(MaterialRecipes.medium())
 
     if (dialogState.isVisible) {
         var isVisible by remember { mutableStateOf(false) }
@@ -250,12 +253,15 @@ fun GlasenseDialog(
                         backdrop = backdrop,
                         shape = { dialogShape },
                         effects = {
-                            if (blur && !liquidGlass) blur(
-                                64f.dp.toPx(),
-                                TileMode.Mirror
-                            ) else if (blur) {
+                            if (blur && !liquidGlass) {
+                                padding = 64f.dp.toPx() * 2
+                                effect(material)
+                                blur(64f.dp.toPx(), TileMode.Mirror)
+                            } else if (blur) {
+                                padding = 16f.dp.toPx() * 2
+                                effect(material)
                                 blur(
-                                    if (isDarkMode) 16f.dp.toPx() else 8f.dp.toPx(),
+                                    16.dp.toPx(),
                                     TileMode.Mirror
                                 )
                                 lens(24f.dp.toPx(), 48f.dp.toPx(), depthEffect = true)
@@ -270,50 +276,6 @@ fun GlasenseDialog(
                                 brush = SolidColor(surfaceColor),
                                 style = Fill
                             )
-                            // The drawing logic is different for light and dark themes.
-                            if (!darkTheme) {
-                                drawRect(
-                                    brush = SolidColor(Color(0xFF6C6C6C).copy(alpha = 0.7f)),
-                                    style = Fill,
-                                    blendMode = BlendMode.Luminosity,
-                                )
-                                drawRect(
-                                    brush = SolidColor(Color(0xFF252525).copy(alpha = 1f)),
-                                    style = Fill,
-                                    blendMode = BlendMode.Plus,
-                                )
-                                drawRect(
-                                    brush = SolidColor(Color(0xFF555555).copy(alpha = 0.5f)),
-                                    style = Fill,
-                                    blendMode = BlendMode.ColorDodge,
-                                )
-                                drawRect(
-                                    brush = SolidColor(Color(0xFFFFFFFF).copy(alpha = 0.3f)),
-                                    style = Fill,
-                                    blendMode = BlendMode.SrcOver,
-                                )
-                            } else {
-                                drawRect(
-                                    brush = SolidColor(Color(0xFF000000).copy(alpha = 0.4f)),
-                                    style = Fill,
-                                    blendMode = BlendMode.Luminosity,
-                                )
-                                drawRect(
-                                    brush = SolidColor(Color(0xFF252525).copy(alpha = 1f)),
-                                    style = Fill,
-                                    blendMode = BlendMode.Plus,
-                                )
-                                drawRect(
-                                    brush = SolidColor(Color(0xFF4B4B4B).copy(alpha = 0.5f)),
-                                    style = Fill,
-                                    blendMode = BlendMode.ColorDodge,
-                                )
-                                drawRect(
-                                    brush = SolidColor(Color(0xFF000000).copy(alpha = 0.3f)),
-                                    style = Fill,
-                                    blendMode = BlendMode.SrcOver,
-                                )
-                            }
                         },
                         layerBlock = {
                             scaleX = scaleAni.value
@@ -368,7 +330,7 @@ fun GlasenseDialog(
                                         scope.launch {
                                             repeat(5) {
                                                 haptic.performHapticFeedback(HapticFeedbackType.SegmentFrequentTick)
-                                                delay(Random.nextLong(50, 70))
+                                                delay(Random.nextLong(50, 70).milliseconds)
                                             }
                                         }
                                     }

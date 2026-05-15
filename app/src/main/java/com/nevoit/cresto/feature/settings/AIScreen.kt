@@ -21,6 +21,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush.Companion.sweepGradient
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -29,6 +31,8 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.kyant.backdrop.backdrops.layerBackdrop
+import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import com.nevoit.cresto.R
 import com.nevoit.cresto.feature.settings.util.AISettingsViewModel
 import com.nevoit.cresto.theme.AppButtonColors
@@ -47,16 +51,7 @@ import com.nevoit.cresto.ui.components.packed.VGap
 import com.nevoit.glasense.theme.Blue500
 import com.nevoit.glasense.theme.Pink400
 import com.nevoit.glasense.theme.Purple500
-import dev.chrisbanes.haze.ExperimentalHazeApi
-import dev.chrisbanes.haze.hazeSource
-import dev.chrisbanes.haze.rememberHazeState
 
-/**
- * This composable function defines the AI Settings screen.
- * It provides options to configure AI-related features.
- * It uses experimental APIs for Material 3 and Haze effects.
- */
-@OptIn(ExperimentalHazeApi::class)
 @Composable
 fun AIScreen(aiSettingsViewModel: AISettingsViewModel = viewModel()) {
     // Get the current activity instance to allow finishing the screen
@@ -65,12 +60,18 @@ fun AIScreen(aiSettingsViewModel: AISettingsViewModel = viewModel()) {
     // Calculate the height of the status bar to adjust layout
     val statusBarHeight = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
 
-    // Remember the state for the Haze effect, a library for blurring content behind a surface
-    val hazeState = rememberHazeState()
-
     // Get colors from the app's custom theme
-    val surfaceColor = AppColors.pageBackground
+    val backgroundColor = AppColors.pageBackground
     val hierarchicalSurfaceColor = AppColors.cardBackground
+
+    val backdrop = rememberLayerBackdrop {
+        drawRect(
+            color = backgroundColor,
+            size = Size(this.size.width * 3, this.size.height * 3),
+            topLeft = Offset(-this.size.width, -this.size.height)
+        )
+        drawContent()
+    }
 
     // Remember the state for the lazy list to control scrolling
     val lazyListState = rememberLazyListState()
@@ -86,13 +87,13 @@ fun AIScreen(aiSettingsViewModel: AISettingsViewModel = viewModel()) {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(surfaceColor)
+            .background(backgroundColor)
     ) {
         // A vertically scrolling list that only composes and lays out the currently visible items
         PageContent(
             state = lazyListState,
             modifier = Modifier
-                .hazeSource(hazeState, 0f),
+                .layerBackdrop(backdrop),
             tabPadding = false
         ) {
             // Spacer item at the top of the list to push content below the top bar and back button
@@ -208,8 +209,8 @@ fun AIScreen(aiSettingsViewModel: AISettingsViewModel = viewModel()) {
             title = stringResource(R.string.ai),
             statusBarHeight = statusBarHeight,
             isVisible = isSmallTitleVisible,
-            hazeState = hazeState,
-            surfaceColor = surfaceColor
+            backdrop = backdrop,
+            surfaceColor = backgroundColor
         ) {
             // This lambda is empty as the component handles its own content
         }

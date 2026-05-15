@@ -2,7 +2,6 @@
 agp = "9.2.1"
 backdrop = "1.0.6"
 shapes = "1.2.0"
-haze = "1.7.2"
 kotlin = "2.3.21"
 coreKtx = "1.18.0"
 junit = "4.13.2"
@@ -59,7 +58,6 @@ kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serializa
 
 backdrop = { module = "io.github.kyant0:backdrop", version.ref = "backdrop" }
 shapes = { module = "io.github.kyant0:shapes", version.ref = "shapes" }
-haze = { module = "dev.chrisbanes.haze:haze", version.ref = "haze" }
 mmkv = { module = "com.tencent:mmkv", version.ref = "mmkv" }
 confetti-kit = { module = "io.github.vinceglb:confettikit", version.ref = "confettiKit" }
 materialKolor = { module = "com.materialkolor:material-kolor", version.ref = "materialKolor" }

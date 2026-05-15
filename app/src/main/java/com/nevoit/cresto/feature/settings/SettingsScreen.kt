@@ -9,16 +9,19 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.kyant.backdrop.backdrops.layerBackdrop
+import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import com.nevoit.cresto.R
 import com.nevoit.cresto.theme.AppColors
 import com.nevoit.cresto.theme.harmonize
@@ -35,18 +38,11 @@ import com.nevoit.glasense.theme.Blue500
 import com.nevoit.glasense.theme.Pink400
 import com.nevoit.glasense.theme.Purple500
 import com.nevoit.glasense.theme.Slate500
-import dev.chrisbanes.haze.ExperimentalHazeApi
-import dev.chrisbanes.haze.hazeSource
-import dev.chrisbanes.haze.rememberHazeState
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalHazeApi::class)
 @Composable
 fun BoxScope.SettingsScreen() {
     val statusBarHeight = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
 
-    val hazeState = rememberHazeState()
-
-    val surfaceColor = AppColors.pageBackground
     val hierarchicalSurfaceColor = AppColors.cardBackground
 
     val lazyListState = rememberLazyListState()
@@ -55,10 +51,20 @@ fun BoxScope.SettingsScreen() {
 
     val context = LocalContext.current
 
+    val backgroundColor = AppColors.pageBackground
+    val backdrop = rememberLayerBackdrop {
+        drawRect(
+            color = backgroundColor,
+            size = Size(this.size.width * 3, this.size.height * 3),
+            topLeft = Offset(-this.size.width, -this.size.height)
+        )
+        drawContent()
+    }
+
     PageContent(
         state = lazyListState,
         modifier = Modifier
-            .hazeSource(hazeState, 0f),
+            .layerBackdrop(backdrop),
         tabPadding = true
     ) {
         item {
@@ -173,8 +179,7 @@ fun BoxScope.SettingsScreen() {
         title = stringResource(R.string.settings),
         statusBarHeight = statusBarHeight,
         isVisible = isSmallTitleVisible,
-        hazeState = hazeState,
-        surfaceColor = surfaceColor
+        backdrop = backdrop
     ) {
     }
 }
