@@ -11,8 +11,12 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.ime
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -39,6 +43,7 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntSize
@@ -50,6 +55,7 @@ import com.nevoit.cresto.theme.isAppInDarkTheme
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlin.math.max
 import kotlin.time.Duration.Companion.milliseconds
 
 data class PopupState(
@@ -70,16 +76,21 @@ private data class AnchorPopupPlacement(
 private fun pickPopupPlacement(
     anchorBounds: Rect,
     popupSize: IntSize,
-    viewport: IntSize,
+    availableBounds: Rect,
     marginPx: Float,
     gapPx: Float,
     preferredDirection: PopupDirection = PopupDirection.Auto
 ): AnchorPopupPlacement {
+    val minX = availableBounds.left + marginPx
+    val minY = availableBounds.top + marginPx
+    val maxX = (availableBounds.right - popupSize.width - marginPx).coerceAtLeast(minX)
+    val maxY = (availableBounds.bottom - popupSize.height - marginPx).coerceAtLeast(minY)
+
     fun overflow(x: Float, y: Float): Float {
-        val left = (marginPx - x).coerceAtLeast(0f)
-        val top = (marginPx - y).coerceAtLeast(0f)
-        val right = (x + popupSize.width - (viewport.width - marginPx)).coerceAtLeast(0f)
-        val bottom = (y + popupSize.height - (viewport.height - marginPx)).coerceAtLeast(0f)
+        val left = (minX - x).coerceAtLeast(0f)
+        val top = (minY - y).coerceAtLeast(0f)
+        val right = (x - maxX).coerceAtLeast(0f)
+        val bottom = (y - maxY).coerceAtLeast(0f)
         return left + top + right + bottom
     }
 
@@ -145,14 +156,8 @@ private fun pickPopupPlacement(
     val chosen = candidates.firstOrNull { p -> overflow(p.x, p.y) == 0f }
         ?: candidates.minBy { p -> overflow(p.x, p.y) }
 
-    val clampedX = chosen.x.coerceIn(
-        marginPx,
-        (viewport.width - popupSize.width - marginPx).coerceAtLeast(marginPx)
-    )
-    val clampedY = chosen.y.coerceIn(
-        marginPx,
-        (viewport.height - popupSize.height - marginPx).coerceAtLeast(marginPx)
-    )
+    val clampedX = chosen.x.coerceIn(minX, maxX)
+    val clampedY = chosen.y.coerceIn(minY, maxY)
 
     val originX = ((anchorCenterX - clampedX) / popupSize.width.toFloat()).coerceIn(0f, 1f)
     val originY = ((anchorCenterY - clampedY) / popupSize.height.toFloat()).coerceIn(0f, 1f)
@@ -180,24 +185,46 @@ fun GlasensePopup(
     val windowInfo = LocalWindowInfo.current
     val viewport = IntSize(windowInfo.containerSize.width, windowInfo.containerSize.height)
     val density = LocalDensity.current
+    val layoutDirection = LocalLayoutDirection.current
+    val statusBarTopPx = WindowInsets.statusBars.getTop(density).toFloat()
+    val navigationBarLeftPx = WindowInsets.navigationBars.getLeft(density, layoutDirection).toFloat()
+    val navigationBarRightPx = WindowInsets.navigationBars.getRight(density, layoutDirection).toFloat()
+    val navigationBarBottomPx = WindowInsets.navigationBars.getBottom(density).toFloat()
+    val imeBottomPx = WindowInsets.ime.getBottom(density).toFloat()
+    val liveAvailableBounds = Rect(
+        left = navigationBarLeftPx,
+        top = statusBarTopPx,
+        right = (viewport.width - navigationBarRightPx).coerceAtLeast(navigationBarLeftPx),
+        bottom = (viewport.height - max(navigationBarBottomPx, imeBottomPx)).coerceAtLeast(
+            statusBarTopPx
+        )
+    )
+    var placementAnchorBounds by remember { mutableStateOf(popupState.anchorBounds) }
+    var placementAvailableBounds by remember { mutableStateOf(liveAvailableBounds) }
+    LaunchedEffect(popupState.isVisible) {
+        if (popupState.isVisible) {
+            placementAnchorBounds = popupState.anchorBounds
+            placementAvailableBounds = liveAvailableBounds
+        }
+    }
     val fallbackWidthPx = with(density) { (width ?: 280.dp).roundToPx() }
     val fallbackHeightPx = with(density) { 280.dp.roundToPx() }
     val effectivePopupSize =
         if (popupSize == IntSize.Zero) IntSize(fallbackWidthPx, fallbackHeightPx) else popupSize
 
     val placement = remember(
-        popupState.anchorBounds,
+        placementAnchorBounds,
         effectivePopupSize,
-        viewport,
+        placementAvailableBounds,
         popupMargin,
         anchorGap,
         direction,
         density
     ) {
         pickPopupPlacement(
-            anchorBounds = popupState.anchorBounds,
+            anchorBounds = placementAnchorBounds,
             popupSize = effectivePopupSize,
-            viewport = viewport,
+            availableBounds = placementAvailableBounds,
             marginPx = with(density) { popupMargin.toPx() },
             gapPx = with(density) { anchorGap.toPx() },
             preferredDirection = direction

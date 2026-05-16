@@ -56,10 +56,10 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.nevoit.cresto.R
 import com.nevoit.cresto.data.todo.TodoReminderMode
 import com.nevoit.cresto.data.todo.TodoViewModel
-import com.nevoit.cresto.ui.components.packed.TodoReminderConfig
 import com.nevoit.cresto.theme.AppColors
 import com.nevoit.cresto.ui.components.glasense.DialogItemData
 import com.nevoit.cresto.ui.components.glasense.GlasenseMenuItem
+import com.nevoit.cresto.ui.components.packed.TodoReminderConfig
 import com.nevoit.cresto.ui.viewmodel.AiSideEffect
 import com.nevoit.cresto.ui.viewmodel.AiViewModel
 import com.nevoit.cresto.ui.viewmodel.UiState
@@ -169,12 +169,13 @@ fun BottomSheet(
 
     val offset = remember { Animatable(bottomSheetHeightPx) }
     val totalOffset = remember { Animatable(bottomSheetHeightPx) }
+    var isReturningToBasic by remember { mutableStateOf(false) }
 
     val imeHeight =
         WindowInsets.ime.exclude(WindowInsets.navigationBars).getBottom(density).toFloat()
 
-    LaunchedEffect(offset.value, imeHeight) {
-        if (currentInputMode == SheetInputMode.Basic) {
+    LaunchedEffect(offset.value, imeHeight, currentInputMode, isReturningToBasic) {
+        if (currentInputMode == SheetInputMode.Basic && !isReturningToBasic) {
             totalOffset.snapTo(offset.value - imeHeight)
         }
     }
@@ -183,10 +184,16 @@ fun BottomSheet(
         when (currentInputMode) {
             SheetInputMode.Basic -> {
                 scope.launch {
-                    totalOffset.animateTo(
-                        targetValue = offset.value - imeHeight,
-                        animationSpec = Springs.smooth(300)
-                    )
+                    try {
+                        totalOffset.animateTo(
+                            targetValue = offset.value - imeHeight,
+                            animationSpec = Springs.smooth(300)
+                        )
+                    } finally {
+                        if (currentInputMode == SheetInputMode.Basic) {
+                            isReturningToBasic = false
+                        }
+                    }
                 }
             }
 
@@ -347,6 +354,7 @@ fun BottomSheet(
         }
     }
     fun navigateToBasic() {
+        isReturningToBasic = true
         currentInputMode = SheetInputMode.Basic
         slideAdvancedPage(false)
     }
@@ -354,6 +362,7 @@ fun BottomSheet(
     fun navigateToAdvanced() {
         keyboardController?.hide()
         isReturningFromAdvanced = true
+        isReturningToBasic = false
         currentInputMode = SheetInputMode.Advanced
 
         slideAdvancedPage(true)
@@ -473,7 +482,15 @@ fun BottomSheet(
                                 persistent = reminderPersistent,
                                 strong = reminderStrong
                             ).compatibleWithAllDay(isAllDayEnabled)
-                            onAddClick(title, notesText, flagIndex, date, startTime, endTime, reminder)
+                            onAddClick(
+                                title,
+                                notesText,
+                                flagIndex,
+                                date,
+                                startTime,
+                                endTime,
+                                reminder
+                            )
                         }
                     }, onClose = {
                         keyboardController?.hide()
@@ -526,7 +543,8 @@ fun BottomSheet(
                             isAllDayEnabled = enabled
                             if (enabled) {
                                 isTimeRangeEnabled = false
-                                reminderConfig = reminderConfig.compatibleWithAllDay(isAllDayEnabled = true)
+                                reminderConfig =
+                                    reminderConfig.compatibleWithAllDay(isAllDayEnabled = true)
                             }
                         },
                         onRangeStartTimeChange = { newTime ->

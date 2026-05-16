@@ -12,12 +12,16 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.ime
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
@@ -49,6 +53,7 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.IntSize
@@ -68,6 +73,7 @@ import com.nevoit.cresto.ui.components.glasense.material.rememberMaterialRenderE
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlin.math.max
 import kotlin.time.Duration.Companion.milliseconds
 
 data class MenuItemData(
@@ -113,15 +119,20 @@ private fun cornerToOrigin(corner: PopupCorner): TransformOrigin = when (corner)
 private fun pickPlacement(
     anchorBounds: Rect,
     menuSize: IntSize,
-    viewport: IntSize,
+    availableBounds: Rect,
     marginPx: Float,
     gapPx: Float
 ): PopupPlacement {
+    val minX = availableBounds.left + marginPx
+    val minY = availableBounds.top + marginPx
+    val maxX = (availableBounds.right - menuSize.width - marginPx).coerceAtLeast(minX)
+    val maxY = (availableBounds.bottom - menuSize.height - marginPx).coerceAtLeast(minY)
+
     fun overflow(x: Float, y: Float): Float {
-        val left = (marginPx - x).coerceAtLeast(0f)
-        val top = (marginPx - y).coerceAtLeast(0f)
-        val right = (x + menuSize.width - (viewport.width - marginPx)).coerceAtLeast(0f)
-        val bottom = (y + menuSize.height - (viewport.height - marginPx)).coerceAtLeast(0f)
+        val left = (minX - x).coerceAtLeast(0f)
+        val top = (minY - y).coerceAtLeast(0f)
+        val right = (x - maxX).coerceAtLeast(0f)
+        val bottom = (y - maxY).coerceAtLeast(0f)
         return left + top + right + bottom
     }
 
@@ -144,14 +155,8 @@ private fun pickPlacement(
     val chosen = candidates.firstOrNull { (_, p) -> overflow(p.x, p.y) == 0f }
         ?: candidates.minBy { (_, p) -> overflow(p.x, p.y) }
 
-    val clampedX = chosen.second.x.coerceIn(
-        marginPx,
-        (viewport.width - menuSize.width - marginPx).coerceAtLeast(marginPx)
-    )
-    val clampedY = chosen.second.y.coerceIn(
-        marginPx,
-        (viewport.height - menuSize.height - marginPx).coerceAtLeast(marginPx)
-    )
+    val clampedX = chosen.second.x.coerceIn(minX, maxX)
+    val clampedY = chosen.second.y.coerceIn(minY, maxY)
 
     return PopupPlacement(clampedX, clampedY, cornerToOrigin(chosen.first))
 }
@@ -174,16 +179,38 @@ fun GlasenseMenu(
     var menuSize by remember { mutableStateOf(IntSize.Zero) }
     val windowInfo = LocalWindowInfo.current
     val viewport = IntSize(windowInfo.containerSize.width, windowInfo.containerSize.height)
-    val menuWidthPx = with(LocalDensity.current) { 228.dp.roundToPx() }
-    val fallbackHeightPx = with(LocalDensity.current) { 228.dp.roundToPx() }
+    val density = LocalDensity.current
+    val layoutDirection = LocalLayoutDirection.current
+    val statusBarTopPx = WindowInsets.statusBars.getTop(density).toFloat()
+    val navigationBarLeftPx = WindowInsets.navigationBars.getLeft(density, layoutDirection).toFloat()
+    val navigationBarRightPx = WindowInsets.navigationBars.getRight(density, layoutDirection).toFloat()
+    val navigationBarBottomPx = WindowInsets.navigationBars.getBottom(density).toFloat()
+    val imeBottomPx = WindowInsets.ime.getBottom(density).toFloat()
+    val liveAvailableBounds = Rect(
+        left = navigationBarLeftPx,
+        top = statusBarTopPx,
+        right = (viewport.width - navigationBarRightPx).coerceAtLeast(navigationBarLeftPx),
+        bottom = (viewport.height - max(navigationBarBottomPx, imeBottomPx)).coerceAtLeast(
+            statusBarTopPx
+        )
+    )
+    var placementAnchorBounds by remember { mutableStateOf(menuState.anchorBounds) }
+    var placementAvailableBounds by remember { mutableStateOf(liveAvailableBounds) }
+    LaunchedEffect(menuState.isVisible) {
+        if (menuState.isVisible) {
+            placementAnchorBounds = menuState.anchorBounds
+            placementAvailableBounds = liveAvailableBounds
+        }
+    }
+    val menuWidthPx = with(density) { 228.dp.roundToPx() }
+    val fallbackHeightPx = with(density) { 228.dp.roundToPx() }
     val effectiveMenuSize =
         if (menuSize == IntSize.Zero) IntSize(menuWidthPx, fallbackHeightPx) else menuSize
-    val density = LocalDensity.current
-    val placement = remember(menuState.anchorBounds, effectiveMenuSize, viewport) {
+    val placement = remember(placementAnchorBounds, effectiveMenuSize, placementAvailableBounds) {
         pickPlacement(
-            anchorBounds = menuState.anchorBounds,
+            anchorBounds = placementAnchorBounds,
             menuSize = effectiveMenuSize,
-            viewport = viewport,
+            availableBounds = placementAvailableBounds,
             marginPx = with(density) { 8.dp.toPx() },
             gapPx = with(density) { 8.dp.toPx() }
         )
