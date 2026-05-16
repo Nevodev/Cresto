@@ -165,7 +165,7 @@ fun GlasenseDialog(
     val scope = rememberCoroutineScope()
     val haptic = LocalHapticFeedback.current
 
-    val material = rememberMaterialRenderEffect(MaterialRecipes.medium())
+    val material = rememberMaterialRenderEffect(MaterialRecipes.regular())
 
     if (dialogState.isVisible) {
         var isVisible by remember { mutableStateOf(false) }
@@ -254,9 +254,9 @@ fun GlasenseDialog(
                         shape = { dialogShape },
                         effects = {
                             if (blur && !liquidGlass) {
-                                padding = 64f.dp.toPx() * 2
+                                padding = 32f.dp.toPx() * 2
                                 effect(material)
-                                blur(64f.dp.toPx(), TileMode.Mirror)
+                                blur(32f.dp.toPx(), TileMode.Mirror)
                             } else if (blur) {
                                 padding = 16f.dp.toPx() * 2
                                 effect(material)

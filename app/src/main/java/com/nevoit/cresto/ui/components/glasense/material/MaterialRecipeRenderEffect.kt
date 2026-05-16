@@ -16,14 +16,11 @@ fun rememberMaterialRenderEffect(recipe: MaterialRecipe): androidx.compose.ui.gr
 fun MaterialRecipe.toRenderEffect(): androidx.compose.ui.graphics.RenderEffect {
     val shader = RuntimeShader(AGSL_CODE)
 
-    shader.setFloatUniform(
-        "curvePoints",
-        luminanceMapCurve.p0,
-        luminanceMapCurve.p1,
-        luminanceMapCurve.p2,
-        luminanceMapCurve.p3
-    )
-    shader.setFloatUniform("intensity", luminanceMapIntensity)
+    shader.setFloatUniform("p0", luminanceMapCurve.p0)
+    shader.setFloatUniform("p1", luminanceMapCurve.p1)
+    shader.setFloatUniform("p2", luminanceMapCurve.p2)
+    shader.setFloatUniform("p3", luminanceMapCurve.p3)
+    shader.setFloatUniform("mapIntensity", luminanceMapIntensity)
     shader.setFloatUniform("saturation", saturation)
     shader.setFloatUniform("brightness", extraBrightness)
 

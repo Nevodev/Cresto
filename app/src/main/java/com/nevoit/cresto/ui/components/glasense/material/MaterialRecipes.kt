@@ -105,11 +105,11 @@ object MaterialRecipes {
     fun appBar(
         isDark: Boolean = LocalGlasenseDarkTheme.current
     ): MaterialRecipe =
-        if (isDark) ChromeDark else ChromeLight(0.05f)
+        if (isDark) ChromeDark else ChromeLight
 
     @Composable
     fun menu(
         isDark: Boolean = LocalGlasenseDarkTheme.current
     ): MaterialRecipe =
-        if (isDark) RegularDark else RegularLight(0.1f)
+        if (isDark) RegularDark else RegularLight
 }
