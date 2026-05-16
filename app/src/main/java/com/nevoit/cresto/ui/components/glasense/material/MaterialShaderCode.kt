@@ -25,9 +25,9 @@ vec4 main(vec2 fragCoord) {
     vec3 rgb = image.eval(fragCoord).rgb;
     float luma1 = dot(rgb, LUMA_WEIGHTS);
     float mappedLuma = bezierMap(luma1);
-    vec3 colorMapped = clamp(mix(rgb, vec3(mappedLuma), mapIntensity),0.0,1.0);
+    vec3 colorMapped = mix(rgb, vec3(mappedLuma), mapIntensity);
     float luma2 = dot(colorMapped, LUMA_WEIGHTS);
-    vec3 colorSaturated = clamp(mix(vec3(luma2), colorMapped, saturation),0.0,1.0);
+    vec3 colorSaturated = mix(vec3(luma2), colorMapped, saturation);
     vec3 finalColor = colorSaturated + vec3(brightness);
 return vec4(clamp(finalColor, 0.0, 1.0), 1.0);
 }
