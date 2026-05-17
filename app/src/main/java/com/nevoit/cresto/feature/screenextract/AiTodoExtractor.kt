@@ -143,11 +143,16 @@ class AiTodoExtractor {
 1.  识别待办事项: 从内容中找出所有独立的待办事项。
 2.  提取title(待办事项名称):
     *   准确提取每个待办事项的内容作为title，包含完整信息。
-    *   如果原文中明确提及了具体的时间点或时间段（例如 "14:30" 或 "9:00-10:00"），必须将该时间信息完整地附加在title字符串的末尾。
-3.  提取date(截止日期):
-    *   提取每个待办事项对应的日期。
-    *   必须将提取到的日期统一格式化为yyyy-MM-dd。忽略具体时间。
-4.  提取subTasks(子任务，可选):
+    *   不要在title中包含具体时间（例如 "14:30"），具体时间应提取到startTime/endTime字段。
+3.  提取date(截止日期)及时间信息:
+    *   提取每个待办事项对应的日期(date)，必须格式化为yyyy-MM-dd。
+    *   如果原文明确提及了具体的时间点或时间段（例如 "14:30" 或 "9:00-10:00"），请提取为startTime和endTime(可选)，格式必须为 HH:mm。
+4.  提取提醒设置(reminder，可选):
+    *   如果原文提到“提前15分钟提醒我”、“提前1天上午8点提醒”等，请将其转换为对应字段。
+    *   reminderMode：必须是 "BeforeStart" 或 "BeforeDueDate" 之一。
+        *   当基于某个具体的时间点(startTime)提前提醒时，使用 "BeforeStart"，并提供 reminderOffsetMinutes(提前的分钟数，整数)。例如“提前15分钟” -> reminderMode: "BeforeStart", reminderOffsetMinutes: 15。
+        *   当基于日期提前几天提醒时(例如“提前1天提醒”)，使用 "BeforeDueDate"，并提供 reminderDayOffset(提前的天数，例如1) 和 reminderTime(提醒的时间点，格式 HH:mm，如 "08:00")。
+5.  提取subTasks(子任务，可选):
     *   仅当原文明确出现该待办事项下的步骤、拆分动作或子项时，才生成subTasks。
     *   不要臆造子任务，也不要为了凑格式强行拆分title。
     *   subTasks如出现，必须是字符串数组，每一项是简洁明确的子任务描述。
@@ -155,7 +160,7 @@ class AiTodoExtractor {
     *   若同一待办包含“购买/准备/采购”等动作后跟并列物品（例如“买茄子、土豆、酱油和醋”），必须拆分为多个subTasks。
     *   并列物品即使未使用顿号，也应结合语义进行合理拆分（如“买茄子土豆酱油和醋”）。
     *   购买类subTasks建议保留动作动词，例如“买茄子”“买土豆”。
-5.  如果无法提取任何日程，返回Error: No tasks
+6.  如果无法提取任何日程，返回Error: No tasks
 
 输出格式要求:
 
@@ -164,7 +169,7 @@ class AiTodoExtractor {
 *   所有待办事项应收录在名为items的数组中。
 *   数组中的每一个元素都是一个独立的对象。
 *   title和date是必填字段。
-*   subTasks是可选字段，仅在有明确子任务时返回。
+*   startTime, endTime, reminderMode, reminderOffsetMinutes, reminderDayOffset, reminderTime, subTasks 等为可选字段，仅在提取到相关信息时返回。
 
 从现在开始处理我发送给你的信息，并仅返回符合上述要求的JSON对象，不要包含任何额外的解释或文字。
          """.trimIndent()
@@ -217,6 +222,14 @@ class AiTodoExtractor {
                 buildJsonObject {
                     put("title", title)
                     put("date", date)
+
+                    itemObject["startTime"]?.let { put("startTime", it) }
+                    itemObject["endTime"]?.let { put("endTime", it) }
+                    itemObject["reminderMode"]?.let { put("reminderMode", it) }
+                    itemObject["reminderOffsetMinutes"]?.let { put("reminderOffsetMinutes", it) }
+                    itemObject["reminderDayOffset"]?.let { put("reminderDayOffset", it) }
+                    itemObject["reminderTime"]?.let { put("reminderTime", it) }
+
                     put("subTasks", buildJsonArray {
                         subTasks.forEach { add(JsonPrimitive(it)) }
                     })

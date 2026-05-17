@@ -12,5 +12,11 @@ data class EventResponse(
 data class EventItem(
     val title: String,
     val date: String,
+    val startTime: String? = null,
+    val endTime: String? = null,
+    val reminderMode: String? = null,
+    val reminderOffsetMinutes: Int? = null,
+    val reminderDayOffset: Int? = null,
+    val reminderTime: String? = null,
     val subTasks: List<String> = emptyList()
 )
