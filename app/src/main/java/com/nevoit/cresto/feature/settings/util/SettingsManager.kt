@@ -35,6 +35,7 @@ object SettingsManager {
     private const val KEY_EASTER_EGG = "easter_egg"
     private const val KEY_SUPER_GRAPHIC_ULTRA_MODERN_GIRL = "super graphic ultra modern girl"
     private const val KEY_HAS_RETURNED_TO_TODAY_BY_TITLE = "has_returned_to_today_by_title"
+    private const val KEY_EXTRACT_SCREEN_QUICK_TILE_ENABLED = "extract_screen_quick_tile_enabled"
     private const val DEFAULT_AI_API_URL = "https://open.bigmodel.cn/api/paas/v4/chat/completions"
     private const val DEFAULT_AI_MODEL = "glm-4-flash"
 
@@ -72,6 +73,8 @@ object SettingsManager {
     val isSuperGraphicUltraModernGirlState =
         mutableStateOf(mmkv.decodeBool(KEY_SUPER_GRAPHIC_ULTRA_MODERN_GIRL, false))
     val hasReturnedToTodayByTitleState = mutableStateOf(mmkv.decodeBool(KEY_HAS_RETURNED_TO_TODAY_BY_TITLE, false))
+    val isExtractScreenQuickTileEnabledState =
+        mutableStateOf(mmkv.decodeBool(KEY_EXTRACT_SCREEN_QUICK_TILE_ENABLED, false))
 
     var isCustomPrimaryColorEnabled: Boolean
         get() = mmkv.decodeBool(KEY_CUSTOM_PRIMARY_COLOR_ENABLED, false)
@@ -213,6 +216,13 @@ object SettingsManager {
         set(value) {
             mmkv.encode(KEY_HAS_RETURNED_TO_TODAY_BY_TITLE, value)
             hasReturnedToTodayByTitleState.value = value
+        }
+
+    var isExtractScreenQuickTileEnabled: Boolean
+        get() = mmkv.decodeBool(KEY_EXTRACT_SCREEN_QUICK_TILE_ENABLED, false)
+        set(value) {
+            mmkv.encode(KEY_EXTRACT_SCREEN_QUICK_TILE_ENABLED, value)
+            isExtractScreenQuickTileEnabledState.value = value
         }
 
     fun resetAiSettingsToDefaults() {

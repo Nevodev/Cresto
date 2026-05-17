@@ -16,6 +16,7 @@ class SettingsViewModel : ViewModel() {
     val isEasterEggEnabled = SettingsManager.isEasterEggState
     val isSuperGraphicUltraModernGirlEnabled = SettingsManager.isSuperGraphicUltraModernGirlState
     val hasReturnedToTodayByTitle = SettingsManager.hasReturnedToTodayByTitleState
+    val isExtractScreenQuickTileEnabled = SettingsManager.isExtractScreenQuickTileEnabledState
 
     fun onCustomPrimaryColorChanged(isEnabled: Boolean) {
         SettingsManager.isCustomPrimaryColorEnabled = isEnabled
@@ -66,5 +67,9 @@ class SettingsViewModel : ViewModel() {
 
     fun setHasReturnedToTodayByTitle(value: Boolean) {
         SettingsManager.hasReturnedToTodayByTitle = value
+    }
+
+    fun onExtractScreenQuickTileChanged(isEnabled: Boolean) {
+        SettingsManager.isExtractScreenQuickTileEnabled = isEnabled
     }
 }

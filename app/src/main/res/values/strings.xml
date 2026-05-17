@@ -51,6 +51,15 @@
     <string name="shizuku_permission">Shizuku Permission</string>
     <string name="enable_extract_screen_quick_toggle">Enable "Extract Screen" Quick Toggle</string>
     <string name="add_a_quick_toggle_to_control_center_for_one_tap_ai_screen_extraction_shizuku_required">Add a quick toggle to Control Center for one-tap AI screen extraction. Shizuku permission is required.</string>
+    <string name="extract_screen_tile_label">Extract Screen</string>
+    <string name="extract_screen_started">Extracting screen…</string>
+    <string name="extract_screen_success">Imported %1$d todo(s)</string>
+    <string name="extract_screen_failed">Screen extraction failed</string>
+    <string name="extract_screen_tile_disabled">Extract Screen quick toggle is disabled</string>
+    <string name="shizuku_permission_required">Shizuku permission required</string>
+    <string name="shizuku_not_running">Shizuku is not running</string>
+    <string name="ready">Ready</string>
+    <string name="disabled">Disabled</string>
     <string name="boost_your_experience_with_intelligent_cresto_function_calling">Boost your experience with intelligent Cresto function calling.</string>
     <string name="api" translatable="false">API</string>
     <string name="api_key" translatable="false">API Key</string>

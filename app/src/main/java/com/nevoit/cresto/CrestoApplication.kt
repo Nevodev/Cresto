@@ -4,6 +4,7 @@ import android.app.Application
 import com.nevoit.cresto.data.todo.appModule
 import com.nevoit.cresto.data.todo.reminder.TodoReminderNotifications
 import com.tencent.mmkv.MMKV
+import rikka.shizuku.ShizukuProvider
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.context.GlobalContext.startKoin
 
@@ -13,6 +14,7 @@ import org.koin.core.context.GlobalContext.startKoin
 class CrestoApplication : Application() {
     override fun onCreate() {
         super.onCreate()
+        ShizukuProvider.requestBinderForNonProviderProcess(this)
         MMKV.initialize(this)
         TodoReminderNotifications.createChannel(this)
         startKoin {

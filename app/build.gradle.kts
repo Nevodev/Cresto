@@ -112,6 +112,8 @@ dependencies {
     implementation(libs.materialKolor)
     implementation(libs.aboutlibraries.core)
     implementation(libs.aboutlibraries.compose.core)
+    implementation(libs.shizuku.api)
+    implementation(libs.shizuku.provider)
 
     implementation(platform(libs.koin.bom))
     implementation(libs.koin.androidx.compose)

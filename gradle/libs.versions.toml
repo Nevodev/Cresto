@@ -20,6 +20,7 @@ koin-bom = "4.2.1"
 confettiKit = "0.8.0"
 materialKolor = "4.1.1"
 aboutLibraries = "14.2.0"
+shizuku = "13.1.5"
 
 
 [libraries]
@@ -67,6 +68,8 @@ koin-androidx-compose = { module = "io.insert-koin:koin-androidx-compose" }
 
 aboutlibraries-core = { module = "com.mikepenz:aboutlibraries-core", version.ref = "aboutLibraries" }
 aboutlibraries-compose-core = { module = "com.mikepenz:aboutlibraries-compose-core", version.ref = "aboutLibraries" }
+shizuku-api = { module = "dev.rikka.shizuku:api", version.ref = "shizuku" }
+shizuku-provider = { module = "dev.rikka.shizuku:provider", version.ref = "shizuku" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

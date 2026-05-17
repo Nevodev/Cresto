@@ -2,6 +2,7 @@
 package com.nevoit.cresto.feature.settings
 
 // Import necessary libraries and components
+import android.widget.Toast
 import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -23,6 +24,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.res.painterResource
@@ -33,6 +35,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.kyant.backdrop.backdrops.layerBackdrop
 import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import com.nevoit.cresto.R
+import com.nevoit.cresto.feature.screenextract.ShizukuScreenshotCapturer
 import com.nevoit.cresto.feature.settings.util.SettingsViewModel
 import com.nevoit.cresto.theme.AppButtonColors
 import com.nevoit.cresto.theme.AppColors
@@ -68,6 +71,10 @@ fun GeneralScreen(settingsViewModel: SettingsViewModel = viewModel()) {
     val isCompletionSoundEnabled by settingsViewModel.isCompletionSoundEnabled
     val isEasterEggEnabled by settingsViewModel.isEasterEggEnabled
     val isSuperGraphicUltraModernGirlEnabled by settingsViewModel.isSuperGraphicUltraModernGirlEnabled
+    val isExtractScreenQuickTileEnabled by settingsViewModel.isExtractScreenQuickTileEnabled
+    val context = LocalContext.current
+    val screenshotCapturer = ShizukuScreenshotCapturer()
+    val isShizukuPermissionGranted = screenshotCapturer.hasPermission()
 
     val backgroundColor = AppColors.pageBackground
     val backdrop = rememberLayerBackdrop {
@@ -222,8 +229,18 @@ fun GeneralScreen(settingsViewModel: SettingsViewModel = viewModel()) {
                     Column {
                         ConfigItem(title = stringResource(R.string.shizuku_permission)) {
                             GlasenseSwitch(
-                                checked = false,
-                                onCheckedChange = {},
+                                checked = isShizukuPermissionGranted,
+                                onCheckedChange = {
+                                    runCatching {
+                                        screenshotCapturer.requestPermission()
+                                    }.onFailure { error ->
+                                        Toast.makeText(
+                                            context,
+                                            error.localizedMessage ?: "Shizuku 未运行",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                    }
+                                },
                                 backgroundColor = AppColors.cardBackground
                             )
                         }
@@ -232,8 +249,13 @@ fun GeneralScreen(settingsViewModel: SettingsViewModel = viewModel()) {
                         Spacer(modifier = Modifier.height(8.dp))
                         ConfigItem(title = stringResource(R.string.enable_extract_screen_quick_toggle)) {
                             GlasenseSwitch(
-                                checked = false,
-                                onCheckedChange = {},
+                                checked = isExtractScreenQuickTileEnabled,
+                                onCheckedChange = { enabled ->
+                                    settingsViewModel.onExtractScreenQuickTileChanged(enabled)
+                                    if (enabled) {
+                                        requestAddExtractScreenTile(context)
+                                    }
+                                },
                                 backgroundColor = AppColors.cardBackground
                             )
                         }
