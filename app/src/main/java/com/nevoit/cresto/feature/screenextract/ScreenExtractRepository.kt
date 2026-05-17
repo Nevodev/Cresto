@@ -7,10 +7,17 @@ class ScreenExtractRepository(
     private val screenshotCapturer: ShizukuScreenshotCapturer = ShizukuScreenshotCapturer(),
     private val aiTodoExtractor: AiTodoExtractor = AiTodoExtractor()
 ) {
-    suspend fun captureExtractAndInsert(): Int {
+    suspend fun captureExtractAndInsert(
+        onProgress: (ScreenExtractPhase) -> Unit = {}
+    ): Int {
+        onProgress(ScreenExtractPhase.Capturing)
         val screenshot = screenshotCapturer.collapsePanelsAndCapturePng()
-        val imageDataUrl = screenshot.toPngDataUrl()
+        val imageDataUrl = screenshot.toCompressedScreenshotDataUrl()
+
+        onProgress(ScreenExtractPhase.Extracting)
         val response = aiTodoExtractor.extractFromImage(imageDataUrl)
+
+        onProgress(ScreenExtractPhase.Importing)
         todoRepository.insertAiGeneratedTodosWithSubTasks(response.items)
         return response.items.size
     }

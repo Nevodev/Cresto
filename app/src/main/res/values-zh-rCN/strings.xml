@@ -59,8 +59,17 @@
     <string name="extract_screen_tile_label">提取屏幕</string>
     <string name="extract_screen_started">正在提取屏幕…</string>
     <string name="extract_screen_success">已导入 %1$d 条待办</string>
+    <string name="extract_screen_success_title">屏幕提取完成</string>
     <string name="extract_screen_failed">屏幕提取失败</string>
     <string name="extract_screen_tile_disabled">“提取屏幕”快捷开关已关闭</string>
+    <string name="extract_screen_notification_channel_name">屏幕提取</string>
+    <string name="extract_screen_notification_channel_description">屏幕提取进度和结果</string>
+    <string name="extract_screen_notification_title">正在提取屏幕</string>
+    <string name="extract_screen_progress_starting">正在准备提取…</string>
+    <string name="extract_screen_progress_capturing">正在截取当前屏幕…</string>
+    <string name="extract_screen_progress_ai">AI 正在提取待办…</string>
+    <string name="extract_screen_progress_importing">正在导入待办…</string>
+    <string name="extract_screen_already_running">屏幕提取正在进行中</string>
     <string name="shizuku_permission_required">需要 Shizuku 权限</string>
     <string name="shizuku_not_running">Shizuku 未运行</string>
     <string name="ready">就绪</string>

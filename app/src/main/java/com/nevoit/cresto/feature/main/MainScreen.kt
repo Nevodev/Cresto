@@ -59,6 +59,7 @@ import com.kyant.shapes.Capsule
 import com.nevoit.cresto.R
 import com.nevoit.cresto.data.todo.TodoItem
 import com.nevoit.cresto.data.todo.TodoViewModel
+import com.nevoit.cresto.feature.screenextract.ScreenExtractEvents
 import com.nevoit.cresto.feature.settings.util.SettingsViewModel
 import com.nevoit.cresto.theme.AppButtonColors
 import com.nevoit.cresto.theme.AppColors
@@ -132,6 +133,24 @@ fun MainScreen() {
 
     val dismissDialog = {
         dialogState = dialogState.copy(isVisible = false)
+    }
+
+    val errorOkText = stringResource(R.string.ok)
+    val errorTitleText = stringResource(R.string.extract_screen_failed)
+    LaunchedEffect(Unit) {
+        ScreenExtractEvents.errors.collect { errorMessage ->
+            showDialog(
+                listOf(
+                    DialogItemData(
+                        text = errorOkText,
+                        onClick = {},
+                        isPrimary = true
+                    )
+                ),
+                errorTitleText,
+                errorMessage
+            )
+        }
     }
 
 

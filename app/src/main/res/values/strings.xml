@@ -54,8 +54,17 @@
     <string name="extract_screen_tile_label">Extract Screen</string>
     <string name="extract_screen_started">Extracting screen…</string>
     <string name="extract_screen_success">Imported %1$d todo(s)</string>
+    <string name="extract_screen_success_title">Screen extraction complete</string>
     <string name="extract_screen_failed">Screen extraction failed</string>
     <string name="extract_screen_tile_disabled">Extract Screen quick toggle is disabled</string>
+    <string name="extract_screen_notification_channel_name">Screen extraction</string>
+    <string name="extract_screen_notification_channel_description">Screen extraction progress and results</string>
+    <string name="extract_screen_notification_title">Extracting screen</string>
+    <string name="extract_screen_progress_starting">Preparing extraction…</string>
+    <string name="extract_screen_progress_capturing">Capturing current screen…</string>
+    <string name="extract_screen_progress_ai">Extracting todos with AI…</string>
+    <string name="extract_screen_progress_importing">Importing todos…</string>
+    <string name="extract_screen_already_running">Screen extraction is already running</string>
     <string name="shizuku_permission_required">Shizuku permission required</string>
     <string name="shizuku_not_running">Shizuku is not running</string>
     <string name="ready">Ready</string>
