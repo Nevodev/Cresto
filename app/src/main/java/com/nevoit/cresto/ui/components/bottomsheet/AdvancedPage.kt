@@ -66,6 +66,7 @@ import com.nevoit.cresto.ui.components.packed.ConfigItemContainer
 import com.nevoit.cresto.ui.components.packed.ConfigTextField
 import com.nevoit.cresto.ui.components.packed.TodoReminderConfig
 import com.nevoit.cresto.ui.components.packed.VGap
+import com.nevoit.cresto.ui.components.packed.displayText
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
@@ -114,6 +115,9 @@ fun AdvancedPage(
     val twoHoursBeforeText = stringResource(R.string.reminder_before_2_hours)
     val reminderDueDay = stringResource(R.string.reminder_due_day)
     val reminderDaysBeforeFormat = stringResource(R.string.reminder_days_before_format)
+    val reminderBeforePrefix = stringResource(R.string.reminder_before_prefix)
+    val reminderHoursUnitFormat = stringResource(R.string.reminder_hours_unit_format)
+    val reminderMinutesUnitFormat = stringResource(R.string.reminder_minutes_unit_format)
     val reminderIcon = painterResource(R.drawable.ic_alarm)
     val noneReminderIcon = painterResource(R.drawable.ic_alarm_slash)
 
@@ -127,7 +131,10 @@ fun AdvancedPage(
         oneHourBeforeText,
         twoHoursBeforeText,
         reminderDueDay,
-        reminderDaysBeforeFormat
+        reminderDaysBeforeFormat,
+        reminderBeforePrefix,
+        reminderHoursUnitFormat,
+        reminderMinutesUnitFormat
     ) {
         reminderConfig?.displayText(
             noneText = noneText,
@@ -137,8 +144,11 @@ fun AdvancedPage(
             thirtyMinutesBeforeText = thirtyMinutesBeforeText,
             oneHourBeforeText = oneHourBeforeText,
             twoHoursBeforeText = twoHoursBeforeText,
+            beforePrefix = reminderBeforePrefix,
             dueDayText = reminderDueDay,
-            daysBeforeFormat = reminderDaysBeforeFormat
+            daysBeforeFormat = reminderDaysBeforeFormat,
+            hoursUnitFormat = reminderHoursUnitFormat,
+            minutesUnitFormat = reminderMinutesUnitFormat
         ) ?: noneText
     }
 
@@ -622,43 +632,4 @@ fun AdvancedPage(
     }
 }
 
-private fun TodoReminderConfig.displayText(
-    noneText: String,
-    allDayMorningText: String,
-    oneMinuteBeforeText: String,
-    fiveMinutesBeforeText: String,
-    thirtyMinutesBeforeText: String,
-    oneHourBeforeText: String,
-    twoHoursBeforeText: String,
-    dueDayText: String,
-    daysBeforeFormat: String
-): String {
-    return when (mode) {
-        TodoReminderMode.BeforeStart -> when (offsetMinutes) {
-            1 -> oneMinuteBeforeText
-            5 -> fiveMinutesBeforeText
-            30 -> thirtyMinutesBeforeText
-            60 -> oneHourBeforeText
-            120 -> twoHoursBeforeText
-            null -> noneText
-            else -> {
-                val hours = offsetMinutes / 60
-                val minutes = offsetMinutes % 60
-                buildList {
-                    if (hours > 0) add("${hours}h")
-                    if (minutes > 0) add("${minutes}m")
-                }.joinToString(" ").ifBlank { noneText }
-            }
-        }
 
-        TodoReminderMode.BeforeDueDate -> {
-            val selectedTime = time ?: return noneText
-            if (dayOffset == 0 && selectedTime == LocalTime.of(8, 0)) {
-                allDayMorningText
-            } else {
-                val dayText = if (dayOffset == 0) dueDayText else daysBeforeFormat.format(dayOffset)
-                "$dayText ${selectedTime.format(DateTimeFormatter.ofPattern("HH:mm"))}"
-            }
-        }
-    }
-}

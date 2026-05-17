@@ -31,6 +31,7 @@ import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.unit.Constraints
+import androidx.compose.ui.unit.dp
 import com.nevoit.cresto.theme.AppColors
 import com.nevoit.cresto.util.deviceCornerShape
 import com.nevoit.glasense.theme.Springs
@@ -65,7 +66,7 @@ fun GlasenseBottomSheet(
             if (!hasSlidIn) {
                 offset.animateTo(
                     targetValue = 0f,
-                    animationSpec = Springs.smooth(250)
+                    animationSpec = Springs.snappy(400)
                 )
                 hasSlidIn = true
             } else {
@@ -113,11 +114,14 @@ fun GlasenseBottomSheet(
                     val unboundedConstraints = constraints.copy(maxHeight = Constraints.Infinity)
                     val placeable = measurable.measure(unboundedConstraints)
                     layout(placeable.width, constraints.maxHeight) {
-                        placeable.place(0, constraints.maxHeight - placeable.height)
+                        placeable.place(
+                            0,
+                            constraints.maxHeight - placeable.height + 32.dp.roundToPx()
+                        )
                         if (!isReady) isReady = true
                     }
                 }
-                .height(bottomSheetHeight)
+                .height(bottomSheetHeight + 32.dp)
                 .clickable(
                     interactionSource = remember { MutableInteractionSource() },
                     indication = null,

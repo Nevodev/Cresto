@@ -206,7 +206,7 @@
     <string name="all_day">All Day</string>
     <string name="reminder">Reminder</string>
     <string name="reminder_timing">Reminder Timing</string>
-    <string name="reminder_all_day_morning_8">8:00 AM on due day</string>
+    <string name="reminder_all_day_morning_8">Due day 08:00</string>
     <string name="reminder_before_1_minute">1 minute before</string>
     <string name="reminder_before_5_minutes">5 minutes before</string>
     <string name="reminder_before_30_minutes">30 minutes before</string>
@@ -218,6 +218,8 @@
     <string name="reminder_before_prefix">Before</string>
     <string name="reminder_due_day">Due day</string>
     <string name="reminder_days_before_format">%1$d days before</string>
+    <string name="reminder_hours_unit_format">%1$d h</string>
+    <string name="reminder_minutes_unit_format">%1$d min</string>
     <string name="persistent_reminder">Persistent Reminder</string>
     <string name="strong_reminder">Strong Reminder</string>
     <string name="repeat">Repeat</string>

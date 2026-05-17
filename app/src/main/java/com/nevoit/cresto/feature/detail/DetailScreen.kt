@@ -51,10 +51,14 @@ import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.boundsInWindow
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
@@ -62,6 +66,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -96,13 +101,19 @@ import com.nevoit.cresto.ui.components.glasense.extend.overscrollSpacer
 import com.nevoit.cresto.ui.components.glasense.isScrolledPast
 import com.nevoit.cresto.ui.components.glasense.rememberSwipeableListState
 import com.nevoit.cresto.ui.components.packed.ConfigTextField
+import com.nevoit.cresto.ui.components.packed.CustomReminderPopup
 import com.nevoit.cresto.ui.components.packed.DueDatePicker
 import com.nevoit.cresto.ui.components.packed.PageContent
 import com.nevoit.cresto.ui.components.packed.SubTodoItemRowAdd
 import com.nevoit.cresto.ui.components.packed.SwipeableSubTodoItemRowEditable
 import com.nevoit.cresto.ui.components.packed.TimePicker
 import com.nevoit.cresto.ui.components.packed.TodoItemRowEditable
+import com.nevoit.cresto.ui.components.packed.TodoReminderConfig
 import com.nevoit.cresto.ui.components.packed.VGap
+import com.nevoit.cresto.ui.components.packed.compatibleWithAllDay
+import com.nevoit.cresto.ui.components.packed.displayText
+import com.nevoit.cresto.ui.components.packed.toReminderConfig
+import com.nevoit.cresto.ui.components.packed.withReminderConfig
 import com.nevoit.cresto.ui.modifier.pressIndentShaderEffect
 import com.nevoit.cresto.ui.modifier.shaderRipple
 import com.nevoit.cresto.util.formatRelativeTime
@@ -237,6 +248,12 @@ fun DetailScreen(
     var sheetMaxTime by remember { mutableStateOf<LocalTime?>(null) }
     var onTimeSelectedCallback by remember { mutableStateOf<(LocalTime?) -> Unit>({}) }
 
+    var isReminderBottomSheetVisible by remember { mutableStateOf(false) }
+    var isCustomReminderPopupVisible by remember { mutableStateOf(false) }
+    var reminderButtonBounds by remember { mutableStateOf(Rect.Zero) }
+    var sheetReminderIsAllDay by remember { mutableStateOf(true) }
+    var onReminderSelectedCallback by remember { mutableStateOf<(TodoReminderConfig) -> Unit>({}) }
+
     LaunchedEffect(Unit) {
         while (true) {
             delay(1.minutes)
@@ -279,7 +296,13 @@ fun DetailScreen(
 
     val settingsViewModel: SettingsViewModel = viewModel()
     val isSuperGraphicUltraModernGirlEnabled by settingsViewModel.isSuperGraphicUltraModernGirlEnabled
+    val hapticController = LocalHapticFeedback.current
 
+    fun performPressHaptic() {
+        hapticController.performHapticFeedback(HapticFeedbackType.ContextClick)
+    }
+
+    val density = LocalDensity.current
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -415,6 +438,7 @@ fun DetailScreen(
                                 contentDescription = stringResource(R.string.time),
                                 title = stringResource(R.string.time),
                                 onButtonClick = {
+                                    performPressHaptic()
                                     isTimeBottomSheetVisible = true
                                 }
                             ) {
@@ -433,11 +457,35 @@ fun DetailScreen(
                                 contentDescription = stringResource(R.string.reminder),
                                 title = stringResource(R.string.reminder),
                                 onButtonClick = {
-
+                                    performPressHaptic()
+                                    isReminderBottomSheetVisible = true
                                 }
                             ) {
+                                val height = with(density) { 18.sp.toDp() }
+                                if (currentItem.todoItem.reminderStrong) {
+                                    Icon(
+                                        painter = painterResource(id = R.drawable.ic_star),
+                                        contentDescription = stringResource(R.string.strong_reminder),
+                                        modifier = Modifier
+                                            .padding(end = 4.dp)
+                                            .size(20.dp)
+                                            .shrinkBounds(DpSize(height, height)),
+                                        tint = AppColors.highlightText
+                                    )
+                                }
+                                if (currentItem.todoItem.reminderPersistent) {
+                                    Icon(
+                                        painter = painterResource(id = R.drawable.ic_clock_cycle),
+                                        contentDescription = stringResource(R.string.persistent_reminder),
+                                        modifier = Modifier
+                                            .padding(end = 6.dp)
+                                            .size(20.dp)
+                                            .shrinkBounds(DpSize(height, height)),
+                                        tint = AppColors.primary
+                                    )
+                                }
                                 Text(
-                                    text = "test",
+                                    text = currentItem.todoItem.formatReminderText(),
                                     fontSize = 16.sp,
                                     lineHeight = 18.sp,
                                     fontWeight = FontWeight.Normal,
@@ -655,12 +703,6 @@ fun DetailScreen(
             modifier = Modifier
         )
 
-        GlasenseMenu(
-            menuState = menuState,
-            backdrop = backdrop,
-            onDismiss = dismissMenu
-        )
-
         DueDatePicker(
             isVisible = isDatePickerVisible,
             anchorBounds = dateButtonBounds,
@@ -678,11 +720,15 @@ fun DetailScreen(
                 endTime = currentItem?.todoItem?.endTime,
                 onTimeChange = { newStartTime, newEndTime ->
                     currentItem?.let {
+                        val isAllDayEnabled = newStartTime == null && newEndTime == null
+                        val reminderConfig = it.todoItem
+                            .toReminderConfig()
+                            .compatibleWithAllDay(isAllDayEnabled)
                         viewModel.update(
                             it.todoItem.copy(
                                 startTime = newStartTime,
                                 endTime = newEndTime
-                            )
+                            ).withReminderConfig(reminderConfig)
                         )
                     }
                 },
@@ -701,6 +747,44 @@ fun DetailScreen(
             )
         }
 
+        if (isReminderBottomSheetVisible) {
+            currentItem?.todoItem?.let { todoItem ->
+                val reminderConfig = todoItem.toReminderConfig()
+                val isAllDayEnabled = todoItem.startTime == null && todoItem.endTime == null
+                DetailReminderBottomSheet(
+                    reminderConfig = reminderConfig,
+                    reminderPersistent = todoItem.reminderPersistent,
+                    reminderStrong = todoItem.reminderStrong,
+                    isAllDayEnabled = isAllDayEnabled,
+                    onReminderConfigChange = { newConfig ->
+                        viewModel.update(todoItem.withReminderConfig(newConfig))
+                    },
+                    onPersistentChange = { persistent ->
+                        viewModel.update(todoItem.copy(reminderPersistent = persistent))
+                    },
+                    onStrongChange = { strong ->
+                        viewModel.update(todoItem.copy(reminderStrong = strong))
+                    },
+                    showMenu = showMenu,
+                    onRequestCustomReminder = { bounds ->
+                        reminderButtonBounds = bounds
+                        sheetReminderIsAllDay = isAllDayEnabled
+                        onReminderSelectedCallback = { selectedConfig ->
+                            viewModel.update(
+                                todoItem.withReminderConfig(
+                                    selectedConfig.compatibleWithAllDay(isAllDayEnabled)
+                                )
+                            )
+                        }
+                        isCustomReminderPopupVisible = true
+                    },
+                    onDismissed = {
+                        isReminderBottomSheetVisible = false
+                    }
+                )
+            }
+        }
+
         key(timePickerRequestKey) {
             TimePicker(
                 isVisible = isTimePickerVisible,
@@ -715,6 +799,22 @@ fun DetailScreen(
                 direction = PopupDirection.Down
             )
         }
+
+        CustomReminderPopup(
+            isVisible = isCustomReminderPopupVisible,
+            anchorBounds = reminderButtonBounds,
+            isAllDayEnabled = sheetReminderIsAllDay,
+            onDismiss = { isCustomReminderPopupVisible = false },
+            onConfirm = { config ->
+                onReminderSelectedCallback(config)
+                isCustomReminderPopupVisible = false
+            }
+        )
+        GlasenseMenu(
+            menuState = menuState,
+            backdrop = backdrop,
+            onDismiss = dismissMenu
+        )
     }
 }
 
@@ -729,6 +829,25 @@ private fun TodoItem.formatTimeText(): String? {
         endTime != null -> endTime.format(formatter)
         else -> null
     }
+}
+
+@Composable
+private fun TodoItem.formatReminderText(): String {
+    val noneText = stringResource(R.string.none)
+    return toReminderConfig()?.displayText(
+        noneText = noneText,
+        allDayMorningText = stringResource(R.string.reminder_all_day_morning_8),
+        oneMinuteBeforeText = stringResource(R.string.reminder_before_1_minute),
+        fiveMinutesBeforeText = stringResource(R.string.reminder_before_5_minutes),
+        thirtyMinutesBeforeText = stringResource(R.string.reminder_before_30_minutes),
+        oneHourBeforeText = stringResource(R.string.reminder_before_1_hour),
+        twoHoursBeforeText = stringResource(R.string.reminder_before_2_hours),
+        beforePrefix = stringResource(R.string.reminder_before_prefix),
+        dueDayText = stringResource(R.string.reminder_due_day),
+        daysBeforeFormat = stringResource(R.string.reminder_days_before_format),
+        hoursUnitFormat = stringResource(R.string.reminder_hours_unit_format),
+        minutesUnitFormat = stringResource(R.string.reminder_minutes_unit_format)
+    ) ?: noneText
 }
 
 @Composable
@@ -799,5 +918,21 @@ fun TodoConfigRow(
             verticalAlignment = Alignment.CenterVertically,
             content = content
         )
+    }
+}
+
+fun Modifier.shrinkBounds(
+    targetSize: DpSize
+): Modifier {
+    return this.layout { measurable, constraints ->
+        val height = targetSize.height.roundToPx()
+        val width = targetSize.width.roundToPx()
+        val placeable = measurable.measure(constraints)
+        layout(width, height) {
+            placeable.placeRelative(
+                x = (width - placeable.width) / 2,
+                y = (height - placeable.height) / 2
+            )
+        }
     }
 }

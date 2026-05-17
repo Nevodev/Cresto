@@ -95,14 +95,21 @@ fun CustomReminderPopup(
 
     val reminderDueDay = stringResource(R.string.reminder_due_day)
     val reminderDaysBeforeFormat = stringResource(R.string.reminder_days_before_format)
-    val hourOptions = remember { (0..24).map { it.toString() } }
+    val reminderHoursUnitFormat = stringResource(R.string.reminder_hours_unit_format)
+    val reminderMinutesUnitFormat = stringResource(R.string.reminder_minutes_unit_format)
+    val hourOptions = remember(reminderHoursUnitFormat) {
+        (0..24).map { reminderHoursUnitFormat.format(it) }
+    }
     val dayOptions = remember(reminderDueDay, reminderDaysBeforeFormat) {
         (0..30).map { day ->
             if (day == 0) reminderDueDay else reminderDaysBeforeFormat.format(day)
         }
     }
     val clockHourOptions = remember { (0..23).map { it.toString().padStart(2, '0') } }
-    val minuteOptions = remember { (0..59).map { it.toString().padStart(2, '0') } }
+    val clockMinuteOptions = remember { (0..59).map { it.toString().padStart(2, '0') } }
+    val minuteOptions = remember(reminderMinutesUnitFormat) {
+        (0..59).map { reminderMinutesUnitFormat.format(it) }
+    }
     val shape = AppSpecs.cardShape
     val color = AppColors.scrimNormal
 
@@ -180,15 +187,12 @@ fun CustomReminderPopup(
             }
         }
 
-        Spacer(modifier = Modifier.height(12.dp))
-
         if (!isAllDayEnabled) {
+            Spacer(modifier = Modifier.height(12.dp))
             CustomReminderSegmentedControl(
                 selectedMode = selectedMode,
                 onModeSelected = { selectedMode = it }
             )
-
-            Spacer(modifier = Modifier.height(12.dp))
         }
 
         Box {
@@ -271,7 +275,7 @@ fun CustomReminderPopup(
                         }
                         GlasenseWheelPicker(
                             modifier = Modifier.weight(1f),
-                            items = minuteOptions,
+                            items = clockMinuteOptions,
                             indicator = false,
                             currentSelected = selectedMinute
                         ) { index ->

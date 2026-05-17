@@ -54,12 +54,12 @@ import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.nevoit.cresto.R
-import com.nevoit.cresto.data.todo.TodoReminderMode
 import com.nevoit.cresto.data.todo.TodoViewModel
 import com.nevoit.cresto.theme.AppColors
 import com.nevoit.cresto.ui.components.glasense.DialogItemData
 import com.nevoit.cresto.ui.components.glasense.GlasenseMenuItem
 import com.nevoit.cresto.ui.components.packed.TodoReminderConfig
+import com.nevoit.cresto.ui.components.packed.compatibleWithAllDay
 import com.nevoit.cresto.ui.viewmodel.AiSideEffect
 import com.nevoit.cresto.ui.viewmodel.AiViewModel
 import com.nevoit.cresto.ui.viewmodel.UiState
@@ -93,9 +93,7 @@ private fun defaultRangeEndTime(startTime: LocalTime): LocalTime {
     }
 }
 
-private fun TodoReminderConfig?.compatibleWithAllDay(isAllDayEnabled: Boolean): TodoReminderConfig? {
-    return if (isAllDayEnabled && this?.mode == TodoReminderMode.BeforeStart) null else this
-}
+
 
 /**
  * A composable function that displays a bottom sheet with custom animations.
