@@ -2,8 +2,10 @@ package com.nevoit.cresto.ui.screens.home
 
 import com.nevoit.cresto.data.todo.TodoItem
 import com.nevoit.cresto.data.todo.TodoItemWithSubTodos
-import com.nevoit.cresto.ui.screens.settings.util.SortOption
-import com.nevoit.cresto.ui.screens.settings.util.SortOrder
+import com.nevoit.cresto.feature.home.TodoListType
+import com.nevoit.cresto.feature.home.sortTodos
+import com.nevoit.cresto.feature.settings.util.SortOption
+import com.nevoit.cresto.feature.settings.util.SortOrder
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import java.time.LocalDateTime

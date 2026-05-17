@@ -74,7 +74,7 @@ import java.time.LocalDate
 import java.time.LocalTime
 import kotlin.time.Duration.Companion.milliseconds
 
-enum class SheetInputMode { Basic, Advanced }
+internal enum class SheetInputMode { Basic, Advanced }
 
 private fun defaultRangeStartTime(now: LocalTime = LocalTime.now()): LocalTime {
     val hour = when {
@@ -596,7 +596,7 @@ private fun Uri.toImageDataUrl(context: Context): String {
 }
 
 @Composable
-fun DismissScrim(
+private fun DismissScrim(
     visible: Boolean,
     onDismiss: () -> Unit
 ) {

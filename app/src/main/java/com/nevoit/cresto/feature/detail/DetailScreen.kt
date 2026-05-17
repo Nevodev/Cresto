@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
@@ -36,6 +37,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -48,6 +50,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Shadow
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
@@ -97,6 +100,7 @@ import com.nevoit.cresto.ui.components.packed.DueDatePicker
 import com.nevoit.cresto.ui.components.packed.PageContent
 import com.nevoit.cresto.ui.components.packed.SubTodoItemRowAdd
 import com.nevoit.cresto.ui.components.packed.SwipeableSubTodoItemRowEditable
+import com.nevoit.cresto.ui.components.packed.TimePicker
 import com.nevoit.cresto.ui.components.packed.TodoItemRowEditable
 import com.nevoit.cresto.ui.components.packed.VGap
 import com.nevoit.cresto.ui.modifier.pressIndentShaderEffect
@@ -107,6 +111,7 @@ import com.nevoit.glasense.theme.Springs
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.time.LocalDate
+import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.minutes
@@ -211,9 +216,26 @@ fun DetailScreen(
         }
     }
     var moreButtonBounds by remember { mutableStateOf<LayoutCoordinates?>(null) }
-    var flagButtonBounds by remember { mutableStateOf<LayoutCoordinates?>(null) }
     var dateButtonBounds by remember { mutableStateOf(Rect.Zero) }
     var isDatePickerVisible by remember { mutableStateOf(false) }
+
+    val showDatePicker: (anchorBounds: Rect) -> Unit = { bounds ->
+        dateButtonBounds = bounds
+        isDatePickerVisible = true
+    }
+
+    val dismissDatePicker = {
+        isDatePickerVisible = false
+    }
+
+    var isTimeBottomSheetVisible by remember { mutableStateOf(false) }
+    var isTimePickerVisible by remember { mutableStateOf(false) }
+    var timePickerRequestKey by remember { mutableIntStateOf(0) }
+    var timeButtonBounds by remember { mutableStateOf(Rect.Zero) }
+    var sheetFinalTime by remember { mutableStateOf<LocalTime?>(null) }
+    var sheetMinTime by remember { mutableStateOf<LocalTime?>(null) }
+    var sheetMaxTime by remember { mutableStateOf<LocalTime?>(null) }
+    var onTimeSelectedCallback by remember { mutableStateOf<(LocalTime?) -> Unit>({}) }
 
     LaunchedEffect(Unit) {
         while (true) {
@@ -338,128 +360,89 @@ fun DetailScreen(
                                 .padding(horizontal = 12.dp)
 
                         ) {
-                            Row(
-                                modifier = Modifier.padding(vertical = 12.dp),
-                                verticalAlignment = Alignment.CenterVertically
+                            TodoConfigRow(
+                                icon = painterResource(id = R.drawable.ic_flag),
+                                contentDescription = stringResource(R.string.flag),
+                                title = stringResource(R.string.flag),
+                                onButtonClick = { bounds ->
+                                    showMenu(
+                                        bounds,
+                                        flagMenu
+                                    )
+                                }
                             ) {
-                                Icon(
-                                    painter =
-                                        painterResource(id = R.drawable.ic_calendar),
-                                    contentDescription = stringResource(R.string.due_date),
-                                    modifier = Modifier
-                                        .padding(end = 8.dp)
-                                        .width(28.dp)
-                                )
+                                if (selectedIndex != 0) {
+                                    Box(
+                                        modifier = Modifier
+                                            .padding(end = 6.dp)
+                                            .size(12.dp)
+                                            .background(
+                                                color = getFlagColor(selectedIndex),
+                                                shape = CircleShape
+                                            )
+                                    )
+                                }
                                 Text(
-                                    text = stringResource(R.string.due_date),
+                                    text = getFlagText(selectedIndex),
                                     fontSize = 16.sp,
                                     lineHeight = 18.sp,
                                     fontWeight = FontWeight.Normal,
-                                    modifier = Modifier
-                                        .align(Alignment.CenterVertically)
+                                    color = AppColors.content
                                 )
-                                Spacer(modifier = Modifier.weight(1f))
-                                Box(
-                                    modifier = Modifier
-                                        .onGloballyPositioned { coordinates ->
-                                            dateButtonBounds = coordinates.boundsInWindow()
-                                        }
-                                        .align(Alignment.CenterVertically)
-                                        .wrapContentSize()
-                                        .clip(Capsule())
-                                        .background(
-                                            color = AppColors.scrimNormal
-                                        )
-                                        .clickable(
-                                            interactionSource = remember { MutableInteractionSource() },
-                                            indication = DimIndication()
-                                        ) {
-                                            isDatePickerVisible = true
-                                        }
-                                ) {
-                                    Text(
-                                        text = finalDate?.format(DateTimeFormatter.ofPattern("yyyy/M/d"))
-                                            ?: stringResource(R.string.none),
-                                        fontSize = 16.sp,
-                                        lineHeight = 18.sp,
-                                        fontWeight = FontWeight.Normal,
-                                        modifier = Modifier.padding(
-                                            horizontal = 8.dp,
-                                            vertical = 4.dp
-                                        ),
-                                        color = AppColors.content
-                                    )
-                                }
                             }
                             ZeroHeightDivider()
-                            Row(
-                                modifier = Modifier
-                                    .padding(vertical = 12.dp),
-                                verticalAlignment = Alignment.CenterVertically,
+                            TodoConfigRow(
+                                icon = painterResource(id = R.drawable.ic_calendar),
+                                contentDescription = stringResource(R.string.due_date),
+                                title = stringResource(R.string.due_date),
+                                onButtonClick = { bounds ->
+                                    showDatePicker(bounds)
+                                }
                             ) {
-                                Icon(
-                                    painter = painterResource(id = R.drawable.ic_flag),
-                                    contentDescription = stringResource(R.string.flag),
-                                    modifier = Modifier
-                                        .padding(end = 8.dp)
-                                        .width(28.dp)
-                                )
                                 Text(
-                                    text = stringResource(R.string.flag),
+                                    text = finalDate?.format(DateTimeFormatter.ofPattern("yyyy/M/d"))
+                                        ?: stringResource(R.string.none),
                                     fontSize = 16.sp,
                                     lineHeight = 18.sp,
                                     fontWeight = FontWeight.Normal,
-                                    modifier = Modifier
-                                        .align(Alignment.CenterVertically)
+                                    modifier = Modifier,
+                                    color = AppColors.content
                                 )
-                                Spacer(modifier = Modifier.weight(1f))
-                                Row(
-                                    modifier = Modifier
-                                        .onGloballyPositioned { coordinates ->
-                                            flagButtonBounds = coordinates
-                                        }
-                                        .align(Alignment.CenterVertically)
-                                        .wrapContentSize()
-                                        .clip(Capsule())
-                                        .background(
-                                            color = AppColors.scrimNormal
-                                        )
-                                        .clickable(
-                                            interactionSource = remember { MutableInteractionSource() },
-                                            indication = DimIndication()
-                                        ) {
-                                            flagButtonBounds?.let {
-                                                showMenu(
-                                                    it.boundsInWindow(),
-                                                    flagMenu
-                                                )
-                                            }
-                                        }
-                                        .padding(
-                                            horizontal = 8.dp,
-                                            vertical = 4.dp
-                                        ),
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    if (selectedIndex != 0) {
-                                        Box(
-                                            modifier = Modifier
-                                                .padding(end = 6.dp)
-                                                .size(12.dp)
-                                                .background(
-                                                    color = getFlagColor(selectedIndex),
-                                                    shape = CircleShape
-                                                )
-                                        )
-                                    }
-                                    Text(
-                                        text = getFlagText(selectedIndex),
-                                        fontSize = 16.sp,
-                                        lineHeight = 18.sp,
-                                        fontWeight = FontWeight.Normal,
-                                        color = AppColors.content
-                                    )
+                            }
+                            ZeroHeightDivider()
+                            TodoConfigRow(
+                                icon = painterResource(id = R.drawable.ic_clock),
+                                contentDescription = stringResource(R.string.time),
+                                title = stringResource(R.string.time),
+                                onButtonClick = {
+                                    isTimeBottomSheetVisible = true
                                 }
+                            ) {
+                                val timeText = currentItem.todoItem.formatTimeText()
+                                Text(
+                                    text = timeText ?: stringResource(R.string.all_day),
+                                    fontSize = 16.sp,
+                                    lineHeight = 18.sp,
+                                    fontWeight = FontWeight.Normal,
+                                    color = AppColors.content
+                                )
+                            }
+                            ZeroHeightDivider()
+                            TodoConfigRow(
+                                icon = painterResource(id = R.drawable.ic_alarm),
+                                contentDescription = stringResource(R.string.reminder),
+                                title = stringResource(R.string.reminder),
+                                onButtonClick = {
+
+                                }
+                            ) {
+                                Text(
+                                    text = "test",
+                                    fontSize = 16.sp,
+                                    lineHeight = 18.sp,
+                                    fontWeight = FontWeight.Normal,
+                                    color = AppColors.content
+                                )
                             }
                         }
                     }
@@ -682,12 +665,69 @@ fun DetailScreen(
             isVisible = isDatePickerVisible,
             anchorBounds = dateButtonBounds,
             initialDate = finalDate,
-            onDismiss = { isDatePickerVisible = false },
+            onDismiss = dismissDatePicker,
             onDateSelected = { date ->
                 finalDate = date
             },
             direction = PopupDirection.Down
         )
+
+        if (isTimeBottomSheetVisible) {
+            DetailTimeBottomSheet(
+                startTime = currentItem?.todoItem?.startTime,
+                endTime = currentItem?.todoItem?.endTime,
+                onTimeChange = { newStartTime, newEndTime ->
+                    currentItem?.let {
+                        viewModel.update(
+                            it.todoItem.copy(
+                                startTime = newStartTime,
+                                endTime = newEndTime
+                            )
+                        )
+                    }
+                },
+                onDismissed = {
+                    isTimeBottomSheetVisible = false
+                },
+                onRequestCustomTime = { bounds, initialTime, minTime, maxTime, onSelected ->
+                    timePickerRequestKey++
+                    timeButtonBounds = bounds
+                    sheetFinalTime = initialTime
+                    sheetMinTime = minTime
+                    sheetMaxTime = maxTime
+                    onTimeSelectedCallback = onSelected
+                    isTimePickerVisible = true
+                }
+            )
+        }
+
+        key(timePickerRequestKey) {
+            TimePicker(
+                isVisible = isTimePickerVisible,
+                anchorBounds = timeButtonBounds,
+                initialTime = sheetFinalTime,
+                minTime = sheetMinTime,
+                maxTime = sheetMaxTime,
+                onDismiss = { isTimePickerVisible = false },
+                onTimeSelected = { time ->
+                    onTimeSelectedCallback(time)
+                },
+                direction = PopupDirection.Down
+            )
+        }
+    }
+}
+
+private fun TodoItem.formatTimeText(): String? {
+    val formatter = DateTimeFormatter.ofPattern("HH:mm")
+    return when {
+        startTime != null && endTime != null -> {
+            "${startTime.format(formatter)}-${endTime.format(formatter)}"
+        }
+
+        startTime != null -> startTime.format(formatter)
+        endTime != null -> endTime.format(formatter)
+        else -> null
     }
 }
 
@@ -704,4 +744,60 @@ fun getFlagText(index: Int): String {
         stringResource(R.string.flag_gray)
     )
     return flagNames[index]
+}
+
+@Composable
+fun TodoConfigRow(
+    icon: Painter,
+    contentDescription: String,
+    title: String,
+    onButtonClick: (Rect) -> Unit,
+    content: @Composable RowScope.() -> Unit
+) {
+    var bounds by remember { mutableStateOf(Rect.Zero) }
+    Row(
+        modifier = Modifier.padding(vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(
+            painter = icon,
+            contentDescription = contentDescription,
+            modifier = Modifier
+                .padding(end = 8.dp)
+                .width(28.dp)
+        )
+        Text(
+            text = title,
+            fontSize = 16.sp,
+            lineHeight = 18.sp,
+            fontWeight = FontWeight.Normal,
+            modifier = Modifier
+                .align(Alignment.CenterVertically)
+        )
+        Spacer(modifier = Modifier.weight(1f))
+        Row(
+            modifier = Modifier
+                .onGloballyPositioned { coordinates ->
+                    bounds = coordinates.boundsInWindow()
+                }
+                .align(Alignment.CenterVertically)
+                .wrapContentSize()
+                .clip(Capsule())
+                .background(
+                    color = AppColors.scrimNormal
+                )
+                .clickable(
+                    interactionSource = remember { MutableInteractionSource() },
+                    indication = DimIndication()
+                ) {
+                    onButtonClick(bounds)
+                }
+                .padding(
+                    horizontal = 8.dp,
+                    vertical = 4.dp
+                ),
+            verticalAlignment = Alignment.CenterVertically,
+            content = content
+        )
+    }
 }
