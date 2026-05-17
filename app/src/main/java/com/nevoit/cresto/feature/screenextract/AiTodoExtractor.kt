@@ -269,7 +269,7 @@ class AiTodoExtractor {
         return if (normalized.endsWith("/chat/completions")) {
             normalized
         } else {
-            "$normalized/api/paas/v4/chat/completions"
+            "$normalized/v1/chat/completions"
         }
     }
 
