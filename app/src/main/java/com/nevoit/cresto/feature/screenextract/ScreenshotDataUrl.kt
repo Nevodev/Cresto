@@ -45,6 +45,32 @@ fun ByteArray.toCompressedScreenshotDataUrl(
     return "data:image/jpeg;base64,$base64"
 }
 
+fun ByteArray.toCompressedSharedImageDataUrl(
+    targetShortSidePx: Int = DEFAULT_TARGET_SHORT_SIDE_PX,
+    jpegQuality: Int = DEFAULT_JPEG_QUALITY,
+    maxSizeBytes: Int = DEFAULT_MAX_SCREENSHOT_BYTES
+): String {
+    require(isNotEmpty()) { "图片为空" }
+
+    val bitmap = BitmapFactory.decodeByteArray(this, 0, size)
+        ?: throw IllegalArgumentException("无法解析图片")
+
+    val compressedBytes = bitmap.useBitmap { source ->
+        val scaled = source.scaleToShortSide(targetShortSidePx)
+        scaled.useBitmap { target ->
+            ByteArrayOutputStream().use { output ->
+                target.compress(Bitmap.CompressFormat.JPEG, jpegQuality.coerceIn(1, 100), output)
+                output.toByteArray()
+            }
+        }
+    }
+
+    require(compressedBytes.size <= maxSizeBytes) { "压缩后图片仍过大，请重试" }
+
+    val base64 = Base64.getEncoder().encodeToString(compressedBytes)
+    return "data:image/jpeg;base64,$base64"
+}
+
 private fun Bitmap.scaleToShortSide(targetShortSidePx: Int): Bitmap {
     val shortSide = width.coerceAtMost(height)
     if (shortSide <= targetShortSidePx) return this

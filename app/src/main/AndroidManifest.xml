@@ -122,8 +122,37 @@
             android:noHistory="true"
             android:theme="@style/Theme.Cresto.Transparent" />
 
+        <activity
+            android:name=".feature.shareextract.ShareExtractActivity"
+            android:excludeFromRecents="true"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher"
+            android:label="@string/share_to_cresto"
+            android:noHistory="true"
+            android:theme="@style/Theme.Cresto.Transparent">
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="text/*" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="image/*" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.SEND_MULTIPLE" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="image/*" />
+            </intent-filter>
+        </activity>
+
         <service
             android:name=".feature.screenextract.ScreenExtractService"
+            android:exported="false" />
+
+        <service
+            android:name=".feature.shareextract.ShareExtractService"
             android:exported="false" />
 
         <service
