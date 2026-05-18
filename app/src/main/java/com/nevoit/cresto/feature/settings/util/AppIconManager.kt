@@ -3,6 +3,8 @@ package com.nevoit.cresto.feature.settings.util
 import android.content.ComponentName
 import android.content.Context
 import android.content.pm.PackageManager
+import androidx.annotation.StringRes
+import com.nevoit.cresto.R
 
 object AppIconManager {
     private const val ALIAS_DEFAULT = "com.nevoit.cresto.AppIconDefault"
@@ -12,12 +14,36 @@ object AppIconManager {
     private const val ALIAS_PEACH = "com.nevoit.cresto.AppIconPeach"
 
 
-    enum class AppIcon(val alias: String) {
-        DEFAULT(ALIAS_DEFAULT),
-        APRICOT(ALIAS_APRICOT),
-        KIWI(ALIAS_KIWI),
-        BLUEBERRY(ALIAS_BLUEBERRY),
-        PEACH(ALIAS_PEACH)
+    enum class AppIcon(
+        val alias: String,
+        @StringRes val displayNameResId: Int,
+        val mipmapResId: Int
+    ) {
+        DEFAULT(
+            ALIAS_DEFAULT,
+            R.string.app_icon_default,
+            R.drawable.ic_launcher_foreground_default
+        ),
+        APRICOT(
+            ALIAS_APRICOT,
+            R.string.app_icon_apricot,
+            R.drawable.ic_launcher_foreground_apricot
+        ),
+        BLUEBERRY(
+            ALIAS_BLUEBERRY,
+            R.string.app_icon_blueberry,
+            R.drawable.ic_launcher_foreground_blueberry
+        ),
+        KIWI(
+            ALIAS_KIWI,
+            R.string.app_icon_kiwi,
+            R.drawable.ic_launcher_foreground_kiwi
+        ),
+        PEACH(
+            ALIAS_PEACH,
+            R.string.app_icon_peach,
+            R.drawable.ic_launcher_foreground_peach
+        )
     }
 
     fun setIcon(context: Context, icon: AppIcon) {

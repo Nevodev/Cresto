@@ -3,7 +3,9 @@ package com.nevoit.cresto.feature.settings
 
 // Import necessary libraries and components
 import androidx.activity.compose.LocalActivity
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -27,6 +29,7 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -50,18 +53,23 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.kyant.backdrop.backdrops.layerBackdrop
 import com.kyant.backdrop.backdrops.rememberLayerBackdrop
+import com.kyant.shapes.RoundedRectangle
 import com.nevoit.cresto.R
+import com.nevoit.cresto.feature.detail.shrinkBounds
+import com.nevoit.cresto.feature.settings.util.AppIconManager
 import com.nevoit.cresto.feature.settings.util.SettingsViewModel
 import com.nevoit.cresto.theme.AppButtonColors
 import com.nevoit.cresto.theme.AppColors
@@ -106,6 +114,7 @@ import com.nevoit.glasense.theme.Yellow500
 fun AppearanceScreen(settingsViewModel: SettingsViewModel = viewModel()) {
     // Get the current activity instance to allow finishing the screen
     val activity = LocalActivity.current
+    val context = LocalContext.current
 
     // Calculate the height of the status bar to adjust layout
     val statusBarHeight = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
@@ -129,6 +138,8 @@ fun AppearanceScreen(settingsViewModel: SettingsViewModel = viewModel()) {
     var isLiquidGlass by settingsViewModel.isLiquidGlass
     val currentMode by settingsViewModel.colorMode
     val currentThemePrimaryColor by settingsViewModel.themePrimaryColor
+    val currentAppIcon by settingsViewModel.appIcon
+    val appIconEntries = AppIconManager.AppIcon.entries
 
     var showColorPicker by remember { mutableStateOf(false) }
     var pendingThemePrimaryColor by remember { mutableIntStateOf(currentThemePrimaryColor) }
@@ -304,7 +315,24 @@ fun AppearanceScreen(settingsViewModel: SettingsViewModel = viewModel()) {
                     title = stringResource(R.string.app_icon),
                     backgroundColor = AppColors.cardBackground
                 ) {
-
+                    Column {
+                        appIconEntries.forEachIndexed { index, icon ->
+                            AppIconOption(
+                                icon = icon,
+                                selected = currentAppIcon == icon,
+                                onClick = {
+                                    if (currentAppIcon != icon) {
+                                        settingsViewModel.onAppIconChanged(context, icon)
+                                    }
+                                }
+                            )
+                            if (index != appIconEntries.lastIndex) {
+                                Spacer(modifier = Modifier.height(8.dp))
+                                ZeroHeightDivider()
+                                Spacer(modifier = Modifier.height(8.dp))
+                            }
+                        }
+                    }
                 }
             }
             item { VGap() }
@@ -457,6 +485,45 @@ fun AppearanceScreen(settingsViewModel: SettingsViewModel = viewModel()) {
                             }
                     )
                 }
+            }
+        }
+    }
+}
+
+@Composable
+private fun AppIconOption(
+    icon: AppIconManager.AppIcon,
+    selected: Boolean,
+    onClick: () -> Unit
+) {
+    val iconShape = RoundedCornerShape(8.dp)
+
+    ConfigItem(
+        title = stringResource(icon.displayNameResId),
+        color = if (selected) AppColors.primary else Color.Unspecified,
+        clickable = true,
+        indication = true,
+        onClick = onClick
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Box(
+                modifier = Modifier
+                    .border(
+                        if (selected) 2.dp else 1.dp,
+                        if (selected) AppColors.primary else Color.Black.copy(alpha = 0.05f),
+                        RoundedRectangle(12.dp)
+                    )
+                    .clip(RoundedRectangle(12.dp))
+                    .shrinkBounds(DpSize(48.dp, 48.dp))
+                    .background(Color.White)
+                    .size(72.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Image(
+                    painter = painterResource(icon.mipmapResId),
+                    contentDescription = stringResource(icon.displayNameResId),
+                    modifier = Modifier.size(72.dp)
+                )
             }
         }
     }

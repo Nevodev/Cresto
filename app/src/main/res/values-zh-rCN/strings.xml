@@ -232,4 +232,9 @@
     <string name="repeat">重复</string>
     <string name="repeat_cycle">重复周期</string>
     <string name="postpone_after_expiry">过期后顺延</string>
+    <string name="app_icon_default">默认</string>
+    <string name="app_icon_apricot">杏子</string>
+    <string name="app_icon_blueberry">蓝莓</string>
+    <string name="app_icon_kiwi">猕猴桃</string>
+    <string name="app_icon_peach">蜜桃</string>
 </resources>

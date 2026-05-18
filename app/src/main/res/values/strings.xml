@@ -243,4 +243,9 @@
     <string name="repeat">Repeat</string>
     <string name="repeat_cycle">Repeat Cycle</string>
     <string name="postpone_after_expiry">Postpone After Expiry</string>
+    <string name="app_icon_default">Default</string>
+    <string name="app_icon_apricot">Apricot</string>
+    <string name="app_icon_blueberry">Blueberry</string>
+    <string name="app_icon_kiwi">Kiwi</string>
+    <string name="app_icon_peach">Peach</string>
 </resources>
