@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -96,6 +97,11 @@ sealed class Screen(val route: String) {
 
 @Composable
 fun MainScreen() {
+    DisposableEffect(Unit) {
+        ScreenExtractEvents.setMainUiOpen(true)
+        onDispose { ScreenExtractEvents.setMainUiOpen(false) }
+    }
+
     val surfaceColor = AppColors.pageBackground
     var currentRoute by rememberSaveable { mutableStateOf(Screen.Home.route) }
     val settingsViewModel: SettingsViewModel = viewModel()
@@ -135,6 +141,8 @@ fun MainScreen() {
         dialogState = dialogState.copy(isVisible = false)
     }
 
+    val pendingAiTodos by ScreenExtractEvents.pendingTodos.collectAsState()
+
     val errorOkText = stringResource(R.string.ok)
     val errorTitleText = stringResource(R.string.extract_screen_failed)
     LaunchedEffect(Unit) {
@@ -152,7 +160,6 @@ fun MainScreen() {
             )
         }
     }
-
 
     val density = LocalDensity.current
 
@@ -658,5 +665,16 @@ fun MainScreen() {
                 isCustomReminderPopupVisible = false
             }
         )
+
+        pendingAiTodos?.let { pendingTodos ->
+            AiTodoReviewContainer(
+                pendingTodos = pendingTodos,
+                onDismiss = { ScreenExtractEvents.clearPendingTodos() },
+                onInsert = { items ->
+                    viewModel.insertAiGeneratedTodos(items)
+                    ScreenExtractEvents.clearPendingTodos()
+                }
+            )
+        }
     }
 }

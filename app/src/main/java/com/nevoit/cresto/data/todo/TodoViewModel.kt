@@ -251,7 +251,9 @@ class TodoViewModel(
         viewModelScope.launch {
             try {
                 repository.insertAiGeneratedTodosWithSubTasks(aiItems).forEach { todo ->
-                    alarmScheduler.schedule(todo)
+                    if (!todo.isCompleted) {
+                        alarmScheduler.schedule(todo)
+                    }
                 }
 
             } catch (e: Exception) {

@@ -138,6 +138,11 @@
     <string name="extract">Extract</string>
     <string name="extract_from_image">Extract from image</string>
     <string name="extracting">Extracting…</string>
+    <string name="ai_todo_review_title">AI Extracted Todos</string>
+    <string name="ai_todo_review_insert">Insert</string>
+    <string name="ai_todo_review_empty">No todos extracted</string>
+    <string name="ai_todo_review_discard">Dismiss extracted todos</string>
+    <string name="ai_todo_review_delete">Remove extracted todo</string>
     <string name="task">Task</string>
     <string name="detail">Detail</string>
     <string name="created">Created %1$s</string>

@@ -7,7 +7,9 @@ import android.os.IBinder
 import com.nevoit.cresto.R
 import com.nevoit.cresto.data.todo.TodoRepository
 import com.nevoit.cresto.data.todo.reminder.TodoAlarmScheduler
+import com.nevoit.cresto.feature.screenextract.AiExtractSource
 import com.nevoit.cresto.feature.screenextract.toScreenExtractErrorMessage
+import com.nevoit.cresto.feature.screenextract.ScreenExtractEvents
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -42,19 +44,34 @@ class ShareExtractService : Service() {
                     this@ShareExtractService,
                     ShareExtractPhase.Starting
                 )
-                val count = withContext(Dispatchers.IO) {
-                    ShareExtractRepository(
-                        context = this@ShareExtractService,
-                        todoRepository = todoRepository,
-                        alarmScheduler = alarmScheduler
-                    ).extractAndInsert(
+                val repository = ShareExtractRepository(
+                    context = this@ShareExtractService,
+                    todoRepository = todoRepository,
+                    alarmScheduler = alarmScheduler
+                )
+                val items = withContext(Dispatchers.IO) {
+                    repository.extract(
                         sharedText = sharedText,
                         imageUris = imageUris
                     ) { phase ->
                         ShareExtractNotifications.showProgress(this@ShareExtractService, phase)
                     }
                 }
-                ShareExtractNotifications.showSuccess(this@ShareExtractService, count)
+
+                if (ScreenExtractEvents.isMainUiOpen() &&
+                    ScreenExtractEvents.emitPendingTodos(items, AiExtractSource.Share)
+                ) {
+                    ShareExtractNotifications.cancel(this@ShareExtractService)
+                } else {
+                    ShareExtractNotifications.showProgress(
+                        this@ShareExtractService,
+                        ShareExtractPhase.Importing
+                    )
+                    val count = withContext(Dispatchers.IO) {
+                        repository.insertExtractedTodos(items)
+                    }
+                    ShareExtractNotifications.showSuccess(this@ShareExtractService, count)
+                }
             } catch (e: Exception) {
                 val errorMessage = e.toScreenExtractErrorMessage(getString(R.string.share_extract_failed))
                 ShareExtractNotifications.showFailure(this@ShareExtractService, errorMessage)

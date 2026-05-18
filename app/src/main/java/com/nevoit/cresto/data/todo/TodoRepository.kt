@@ -75,6 +75,8 @@ class TodoRepository(
             aiItems.map { eventItem ->
                 val todo = TodoItem(
                     title = eventItem.title,
+                    isCompleted = eventItem.isCompleted,
+                    completedDateTime = if (eventItem.isCompleted) LocalDateTime.now() else null,
                     dueDate = try {
                         LocalDate.parse(eventItem.date, DateTimeFormatter.ISO_LOCAL_DATE)
                     } catch (_: Exception) {
@@ -122,7 +124,8 @@ class TodoRepository(
                     .map { subTitle ->
                         SubTodoItem(
                             parentId = insertedTodo.id,
-                            description = subTitle
+                            description = subTitle,
+                            isCompleted = eventItem.isCompleted
                         )
                     }
 

@@ -85,6 +85,10 @@ object ShareExtractNotifications {
         post(context, notification)
     }
 
+    fun cancel(context: Context) {
+        NotificationManagerCompat.from(context).cancel(NOTIFICATION_ID)
+    }
+
     private fun post(context: Context, notification: Notification) {
         if (!canPostNotifications(context)) return
         try {

@@ -19,19 +19,34 @@ class ShareExtractRepository(
         imageUris: List<Uri>,
         onProgress: (ShareExtractPhase) -> Unit = {}
     ): Int {
+        val items = extract(sharedText, imageUris, onProgress)
+        onProgress(ShareExtractPhase.Importing)
+        return insertExtractedTodos(items)
+    }
+
+    suspend fun extract(
+        sharedText: String,
+        imageUris: List<Uri>,
+        onProgress: (ShareExtractPhase) -> Unit = {}
+    ): List<EventItem> {
         val text = sharedText.trim()
         require(text.isNotBlank() || imageUris.isNotEmpty()) { "没有可提取的分享内容" }
 
-        val items = if (imageUris.isNotEmpty()) {
+        return if (imageUris.isNotEmpty()) {
             extractFromImages(imageUris, text, onProgress)
         } else {
             onProgress(ShareExtractPhase.Extracting)
             aiTodoExtractor.extractFromText(text).items
         }
+    }
 
-        onProgress(ShareExtractPhase.Importing)
+    suspend fun insertExtractedTodos(items: List<EventItem>): Int {
         val insertedTodos = todoRepository.insertAiGeneratedTodosWithSubTasks(items)
-        insertedTodos.forEach(alarmScheduler::schedule)
+        insertedTodos.forEach { todo ->
+            if (!todo.isCompleted) {
+                alarmScheduler.schedule(todo)
+            }
+        }
         return insertedTodos.size
     }
 

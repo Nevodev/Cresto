@@ -36,12 +36,27 @@ class ScreenExtractService : Service() {
                     this@ScreenExtractService,
                     ScreenExtractPhase.Starting
                 )
-                val count = withContext(Dispatchers.IO) {
-                    ScreenExtractRepository(todoRepository, alarmScheduler).captureExtractAndInsert { phase ->
+                val repository = ScreenExtractRepository(todoRepository, alarmScheduler)
+                val items = withContext(Dispatchers.IO) {
+                    repository.captureAndExtract { phase ->
                         ScreenExtractNotifications.showProgress(this@ScreenExtractService, phase)
                     }
                 }
-                ScreenExtractNotifications.showSuccess(this@ScreenExtractService, count)
+
+                if (ScreenExtractEvents.isMainUiOpen() &&
+                    ScreenExtractEvents.emitPendingTodos(items, AiExtractSource.Screen)
+                ) {
+                    ScreenExtractNotifications.cancel(this@ScreenExtractService)
+                } else {
+                    ScreenExtractNotifications.showProgress(
+                        this@ScreenExtractService,
+                        ScreenExtractPhase.Importing
+                    )
+                    val count = withContext(Dispatchers.IO) {
+                        repository.insertExtractedTodos(items)
+                    }
+                    ScreenExtractNotifications.showSuccess(this@ScreenExtractService, count)
+                }
             } catch (e: Exception) {
                 val errorMessage = e.toScreenExtractErrorMessage(getString(R.string.extract_screen_failed))
                 ScreenExtractNotifications.showFailure(this@ScreenExtractService, errorMessage)

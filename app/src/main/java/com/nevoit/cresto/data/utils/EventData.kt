@@ -18,5 +18,6 @@ data class EventItem(
     val reminderOffsetMinutes: Int? = null,
     val reminderDayOffset: Int? = null,
     val reminderTime: String? = null,
-    val subTasks: List<String> = emptyList()
+    val subTasks: List<String> = emptyList(),
+    val isCompleted: Boolean = false
 )

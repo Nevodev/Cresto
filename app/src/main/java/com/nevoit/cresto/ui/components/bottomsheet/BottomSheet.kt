@@ -55,6 +55,8 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.nevoit.cresto.R
 import com.nevoit.cresto.data.todo.TodoViewModel
+import com.nevoit.cresto.feature.screenextract.AiExtractSource
+import com.nevoit.cresto.feature.screenextract.ScreenExtractEvents
 import com.nevoit.cresto.theme.AppColors
 import com.nevoit.cresto.ui.components.glasense.DialogItemData
 import com.nevoit.cresto.ui.components.glasense.GlasenseMenuItem
@@ -229,7 +231,10 @@ fun BottomSheet(
         aiViewModel.sideEffect.collect { effect ->
             when (effect) {
                 is AiSideEffect.ProcessSuccess -> {
-                    viewModel.insertAiGeneratedTodos(effect.response.items)
+                    ScreenExtractEvents.emitPendingTodos(
+                        effect.response.items,
+                        AiExtractSource.InApp
+                    )
                 }
 
                 is AiSideEffect.ShowError -> {

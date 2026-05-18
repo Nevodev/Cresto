@@ -138,6 +138,11 @@
     <string name="extract">提取</string>
     <string name="extract_from_image">从图像中提取</string>
     <string name="extracting">提取中…</string>
+    <string name="ai_todo_review_title">AI 提取结果</string>
+    <string name="ai_todo_review_insert">插入</string>
+    <string name="ai_todo_review_empty">未提取到待办</string>
+    <string name="ai_todo_review_discard">关闭提取结果</string>
+    <string name="ai_todo_review_delete">删除这条待办</string>
     <string name="task">任务</string>
     <string name="detail">详细信息</string>
     <string name="created">创建于 %1$s</string>
