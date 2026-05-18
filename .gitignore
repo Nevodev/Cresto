@@ -12,6 +12,8 @@
 /captures
 .externalNativeBuild
 .cxx
+.kotlin/
 local.properties
-/app/release/app-release.apk
+/app/release/
+/gradle/gradle-daemon-jvm.properties
 /app/src/main/java/com/nevoit/cresto/secrets/
