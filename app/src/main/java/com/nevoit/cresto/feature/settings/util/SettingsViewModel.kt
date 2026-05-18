@@ -1,6 +1,7 @@
 package com.nevoit.cresto.feature.settings.util
 
 import androidx.lifecycle.ViewModel
+import android.content.Context
 
 class SettingsViewModel : ViewModel() {
 
@@ -17,6 +18,7 @@ class SettingsViewModel : ViewModel() {
     val isSuperGraphicUltraModernGirlEnabled = SettingsManager.isSuperGraphicUltraModernGirlState
     val hasReturnedToTodayByTitle = SettingsManager.hasReturnedToTodayByTitleState
     val isExtractScreenQuickTileEnabled = SettingsManager.isExtractScreenQuickTileEnabledState
+    val appIcon = SettingsManager.appIconState
 
     fun onCustomPrimaryColorChanged(isEnabled: Boolean) {
         SettingsManager.isCustomPrimaryColorEnabled = isEnabled
@@ -71,5 +73,10 @@ class SettingsViewModel : ViewModel() {
 
     fun onExtractScreenQuickTileChanged(isEnabled: Boolean) {
         SettingsManager.isExtractScreenQuickTileEnabled = isEnabled
+    }
+
+    fun onAppIconChanged(context: Context, icon: AppIconManager.AppIcon) {
+        SettingsManager.appIcon = icon
+        AppIconManager.setIcon(context, icon)
     }
 }

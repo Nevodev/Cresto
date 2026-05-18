@@ -59,6 +59,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.kyant.backdrop.backdrops.layerBackdrop
 import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import com.nevoit.cresto.R
 import com.nevoit.cresto.feature.settings.util.SettingsViewModel
@@ -113,7 +114,6 @@ fun AppearanceScreen(settingsViewModel: SettingsViewModel = viewModel()) {
 
     // Get colors from the app's custom theme
     val backgroundColor = AppColors.pageBackground
-    val hierarchicalSurfaceColor = AppColors.cardBackground
 
     // Remember the state for the lazy list to control scrolling
     val lazyListState = rememberLazyListState()
@@ -153,6 +153,7 @@ fun AppearanceScreen(settingsViewModel: SettingsViewModel = viewModel()) {
         // A vertically scrolling list that only composes and lays out the currently visible items
         PageContent(
             state = lazyListState,
+            modifier = Modifier.layerBackdrop(backdrop),
             tabPadding = false
         ) {
             // Spacer item at the top of the list to push content below the top bar and back button
@@ -163,7 +164,7 @@ fun AppearanceScreen(settingsViewModel: SettingsViewModel = viewModel()) {
             item {
                 ConfigInfoHeader(
                     color = harmonize(Blue500),
-                    backgroundColor = hierarchicalSurfaceColor,
+                    backgroundColor = AppColors.cardBackground,
                     icon = painterResource(R.drawable.ic_twotone_image),
                     title = stringResource(R.string.appearance),
                     info = stringResource(R.string.craft_your_unique_style_with_a_few_adorable_tweaks)
@@ -173,7 +174,7 @@ fun AppearanceScreen(settingsViewModel: SettingsViewModel = viewModel()) {
             // Item for selecting the color mode (light/dark/system)
             item {
                 ColorModeSelector(
-                    backgroundColor = hierarchicalSurfaceColor,
+                    backgroundColor = AppColors.cardBackground,
                     onChange = { settingsViewModel.colorMode(it) },
                     currentMode = currentMode
                 )
@@ -186,7 +187,7 @@ fun AppearanceScreen(settingsViewModel: SettingsViewModel = viewModel()) {
 
                 ConfigItemContainer(
                     title = stringResource(R.string.color),
-                    backgroundColor = hierarchicalSurfaceColor
+                    backgroundColor = AppColors.cardBackground
                 ) {
                     Column {
                         ConfigItem(title = stringResource(R.string.custom_primary_color)) {
@@ -194,7 +195,6 @@ fun AppearanceScreen(settingsViewModel: SettingsViewModel = viewModel()) {
                                 modifier = Modifier
                                     .size(28.dp)
                                     .onGloballyPositioned {
-                                        // Keep latest layout info so click can snapshot current bounds.
                                         latestColorPickerTriggerBounds = it.boundsInWindow()
                                     }
                                     .drawBehind {
@@ -253,7 +253,7 @@ fun AppearanceScreen(settingsViewModel: SettingsViewModel = viewModel()) {
             item {
                 ConfigItemContainer(
                     title = stringResource(R.string.design),
-                    backgroundColor = hierarchicalSurfaceColor
+                    backgroundColor = AppColors.cardBackground
                 ) {
                     ConfigItem(title = stringResource(R.string.lite_mode)) {
                         GlasenseSwitch(
@@ -297,6 +297,15 @@ fun AppearanceScreen(settingsViewModel: SettingsViewModel = viewModel()) {
                     modifier = Modifier.padding(horizontal = 12.dp),
                     color = AppColors.contentVariant.copy(alpha = .3f)
                 )
+                VGap()
+            }
+            item {
+                ConfigItemContainer(
+                    title = stringResource(R.string.app_icon),
+                    backgroundColor = AppColors.cardBackground
+                ) {
+
+                }
             }
             item { VGap() }
             overscrollSpacer(lazyListState)
@@ -308,7 +317,7 @@ fun AppearanceScreen(settingsViewModel: SettingsViewModel = viewModel()) {
             statusBarHeight = statusBarHeight,
             isVisible = isSmallTitleVisible,
             backdrop = backdrop,
-            surfaceColor = backgroundColor
+            surfaceColor = AppColors.pageBackground
         ) {
             // This lambda is empty as the component handles its own content
         }

@@ -76,13 +76,41 @@ class TodoRepository(
                 val parentId = todoDao.insertTodoForImport(
                     TodoItem(
                         title = eventItem.title,
-                        dueDate = try { LocalDate.parse(eventItem.date, DateTimeFormatter.ISO_LOCAL_DATE) } catch (e: Exception) { LocalDate.now() },
-                        startTime = eventItem.startTime?.let { try { LocalTime.parse(it, DateTimeFormatter.ofPattern("HH:mm")) } catch (e: Exception) { null } },
-                        endTime = eventItem.endTime?.let { try { LocalTime.parse(it, DateTimeFormatter.ofPattern("HH:mm")) } catch (e: Exception) { null } },
-                        reminderMode = eventItem.reminderMode?.let { try { TodoReminderMode.valueOf(it) } catch (e: Exception) { null } },
+                        dueDate = try {
+                            LocalDate.parse(eventItem.date, DateTimeFormatter.ISO_LOCAL_DATE)
+                        } catch (_: Exception) {
+                            LocalDate.now()
+                        },
+                        startTime = eventItem.startTime?.let {
+                            try {
+                                LocalTime.parse(it, DateTimeFormatter.ofPattern("HH:mm"))
+                            } catch (_: Exception) {
+                                null
+                            }
+                        },
+                        endTime = eventItem.endTime?.let {
+                            try {
+                                LocalTime.parse(it, DateTimeFormatter.ofPattern("HH:mm"))
+                            } catch (_: Exception) {
+                                null
+                            }
+                        },
+                        reminderMode = eventItem.reminderMode?.let {
+                            try {
+                                TodoReminderMode.valueOf(it)
+                            } catch (_: Exception) {
+                                null
+                            }
+                        },
                         reminderOffsetMinutes = eventItem.reminderOffsetMinutes,
                         reminderDayOffset = eventItem.reminderDayOffset,
-                        reminderTime = eventItem.reminderTime?.let { try { LocalTime.parse(it, DateTimeFormatter.ofPattern("HH:mm")) } catch (e: Exception) { null } }
+                        reminderTime = eventItem.reminderTime?.let {
+                            try {
+                                LocalTime.parse(it, DateTimeFormatter.ofPattern("HH:mm"))
+                            } catch (_: Exception) {
+                                null
+                            }
+                        }
                     )
                 ).toInt()
 

@@ -38,6 +38,7 @@ object SettingsManager {
     private const val KEY_EXTRACT_SCREEN_QUICK_TILE_ENABLED = "extract_screen_quick_tile_enabled"
     private const val DEFAULT_AI_API_URL = "https://open.bigmodel.cn/api/paas/v4/chat/completions"
     private const val DEFAULT_AI_MODEL = "glm-4-flash"
+    private const val KEY_APP_ICON = "app_icon"
 
     private val defaultThemePrimaryColor = Blue500.toArgb()
 
@@ -72,9 +73,20 @@ object SettingsManager {
     val isEasterEggState = mutableStateOf(mmkv.decodeBool(KEY_EASTER_EGG, false))
     val isSuperGraphicUltraModernGirlState =
         mutableStateOf(mmkv.decodeBool(KEY_SUPER_GRAPHIC_ULTRA_MODERN_GIRL, false))
-    val hasReturnedToTodayByTitleState = mutableStateOf(mmkv.decodeBool(KEY_HAS_RETURNED_TO_TODAY_BY_TITLE, false))
+    val hasReturnedToTodayByTitleState =
+        mutableStateOf(mmkv.decodeBool(KEY_HAS_RETURNED_TO_TODAY_BY_TITLE, false))
     val isExtractScreenQuickTileEnabledState =
         mutableStateOf(mmkv.decodeBool(KEY_EXTRACT_SCREEN_QUICK_TILE_ENABLED, false))
+    val appIconState = mutableStateOf(
+        mmkv.decodeString(KEY_APP_ICON, AppIconManager.AppIcon.DEFAULT.name)
+            ?.let { name ->
+                try {
+                    AppIconManager.AppIcon.valueOf(name)
+                } catch (_: IllegalArgumentException) {
+                    AppIconManager.AppIcon.DEFAULT
+                }
+            } ?: AppIconManager.AppIcon.DEFAULT
+    )
 
     var isCustomPrimaryColorEnabled: Boolean
         get() = mmkv.decodeBool(KEY_CUSTOM_PRIMARY_COLOR_ENABLED, false)
@@ -223,6 +235,20 @@ object SettingsManager {
         set(value) {
             mmkv.encode(KEY_EXTRACT_SCREEN_QUICK_TILE_ENABLED, value)
             isExtractScreenQuickTileEnabledState.value = value
+        }
+
+    var appIcon: AppIconManager.AppIcon
+        get() {
+            val name = mmkv.decodeString(KEY_APP_ICON, AppIconManager.AppIcon.DEFAULT.name)
+            return try {
+                AppIconManager.AppIcon.valueOf(name!!)
+            } catch (_: IllegalArgumentException) {
+                AppIconManager.AppIcon.DEFAULT
+            }
+        }
+        set(value) {
+            mmkv.encode(KEY_APP_ICON, value.name)
+            appIconState.value = value
         }
 
     fun resetAiSettingsToDefaults() {
