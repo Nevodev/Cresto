@@ -22,27 +22,27 @@ object AppIconManager {
         DEFAULT(
             ALIAS_DEFAULT,
             R.string.app_icon_default,
-            R.drawable.ic_launcher_foreground_default
+            R.drawable.app_icon_default
         ),
         APRICOT(
             ALIAS_APRICOT,
             R.string.app_icon_apricot,
-            R.drawable.ic_launcher_foreground_apricot
+            R.drawable.app_icon_apricot
         ),
         BLUEBERRY(
             ALIAS_BLUEBERRY,
             R.string.app_icon_blueberry,
-            R.drawable.ic_launcher_foreground_blueberry
+            R.drawable.app_icon_blueberry
         ),
         KIWI(
             ALIAS_KIWI,
             R.string.app_icon_kiwi,
-            R.drawable.ic_launcher_foreground_kiwi
+            R.drawable.app_icon_kiwi
         ),
         PEACH(
             ALIAS_PEACH,
             R.string.app_icon_peach,
-            R.drawable.ic_launcher_foreground_peach
+            R.drawable.app_icon_peach
         )
     }
 

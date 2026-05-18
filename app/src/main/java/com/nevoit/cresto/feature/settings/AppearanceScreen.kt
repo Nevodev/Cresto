@@ -4,9 +4,11 @@ package com.nevoit.cresto.feature.settings
 // Import necessary libraries and components
 import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.LocalOverscrollFactory
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -24,12 +26,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.itemsIndexed
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -60,7 +63,6 @@ import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -68,7 +70,6 @@ import com.kyant.backdrop.backdrops.layerBackdrop
 import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import com.kyant.shapes.RoundedRectangle
 import com.nevoit.cresto.R
-import com.nevoit.cresto.feature.detail.shrinkBounds
 import com.nevoit.cresto.feature.settings.util.AppIconManager
 import com.nevoit.cresto.feature.settings.util.SettingsViewModel
 import com.nevoit.cresto.theme.AppButtonColors
@@ -92,6 +93,7 @@ import com.nevoit.cresto.ui.components.packed.ConfigItem
 import com.nevoit.cresto.ui.components.packed.ConfigItemContainer
 import com.nevoit.cresto.ui.components.packed.PageContent
 import com.nevoit.cresto.ui.components.packed.VGap
+import com.nevoit.glasense.overscroll.rememberOffsetOverscrollFactory
 import com.nevoit.glasense.theme.Amber500
 import com.nevoit.glasense.theme.Blue500
 import com.nevoit.glasense.theme.Cyan500
@@ -145,6 +147,10 @@ fun AppearanceScreen(settingsViewModel: SettingsViewModel = viewModel()) {
     var pendingThemePrimaryColor by remember { mutableIntStateOf(currentThemePrimaryColor) }
     var latestColorPickerTriggerBounds by remember { mutableStateOf<Rect?>(null) }
     var popupAnchorBounds by remember { mutableStateOf(Rect.Zero) }
+
+    val overscrollFactory = rememberOffsetOverscrollFactory(
+        orientation = Orientation.Horizontal
+    )
 
     val backdrop = rememberLayerBackdrop {
         drawRect(
@@ -315,21 +321,24 @@ fun AppearanceScreen(settingsViewModel: SettingsViewModel = viewModel()) {
                     title = stringResource(R.string.app_icon),
                     backgroundColor = AppColors.cardBackground
                 ) {
-                    Column {
-                        appIconEntries.forEachIndexed { index, icon ->
-                            AppIconOption(
-                                icon = icon,
-                                selected = currentAppIcon == icon,
-                                onClick = {
-                                    if (currentAppIcon != icon) {
-                                        settingsViewModel.onAppIconChanged(context, icon)
+                    CompositionLocalProvider(LocalOverscrollFactory provides overscrollFactory) {
+                        LazyRow(
+                            modifier = Modifier.fillMaxWidth(),
+                            contentPadding = PaddingValues(vertical = 8.dp),
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            itemsIndexed(
+                                items = appIconEntries,
+                                key = { index, icon -> "${index}_${icon.alias}" }) { index, icon ->
+                                AppIconOption(
+                                    icon = icon,
+                                    selected = currentAppIcon == icon,
+                                    onClick = {
+                                        if (currentAppIcon != icon) {
+                                            settingsViewModel.onAppIconChanged(context, icon)
+                                        }
                                     }
-                                }
-                            )
-                            if (index != appIconEntries.lastIndex) {
-                                Spacer(modifier = Modifier.height(8.dp))
-                                ZeroHeightDivider()
-                                Spacer(modifier = Modifier.height(8.dp))
+                                )
                             }
                         }
                     }
@@ -496,35 +505,39 @@ private fun AppIconOption(
     selected: Boolean,
     onClick: () -> Unit
 ) {
-    val iconShape = RoundedCornerShape(8.dp)
-
-    ConfigItem(
-        title = stringResource(icon.displayNameResId),
-        color = if (selected) AppColors.primary else Color.Unspecified,
-        clickable = true,
-        indication = true,
-        onClick = onClick
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Box(
-                modifier = Modifier
-                    .border(
-                        if (selected) 2.dp else 1.dp,
-                        if (selected) AppColors.primary else Color.Black.copy(alpha = 0.05f),
-                        RoundedRectangle(12.dp)
-                    )
-                    .clip(RoundedRectangle(12.dp))
-                    .shrinkBounds(DpSize(48.dp, 48.dp))
-                    .background(Color.White)
-                    .size(72.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Image(
-                    painter = painterResource(icon.mipmapResId),
-                    contentDescription = stringResource(icon.displayNameResId),
-                    modifier = Modifier.size(72.dp)
+        Box(
+            modifier = Modifier
+                .border(
+                    if (selected) 2.dp else 1.dp,
+                    if (selected) AppColors.primary else Color.Black.copy(alpha = 0.05f),
+                    RoundedRectangle(16.dp)
                 )
-            }
+                .size(64.dp)
+                .clip(RoundedRectangle(16.dp))
+                .clickable(
+                    interactionSource = remember { MutableInteractionSource() },
+                    indication = DimIndication(),
+                    onClick = onClick
+                )
+                .background(Color.White),
+            contentAlignment = Alignment.Center
+        ) {
+            Image(
+                painter = painterResource(icon.mipmapResId),
+                contentDescription = stringResource(icon.displayNameResId),
+                modifier = Modifier.size(64.dp)
+            )
+
         }
+        Text(
+            stringResource(icon.displayNameResId),
+            fontSize = 12.sp,
+            lineHeight = 12.sp,
+            modifier = Modifier.padding(top = 8.dp),
+            color = AppColors.contentVariant
+        )
     }
 }
