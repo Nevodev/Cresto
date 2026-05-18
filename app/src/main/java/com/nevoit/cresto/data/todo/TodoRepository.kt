@@ -68,51 +68,52 @@ class TodoRepository(
         todoDao.insertSubTodo(item)
     }
 
-    suspend fun insertAiGeneratedTodosWithSubTasks(aiItems: List<com.nevoit.cresto.data.utils.EventItem>) {
-        if (aiItems.isEmpty()) return
+    suspend fun insertAiGeneratedTodosWithSubTasks(aiItems: List<com.nevoit.cresto.data.utils.EventItem>): List<TodoItem> {
+        if (aiItems.isEmpty()) return emptyList()
 
-        todoDatabase.withTransaction {
-            aiItems.forEach { eventItem ->
-                val parentId = todoDao.insertTodoForImport(
-                    TodoItem(
-                        title = eventItem.title,
-                        dueDate = try {
-                            LocalDate.parse(eventItem.date, DateTimeFormatter.ISO_LOCAL_DATE)
+        return todoDatabase.withTransaction {
+            aiItems.map { eventItem ->
+                val todo = TodoItem(
+                    title = eventItem.title,
+                    dueDate = try {
+                        LocalDate.parse(eventItem.date, DateTimeFormatter.ISO_LOCAL_DATE)
+                    } catch (_: Exception) {
+                        LocalDate.now()
+                    },
+                    startTime = eventItem.startTime?.let {
+                        try {
+                            LocalTime.parse(it, DateTimeFormatter.ofPattern("HH:mm"))
                         } catch (_: Exception) {
-                            LocalDate.now()
-                        },
-                        startTime = eventItem.startTime?.let {
-                            try {
-                                LocalTime.parse(it, DateTimeFormatter.ofPattern("HH:mm"))
-                            } catch (_: Exception) {
-                                null
-                            }
-                        },
-                        endTime = eventItem.endTime?.let {
-                            try {
-                                LocalTime.parse(it, DateTimeFormatter.ofPattern("HH:mm"))
-                            } catch (_: Exception) {
-                                null
-                            }
-                        },
-                        reminderMode = eventItem.reminderMode?.let {
-                            try {
-                                TodoReminderMode.valueOf(it)
-                            } catch (_: Exception) {
-                                null
-                            }
-                        },
-                        reminderOffsetMinutes = eventItem.reminderOffsetMinutes,
-                        reminderDayOffset = eventItem.reminderDayOffset,
-                        reminderTime = eventItem.reminderTime?.let {
-                            try {
-                                LocalTime.parse(it, DateTimeFormatter.ofPattern("HH:mm"))
-                            } catch (_: Exception) {
-                                null
-                            }
+                            null
                         }
-                    )
-                ).toInt()
+                    },
+                    endTime = eventItem.endTime?.let {
+                        try {
+                            LocalTime.parse(it, DateTimeFormatter.ofPattern("HH:mm"))
+                        } catch (_: Exception) {
+                            null
+                        }
+                    },
+                    reminderMode = eventItem.reminderMode?.let {
+                        try {
+                            TodoReminderMode.valueOf(it)
+                        } catch (_: Exception) {
+                            null
+                        }
+                    },
+                    reminderOffsetMinutes = eventItem.reminderOffsetMinutes,
+                    reminderDayOffset = eventItem.reminderDayOffset,
+                    reminderTime = eventItem.reminderTime?.let {
+                        try {
+                            LocalTime.parse(it, DateTimeFormatter.ofPattern("HH:mm"))
+                        } catch (_: Exception) {
+                            null
+                        }
+                    }
+                )
+                val insertedTodo = todo.copy(
+                    id = todoDao.insertTodoForImport(todo).toInt()
+                )
 
                 val subTodos = eventItem.subTasks
                     .map(String::trim)
@@ -120,7 +121,7 @@ class TodoRepository(
                     .distinct()
                     .map { subTitle ->
                         SubTodoItem(
-                            parentId = parentId,
+                            parentId = insertedTodo.id,
                             description = subTitle
                         )
                     }
@@ -128,6 +129,8 @@ class TodoRepository(
                 subTodos.forEach { subTodo ->
                     todoDao.insertSubTodoForImport(subTodo)
                 }
+
+                insertedTodo
             }
         }
     }

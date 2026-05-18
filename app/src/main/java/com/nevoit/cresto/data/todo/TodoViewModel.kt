@@ -250,7 +250,9 @@ class TodoViewModel(
     fun insertAiGeneratedTodos(aiItems: List<EventItem>) {
         viewModelScope.launch {
             try {
-                repository.insertAiGeneratedTodosWithSubTasks(aiItems)
+                repository.insertAiGeneratedTodosWithSubTasks(aiItems).forEach { todo ->
+                    alarmScheduler.schedule(todo)
+                }
 
             } catch (e: Exception) {
                 println("Error inserting AI-generated todos: ${e.message}")

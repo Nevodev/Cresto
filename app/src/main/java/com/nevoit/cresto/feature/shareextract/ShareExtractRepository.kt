@@ -3,6 +3,7 @@ package com.nevoit.cresto.feature.shareextract
 import android.content.Context
 import android.net.Uri
 import com.nevoit.cresto.data.todo.TodoRepository
+import com.nevoit.cresto.data.todo.reminder.TodoAlarmScheduler
 import com.nevoit.cresto.data.utils.EventItem
 import com.nevoit.cresto.feature.screenextract.AiTodoExtractor
 import com.nevoit.cresto.feature.screenextract.toCompressedSharedImageDataUrl
@@ -10,6 +11,7 @@ import com.nevoit.cresto.feature.screenextract.toCompressedSharedImageDataUrl
 class ShareExtractRepository(
     private val context: Context,
     private val todoRepository: TodoRepository,
+    private val alarmScheduler: TodoAlarmScheduler,
     private val aiTodoExtractor: AiTodoExtractor = AiTodoExtractor()
 ) {
     suspend fun extractAndInsert(
@@ -28,8 +30,9 @@ class ShareExtractRepository(
         }
 
         onProgress(ShareExtractPhase.Importing)
-        todoRepository.insertAiGeneratedTodosWithSubTasks(items)
-        return items.size
+        val insertedTodos = todoRepository.insertAiGeneratedTodosWithSubTasks(items)
+        insertedTodos.forEach(alarmScheduler::schedule)
+        return insertedTodos.size
     }
 
     private suspend fun extractFromImages(

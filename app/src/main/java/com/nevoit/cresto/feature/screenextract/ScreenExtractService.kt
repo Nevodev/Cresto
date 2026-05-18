@@ -5,6 +5,7 @@ import android.content.Intent
 import android.os.IBinder
 import com.nevoit.cresto.R
 import com.nevoit.cresto.data.todo.TodoRepository
+import com.nevoit.cresto.data.todo.reminder.TodoAlarmScheduler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -17,6 +18,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 class ScreenExtractService : Service() {
 
     private val todoRepository: TodoRepository by inject()
+    private val alarmScheduler: TodoAlarmScheduler by inject()
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
 
     override fun onBind(intent: Intent?): IBinder? = null
@@ -35,7 +37,7 @@ class ScreenExtractService : Service() {
                     ScreenExtractPhase.Starting
                 )
                 val count = withContext(Dispatchers.IO) {
-                    ScreenExtractRepository(todoRepository).captureExtractAndInsert { phase ->
+                    ScreenExtractRepository(todoRepository, alarmScheduler).captureExtractAndInsert { phase ->
                         ScreenExtractNotifications.showProgress(this@ScreenExtractService, phase)
                     }
                 }

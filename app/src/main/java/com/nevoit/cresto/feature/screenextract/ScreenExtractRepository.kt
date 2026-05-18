@@ -1,9 +1,11 @@
 package com.nevoit.cresto.feature.screenextract
 
 import com.nevoit.cresto.data.todo.TodoRepository
+import com.nevoit.cresto.data.todo.reminder.TodoAlarmScheduler
 
 class ScreenExtractRepository(
     private val todoRepository: TodoRepository,
+    private val alarmScheduler: TodoAlarmScheduler,
     private val screenshotCapturer: ShizukuScreenshotCapturer = ShizukuScreenshotCapturer(),
     private val aiTodoExtractor: AiTodoExtractor = AiTodoExtractor()
 ) {
@@ -18,7 +20,8 @@ class ScreenExtractRepository(
         val response = aiTodoExtractor.extractFromImage(imageDataUrl)
 
         onProgress(ScreenExtractPhase.Importing)
-        todoRepository.insertAiGeneratedTodosWithSubTasks(response.items)
-        return response.items.size
+        val insertedTodos = todoRepository.insertAiGeneratedTodosWithSubTasks(response.items)
+        insertedTodos.forEach(alarmScheduler::schedule)
+        return insertedTodos.size
     }
 }

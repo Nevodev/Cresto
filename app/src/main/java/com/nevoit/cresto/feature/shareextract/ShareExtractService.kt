@@ -6,6 +6,7 @@ import android.net.Uri
 import android.os.IBinder
 import com.nevoit.cresto.R
 import com.nevoit.cresto.data.todo.TodoRepository
+import com.nevoit.cresto.data.todo.reminder.TodoAlarmScheduler
 import com.nevoit.cresto.feature.screenextract.toScreenExtractErrorMessage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -19,6 +20,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 class ShareExtractService : Service() {
 
     private val todoRepository: TodoRepository by inject()
+    private val alarmScheduler: TodoAlarmScheduler by inject()
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
 
     override fun onBind(intent: Intent?): IBinder? = null
@@ -43,7 +45,8 @@ class ShareExtractService : Service() {
                 val count = withContext(Dispatchers.IO) {
                     ShareExtractRepository(
                         context = this@ShareExtractService,
-                        todoRepository = todoRepository
+                        todoRepository = todoRepository,
+                        alarmScheduler = alarmScheduler
                     ).extractAndInsert(
                         sharedText = sharedText,
                         imageUris = imageUris
