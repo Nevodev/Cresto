@@ -23,6 +23,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -99,7 +100,7 @@ fun GuideScreen(onFinish: () -> Unit) {
 
     val surfaceColor = AppColors.pageBackground
 
-    val pagerState = rememberPagerState(pageCount = { 2 })
+    val pagerState = rememberPagerState(pageCount = { 3 })
     val scope = rememberCoroutineScope()
 
     var showButton by remember { mutableStateOf(false) }
@@ -128,6 +129,7 @@ fun GuideScreen(onFinish: () -> Unit) {
                 when (page) {
                     0 -> WelcomePage()
                     1 -> InformationPage()
+                    2 -> NotificationPage()
                 }
             }
             Spacer(Modifier.height(12.dp))
@@ -173,7 +175,14 @@ fun GuideScreen(onFinish: () -> Unit) {
                             enter = defaultEnterTransition,
                             exit = defaultExitTransition
                         ) {
-                            Text(text = stringResource(R.string.done))
+                            Text(text = stringResource(R.string.ok))
+                        }
+                        CustomAnimatedVisibility(
+                            visible = pagerState.currentPage == 2,
+                            enter = defaultEnterTransition,
+                            exit = defaultExitTransition
+                        ) {
+                            Text(text = stringResource(R.string.ok))
                         }
                     }
                 }
@@ -637,6 +646,50 @@ fun InformationPage() {
                     )
                 }
             }
+        }
+    }
+}
+
+@Composable
+fun NotificationPage() {
+    LazyColumn(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.fillMaxSize()
+    ) {
+        item { Spacer(modifier = Modifier.height(96.dp)) }
+        item {
+            Text(
+                text = "打开通知",
+                modifier = Modifier.fillMaxWidth(),
+                fontSize = 24.sp,
+                textAlign = TextAlign.Center,
+                fontWeight = FontWeight.SemiBold
+            )
+        }
+        item { Spacer(modifier = Modifier.height(36.dp)) }
+        item {
+            Image(
+                painter = painterResource(R.drawable.artwork_notification),
+                contentDescription = null,
+                modifier = Modifier
+                    .padding(horizontal = 24.dp)
+                    .aspectRatio(4f / 3f)
+                    .fillMaxWidth()
+                    .clip(shape = AppSpecs.cardShape)
+            )
+        }
+        item { Spacer(modifier = Modifier.height(24.dp)) }
+        item {
+            Text(
+                text = "Cresto需要通知权限才可以向您发送提醒。我们保证只会在您设置了提醒的待办事项到达时发送通知，并且不会发送任何营销相关的内容。",
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 48.dp),
+                fontSize = 14.sp,
+                lineHeight = 18.sp,
+                textAlign = TextAlign.Center,
+                color = AppColors.contentVariant
+            )
         }
     }
 }
