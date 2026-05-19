@@ -1,4 +1,4 @@
-package com.nevoit.cresto.ui.components.bottomsheet
+package com.nevoit.cresto.feature.bottomsheet
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -561,7 +561,8 @@ fun AdvancedPage(
                             GlasenseSwitch(
                                 backgroundColor = AppColors.cardBackgroundElevated,
                                 checked = reminderPersistent,
-                                onCheckedChange = onReminderPersistentChange)
+                                onCheckedChange = onReminderPersistentChange
+                            )
                         }
                         Spacer(modifier = Modifier.height(8.dp))
                         ZeroHeightDivider()
@@ -570,7 +571,8 @@ fun AdvancedPage(
                             GlasenseSwitch(
                                 backgroundColor = AppColors.cardBackgroundElevated,
                                 checked = reminderStrong,
-                                onCheckedChange = onReminderStrongChange)
+                                onCheckedChange = onReminderStrongChange
+                            )
                         }
                     }
                 }

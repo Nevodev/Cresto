@@ -1,4 +1,4 @@
-package com.nevoit.cresto.ui.components.bottomsheet
+package com.nevoit.cresto.feature.bottomsheet
 
 import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.compose.foundation.layout.Box

@@ -98,7 +98,9 @@ fun RotatingGlowBorder(
     blurRadius: Dp,
     shape: Shape,
     colors: List<Color>,
-    timeMillis: Int = 2000
+    timeMillis: Int = 2000,
+    blendMode: BlendMode = BlendMode.Plus,
+    edgeTreatment: BlurredEdgeTreatment = BlurredEdgeTreatment.Unbounded
 ) {
     val infiniteTransition = rememberInfiniteTransition(label = "border_glow_rotation")
     val rotation by infiniteTransition.animateFloat(
@@ -124,8 +126,8 @@ fun RotatingGlowBorder(
 
     Box(
         modifier = Modifier
-            .graphicsLayer { blendMode = BlendMode.Plus }
-            .blur(radius = blurRadius, edgeTreatment = BlurredEdgeTreatment.Unbounded)
+            .graphicsLayer { this.blendMode = blendMode }
+            .blur(radius = blurRadius, edgeTreatment = edgeTreatment)
             .then(modifier)
             .drawBehind {
                 val centerX = size.width / 2

@@ -94,6 +94,26 @@ val gradientColorsDark =
             .copy(red = 0.65f, green = 0f),
     )
 
+val gradientColorsDark2 =
+    listOf(
+        Violet500.adjustSaturationInOklab(1.5f).convert(ColorSpaces.Oklab)
+            .copy(red = 0.9f, blue = -0.35f),
+        Blue500.adjustSaturationInOklab(1.2f).convert(ColorSpaces.Oklab)
+            .copy(red = 0.65f, green = 0f),
+        Orange500.adjustSaturationInOklab(1.5f).convert(ColorSpaces.Oklab)
+            .copy(red = 0.9f),
+        Violet500.adjustSaturationInOklab(1.5f).convert(ColorSpaces.Oklab)
+            .copy(red = 0.9f, blue = -0.35f),
+        Violet500.adjustSaturationInOklab(1.5f).convert(ColorSpaces.Oklab)
+            .copy(red = 0.9f, blue = -0.35f),
+        Orange500.adjustSaturationInOklab(1.5f).convert(ColorSpaces.Oklab)
+            .copy(red = 0.9f),
+        Blue500.adjustSaturationInOklab(1.2f).convert(ColorSpaces.Oklab)
+            .copy(red = 0.65f, green = 0f),
+        Violet500.adjustSaturationInOklab(1.5f).convert(ColorSpaces.Oklab)
+            .copy(red = 0.9f, blue = -0.35f),
+    )
+
 val gradientColorsLight =
     listOf(
         Blue500.adjustSaturationInOklab(1.2f).convert(ColorSpaces.Oklab)

@@ -10,7 +10,6 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -60,13 +59,14 @@ import com.kyant.shapes.Capsule
 import com.nevoit.cresto.R
 import com.nevoit.cresto.data.todo.TodoItem
 import com.nevoit.cresto.data.todo.TodoViewModel
+import com.nevoit.cresto.feature.bottomsheet.BottomSheet
+import com.nevoit.cresto.feature.home.NavigationBar
 import com.nevoit.cresto.feature.screenextract.ScreenExtractEvents
 import com.nevoit.cresto.feature.settings.util.SettingsViewModel
 import com.nevoit.cresto.theme.AppButtonColors
 import com.nevoit.cresto.theme.AppColors
 import com.nevoit.cresto.theme.isAppInDarkTheme
 import com.nevoit.cresto.toolkit.gaussiangradient.smoothGradientMask
-import com.nevoit.cresto.ui.components.bottomsheet.BottomSheet
 import com.nevoit.cresto.ui.components.glasense.DialogItemData
 import com.nevoit.cresto.ui.components.glasense.DialogState
 import com.nevoit.cresto.ui.components.glasense.GlasenseButtonAdaptable
@@ -74,7 +74,6 @@ import com.nevoit.cresto.ui.components.glasense.GlasenseButtonToolBar
 import com.nevoit.cresto.ui.components.glasense.GlasenseDialog
 import com.nevoit.cresto.ui.components.glasense.GlasenseMenu
 import com.nevoit.cresto.ui.components.glasense.GlasenseMenuItem
-import com.nevoit.cresto.ui.components.glasense.GlasenseNavigationButton
 import com.nevoit.cresto.ui.components.glasense.MenuState
 import com.nevoit.cresto.ui.components.glasense.PopupDirection
 import com.nevoit.cresto.ui.components.packed.CustomReminderPopup
@@ -271,6 +270,15 @@ fun MainScreen() {
         currentRoute = Screen.Home.route
     }
 
+    val superBackdrop = rememberLayerBackdrop {
+        drawRect(
+            color = surfaceColor,
+            size = Size(this.size.width * 3, this.size.height * 3),
+            topLeft = Offset(-this.size.width, -this.size.height)
+        )
+        drawContent()
+    }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -288,382 +296,335 @@ fun MainScreen() {
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .layerBackdrop(backdrop)
+                .layerBackdrop(superBackdrop)
         ) {
-            NavContainer(
-                currentRoute = currentRoute,
-                showMenu = showMenu,
-                viewModel = viewModel
-            )
-        }
-
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(120.dp + navigationBarHeight)
-                .align(Alignment.BottomCenter)
-                .smoothGradientMask(
-                    surfaceColor.copy(alpha = 0f), surfaceColor.copy(alpha = 1f), -0.1f, 0.8f, 0.7f
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .layerBackdrop(backdrop)
+            ) {
+                NavContainer(
+                    currentRoute = currentRoute,
+                    showMenu = showMenu,
+                    viewModel = viewModel
                 )
-
-        ) {
-            if (isComposed) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .navigationBarsPadding()
-                        .padding(start = 12.dp, end = 12.dp, bottom = 16.dp)
-                        .height(48.dp)
-                        .align(Alignment.BottomCenter)
-                        .graphicsLayer {
-                            alpha = bottomBarAlphaAnimation.value
-                            renderEffect = if (bottomBarBlurAnimation.value > 0f) {
-                                BlurEffect(
-                                    radiusX = bottomBarBlurAnimation.value,
-                                    radiusY = bottomBarBlurAnimation.value,
-                                    edgeTreatment = TileMode.Decal
-                                )
-                            } else {
-                                null
-                            }
-                        },
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    GlasenseButtonAdaptable(
-                        width = { 48.dp },
-                        height = { 48.dp },
-                        tint = AppColors.primary,
-                        enabled = true,
-                        shape = Capsule(),
-                        onClick = {
-                            moreButtonBounds?.let {
-                                showMenu(
-                                    it.boundsInWindow(),
-                                    moreMenu
-                                )
-                            }
-                        },
-                        modifier = Modifier
-                            .onGloballyPositioned { coordinates ->
-                                moreButtonBounds = coordinates
-                            }
-                            .drawBackdrop(
-                                backdrop = backdrop,
-                                shape = { Capsule() },
-                                shadow = null,
-                                innerShadow = null,
-                                highlight = { if (liquidGlass) Highlight.Default else null },
-                                effects = {
-                                    blur(
-                                        if (liquidGlass) 8f.dp.toPx() else 32f.dp.toPx(),
-                                        TileMode.Decal
-                                    )
-                                    if (liquidGlass) lens(16f.dp.toPx(), 48f.dp.toPx())
-                                },
-                                onDrawSurface = {
-                                    drawRect(color = floatingBarColor)
-                                }
-                            ),
-                        colors = AppButtonColors.action()
-                    ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_ellipsis),
-                            contentDescription = stringResource(R.string.more),
-                            modifier = Modifier.width(32.dp)
-                        )
-                    }
-                    GlasenseButtonToolBar(
-                        enabled = true,
-                        interactionSource = sharedInteractionSource,
-                        shape = Capsule(),
-                        onClick = {},
-                        modifier = Modifier
-                            .drawBackdrop(
-                                backdrop = backdrop,
-                                shape = { Capsule() },
-                                shadow = null,
-                                innerShadow = null,
-                                highlight = { if (liquidGlass) Highlight.Default else null },
-                                effects = {
-                                    blur(
-                                        if (liquidGlass) 8f.dp.toPx() else 32f.dp.toPx(),
-                                        TileMode.Decal
-                                    )
-                                    if (liquidGlass) lens(16f.dp.toPx(), 48f.dp.toPx())
-                                },
-                                onDrawSurface = {
-                                    drawRect(color = floatingBarColor)
-                                }
-                            ),
-                        colors = AppButtonColors.action()
-                    ) {
-                        Row(
-                            modifier = Modifier
-                                .height(48.dp),
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .onGloballyPositioned { coordinates ->
-                                        flagButtonBounds = coordinates
-                                    }
-                                    .height(48.dp)
-                                    .width(48.dp)
-                                    .clickable(
-                                        interactionSource = sharedInteractionSource,
-                                        indication = null
-                                    ) {
-                                        flagButtonBounds?.let {
-                                            showMenu(
-                                                it.boundsInWindow(),
-                                                flagMenu
-                                            )
-                                        }
-                                    },
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Icon(
-                                    painter = painterResource(id = R.drawable.ic_flag),
-                                    contentDescription = stringResource(R.string.set_flag),
-                                    modifier = Modifier.width(32.dp),
-                                    tint = AppColors.primary
-                                )
-                            }
-                            Box(
-                                modifier = Modifier
-                                    .height(48.dp)
-                                    .width(48.dp),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Icon(
-                                    painter = painterResource(id = R.drawable.ic_calendar_add),
-                                    contentDescription = stringResource(R.string.add_to_calendar),
-                                    modifier = Modifier.width(32.dp),
-                                    tint = AppColors.primary
-                                )
-                            }
-                            Box(
-                                modifier = Modifier
-                                    .height(48.dp)
-                                    .width(48.dp)
-                                    .clickable(
-                                        interactionSource = sharedInteractionSource,
-                                        indication = null
-                                    ) {
-                                        viewModel.completeSelectedItems()
-                                    },
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Icon(
-                                    painter = painterResource(id = R.drawable.ic_checkmark_circle),
-                                    contentDescription = stringResource(R.string.check_all),
-                                    modifier = Modifier.width(32.dp),
-                                    tint = AppColors.primary
-                                )
-                            }
-                        }
-                    }
-                    GlasenseButtonAdaptable(
-                        width = { 48.dp },
-                        height = { 48.dp },
-                        tint = AppColors.error,
-                        enabled = true,
-                        shape = Capsule(),
-                        onClick = {
-                            showDialog(
-                                dialogItems,
-                                title,
-                                message
-                            )
-                        },
-                        modifier = Modifier
-                            .drawBackdrop(
-                                backdrop = backdrop,
-                                shape = { Capsule() },
-                                shadow = null,
-                                innerShadow = null,
-                                highlight = { if (liquidGlass) Highlight.Default else null },
-                                effects = {
-                                    blur(
-                                        if (liquidGlass) 8f.dp.toPx() else 32f.dp.toPx(),
-                                        TileMode.Decal
-                                    )
-                                    if (liquidGlass) lens(16f.dp.toPx(), 48f.dp.toPx())
-                                },
-                                onDrawSurface = {
-                                    drawRect(color = floatingBarColor)
-                                }
-                            ),
-                        colors = AppButtonColors.action()
-                    ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_trash),
-                            contentDescription = stringResource(R.string.delete_selected_todo_s),
-                            modifier = Modifier.width(32.dp)
-                        )
-                    }
-                }
             }
-            if (!isGone) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .navigationBarsPadding()
-                        .padding(start = 16.dp, end = 16.dp, bottom = 16.dp)
-                        .graphicsLayer {
-                            translationY = tabBarHideAnimation.value * tabBarTotalHeight
-                        }
-                        .height(56.dp)
-                        .align(Alignment.BottomCenter),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    GlasenseNavigationButton(
-                        modifier = Modifier.weight(1f),
-                        isActive = currentRoute == Screen.Home.route,
-                        onClick = {
-                            if (currentRoute != Screen.Home.route) {
-                                currentRoute = Screen.Home.route
-                            }
-                        },
-                        backdrop = backdrop,
-                        liquidGlass = liquidGlass
-                    ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_list),
-                            contentDescription = stringResource(R.string.all_todos)
-                        )
-                    }
-                    Spacer(modifier = Modifier.width(8.dp))
-                    GlasenseNavigationButton(
-                        modifier = Modifier.weight(1f),
-                        isActive = currentRoute == Screen.Star.route,
-                        onClick = {
-                            if (currentRoute != Screen.Star.route) {
-                                currentRoute = Screen.Star.route
-                            }
-                        },
-                        backdrop = backdrop,
-                        liquidGlass = liquidGlass
-                    ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_time_line),
-                            contentDescription = stringResource(R.string.calendar_view)
-                        )
-                    }
-                    Spacer(modifier = Modifier.width(8.dp))
-                    GlasenseNavigationButton(
-                        modifier = Modifier.weight(1f),
-                        isActive = currentRoute == Screen.Settings.route,
-                        onClick = {
-                            if (currentRoute != Screen.Settings.route) {
-                                currentRoute = Screen.Settings.route
-                            }
-                        },
-                        backdrop = backdrop,
-                        liquidGlass = liquidGlass
-                    ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_gear),
-                            contentDescription = stringResource(R.string.settings)
-                        )
-                    }
-                }
-            }
-        }
 
-        if (bottomSheetState.isVisible) {
-            BottomSheet(
-                onDismiss = { viewModel.hideBottomSheet() },
-                onAddClick = { title, notes, flagIndex, finalDate, startTime, endTime, reminder ->
-                    viewModel.insert(
-                        TodoItem(
-                            title = title,
-                            notes = notes,
-                            flag = flagIndex,
-                            dueDate = finalDate,
-                            startTime = startTime,
-                            endTime = endTime,
-                            reminderMode = reminder?.mode,
-                            reminderOffsetMinutes = reminder?.offsetMinutes,
-                            reminderDayOffset = reminder?.dayOffset,
-                            reminderTime = reminder?.time,
-                            reminderPersistent = reminder?.persistent ?: false,
-                            reminderStrong = reminder?.strong ?: false
-                        )
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(120.dp + navigationBarHeight)
+                    .align(Alignment.BottomCenter)
+                    .smoothGradientMask(
+                        surfaceColor.copy(alpha = 0f),
+                        surfaceColor.copy(alpha = 1f),
+                        -0.1f,
+                        0.8f,
+                        0.7f
                     )
+            ) {
+                if (isComposed) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .navigationBarsPadding()
+                            .padding(start = 12.dp, end = 12.dp, bottom = 16.dp)
+                            .height(48.dp)
+                            .align(Alignment.BottomCenter)
+                            .graphicsLayer {
+                                alpha = bottomBarAlphaAnimation.value
+                                renderEffect = if (bottomBarBlurAnimation.value > 0f) {
+                                    BlurEffect(
+                                        radiusX = bottomBarBlurAnimation.value,
+                                        radiusY = bottomBarBlurAnimation.value,
+                                        edgeTreatment = TileMode.Decal
+                                    )
+                                } else {
+                                    null
+                                }
+                            },
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        GlasenseButtonAdaptable(
+                            width = { 48.dp },
+                            height = { 48.dp },
+                            tint = AppColors.primary,
+                            enabled = true,
+                            shape = Capsule(),
+                            onClick = {
+                                moreButtonBounds?.let {
+                                    showMenu(
+                                        it.boundsInWindow(),
+                                        moreMenu
+                                    )
+                                }
+                            },
+                            modifier = Modifier
+                                .onGloballyPositioned { coordinates ->
+                                    moreButtonBounds = coordinates
+                                }
+                                .drawBackdrop(
+                                    backdrop = backdrop,
+                                    shape = { Capsule() },
+                                    shadow = null,
+                                    innerShadow = null,
+                                    highlight = { if (liquidGlass) Highlight.Default else null },
+                                    effects = {
+                                        blur(
+                                            if (liquidGlass) 8f.dp.toPx() else 32f.dp.toPx(),
+                                            TileMode.Decal
+                                        )
+                                        if (liquidGlass) lens(16f.dp.toPx(), 48f.dp.toPx())
+                                    },
+                                    onDrawSurface = {
+                                        drawRect(color = floatingBarColor)
+                                    }
+                                ),
+                            colors = AppButtonColors.action()
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_ellipsis),
+                                contentDescription = stringResource(R.string.more),
+                                modifier = Modifier.width(32.dp)
+                            )
+                        }
+                        GlasenseButtonToolBar(
+                            enabled = true,
+                            interactionSource = sharedInteractionSource,
+                            shape = Capsule(),
+                            onClick = {},
+                            modifier = Modifier
+                                .drawBackdrop(
+                                    backdrop = backdrop,
+                                    shape = { Capsule() },
+                                    shadow = null,
+                                    innerShadow = null,
+                                    highlight = { if (liquidGlass) Highlight.Default else null },
+                                    effects = {
+                                        blur(
+                                            if (liquidGlass) 8f.dp.toPx() else 32f.dp.toPx(),
+                                            TileMode.Decal
+                                        )
+                                        if (liquidGlass) lens(16f.dp.toPx(), 48f.dp.toPx())
+                                    },
+                                    onDrawSurface = {
+                                        drawRect(color = floatingBarColor)
+                                    }
+                                ),
+                            colors = AppButtonColors.action()
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .height(48.dp),
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .onGloballyPositioned { coordinates ->
+                                            flagButtonBounds = coordinates
+                                        }
+                                        .height(48.dp)
+                                        .width(48.dp)
+                                        .clickable(
+                                            interactionSource = sharedInteractionSource,
+                                            indication = null
+                                        ) {
+                                            flagButtonBounds?.let {
+                                                showMenu(
+                                                    it.boundsInWindow(),
+                                                    flagMenu
+                                                )
+                                            }
+                                        },
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        painter = painterResource(id = R.drawable.ic_flag),
+                                        contentDescription = stringResource(R.string.set_flag),
+                                        modifier = Modifier.width(32.dp),
+                                        tint = AppColors.primary
+                                    )
+                                }
+                                Box(
+                                    modifier = Modifier
+                                        .height(48.dp)
+                                        .width(48.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        painter = painterResource(id = R.drawable.ic_calendar_add),
+                                        contentDescription = stringResource(R.string.add_to_calendar),
+                                        modifier = Modifier.width(32.dp),
+                                        tint = AppColors.primary
+                                    )
+                                }
+                                Box(
+                                    modifier = Modifier
+                                        .height(48.dp)
+                                        .width(48.dp)
+                                        .clickable(
+                                            interactionSource = sharedInteractionSource,
+                                            indication = null
+                                        ) {
+                                            viewModel.completeSelectedItems()
+                                        },
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        painter = painterResource(id = R.drawable.ic_checkmark_circle),
+                                        contentDescription = stringResource(R.string.check_all),
+                                        modifier = Modifier.width(32.dp),
+                                        tint = AppColors.primary
+                                    )
+                                }
+                            }
+                        }
+                        GlasenseButtonAdaptable(
+                            width = { 48.dp },
+                            height = { 48.dp },
+                            tint = AppColors.error,
+                            enabled = true,
+                            shape = Capsule(),
+                            onClick = {
+                                showDialog(
+                                    dialogItems,
+                                    title,
+                                    message
+                                )
+                            },
+                            modifier = Modifier
+                                .drawBackdrop(
+                                    backdrop = backdrop,
+                                    shape = { Capsule() },
+                                    shadow = null,
+                                    innerShadow = null,
+                                    highlight = { if (liquidGlass) Highlight.Default else null },
+                                    effects = {
+                                        blur(
+                                            if (liquidGlass) 8f.dp.toPx() else 32f.dp.toPx(),
+                                            TileMode.Decal
+                                        )
+                                        if (liquidGlass) lens(16f.dp.toPx(), 48f.dp.toPx())
+                                    },
+                                    onDrawSurface = {
+                                        drawRect(color = floatingBarColor)
+                                    }
+                                ),
+                            colors = AppButtonColors.action()
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_trash),
+                                contentDescription = stringResource(R.string.delete_selected_todo_s),
+                                modifier = Modifier.width(32.dp)
+                            )
+                        }
+                    }
+                }
+                if (!isGone) {
+                    NavigationBar(
+                        tabBarY = { tabBarHideAnimation.value * tabBarTotalHeight },
+                        currentRoute = { currentRoute },
+                        onCurrentRouteChange = { currentRoute = it },
+                        backdrop = backdrop,
+                        liquidGlass = liquidGlass
+                    )
+                }
+            }
+
+            if (bottomSheetState.isVisible) {
+                BottomSheet(
+                    onDismiss = { viewModel.hideBottomSheet() },
+                    onAddClick = { title, notes, flagIndex, finalDate, startTime, endTime, reminder ->
+                        viewModel.insert(
+                            TodoItem(
+                                title = title,
+                                notes = notes,
+                                flag = flagIndex,
+                                dueDate = finalDate,
+                                startTime = startTime,
+                                endTime = endTime,
+                                reminderMode = reminder?.mode,
+                                reminderOffsetMinutes = reminder?.offsetMinutes,
+                                reminderDayOffset = reminder?.dayOffset,
+                                reminderTime = reminder?.time,
+                                reminderPersistent = reminder?.persistent ?: false,
+                                reminderStrong = reminder?.strong ?: false
+                            )
+                        )
+                    },
+                    showDialog = showDialog,
+                    onRequestCustomDate = { bounds, initialDate, onSelected ->
+                        dateButtonBounds = bounds
+                        sheetFinalDate = initialDate
+                        onDateSelectedCallback = onSelected
+                        isDatePickerVisible = true
+                    },
+                    onRequestCustomTime = { bounds, initialTime, minTime, maxTime, onSelected ->
+                        timePickerRequestKey++
+                        timeButtonBounds = bounds
+                        sheetFinalTime = initialTime
+                        sheetMinTime = minTime
+                        sheetMaxTime = maxTime
+                        onTimeSelectedCallback = onSelected
+                        isTimePickerVisible = true
+                    },
+                    onRequestCustomReminder = { bounds, isAllDayEnabled, onSelected ->
+                        reminderButtonBounds = bounds
+                        sheetReminderIsAllDay = isAllDayEnabled
+                        onReminderSelectedCallback = onSelected
+                        isCustomReminderPopupVisible = true
+                    },
+                    showMenu = showMenu
+                )
+            }
+
+            DueDatePicker(
+                isVisible = isDatePickerVisible,
+                anchorBounds = dateButtonBounds,
+                initialDate = sheetFinalDate,
+                onDismiss = { isDatePickerVisible = false },
+                onDateSelected = { date ->
+                    onDateSelectedCallback(date)
                 },
-                showDialog = showDialog,
-                onRequestCustomDate = { bounds, initialDate, onSelected ->
-                    dateButtonBounds = bounds
-                    sheetFinalDate = initialDate
-                    onDateSelectedCallback = onSelected
-                    isDatePickerVisible = true
-                },
-                onRequestCustomTime = { bounds, initialTime, minTime, maxTime, onSelected ->
-                    timePickerRequestKey++
-                    timeButtonBounds = bounds
-                    sheetFinalTime = initialTime
-                    sheetMinTime = minTime
-                    sheetMaxTime = maxTime
-                    onTimeSelectedCallback = onSelected
-                    isTimePickerVisible = true
-                },
-                onRequestCustomReminder = { bounds, isAllDayEnabled, onSelected ->
-                    reminderButtonBounds = bounds
-                    sheetReminderIsAllDay = isAllDayEnabled
-                    onReminderSelectedCallback = onSelected
-                    isCustomReminderPopupVisible = true
-                },
-                showMenu = showMenu
+                direction = PopupDirection.Up
+            )
+
+            key(timePickerRequestKey) {
+                TimePicker(
+                    isVisible = isTimePickerVisible,
+                    anchorBounds = timeButtonBounds,
+                    initialTime = sheetFinalTime,
+                    minTime = sheetMinTime,
+                    maxTime = sheetMaxTime,
+                    onDismiss = { isTimePickerVisible = false },
+                    onTimeSelected = { time ->
+                        onTimeSelectedCallback(time)
+                    },
+                    direction = PopupDirection.Down
+                )
+            }
+
+            CustomReminderPopup(
+                isVisible = isCustomReminderPopupVisible,
+                anchorBounds = reminderButtonBounds,
+                isAllDayEnabled = sheetReminderIsAllDay,
+                onDismiss = { isCustomReminderPopupVisible = false },
+                onConfirm = { config ->
+                    onReminderSelectedCallback(config)
+                    isCustomReminderPopupVisible = false
+                }
             )
         }
 
         GlasenseMenu(
             menuState = menuState,
-            backdrop = backdrop,
+            backdrop = superBackdrop,
             onDismiss = dismissMenu
         )
 
         GlasenseDialog(
             dialogState = dialogState,
-            backdrop = backdrop,
+            backdrop = superBackdrop,
             onDismiss = { dismissDialog() }
-        )
-
-        DueDatePicker(
-            isVisible = isDatePickerVisible,
-            anchorBounds = dateButtonBounds,
-            initialDate = sheetFinalDate,
-            onDismiss = { isDatePickerVisible = false },
-            onDateSelected = { date ->
-                onDateSelectedCallback(date)
-            },
-            direction = PopupDirection.Up
-        )
-
-        key(timePickerRequestKey) {
-            TimePicker(
-                isVisible = isTimePickerVisible,
-                anchorBounds = timeButtonBounds,
-                initialTime = sheetFinalTime,
-                minTime = sheetMinTime,
-                maxTime = sheetMaxTime,
-                onDismiss = { isTimePickerVisible = false },
-                onTimeSelected = { time ->
-                    onTimeSelectedCallback(time)
-                },
-                direction = PopupDirection.Down
-            )
-        }
-
-        CustomReminderPopup(
-            isVisible = isCustomReminderPopupVisible,
-            anchorBounds = reminderButtonBounds,
-            isAllDayEnabled = sheetReminderIsAllDay,
-            onDismiss = { isCustomReminderPopupVisible = false },
-            onConfirm = { config ->
-                onReminderSelectedCallback(config)
-                isCustomReminderPopupVisible = false
-            }
         )
 
         pendingAiTodos?.let { pendingTodos ->
@@ -673,7 +634,8 @@ fun MainScreen() {
                 onInsert = { items ->
                     viewModel.insertAiGeneratedTodos(items)
                     ScreenExtractEvents.clearPendingTodos()
-                }
+                },
+                backdrop = superBackdrop
             )
         }
     }

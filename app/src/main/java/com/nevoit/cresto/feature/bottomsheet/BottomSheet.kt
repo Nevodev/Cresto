@@ -1,4 +1,4 @@
-package com.nevoit.cresto.ui.components.bottomsheet
+package com.nevoit.cresto.feature.bottomsheet
 
 import android.content.Context
 import android.net.Uri
@@ -94,7 +94,6 @@ private fun defaultRangeEndTime(startTime: LocalTime): LocalTime {
         startTime.plusHours(1)
     }
 }
-
 
 
 /**

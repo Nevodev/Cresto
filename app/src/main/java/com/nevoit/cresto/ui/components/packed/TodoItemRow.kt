@@ -106,7 +106,8 @@ fun TodoItemRow(
     isOverdueMarkerEnabled: Boolean,
     onCheckedChange: (Boolean) -> Unit,
     onCheckboxTapPosition: (Offset) -> Unit = {},
-    modifier: Modifier
+    modifier: Modifier,
+    backgroundColor: Color,
 ) {
     val completedTaskCount = remember(item.subTodos) { item.subTodos.count { it.isCompleted } }
     val totalTaskCount = item.subTodos.size
@@ -133,7 +134,7 @@ fun TodoItemRow(
             .defaultMinSize(minHeight = 68.dp)
             .fillMaxWidth()
             .background(
-                color = AppColors.cardBackground,
+                color = backgroundColor,
                 shape = AppSpecs.cardShape,
             )
             .then(modifier),
@@ -636,6 +637,7 @@ private fun TodoItemTaskMeta(
 fun SwipeableTodoItem(
     listState: SwipeableListState,
     item: TodoItemWithSubTodos,
+    backgroundColor: Color = AppColors.cardBackground,
     showDate: Boolean,
     isDueTodayMarkerEnabled: Boolean,
     isOverdueMarkerEnabled: Boolean,
@@ -668,6 +670,7 @@ fun SwipeableTodoItem(
         TodoItemRow(
             item = item,
             showDate = showDate,
+            backgroundColor = backgroundColor,
             isDueTodayMarkerEnabled = isDueTodayMarkerEnabled,
             isOverdueMarkerEnabled = isOverdueMarkerEnabled,
             onCheckedChange = onCheckedChange,
