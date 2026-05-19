@@ -150,3 +150,37 @@ fun ConfigTextField(
         }
     }
 }
+
+@Composable
+fun PlainConfigItemContainer(
+    title: String? = null,
+    content: @Composable () -> Unit
+) {
+    Column(modifier = Modifier.fillMaxWidth()) {
+        // Display the title if it's provided.
+        if (title != null) {
+            Text(
+                text = title,
+                fontSize = 14.sp,
+                lineHeight = 14.sp,
+                color = AppColors.contentVariant,
+                modifier = Modifier
+                    .padding(
+                        start = 12.dp,
+                        top = 0.dp,
+                        end = 12.dp,
+                        bottom = 12.dp
+                    )
+                    .fillMaxWidth()
+            )
+        }
+        // The main container box with background and shape.
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(color = AppColors.cardBackground, shape = AppSpecs.cardShape)
+        ) {
+            content()
+        }
+    }
+}

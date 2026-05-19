@@ -92,6 +92,7 @@ import com.nevoit.cresto.ui.components.packed.ConfigInfoHeader
 import com.nevoit.cresto.ui.components.packed.ConfigItem
 import com.nevoit.cresto.ui.components.packed.ConfigItemContainer
 import com.nevoit.cresto.ui.components.packed.PageContent
+import com.nevoit.cresto.ui.components.packed.PlainConfigItemContainer
 import com.nevoit.cresto.ui.components.packed.VGap
 import com.nevoit.glasense.overscroll.rememberOffsetOverscrollFactory
 import com.nevoit.glasense.theme.Amber500
@@ -317,15 +318,14 @@ fun AppearanceScreen(settingsViewModel: SettingsViewModel = viewModel()) {
                 VGap()
             }
             item {
-                ConfigItemContainer(
-                    title = stringResource(R.string.app_icon),
-                    backgroundColor = AppColors.cardBackground
+                PlainConfigItemContainer(
+                    title = stringResource(R.string.app_icon)
                 ) {
                     CompositionLocalProvider(LocalOverscrollFactory provides overscrollFactory) {
                         LazyRow(
                             modifier = Modifier.fillMaxWidth(),
-                            contentPadding = PaddingValues(vertical = 8.dp),
-                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                            contentPadding = PaddingValues(vertical = 16.dp, horizontal = 16.dp),
+                            horizontalArrangement = Arrangement.spacedBy(16.dp)
                         ) {
                             itemsIndexed(
                                 items = appIconEntries,
