@@ -73,7 +73,6 @@ import com.nevoit.cresto.ui.components.glasense.RotatingGlow
 import com.nevoit.cresto.ui.components.glasense.RotatingGlowBorder
 import com.nevoit.cresto.ui.components.glasense.rememberSwipeableListState
 import com.nevoit.cresto.ui.components.packed.SwipeableTodoItem
-import com.nevoit.cresto.ui.modifier.centerWaveShaderEffect
 import com.nevoit.glasense.theme.Springs
 import kotlinx.coroutines.launch
 import java.time.LocalDate
@@ -240,13 +239,14 @@ fun BoxScope.AiTodoReviewContainer(
     )
     Box(
         modifier = Modifier
-            .centerWaveShaderEffect(
-                durationMillis = 700,
-                waveWidthMultiplier = 4f,
-                chromaticStrength = 0.5f,
-                centerY = 1f,
-                intensity = 1f
-            )
+            // performance is bad
+//            .centerWaveShaderEffect(
+//                durationMillis = 700,
+//                waveWidthMultiplier = 4f,
+//                chromaticStrength = 0.5f,
+//                centerY = 1f,
+//                intensity = 1f
+//            )
             .fillMaxSize()
             .drawPlainBackdrop(
                 backdrop = backdrop,
