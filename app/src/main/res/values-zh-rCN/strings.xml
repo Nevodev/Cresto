@@ -255,4 +255,5 @@
     <string name="app_icon_blueberry">蓝莓</string>
     <string name="app_icon_kiwi">猕猴桃</string>
     <string name="app_icon_peach">蜜桃</string>
+    <string name="insights">进展</string>
 </resources>

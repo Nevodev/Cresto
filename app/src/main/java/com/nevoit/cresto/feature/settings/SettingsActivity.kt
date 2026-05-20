@@ -16,6 +16,7 @@ import com.nevoit.cresto.theme.GlasenseTheme
 import com.nevoit.glasense.overscroll.rememberOffsetOverscrollFactory
 
 enum class SettingsDestination(val value: String) {
+    SETTINGS("settings"),
     APPEARANCE("appearance"),
     AI("ai"),
     DATA_STORAGE("data_storage"),
@@ -25,7 +26,7 @@ enum class SettingsDestination(val value: String) {
 
     companion object {
         fun fromValue(value: String?): SettingsDestination {
-            return entries.firstOrNull { it.value == value } ?: GENERAL
+            return entries.firstOrNull { it.value == value } ?: SETTINGS
         }
     }
 }
@@ -60,6 +61,7 @@ class SettingsActivity : ComponentActivity() {
                     LocalContentColor provides AppColors.content
                 ) {
                     when (destination) {
+                        SettingsDestination.SETTINGS -> SettingsScreen()
                         SettingsDestination.APPEARANCE -> AppearanceScreen()
                         SettingsDestination.AI -> AIScreen()
                         SettingsDestination.DATA_STORAGE -> DataStorageScreen()

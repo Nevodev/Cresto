@@ -266,4 +266,5 @@
     <string name="app_icon_blueberry">Blueberry</string>
     <string name="app_icon_kiwi">Kiwi</string>
     <string name="app_icon_peach">Peach</string>
+    <string name="insights">Insights</string>
 </resources>

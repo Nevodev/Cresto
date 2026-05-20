@@ -60,7 +60,6 @@ import com.nevoit.cresto.R
 import com.nevoit.cresto.data.todo.TodoItem
 import com.nevoit.cresto.data.todo.TodoViewModel
 import com.nevoit.cresto.feature.bottomsheet.BottomSheet
-import com.nevoit.cresto.feature.home.NavigationBar
 import com.nevoit.cresto.feature.screenextract.ScreenExtractEvents
 import com.nevoit.cresto.feature.settings.util.SettingsViewModel
 import com.nevoit.cresto.theme.AppButtonColors

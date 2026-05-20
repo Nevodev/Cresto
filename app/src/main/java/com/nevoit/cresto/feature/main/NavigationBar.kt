@@ -1,4 +1,4 @@
-package com.nevoit.cresto.feature.home
+package com.nevoit.cresto.feature.main
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxScope
@@ -19,7 +19,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.kyant.backdrop.backdrops.LayerBackdrop
 import com.nevoit.cresto.R
-import com.nevoit.cresto.feature.main.Screen
 import com.nevoit.cresto.ui.components.glasense.GlasenseNavigationButton
 
 @Composable
@@ -90,8 +89,8 @@ internal fun BoxScope.NavigationBar(
             liquidGlass = liquidGlass
         ) {
             Icon(
-                painter = painterResource(id = R.drawable.ic_gear),
-                contentDescription = stringResource(R.string.settings)
+                painter = painterResource(id = R.drawable.ic_magnifying_glass_sparkle),
+                contentDescription = stringResource(R.string.insights)
             )
         }
     }
