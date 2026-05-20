@@ -3,9 +3,6 @@ package com.nevoit.cresto.ui.components.glasense
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.CubicBezierEasing
 import androidx.compose.animation.core.LinearOutSlowInEasing
-import androidx.compose.animation.core.SpringSpec
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.Orientation
@@ -14,7 +11,6 @@ import androidx.compose.foundation.gestures.rememberDraggableState
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
@@ -26,7 +22,9 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -49,6 +47,8 @@ import com.nevoit.cresto.ui.components.myFadeIn
 import com.nevoit.cresto.ui.components.myFadeOut
 import com.nevoit.cresto.ui.components.myScaleIn
 import com.nevoit.cresto.ui.components.myScaleOut
+import com.nevoit.glasense.theme.Springs
+import kotlinx.collections.immutable.ImmutableList
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
@@ -68,6 +68,7 @@ enum class SwipeState {
     REVEALED
 }
 
+@Stable
 class SwipeableListState {
     var currentOpenKey: Any? by mutableStateOf(null)
         private set
@@ -87,12 +88,12 @@ fun rememberSwipeableListState(): SwipeableListState {
 }
 
 @Composable
-fun SwipeableContainer(
+fun GlasenseSwipeable(
+    modifier: Modifier = Modifier,
     key: Any,
     listState: SwipeableListState,
-    actions: List<SwipeableActionButton>,
+    actions: ImmutableList<SwipeableActionButton>,
     onAction: (Int) -> Unit,
-    modifier: Modifier = Modifier,
     content: @Composable () -> Unit
 ) {
     val haptic = LocalHapticFeedback.current
@@ -119,14 +120,18 @@ fun SwipeableContainer(
 
     val flingOffset = remember(key) { Animatable(0f) }
     val deleteFlingOffset = remember(key) { Animatable(0f) }
-
-    val animatedOffset by animateFloatAsState(
-        targetValue = flingOffset.value,
-        animationSpec = spring(
-            dampingRatio = 0.8f,
-            stiffness = 500f
-        )
-    )
+    val deepSwipeAction = remember(actions) {
+        var selectedAction: SwipeableActionButton? = null
+        actions.forEach { action ->
+            if (action.triggerOnDeepSwipe) {
+                require(selectedAction == null) {
+                    "Only one SwipeableActionButton can set triggerOnDeepSwipe."
+                }
+                selectedAction = action
+            }
+        }
+        selectedAction
+    }
 
     val shouldIntercept = listState.currentOpenKey != null && listState.currentOpenKey == key
     var shouldComposeActions by remember(key) { mutableStateOf(false) }
@@ -214,7 +219,6 @@ fun SwipeableContainer(
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .height(IntrinsicSize.Min)
     ) {
         if (shouldComposeActions) {
             Row(
@@ -227,8 +231,7 @@ fun SwipeableContainer(
                         onClick = {
                         }
                     )
-                    .padding(end = 6.dp)
-                    .fillMaxHeight(),
+                    .padding(end = 6.dp),
                 horizontalArrangement = Arrangement.End,
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -311,13 +314,18 @@ fun SwipeableContainer(
             modifier = Modifier
                 .fillMaxWidth()
                 .graphicsLayer {
-                    translationX = animatedOffset + deleteFlingOffset.value
+                    translationX = flingOffset.value + deleteFlingOffset.value
                 }
                 .draggable(
                     orientation = Orientation.Horizontal,
                     state = rememberDraggableState { delta ->
                         coroutineScope.launch {
-                            val newOffset = (flingOffset.value + delta).coerceAtMost(0f)
+                            val newOffset = rubberBandSwipeOffset(
+                                currentOffset = flingOffset.value,
+                                delta = delta,
+                                revealOffsetPx = totalActionsWidthPx,
+                                viewportWidthPx = screenWidthPx.toFloat()
+                            )
                             flingOffset.snapTo(newOffset)
                             swipeState =
                                 if (newOffset < snapThresholdPx) SwipeState.REVEALED else SwipeState.IDLE
@@ -333,17 +341,17 @@ fun SwipeableContainer(
                         coroutineScope.launch {
                             val currentOffset = flingOffset.value
                             val isFastSwipe = velocity < -velocityThreshold
-                            if (actions.isNotEmpty() && ((isDeepSwipe && initialSwipeState == SwipeState.REVEALED) || (isFastSwipe && initialSwipeState == SwipeState.REVEALED))) {
-                                executeAction(actions.last())
+                            val actionToTrigger = deepSwipeAction
+                            if (actionToTrigger != null && ((isDeepSwipe && initialSwipeState == SwipeState.REVEALED) || (isFastSwipe && initialSwipeState == SwipeState.REVEALED))) {
+                                executeAction(actionToTrigger)
                             } else if ((currentOffset < snapThresholdPx || (isFastSwipe && currentOffset < 0)) && velocity <= 0) {
                                 swipeState = SwipeState.REVEALED
+                                val revealInitialVelocity =
+                                    if (currentOffset < -totalActionsWidthPx && velocity < 0f) 0f else velocity
                                 flingOffset.animateTo(
                                     targetValue = -totalActionsWidthPx,
-                                    animationSpec = SpringSpec(
-                                        dampingRatio = 0.8f,
-                                        stiffness = 1000f
-                                    ),
-                                    initialVelocity = velocity
+                                    animationSpec = Springs.bouncy(400),
+                                    initialVelocity = revealInitialVelocity
                                 )
                             } else {
                                 if (listState.currentOpenKey == key) {
@@ -354,10 +362,7 @@ fun SwipeableContainer(
                                     if (currentOffset == 0f && velocity > 0) 0f else velocity
                                 flingOffset.animateTo(
                                     targetValue = 0f,
-                                    animationSpec = SpringSpec(
-                                        dampingRatio = 0.8f,
-                                        stiffness = 1000f
-                                    ),
+                                    animationSpec = Springs.bouncy(400),
                                     initialVelocity = finalVelocity
                                 )
                                 shouldComposeActions = false
@@ -386,11 +391,34 @@ fun SwipeableContainer(
     }
 }
 
+@Immutable
 data class SwipeableActionButton(
     val index: Int,
     val color: Color,
     val icon: Painter,
     val iconColor: Color = Color.White,
     val contentDescription: String? = null,
-    val isDestructive: Boolean = false
+    val isDestructive: Boolean = false,
+    val triggerOnDeepSwipe: Boolean = false
 )
+
+private const val SwipeRubberBandConstant = 0.55f
+
+private fun rubberBandSwipeOffset(
+    currentOffset: Float,
+    delta: Float,
+    revealOffsetPx: Float,
+    viewportWidthPx: Float
+): Float {
+    val revealOffset = revealOffsetPx.coerceAtLeast(0f)
+    val nextOffset = (currentOffset + delta).coerceAtMost(0f)
+    if (nextOffset >= -revealOffset || viewportWidthPx <= 0f) return nextOffset
+
+    val overscroll = abs(nextOffset) - revealOffset
+    val previousOverscroll = (abs(currentOffset) - revealOffset).coerceAtLeast(0f)
+    val dimension = viewportWidthPx.coerceAtLeast(revealOffset)
+    val resistance = dimension / (dimension + SwipeRubberBandConstant * previousOverscroll)
+    val resistedOverscroll = previousOverscroll + (overscroll - previousOverscroll) * resistance
+
+    return -revealOffset - resistedOverscroll.coerceAtLeast(0f)
+}

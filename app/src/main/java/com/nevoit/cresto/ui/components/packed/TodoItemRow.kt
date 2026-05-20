@@ -76,11 +76,12 @@ import com.nevoit.cresto.theme.defaultExitTransition
 import com.nevoit.cresto.theme.getFlagColor
 import com.nevoit.cresto.ui.components.CustomAnimatedVisibility
 import com.nevoit.cresto.ui.components.glasense.GlasenseCheckbox
+import com.nevoit.cresto.ui.components.glasense.GlasenseSwipeable
 import com.nevoit.cresto.ui.components.glasense.SwipeableActionButton
-import com.nevoit.cresto.ui.components.glasense.SwipeableContainer
 import com.nevoit.cresto.ui.components.glasense.SwipeableListState
 import com.nevoit.cresto.ui.components.glasense.extend.LineThroughBasicTextField
 import com.nevoit.cresto.ui.components.glasense.extend.LineThroughText
+import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.delay
 import java.time.LocalDate
 import java.time.LocalTime
@@ -646,17 +647,18 @@ fun SwipeableTodoItem(
     onCheckedChange: (Boolean) -> Unit,
     onCheckboxTapPosition: (Offset) -> Unit = {}
 ) {
-    val actions = listOf(
+    val actions = persistentListOf(
         SwipeableActionButton(
             index = 0,
             color = AppColors.error,
             iconColor = AppColors.onError,
             icon = painterResource(id = R.drawable.ic_trash),
-            isDestructive = true
+            isDestructive = true,
+            triggerOnDeepSwipe = true
         )
     )
 
-    SwipeableContainer(
+    GlasenseSwipeable(
         key = item.todoItem.id,
         listState = listState,
         modifier = Modifier,
@@ -1047,7 +1049,7 @@ fun SwipeableSubTodoItemRowEditable(
     modifier: Modifier,
     onEditEnd: (String, Boolean) -> Unit,
 ) {
-    val actions = listOf(
+    val actions = persistentListOf(
         SwipeableActionButton(
             index = 0,
             color = AppColors.primary,
@@ -1060,11 +1062,12 @@ fun SwipeableSubTodoItemRowEditable(
             color = AppColors.error,
             iconColor = AppColors.onError,
             icon = painterResource(id = R.drawable.ic_trash),
-            isDestructive = true
+            isDestructive = true,
+            triggerOnDeepSwipe = true
         )
     )
 
-    SwipeableContainer(
+    GlasenseSwipeable(
         key = subTodo.id,
         listState = listState,
         modifier = modifier,
