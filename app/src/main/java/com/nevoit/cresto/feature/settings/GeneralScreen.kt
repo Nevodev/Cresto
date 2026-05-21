@@ -2,6 +2,7 @@
 package com.nevoit.cresto.feature.settings
 
 // Import necessary libraries and components
+import android.content.pm.PackageManager
 import android.widget.Toast
 import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.background
@@ -21,7 +22,11 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -52,6 +57,7 @@ import com.nevoit.cresto.ui.components.packed.ConfigItemContainer
 import com.nevoit.cresto.ui.components.packed.PageContent
 import com.nevoit.cresto.ui.components.packed.VGap
 import com.nevoit.glasense.theme.Slate500
+import rikka.shizuku.Shizuku
 
 @Composable
 fun GeneralScreen(settingsViewModel: SettingsViewModel = viewModel()) {
@@ -73,8 +79,26 @@ fun GeneralScreen(settingsViewModel: SettingsViewModel = viewModel()) {
     val isSuperGraphicUltraModernGirlEnabled by settingsViewModel.isSuperGraphicUltraModernGirlEnabled
     val isExtractScreenQuickTileEnabled by settingsViewModel.isExtractScreenQuickTileEnabled
     val context = LocalContext.current
-    val screenshotCapturer = ShizukuScreenshotCapturer()
-    val isShizukuPermissionGranted = screenshotCapturer.hasPermission()
+    val screenshotCapturer = remember { ShizukuScreenshotCapturer() }
+    var isShizukuPermissionGranted by remember {
+        mutableStateOf(screenshotCapturer.hasPermission())
+    }
+
+    DisposableEffect(screenshotCapturer) {
+        val permissionResultListener = Shizuku.OnRequestPermissionResultListener { requestCode, grantResult ->
+            if (requestCode == ShizukuScreenshotCapturer.REQUEST_CODE) {
+                isShizukuPermissionGranted = grantResult == PackageManager.PERMISSION_GRANTED &&
+                    screenshotCapturer.hasPermission()
+            }
+        }
+
+        isShizukuPermissionGranted = screenshotCapturer.hasPermission()
+        Shizuku.addRequestPermissionResultListener(permissionResultListener)
+
+        onDispose {
+            Shizuku.removeRequestPermissionResultListener(permissionResultListener)
+        }
+    }
 
     val backgroundColor = AppColors.pageBackground
     val backdrop = rememberLayerBackdrop {
@@ -234,6 +258,7 @@ fun GeneralScreen(settingsViewModel: SettingsViewModel = viewModel()) {
                                     runCatching {
                                         screenshotCapturer.requestPermission()
                                     }.onFailure { error ->
+                                        isShizukuPermissionGranted = screenshotCapturer.hasPermission()
                                         Toast.makeText(
                                             context,
                                             error.localizedMessage ?: "Shizuku 未运行",

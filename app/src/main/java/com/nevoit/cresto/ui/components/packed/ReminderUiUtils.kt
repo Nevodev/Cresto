@@ -22,7 +22,9 @@ fun TodoItem.withReminderConfig(config: TodoReminderConfig?): TodoItem {
         reminderMode = config?.mode,
         reminderOffsetMinutes = config?.offsetMinutes,
         reminderDayOffset = config?.dayOffset,
-        reminderTime = config?.time
+        reminderTime = config?.time,
+        reminderPersistent = config?.persistent ?: reminderPersistent,
+        reminderStrong = config?.strong ?: reminderStrong
     )
 }
 

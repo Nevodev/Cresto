@@ -186,6 +186,7 @@ class TodoViewModel(
         if (selectedIds.isEmpty()) return@launch
 
         repository.deleteByIds(selectedIds)
+        alarmScheduler.cancelAll(selectedIds)
 
         clearSelections()
     }
@@ -204,6 +205,17 @@ class TodoViewModel(
             completedDateTime = if (targetCompletedState) LocalDateTime.now() else null
         )
 
+        if (targetCompletedState) {
+            alarmScheduler.cancelAll(selectedIds)
+        } else {
+            allTodos.value
+                .asSequence()
+                .map { it.todoItem }
+                .filter { it.id in selectedIds }
+                .map { it.copy(isCompleted = false, completedDateTime = null) }
+                .forEach(alarmScheduler::schedule)
+        }
+
         clearSelections()
     }
 
@@ -220,12 +232,20 @@ class TodoViewModel(
         val selectedIds = _selectedItemIds.value.toList()
         if (selectedIds.isEmpty()) return@launch
 
-        repository.duplicateByIds(selectedIds)
+        repository.duplicateByIds(selectedIds).forEach { todo ->
+            if (!todo.isCompleted) {
+                alarmScheduler.schedule(todo)
+            }
+        }
         clearSelections()
     }
 
     fun duplicateById(todoId: Int) = viewModelScope.launch {
-        repository.duplicateByIds(listOf(todoId))
+        repository.duplicateByIds(listOf(todoId)).forEach { todo ->
+            if (!todo.isCompleted) {
+                alarmScheduler.schedule(todo)
+            }
+        }
     }
 
     fun mergeSelectedItems(newTodoTitle: String) = viewModelScope.launch {
@@ -239,6 +259,7 @@ class TodoViewModel(
         if (orderedSelectedIds.isEmpty()) return@launch
 
         repository.mergeByIdsAsSubTodos(orderedSelectedIds, newTodoTitle)
+        alarmScheduler.cancelAll(orderedSelectedIds)
         clearSelections()
     }
 
@@ -491,6 +512,7 @@ class TodoViewModel(
 
     fun clearAllData() {
         viewModelScope.launch {
+            alarmScheduler.cancelAll(repository.getReminderTodosSnapshot().map { it.id })
             repository.deleteAll()
             // clear settings
             MMKV.defaultMMKV().clearAll()
@@ -541,7 +563,9 @@ class TodoViewModel(
         }
 
         runCatching {
-            repository.importFromJson(json, policy)
+            repository.importFromJson(json, policy).also {
+                repository.getReminderTodosSnapshot().forEach(alarmScheduler::schedule)
+            }
         }.onSuccess { result ->
             _backupUiState.update {
                 it.copy(

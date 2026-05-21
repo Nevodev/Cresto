@@ -247,6 +247,17 @@
     <string name="reminder_minutes_unit_format">%1$d 分钟</string>
     <string name="persistent_reminder">持续提醒</string>
     <string name="strong_reminder">强提醒</string>
+    <string name="reminder_notification_channel_name">待办提醒横幅</string>
+    <string name="reminder_notification_channel_description">用于显示已计划待办的声音、震动和悬浮提醒。</string>
+    <string name="strong_reminder_notification_channel_name">强提醒横幅</string>
+    <string name="strong_reminder_notification_channel_description">用于重要待办，使用闹钟类声音、震动和悬浮提醒。</string>
+    <string name="reminder_notification_default_content">现在该处理这项待办了</string>
+    <string name="reminder_notification_start_time">开始时间：%1$s</string>
+    <string name="reminder_notification_time_range">时间：%1$s-%2$s</string>
+    <string name="reminder_notification_days_until_due">距截止日 %1$s 还有 %2$d 天</string>
+    <string name="reminder_notification_due_date">截止日：%1$s</string>
+    <string name="reminder_notification_reminder_time">提醒时间：%1$s</string>
+    <string name="reminder_notification_date_format">%1$d月%2$d日</string>
     <string name="repeat">重复</string>
     <string name="repeat_cycle">重复周期</string>
     <string name="postpone_after_expiry">过期后顺延</string>

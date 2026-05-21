@@ -43,6 +43,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -169,6 +170,25 @@ fun DetailScreen(
         title = itemWithSubTodos?.todoItem?.title ?: ""
         notesText = itemWithSubTodos?.todoItem?.notes ?: ""
         isInitialized = true
+    }
+
+    var reminderDraftTodoId by remember { mutableIntStateOf(-1) }
+    var reminderDraftConfig by remember { mutableStateOf<TodoReminderConfig?>(null) }
+    var reminderDraftPersistent by remember { mutableStateOf(false) }
+    var reminderDraftStrong by remember { mutableStateOf(false) }
+    var isEditingReminderDraft by remember { mutableStateOf(false) }
+
+    LaunchedEffect(itemWithSubTodos?.todoItem?.id) {
+        snapshotFlow { itemWithSubTodos?.todoItem }
+            .collect { todoItem ->
+                if (todoItem == null) return@collect
+                if (!isEditingReminderDraft || reminderDraftTodoId != todoItem.id) {
+                    reminderDraftTodoId = todoItem.id
+                    reminderDraftConfig = todoItem.toReminderConfig()
+                    reminderDraftPersistent = todoItem.reminderPersistent
+                    reminderDraftStrong = todoItem.reminderStrong
+                }
+            }
     }
 
     var ticker by remember { mutableIntStateOf(0) }
@@ -749,36 +769,60 @@ fun DetailScreen(
 
         if (isReminderBottomSheetVisible) {
             currentItem?.todoItem?.let { todoItem ->
-                val reminderConfig = todoItem.toReminderConfig()
                 val isAllDayEnabled = todoItem.startTime == null && todoItem.endTime == null
+                if (reminderDraftTodoId != todoItem.id) {
+                    reminderDraftTodoId = todoItem.id
+                    reminderDraftConfig = todoItem.toReminderConfig()
+                    reminderDraftPersistent = todoItem.reminderPersistent
+                    reminderDraftStrong = todoItem.reminderStrong
+                }
+
+                fun updateReminderDraft(
+                    config: TodoReminderConfig? = reminderDraftConfig,
+                    persistent: Boolean = reminderDraftPersistent,
+                    strong: Boolean = reminderDraftStrong
+                ) {
+                    isEditingReminderDraft = true
+                    val mergedConfig = config?.copy(
+                        persistent = persistent,
+                        strong = strong
+                    )
+                    reminderDraftConfig = mergedConfig
+                    reminderDraftPersistent = persistent
+                    reminderDraftStrong = strong
+                    viewModel.update(todoItem.withReminderConfig(mergedConfig).copy(
+                        reminderPersistent = persistent,
+                        reminderStrong = strong
+                    ))
+                }
+
                 DetailReminderBottomSheet(
-                    reminderConfig = reminderConfig,
-                    reminderPersistent = todoItem.reminderPersistent,
-                    reminderStrong = todoItem.reminderStrong,
+                    reminderConfig = reminderDraftConfig,
+                    reminderPersistent = reminderDraftPersistent,
+                    reminderStrong = reminderDraftStrong,
                     isAllDayEnabled = isAllDayEnabled,
                     onReminderConfigChange = { newConfig ->
-                        viewModel.update(todoItem.withReminderConfig(newConfig))
+                        updateReminderDraft(config = newConfig)
                     },
                     onPersistentChange = { persistent ->
-                        viewModel.update(todoItem.copy(reminderPersistent = persistent))
+                        updateReminderDraft(persistent = persistent)
                     },
                     onStrongChange = { strong ->
-                        viewModel.update(todoItem.copy(reminderStrong = strong))
+                        updateReminderDraft(strong = strong)
                     },
                     showMenu = showMenu,
                     onRequestCustomReminder = { bounds ->
                         reminderButtonBounds = bounds
                         sheetReminderIsAllDay = isAllDayEnabled
                         onReminderSelectedCallback = { selectedConfig ->
-                            viewModel.update(
-                                todoItem.withReminderConfig(
-                                    selectedConfig.compatibleWithAllDay(isAllDayEnabled)
-                                )
+                            updateReminderDraft(
+                                config = selectedConfig.compatibleWithAllDay(isAllDayEnabled)
                             )
                         }
                         isCustomReminderPopupVisible = true
                     },
                     onDismissed = {
+                        isEditingReminderDraft = false
                         isReminderBottomSheetVisible = false
                     }
                 )

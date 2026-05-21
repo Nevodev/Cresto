@@ -170,14 +170,14 @@ class TodoRepository(
         todoDao.updateFlagByIds(ids, flag)
     }
 
-    suspend fun duplicateByIds(ids: List<Int>): Int {
-        if (ids.isEmpty()) return 0
+    suspend fun duplicateByIds(ids: List<Int>): List<TodoItem> {
+        if (ids.isEmpty()) return emptyList()
 
         return todoDatabase.withTransaction {
             val sourceTodosById = todoDao.getTodosWithSubTodosByIds(ids)
                 .associateBy { it.todoItem.id }
             val orderedSourceTodos = ids.mapNotNull(sourceTodosById::get).asReversed()
-            if (orderedSourceTodos.isEmpty()) return@withTransaction 0
+            if (orderedSourceTodos.isEmpty()) return@withTransaction emptyList()
 
             val now = LocalDateTime.now()
             val todoCopies = orderedSourceTodos.mapIndexed { index, source ->
@@ -206,7 +206,9 @@ class TodoRepository(
                 todoDao.insertSubTodosForDuplicate(subTodoCopies)
             }
 
-            newTodoIds.size
+            todoCopies.zip(newTodoIds).map { (todo, newTodoId) ->
+                todo.copy(id = newTodoId)
+            }
         }
     }
 
@@ -319,6 +321,10 @@ class TodoRepository(
 
     suspend fun deleteAll() {
         todoDao.deleteAllTodos()
+    }
+
+    suspend fun getReminderTodosSnapshot(): List<TodoItem> {
+        return todoDao.getReminderTodosSnapshot()
     }
 
     private data class SubTodoFingerprint(

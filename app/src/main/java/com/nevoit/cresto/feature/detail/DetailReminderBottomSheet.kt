@@ -163,8 +163,8 @@ fun DetailReminderBottomSheet(
                                     TodoReminderConfig(
                                         mode = TodoReminderMode.BeforeStart,
                                         offsetMinutes = offsetMinutes,
-                                        persistent = reminderConfig?.persistent ?: false,
-                                        strong = reminderConfig?.strong ?: false
+                                        persistent = reminderPersistent,
+                                        strong = reminderStrong
                                     )
                                 )
                             }

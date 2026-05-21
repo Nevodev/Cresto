@@ -258,6 +258,17 @@
     <string name="reminder_minutes_unit_format">%1$d min</string>
     <string name="persistent_reminder">Persistent Reminder</string>
     <string name="strong_reminder">Strong Reminder</string>
+    <string name="reminder_notification_channel_name">Reminder alerts</string>
+    <string name="reminder_notification_channel_description">Shows sound, vibration, and heads-up alerts for scheduled todos.</string>
+    <string name="strong_reminder_notification_channel_name">Strong reminder alerts</string>
+    <string name="strong_reminder_notification_channel_description">Uses alarm-style sound, vibration, and heads-up alerts for important todos.</string>
+    <string name="reminder_notification_default_content">It is time to handle this todo.</string>
+    <string name="reminder_notification_start_time">Starts at %1$s</string>
+    <string name="reminder_notification_time_range">Time: %1$s-%2$s</string>
+    <string name="reminder_notification_days_until_due">Due on %1$s, in %2$d days</string>
+    <string name="reminder_notification_due_date">Due date: %1$s</string>
+    <string name="reminder_notification_reminder_time">Reminder time: %1$s</string>
+    <string name="reminder_notification_date_format">%1$d/%2$d</string>
     <string name="repeat">Repeat</string>
     <string name="repeat_cycle">Repeat Cycle</string>
     <string name="postpone_after_expiry">Postpone After Expiry</string>

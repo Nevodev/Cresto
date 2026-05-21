@@ -48,6 +48,9 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.kyant.backdrop.backdrops.layerBackdrop
 import com.kyant.backdrop.backdrops.rememberLayerBackdrop
@@ -95,9 +98,28 @@ sealed class Screen(val route: String) {
 
 @Composable
 fun MainScreen() {
-    DisposableEffect(Unit) {
-        ScreenExtractEvents.setMainUiOpen(true)
-        onDispose { ScreenExtractEvents.setMainUiOpen(false) }
+    val lifecycleOwner = LocalLifecycleOwner.current
+
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            when (event) {
+                Lifecycle.Event.ON_RESUME -> ScreenExtractEvents.setMainUiOpen(true)
+                Lifecycle.Event.ON_PAUSE,
+                Lifecycle.Event.ON_DESTROY -> ScreenExtractEvents.setMainUiOpen(false)
+
+                else -> Unit
+            }
+        }
+
+        ScreenExtractEvents.setMainUiOpen(
+            lifecycleOwner.lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)
+        )
+        lifecycleOwner.lifecycle.addObserver(observer)
+
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+            ScreenExtractEvents.setMainUiOpen(false)
+        }
     }
 
     val surfaceColor = AppColors.pageBackground
