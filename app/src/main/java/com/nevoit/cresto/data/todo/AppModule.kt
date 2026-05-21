@@ -21,6 +21,7 @@ val appModule = module {
 
     single { get<TodoDatabase>().todoDao() }
     single { TodoAlarmScheduler(androidContext()) }
+    single { InsightAdviceRepository() }
     singleOf(::TodoRepository)
     viewModelOf(::TodoViewModel)
 }

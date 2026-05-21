@@ -9,6 +9,7 @@ import androidx.room.Transaction
 import androidx.room.Update
 import com.nevoit.cresto.data.statistics.DailyStat
 import kotlinx.coroutines.flow.Flow
+import java.time.LocalDate
 import java.time.LocalDateTime
 
 // Data Access Object (DAO) for the todo_items table.
@@ -113,6 +114,42 @@ interface TodoDao {
     @Query("SELECT COUNT(*) FROM todo_items WHERE isCompleted = true")
     fun getCompletedCount(): Flow<Int>
 
+    @Query("SELECT COUNT(*) FROM todo_items WHERE dueDate = :date")
+    fun getTodoCountByDueDate(date: LocalDate): Flow<Int>
+
+    @Query("SELECT COUNT(*) FROM todo_items WHERE dueDate = :date AND isCompleted = 1")
+    fun getCompletedTodoCountByDueDate(date: LocalDate): Flow<Int>
+
+    @Query("SELECT COUNT(*) FROM todo_items WHERE dueDate >= :startDate AND dueDate <= :endDate")
+    fun getTodoCountByDueDateRange(startDate: LocalDate, endDate: LocalDate): Flow<Int>
+
+    @Query("SELECT COUNT(*) FROM todo_items WHERE dueDate >= :startDate AND dueDate <= :endDate AND isCompleted = 1")
+    fun getCompletedTodoCountByDueDateRange(startDate: LocalDate, endDate: LocalDate): Flow<Int>
+
+    @Query("SELECT COUNT(*) FROM todo_items WHERE isCompleted = 0")
+    fun getPendingTodoCount(): Flow<Int>
+
+    @Query("SELECT COUNT(*) FROM todo_items WHERE dueDate < :today AND isCompleted = 0")
+    fun getOverdueTodoCount(today: LocalDate): Flow<Int>
+
+    @Query(
+        """
+        SELECT COUNT(*) FROM todo_items
+        WHERE isCompleted = 0
+            AND COALESCE(dueDate, substr(creationDateTime, 1, 10)) < :thresholdDate
+    """
+    )
+    fun getStalePendingTodoCount(thresholdDate: LocalDate): Flow<Int>
+
+    @Query(
+        """
+        SELECT MIN(COALESCE(dueDate, substr(creationDateTime, 1, 10)))
+        FROM todo_items
+        WHERE isCompleted = 0
+    """
+    )
+    fun getOldestPendingReferenceDate(): Flow<LocalDate?>
+
     @Query(
         """
         SELECT substr(completedDateTime, 1, 10) as date, COUNT(*) as count 
@@ -123,6 +160,23 @@ interface TodoDao {
     """
     )
     fun getDailyStats(): Flow<List<DailyStat>>
+
+    @Query(
+        """
+        SELECT substr(completedDateTime, 1, 10) as date, COUNT(*) as count
+        FROM todo_items
+        WHERE isCompleted = 1
+            AND completedDateTime IS NOT NULL
+            AND completedDateTime >= :startDateTime
+            AND completedDateTime < :endDateTime
+        GROUP BY substr(completedDateTime, 1, 10)
+        ORDER BY date ASC
+    """
+    )
+    fun getCompletedStatsBetween(
+        startDateTime: LocalDateTime,
+        endDateTime: LocalDateTime
+    ): Flow<List<DailyStat>>
 
 
     @Insert(onConflict = OnConflictStrategy.ABORT)

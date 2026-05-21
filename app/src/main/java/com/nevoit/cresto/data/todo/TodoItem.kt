@@ -24,7 +24,12 @@ enum class TodoReminderMode {
  */
 @Entity(
     tableName = "todo_items",
-    indices = [Index(value = ["isCompleted", "completedDateTime"])]
+    indices = [
+        Index(value = ["isCompleted", "completedDateTime"]),
+        Index(value = ["dueDate"]),
+        Index(value = ["isCompleted", "dueDate"]),
+        Index(value = ["creationDateTime"])
+    ]
 )
 data class TodoItem(
     @PrimaryKey(autoGenerate = true)

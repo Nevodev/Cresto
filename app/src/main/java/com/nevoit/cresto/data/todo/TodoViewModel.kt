@@ -8,6 +8,8 @@ import com.nevoit.cresto.data.todo.reminder.TodoAlarmScheduler
 import com.nevoit.cresto.data.utils.EventItem
 import com.tencent.mmkv.MMKV
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -21,6 +23,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.temporal.ChronoUnit
 
 data class BottomSheetUiState(
     val isVisible: Boolean = false,
@@ -41,9 +44,65 @@ data class ImportPreviewUiState(
     val errorMessage: String? = null
 )
 
+data class InsightsUiState(
+    val isReady: Boolean = false,
+    val todayTotal: Int = 0,
+    val todayCompleted: Int = 0,
+    val weekDueTotal: Int = 0,
+    val weekDueCompleted: Int = 0,
+    val pendingTotal: Int = 0,
+    val overdueTotal: Int = 0,
+    val stalePendingTotal: Int = 0,
+    val oldestPendingAgeDays: Long? = null,
+    val weeklyCompletedTrend: List<DailyStat> = emptyList()
+) {
+    val todayRemaining: Int
+        get() = (todayTotal - todayCompleted).coerceAtLeast(0)
+
+    val todayProgress: Float
+        get() = if (todayTotal > 0) todayCompleted.toFloat() / todayTotal else 0f
+
+    val weekDueProgress: Float
+        get() = if (weekDueTotal > 0) weekDueCompleted.toFloat() / weekDueTotal else 0f
+
+    val weekCompletedTotal: Int
+        get() = weeklyCompletedTrend.sumOf { it.count }
+
+    val hasAnyData: Boolean
+        get() = todayTotal > 0 ||
+            weekDueTotal > 0 ||
+            pendingTotal > 0 ||
+            overdueTotal > 0 ||
+            stalePendingTotal > 0 ||
+            weekCompletedTotal > 0
+}
+
+data class InsightAdviceUiState(
+    val advice: InsightAdvice? = null,
+    val isLoading: Boolean = false,
+    val isAiGenerated: Boolean = false,
+    val generatedAt: LocalDateTime? = null,
+    val message: String? = null
+)
+
+private data class InsightCoreCounts(
+    val todayTotal: Int,
+    val todayCompleted: Int,
+    val pendingTotal: Int,
+    val overdueTotal: Int,
+    val stalePendingTotal: Int
+)
+
+private data class InsightWeekStats(
+    val dueTotal: Int,
+    val dueCompleted: Int,
+    val completedTrend: List<DailyStat>
+)
+
 class TodoViewModel(
     private val repository: TodoRepository,
-    private val alarmScheduler: TodoAlarmScheduler
+    private val alarmScheduler: TodoAlarmScheduler,
+    private val insightAdviceRepository: InsightAdviceRepository
 ) : ViewModel() {
     val allTodos: StateFlow<List<TodoItemWithSubTodos>> = repository.allTodos.stateIn(
         scope = viewModelScope,
@@ -290,6 +349,145 @@ class TodoViewModel(
             started = SharingStarted.WhileSubscribed(5000),
             initialValue = emptyList()
         )
+
+    private val insightsToday = LocalDate.now()
+    private val insightsStartDate = insightsToday.minusDays(6)
+    private val insightsEndDate = insightsToday
+    private val insightsEndDateTimeExclusive = insightsToday.plusDays(1).atStartOfDay()
+    private val stalePendingThresholdDate = insightsToday.minusDays(7)
+
+    private val insightCoreCounts: Flow<InsightCoreCounts> = combine(
+        repository.getTodoCountByDueDate(insightsToday),
+        repository.getCompletedTodoCountByDueDate(insightsToday),
+        repository.getPendingTodoCount(),
+        repository.getOverdueTodoCount(insightsToday),
+        repository.getStalePendingTodoCount(stalePendingThresholdDate)
+    ) { todayTotal, todayCompleted, pendingTotal, overdueTotal, stalePendingTotal ->
+        InsightCoreCounts(
+            todayTotal = todayTotal,
+            todayCompleted = todayCompleted,
+            pendingTotal = pendingTotal,
+            overdueTotal = overdueTotal,
+            stalePendingTotal = stalePendingTotal
+        )
+    }
+
+    private val insightWeekStats: Flow<InsightWeekStats> = combine(
+        repository.getTodoCountByDueDateRange(insightsStartDate, insightsEndDate),
+        repository.getCompletedTodoCountByDueDateRange(insightsStartDate, insightsEndDate),
+        repository.getCompletedStatisticsBetween(
+            insightsStartDate.atStartOfDay(),
+            insightsEndDateTimeExclusive
+        )
+    ) { dueTotal, dueCompleted, rawTrend ->
+        val statsByDate = rawTrend.associateBy { it.date }
+        val completedTrend = (0..6).map { dayOffset ->
+            val date = insightsStartDate.plusDays(dayOffset.toLong())
+            statsByDate[date] ?: DailyStat(date = date, count = 0)
+        }
+
+        InsightWeekStats(
+            dueTotal = dueTotal,
+            dueCompleted = dueCompleted,
+            completedTrend = completedTrend
+        )
+    }
+
+    val insights: StateFlow<InsightsUiState> = combine(
+        insightCoreCounts,
+        insightWeekStats,
+        repository.getOldestPendingReferenceDate()
+    ) { coreCounts, weekStats, oldestPendingReferenceDate ->
+        InsightsUiState(
+            isReady = true,
+            todayTotal = coreCounts.todayTotal,
+            todayCompleted = coreCounts.todayCompleted,
+            weekDueTotal = weekStats.dueTotal,
+            weekDueCompleted = weekStats.dueCompleted,
+            pendingTotal = coreCounts.pendingTotal,
+            overdueTotal = coreCounts.overdueTotal,
+            stalePendingTotal = coreCounts.stalePendingTotal,
+            oldestPendingAgeDays = oldestPendingReferenceDate?.let { referenceDate ->
+                ChronoUnit.DAYS.between(
+                    referenceDate,
+                    insightsToday
+                ).coerceAtLeast(0)
+            },
+            weeklyCompletedTrend = weekStats.completedTrend
+        )
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = InsightsUiState(
+            weeklyCompletedTrend = (0..6).map { dayOffset ->
+                DailyStat(date = insightsStartDate.plusDays(dayOffset.toLong()), count = 0)
+            }
+        )
+    )
+
+    private val _insightAdviceState = MutableStateFlow(InsightAdviceUiState())
+    val insightAdviceState: StateFlow<InsightAdviceUiState> = _insightAdviceState.asStateFlow()
+    private var insightAdviceJob: Job? = null
+    private var insightAdviceRequestId = 0
+
+    fun refreshInsightAdvice(
+        insights: InsightsUiState,
+        manual: Boolean = false
+    ) {
+        val pressureIndex = calculatePressureIndex(insights)
+        val preview = insightAdviceRepository.previewAdvice(insights, pressureIndex)
+        _insightAdviceState.update {
+            it.copy(
+                advice = preview.advice,
+                isAiGenerated = preview.isAiGenerated,
+                generatedAt = preview.generatedAt,
+                message = preview.message ?: it.message
+            )
+        }
+
+        val decision = insightAdviceRepository.shouldRefresh(
+            insights = insights,
+            pressureIndex = pressureIndex,
+            manual = manual
+        )
+        if (!decision.shouldRefresh) {
+            if (decision.message != null) {
+                _insightAdviceState.update { it.copy(message = decision.message) }
+            }
+            return
+        }
+
+        val requestId = ++insightAdviceRequestId
+        insightAdviceJob?.cancel()
+
+        insightAdviceJob = viewModelScope.launch {
+            try {
+                if (!manual) {
+                    delay(600)
+                }
+                _insightAdviceState.update { it.copy(isLoading = true, message = null) }
+                val result = insightAdviceRepository.refreshAdvice(insights, pressureIndex)
+                if (requestId != insightAdviceRequestId) return@launch
+                _insightAdviceState.update {
+                    it.copy(
+                        advice = result.advice,
+                        isLoading = false,
+                        isAiGenerated = result.isAiGenerated,
+                        generatedAt = result.generatedAt,
+                        message = result.message
+                    )
+                }
+            } finally {
+                if (requestId == insightAdviceRequestId) {
+                    insightAdviceJob = null
+                }
+            }
+        }
+    }
+
+    fun clearInsightAdviceMessage() {
+        _insightAdviceState.update { it.copy(message = null) }
+    }
 
     fun clearAllData() {
         viewModelScope.launch {

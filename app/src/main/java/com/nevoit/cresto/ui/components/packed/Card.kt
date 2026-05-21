@@ -41,7 +41,7 @@ fun CardWithTitle(
                 color = hierarchicalSurfaceColor,
                 shape = AppSpecs.cardShape
             )
-            .fillMaxSize(),
+            .fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Row(
@@ -79,7 +79,7 @@ fun CardWithTitle(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(bottom = 12.dp, start = 12.dp, end = 12.dp)
+                .padding(12.dp)
         ) { content() }
     }
 }

@@ -275,6 +275,48 @@ class TodoRepository(
         return todoDao.getDailyStats()
     }
 
+    fun getTodoCountByDueDate(date: LocalDate): Flow<Int> {
+        return todoDao.getTodoCountByDueDate(date)
+    }
+
+    fun getCompletedTodoCountByDueDate(date: LocalDate): Flow<Int> {
+        return todoDao.getCompletedTodoCountByDueDate(date)
+    }
+
+    fun getTodoCountByDueDateRange(startDate: LocalDate, endDate: LocalDate): Flow<Int> {
+        return todoDao.getTodoCountByDueDateRange(startDate, endDate)
+    }
+
+    fun getCompletedTodoCountByDueDateRange(
+        startDate: LocalDate,
+        endDate: LocalDate
+    ): Flow<Int> {
+        return todoDao.getCompletedTodoCountByDueDateRange(startDate, endDate)
+    }
+
+    fun getPendingTodoCount(): Flow<Int> {
+        return todoDao.getPendingTodoCount()
+    }
+
+    fun getOverdueTodoCount(today: LocalDate): Flow<Int> {
+        return todoDao.getOverdueTodoCount(today)
+    }
+
+    fun getStalePendingTodoCount(thresholdDate: LocalDate): Flow<Int> {
+        return todoDao.getStalePendingTodoCount(thresholdDate)
+    }
+
+    fun getOldestPendingReferenceDate(): Flow<LocalDate?> {
+        return todoDao.getOldestPendingReferenceDate()
+    }
+
+    fun getCompletedStatisticsBetween(
+        startDateTime: LocalDateTime,
+        endDateTime: LocalDateTime
+    ): Flow<List<DailyStat>> {
+        return todoDao.getCompletedStatsBetween(startDateTime, endDateTime)
+    }
+
     suspend fun deleteAll() {
         todoDao.deleteAllTodos()
     }

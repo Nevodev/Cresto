@@ -7,7 +7,7 @@ import com.nevoit.cresto.data.utils.Converters
 
 @Database(
     entities = [TodoItem::class, SubTodoItem::class],
-    version = 23,
+    version = 24,
     exportSchema = false
 )
 

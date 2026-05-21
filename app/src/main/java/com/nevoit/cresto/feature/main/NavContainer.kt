@@ -57,7 +57,7 @@ fun BoxScope.NavContainer(
     ) {
         saveableStateHolder.SaveableStateProvider(key = Screen.Settings.route) {
             //SettingsScreen()
-            InsightsScreen()
+            InsightsScreen(viewModel = viewModel)
         }
     }
 }
