@@ -37,6 +37,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.BlendMode
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawOutline
@@ -58,6 +59,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.kyant.backdrop.backdrops.layerBackdrop
 import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import com.kyant.shapes.Capsule
+import com.kyant.shapes.UnevenRoundedRectangle
 import com.nevoit.cresto.R
 import com.nevoit.cresto.data.statistics.DailyStat
 import com.nevoit.cresto.data.todo.InsightAdviceUiState
@@ -82,6 +84,7 @@ import com.nevoit.cresto.ui.components.packed.CardWithTitle
 import com.nevoit.cresto.ui.components.packed.HGap
 import com.nevoit.cresto.ui.components.packed.PageContent
 import com.nevoit.cresto.ui.components.packed.VGap
+import com.nevoit.glasense.theme.lumify
 import kotlinx.coroutines.delay
 import java.time.format.DateTimeFormatter
 import java.util.Locale
@@ -192,6 +195,12 @@ fun BoxScope.InsightsScreen(viewModel: TodoViewModel) {
             VGap()
         }
         item {
+            BacklogCard(insights = insights)
+        }
+        item {
+            VGap()
+        }
+        item {
             InsightAdviceCard(
                 state = insightAdviceState
             )
@@ -201,12 +210,6 @@ fun BoxScope.InsightsScreen(viewModel: TodoViewModel) {
         }
         item {
             WeeklyTrendCard(insights = insights)
-        }
-        item {
-            Spacer(modifier = Modifier.height(12.dp))
-        }
-        item {
-            BacklogCard(insights = insights)
         }
         overscrollSpacer(lazyListState)
     }
@@ -587,9 +590,8 @@ private fun StatBlock(
         Text(
             text = value,
             color = valueColor,
-            fontSize = 34.sp,
-            lineHeight = 38.sp,
-            fontWeight = FontWeight.W500,
+            fontSize = 36.sp,
+            lineHeight = 36.sp,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis
         )
@@ -647,6 +649,9 @@ private fun WeeklyTrendBars(
 ) {
     val maxCount = trend.maxOfOrNull { it.count } ?: 0
     val weekdayFormatter = remember { DateTimeFormatter.ofPattern("E", Locale.getDefault()) }
+    val gradientBrush = Brush.verticalGradient(
+        colors = listOf(AppColors.primary, AppColors.primary.lumify(1.3f))
+    )
 
     Box(modifier = modifier) {
         if (maxCount == 0) {
@@ -682,10 +687,8 @@ private fun WeeklyTrendBars(
                             modifier = Modifier
                                 .fillMaxWidth(0.62f)
                                 .fillMaxHeight(barProgress.coerceIn(0f, 1f))
-                                .clip(RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp))
-                                .background(
-                                    if (stat.count > 0) AppColors.primary else Color.Transparent
-                                )
+                                .clip(UnevenRoundedRectangle(topStart = 8.dp, topEnd = 8.dp))
+                                .then(if (barProgress > 0f) Modifier.background(gradientBrush) else Modifier)
                         )
                     }
                     Spacer(modifier = Modifier.height(8.dp))

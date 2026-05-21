@@ -260,12 +260,12 @@
     <string name="insights_weekly_trend">本周趋势</string>
     <string name="insights_backlog">积压状态</string>
     <string name="insights_suggestions">智能建议</string>
-    <string name="insights_pressure_reading">压力解读</string>
+    <string name="insights_pressure_reading">今日解读</string>
     <string name="insights_advice_updating">更新中</string>
     <string name="insights_advice_local">本地</string>
-    <string name="insights_advice_preparing">正在准备压力解读</string>
+    <string name="insights_advice_preparing">正在准备今日解读</string>
     <string name="insights_advice_fallback">先从一个很小的下一步开始</string>
-    <string name="insights_advice_refresh">刷新压力解读</string>
+    <string name="insights_advice_refresh">刷新今日解读</string>
     <string name="insights_pressure_index">压力指数</string>
     <string name="insights_due_today">今日到期</string>
     <string name="insights_remaining">剩余</string>
