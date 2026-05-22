@@ -81,6 +81,7 @@ import com.nevoit.cresto.data.todo.TodoItem
 import com.nevoit.cresto.data.todo.TodoViewModel
 import com.nevoit.cresto.feature.main.rememberFlagMenuItems
 import com.nevoit.cresto.feature.settings.util.SettingsViewModel
+import com.nevoit.cresto.feature.sharetodo.TodoShareSheet
 import com.nevoit.cresto.theme.AppButtonColors
 import com.nevoit.cresto.theme.AppColors
 import com.nevoit.cresto.theme.AppSpecs
@@ -238,14 +239,23 @@ fun DetailScreen(
     }
 
     val context = LocalContext.current
-    val moreMenu = rememberMoreMenuItems {
-        dismissMenu()
-        scope.launch {
-            delay(200.milliseconds)
-            viewModel.duplicateById(todoId).join()
-            activity?.finish()
+    var isShareSheetVisible by remember { mutableStateOf(false) }
+    val moreMenu = rememberMoreMenuItems(
+        onDuplicateSelected = {
+            dismissMenu()
+            scope.launch {
+                delay(200.milliseconds)
+                viewModel.duplicateById(todoId).join()
+                activity?.finish()
+            }
+        },
+        onShareSelected = {
+            dismissMenu()
+            currentItem?.let {
+                isShareSheetVisible = true
+            }
         }
-    }
+    )
     var moreButtonBounds by remember { mutableStateOf<LayoutCoordinates?>(null) }
     var dateButtonBounds by remember { mutableStateOf(Rect.Zero) }
     var isDatePickerVisible by remember { mutableStateOf(false) }
@@ -854,6 +864,14 @@ fun DetailScreen(
                 isCustomReminderPopupVisible = false
             }
         )
+        if (isShareSheetVisible) {
+            currentItem?.let { item ->
+                TodoShareSheet(
+                    todos = listOf(item),
+                    onDismiss = { isShareSheetVisible = false }
+                )
+            }
+        }
         GlasenseMenu(
             menuState = menuState,
             backdrop = backdrop,

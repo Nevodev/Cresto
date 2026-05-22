@@ -33,6 +33,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.draw.scale
@@ -43,6 +44,7 @@ import androidx.compose.ui.graphics.layer.drawLayer
 import androidx.compose.ui.graphics.rememberGraphicsLayer
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -314,8 +316,9 @@ fun TodoShareCard(
         if (todos.isEmpty()) {
             Text(
                 text = emptyText,
-                color = AppColors.content.copy(alpha = 0.5f),
-                style = MaterialTheme.typography.bodyMedium
+                color = AppColors.contentVariant,
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.padding(horizontal = 12.dp)
             )
         } else {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -425,13 +428,9 @@ private fun ShareTodoItem(
             )
             if (dueDateMeta.text != null) {
                 Spacer(modifier = Modifier.height(2.dp))
-                Text(
+                ShareDueDateMeta(
                     text = dueDateMeta.text,
-                    fontSize = 14.sp,
-                    lineHeight = 16.sp,
-                    color = dueDateMeta.color,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis
+                    color = dueDateMeta.color
                 )
             }
 
@@ -439,12 +438,15 @@ private fun ShareTodoItem(
                 Spacer(modifier = Modifier.height(4.dp))
                 Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
                     item.subTodos.take(4).forEach { subTodo ->
-                        Row(verticalAlignment = Alignment.CenterVertically) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.alpha(AppColors.contentVariant.alpha)
+                        ) {
                             Box(
                                 modifier = Modifier
                                     .size(4.dp)
                                     .clip(CircleShape)
-                                    .background(AppColors.contentVariant)
+                                    .background(AppColors.content)
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             LineThroughText(
@@ -455,8 +457,9 @@ private fun ShareTodoItem(
                                 style = TextStyle(
                                     fontSize = 14.sp,
                                     lineHeight = 16.sp,
-                                    color = AppColors.contentVariant
+                                    color = AppColors.content
                                 ),
+                                lineColor = AppColors.content
                             )
                         }
                     }
@@ -482,6 +485,32 @@ private fun ShareTodoItem(
                 modifier = Modifier.size(24.dp)
             )
         }
+    }
+}
+
+@Composable
+private fun ShareDueDateMeta(
+    text: String,
+    color: Color
+) {
+    val density = LocalDensity.current
+
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Icon(
+            painter = painterResource(R.drawable.ic_calendar),
+            contentDescription = null,
+            tint = color,
+            modifier = Modifier.size(density.run { 18.sp.toDp() })
+        )
+        Spacer(modifier = Modifier.width(2.dp))
+        Text(
+            text = text,
+            style = MaterialTheme.typography.bodyMedium,
+            fontSize = 14.sp,
+            color = color,
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis
+        )
     }
 }
 

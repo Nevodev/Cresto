@@ -11,7 +11,8 @@ import com.nevoit.cresto.ui.components.glasense.MenuItemData
 
 @Composable
 fun rememberMoreMenuItems(
-    onDuplicateSelected: () -> Unit
+    onDuplicateSelected: () -> Unit,
+    onShareSelected: () -> Unit
 ): List<GlasenseMenuItem> {
     val shareIcon = painterResource(R.drawable.ic_share)
     val duplicateIcon = painterResource(R.drawable.ic_duplicate)
@@ -20,6 +21,7 @@ fun rememberMoreMenuItems(
 
     return remember(
         onDuplicateSelected,
+        onShareSelected,
         duplicateText,
         shareText
     ) {
@@ -36,7 +38,7 @@ fun rememberMoreMenuItems(
                 MenuItemData(
                     shareText,
                     shareIcon,
-                    onClick = { }
+                    onClick = onShareSelected
                 )
             )
         }
