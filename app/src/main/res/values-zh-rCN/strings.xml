@@ -270,13 +270,6 @@
     <string name="insights_today_overview">今日概览</string>
     <string name="insights_weekly_trend">本周趋势</string>
     <string name="insights_backlog">积压状态</string>
-    <string name="insights_suggestions">智能建议</string>
-    <string name="insights_pressure_reading">今日解读</string>
-    <string name="insights_advice_updating">更新中</string>
-    <string name="insights_advice_local">本地</string>
-    <string name="insights_advice_preparing">正在准备今日解读</string>
-    <string name="insights_advice_fallback">先从一个很小的下一步开始</string>
-    <string name="insights_advice_refresh">刷新今日解读</string>
     <string name="insights_pressure_index">压力指数</string>
     <string name="insights_due_today">今日到期</string>
     <string name="insights_remaining">剩余</string>
@@ -297,9 +290,4 @@
     <string name="insights_days_format">%1$d 天</string>
     <string name="insights_no_pending">暂无</string>
     <string name="insights_empty_trend">还没有完成记录</string>
-    <string name="insights_suggestion_overdue">先检查逾期待办，把仍然重要的事项重新安排一下。</string>
-    <string name="insights_suggestion_today_done">今天已经清空，可以留一段完整时间做重要的事。</string>
-    <string name="insights_suggestion_today_remaining">今天还有 %1$d 条待办，先处理最小的一两项会更轻松。</string>
-    <string name="insights_suggestion_stale">有 %1$d 条待办已经等待超过一周，适合重新拆分或删除。</string>
-    <string name="insights_suggestion_steady">本周已完成 %1$d 条待办，保持这个节奏就很好。</string>
 </resources>

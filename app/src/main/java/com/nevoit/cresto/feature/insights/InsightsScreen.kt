@@ -28,7 +28,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -36,7 +35,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
@@ -62,7 +60,6 @@ import com.kyant.shapes.Capsule
 import com.kyant.shapes.UnevenRoundedRectangle
 import com.nevoit.cresto.R
 import com.nevoit.cresto.data.statistics.DailyStat
-import com.nevoit.cresto.data.todo.InsightAdviceUiState
 import com.nevoit.cresto.data.todo.InsightsUiState
 import com.nevoit.cresto.data.todo.PressureLevel
 import com.nevoit.cresto.data.todo.PressureSource
@@ -73,11 +70,9 @@ import com.nevoit.cresto.feature.settings.SettingsActivity
 import com.nevoit.cresto.feature.settings.SettingsDestination
 import com.nevoit.cresto.theme.AppButtonColors
 import com.nevoit.cresto.theme.AppColors
-import com.nevoit.cresto.theme.gradientColorsDark
 import com.nevoit.cresto.ui.components.glasense.GlasenseButtonToolBar
 import com.nevoit.cresto.ui.components.glasense.GlasenseDynamicSmallTitle
 import com.nevoit.cresto.ui.components.glasense.GlasensePageHeader
-import com.nevoit.cresto.ui.components.glasense.RotatingGlowBorder
 import com.nevoit.cresto.ui.components.glasense.extend.overscrollSpacer
 import com.nevoit.cresto.ui.components.glasense.isScrolledPast
 import com.nevoit.cresto.ui.components.packed.CardWithTitle
@@ -85,13 +80,11 @@ import com.nevoit.cresto.ui.components.packed.HGap
 import com.nevoit.cresto.ui.components.packed.PageContent
 import com.nevoit.cresto.ui.components.packed.VGap
 import com.nevoit.glasense.theme.lumify
-import kotlinx.coroutines.delay
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 import kotlin.math.cos
 import kotlin.math.roundToInt
 import kotlin.math.sin
-import kotlin.time.Duration.Companion.milliseconds
 
 @Composable
 fun BoxScope.InsightsScreen(viewModel: TodoViewModel) {
@@ -103,19 +96,6 @@ fun BoxScope.InsightsScreen(viewModel: TodoViewModel) {
 
     val context = LocalContext.current
     val insights by viewModel.insights.collectAsStateWithLifecycle()
-    val insightAdviceState by viewModel.insightAdviceState.collectAsStateWithLifecycle()
-
-    LaunchedEffect(insights) {
-        if (insights.isReady) {
-            viewModel.refreshInsightAdvice(insights)
-        }
-    }
-    LaunchedEffect(insightAdviceState.message) {
-        if (insightAdviceState.message != null) {
-            delay(3000.milliseconds)
-            viewModel.clearInsightAdviceMessage()
-        }
-    }
 
     val backgroundColor = AppColors.pageBackground
 
@@ -140,51 +120,6 @@ fun BoxScope.InsightsScreen(viewModel: TodoViewModel) {
             )
         }
         item {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(56.dp)
-                    .clip(shape = Capsule())
-                    .background(AppColors.cardBackground)
-            ) {
-                RotatingGlowBorder(
-                    modifier = Modifier.matchParentSize(),
-                    colors = gradientColorsDark,
-                    strokeWidth = 4.dp,
-                    blurRadius = 10.dp,
-                    shape = Capsule(),
-                    blendMode = BlendMode.SrcOver
-                )
-                Row(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(horizontal = 12.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        painter = painterResource(R.drawable.ic_sparkles),
-                        contentDescription = null,
-                        modifier = Modifier.size(32.dp),
-                        tint = AppColors.highlightText
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(
-                        text = insightAdviceState.advice?.summary
-                            ?: stringResource(R.string.insights_advice_preparing),
-                        color = AppColors.contentVariant,
-                        fontSize = 14.sp,
-                        lineHeight = 16.sp,
-                        fontWeight = FontWeight.Normal,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                }
-            }
-        }
-        item {
-            VGap()
-        }
-        item {
             Row {
                 TodayOverviewCard(insights)
                 HGap()
@@ -196,14 +131,6 @@ fun BoxScope.InsightsScreen(viewModel: TodoViewModel) {
         }
         item {
             BacklogCard(insights = insights)
-        }
-        item {
-            VGap()
-        }
-        item {
-            InsightAdviceCard(
-                state = insightAdviceState
-            )
         }
         item {
             VGap()
@@ -233,38 +160,6 @@ fun BoxScope.InsightsScreen(viewModel: TodoViewModel) {
             enabled = true,
             shape = CircleShape,
             onClick = {
-                viewModel.refreshInsightAdvice(insights, manual = true)
-            },
-            modifier = Modifier
-                .align(Alignment.TopStart)
-                .size(48.dp),
-            colors = AppButtonColors.action(),
-            interactionSource = remember { MutableInteractionSource() }
-        ) {
-            Icon(
-                painter = painterResource(id = R.drawable.ic_sparkle_cycle),
-                contentDescription = stringResource(R.string.insights_advice_refresh),
-                modifier = Modifier.width(32.dp)
-            )
-        }
-        if (insightAdviceState.message != null) {
-            Text(
-                text = insightAdviceState.message.orEmpty(),
-                color = AppColors.contentVariant,
-                fontSize = 13.sp,
-                lineHeight = 16.sp,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                modifier = Modifier
-                    .align(Alignment.TopStart)
-                    .padding(start = 56.dp, top = 16.dp, end = 64.dp)
-                    .fillMaxWidth()
-            )
-        }
-        GlasenseButtonToolBar(
-            enabled = true,
-            shape = CircleShape,
-            onClick = {
                 context.startActivity(
                     SettingsActivity.createIntent(context, SettingsDestination.SETTINGS)
                 )
@@ -283,27 +178,6 @@ fun BoxScope.InsightsScreen(viewModel: TodoViewModel) {
         }
     }
 
-}
-
-@Composable
-private fun InsightAdviceCard(
-    state: InsightAdviceUiState
-) {
-    val advice = state.advice
-    CardWithTitle(
-        icon = painterResource(R.drawable.ic_laser_burst),
-        title = stringResource(R.string.insights_pressure_reading),
-        modifier = Modifier
-    ) {
-        Column(
-            modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.spacedBy(10.dp)
-        ) {
-            advice?.suggestions?.forEach { suggestion ->
-                SuggestionRow(text = suggestion)
-            }
-        }
-    }
 }
 
 @Composable
@@ -704,32 +578,6 @@ private fun WeeklyTrendBars(
                 }
             }
         }
-    }
-}
-
-@Composable
-private fun SuggestionRow(text: String) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.Top
-    ) {
-        Box(
-            modifier = Modifier
-                .padding(top = 6.dp)
-                .size(7.dp)
-                .clip(CircleShape)
-                .background(AppColors.primary)
-        )
-        Spacer(modifier = Modifier.width(10.dp))
-        Text(
-            text = text,
-            color = AppColors.content,
-            fontSize = 14.sp,
-            lineHeight = 18.sp,
-            maxLines = 2,
-            overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.weight(1f)
-        )
     }
 }
 

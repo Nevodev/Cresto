@@ -8,8 +8,6 @@ import com.nevoit.cresto.data.todo.reminder.TodoAlarmScheduler
 import com.nevoit.cresto.data.utils.EventItem
 import com.tencent.mmkv.MMKV
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -77,14 +75,6 @@ data class InsightsUiState(
             weekCompletedTotal > 0
 }
 
-data class InsightAdviceUiState(
-    val advice: InsightAdvice? = null,
-    val isLoading: Boolean = false,
-    val isAiGenerated: Boolean = false,
-    val generatedAt: LocalDateTime? = null,
-    val message: String? = null
-)
-
 private data class InsightCoreCounts(
     val todayTotal: Int,
     val todayCompleted: Int,
@@ -101,8 +91,7 @@ private data class InsightWeekStats(
 
 class TodoViewModel(
     private val repository: TodoRepository,
-    private val alarmScheduler: TodoAlarmScheduler,
-    private val insightAdviceRepository: InsightAdviceRepository
+    private val alarmScheduler: TodoAlarmScheduler
 ) : ViewModel() {
     val allTodos: StateFlow<List<TodoItemWithSubTodos>> = repository.allTodos.stateIn(
         scope = viewModelScope,
@@ -445,70 +434,6 @@ class TodoViewModel(
             }
         )
     )
-
-    private val _insightAdviceState = MutableStateFlow(InsightAdviceUiState())
-    val insightAdviceState: StateFlow<InsightAdviceUiState> = _insightAdviceState.asStateFlow()
-    private var insightAdviceJob: Job? = null
-    private var insightAdviceRequestId = 0
-
-    fun refreshInsightAdvice(
-        insights: InsightsUiState,
-        manual: Boolean = false
-    ) {
-        val pressureIndex = calculatePressureIndex(insights)
-        val preview = insightAdviceRepository.previewAdvice(insights, pressureIndex)
-        _insightAdviceState.update {
-            it.copy(
-                advice = preview.advice,
-                isAiGenerated = preview.isAiGenerated,
-                generatedAt = preview.generatedAt,
-                message = preview.message ?: it.message
-            )
-        }
-
-        val decision = insightAdviceRepository.shouldRefresh(
-            insights = insights,
-            pressureIndex = pressureIndex,
-            manual = manual
-        )
-        if (!decision.shouldRefresh) {
-            if (decision.message != null) {
-                _insightAdviceState.update { it.copy(message = decision.message) }
-            }
-            return
-        }
-
-        val requestId = ++insightAdviceRequestId
-        insightAdviceJob?.cancel()
-
-        insightAdviceJob = viewModelScope.launch {
-            try {
-                if (!manual) {
-                    delay(600)
-                }
-                _insightAdviceState.update { it.copy(isLoading = true, message = null) }
-                val result = insightAdviceRepository.refreshAdvice(insights, pressureIndex)
-                if (requestId != insightAdviceRequestId) return@launch
-                _insightAdviceState.update {
-                    it.copy(
-                        advice = result.advice,
-                        isLoading = false,
-                        isAiGenerated = result.isAiGenerated,
-                        generatedAt = result.generatedAt,
-                        message = result.message
-                    )
-                }
-            } finally {
-                if (requestId == insightAdviceRequestId) {
-                    insightAdviceJob = null
-                }
-            }
-        }
-    }
-
-    fun clearInsightAdviceMessage() {
-        _insightAdviceState.update { it.copy(message = null) }
-    }
 
     fun clearAllData() {
         viewModelScope.launch {
