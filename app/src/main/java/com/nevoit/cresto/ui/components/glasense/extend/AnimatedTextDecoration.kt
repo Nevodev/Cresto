@@ -25,6 +25,7 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.nevoit.cresto.theme.AppColors
@@ -37,7 +38,10 @@ fun LineThroughText(
     lineColor: Color = AppColors.primary,
     strokeWidth: Dp = 2.dp,
     animationDuration: Int = 300,
-    lineThrough: Boolean = false
+    lineThrough: Boolean = false,
+    maxLines: Int = Int.MAX_VALUE,
+    minLines: Int = 1,
+    overflow: TextOverflow = TextOverflow.Clip
 ) {
     val strokeWidth = with(LocalDensity.current) {
         strokeWidth.toPx()
@@ -73,6 +77,9 @@ fun LineThroughText(
     }
 
     Text(
+        maxLines = maxLines,
+        minLines = minLines,
+        overflow = overflow,
         text = text,
         style = style,
         onTextLayout = { textLayoutResult = it },

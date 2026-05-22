@@ -14,6 +14,7 @@ import com.nevoit.cresto.ui.components.glasense.MenuItemData
 fun rememberMoreMenuItems(
     onDuplicateSelected: () -> Unit,
     onMergeSelected: () -> Unit,
+    onShareSelected: () -> Unit,
     canMerge: Boolean
 ): List<GlasenseMenuItem> {
     val combineIcon = painterResource(R.drawable.ic_combine_as_one)
@@ -26,6 +27,7 @@ fun rememberMoreMenuItems(
     return remember(
         onDuplicateSelected,
         onMergeSelected,
+        onShareSelected,
         canMerge,
         duplicateText,
         mergeTodosText,
@@ -54,7 +56,7 @@ fun rememberMoreMenuItems(
                 MenuItemData(
                     shareText,
                     shareIcon,
-                    onClick = { }
+                    onClick = onShareSelected
                 )
             )
         }

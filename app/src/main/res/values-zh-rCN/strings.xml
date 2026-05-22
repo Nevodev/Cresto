@@ -195,6 +195,14 @@
     <string name="merge_todos">合并待办事项</string>
     <string name="link_main_todo">关联主待办事项</string>
     <string name="share">分享</string>
+    <string name="share_todos_title">分享待办</string>
+    <string name="share_text">分享文字</string>
+    <string name="share_image">分享图片</string>
+    <string name="share_todos_empty">未选择待办</string>
+    <string name="share_todo_failed">分享失败</string>
+    <string name="share_todo_image_failed">无法生成分享图片。</string>
+    <string name="share_todo_text_failed">无法打开分享面板。</string>
+    <string name="share_todo_card_footer">由 Cresto 生成</string>
     <string name="new_merged_todo_title">新待办事项</string>
     <string name="flag_red">红色</string>
     <string name="flag_orange">橙色</string>

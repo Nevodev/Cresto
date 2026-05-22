@@ -206,6 +206,14 @@
     <string name="merge_todos">Merge todos</string>
     <string name="link_main_todo">Link main todo</string>
     <string name="share">Share</string>
+    <string name="share_todos_title">Share Todos</string>
+    <string name="share_text">Share Text</string>
+    <string name="share_image">Share Image</string>
+    <string name="share_todos_empty">No selected todos</string>
+    <string name="share_todo_failed">Share Failed</string>
+    <string name="share_todo_image_failed">Could not prepare the share image.</string>
+    <string name="share_todo_text_failed">Could not open the share sheet.</string>
+    <string name="share_todo_card_footer">Made with Cresto</string>
     <string name="new_merged_todo_title">New Todo</string>
     <string name="flag_red">Red</string>
     <string name="flag_orange">Orange</string>

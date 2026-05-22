@@ -259,6 +259,21 @@ class TodoViewModel(
             initialValue = 0
         )
 
+    val selectedTodos: StateFlow<List<TodoItemWithSubTodos>> = combine(
+        allTodos,
+        selectedItemIds
+    ) { todos, selectedIds ->
+        if (selectedIds.isEmpty()) {
+            emptyList()
+        } else {
+            todos.filter { it.todoItem.id in selectedIds }
+        }
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = emptyList()
+    )
+
     /*select*/
     fun insert(item: TodoItem) = viewModelScope.launch {
         val id = repository.insert(item).toInt()

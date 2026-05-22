@@ -65,6 +65,7 @@ import com.nevoit.cresto.data.todo.TodoViewModel
 import com.nevoit.cresto.feature.bottomsheet.BottomSheet
 import com.nevoit.cresto.feature.screenextract.ScreenExtractEvents
 import com.nevoit.cresto.feature.settings.util.SettingsViewModel
+import com.nevoit.cresto.feature.sharetodo.TodoShareSheet
 import com.nevoit.cresto.theme.AppButtonColors
 import com.nevoit.cresto.theme.AppColors
 import com.nevoit.cresto.theme.isAppInDarkTheme
@@ -209,6 +210,7 @@ fun MainScreen() {
 
     val isSelectionModeActive by viewModel.isSelectionModeActive.collectAsState()
     val selectedItemCount by viewModel.selectedItemCount.collectAsState()
+    val selectedTodos by viewModel.selectedTodos.collectAsState()
     val cancelText = stringResource(R.string.cancel)
     val deleteText = stringResource(R.string.delete)
     val deleteIcon = painterResource(R.drawable.ic_trash)
@@ -277,9 +279,11 @@ fun MainScreen() {
     val floatingBarColor = AppColors.pageBackground.copy(.5f)
 
     val newMergedTodoTitle = stringResource(R.string.new_merged_todo_title)
+    var isShareSheetVisible by remember { mutableStateOf(false) }
     val moreMenu = rememberMoreMenuItems(
         onDuplicateSelected = viewModel::duplicateSelectedItems,
         onMergeSelected = { viewModel.mergeSelectedItems(newMergedTodoTitle) },
+        onShareSelected = { isShareSheetVisible = true },
         canMerge = selectedItemCount >= 2
     )
     var moreButtonBounds by remember { mutableStateOf<LayoutCoordinates?>(null) }
@@ -595,6 +599,13 @@ fun MainScreen() {
                         isCustomReminderPopupVisible = true
                     },
                     showMenu = showMenu
+                )
+            }
+
+            if (isShareSheetVisible) {
+                TodoShareSheet(
+                    todos = selectedTodos,
+                    onDismiss = { isShareSheetVisible = false }
                 )
             }
 
