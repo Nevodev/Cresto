@@ -291,7 +291,8 @@ fun TodoShareCard(
             Column {
                 Text(
                     text = stringResource(R.string.todos),
-                    style = MaterialTheme.typography.headlineMedium,
+                    fontSize = 16.sp,
+                    lineHeight = 18.sp,
                     color = AppColors.content
                 )
                 Text(

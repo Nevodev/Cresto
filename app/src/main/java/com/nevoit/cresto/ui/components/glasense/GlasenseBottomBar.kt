@@ -82,8 +82,8 @@ uniform float tintIntensity;
 
 half4 main(float2 coord) {
 float invertedY = size.y - coord.y;
-float blurAlpha = smoothstep(size.y, size.y * 0.7, invertedY);
-float tintAlpha = smoothstep(size.y, size.y * 0.6, invertedY);
+float blurAlpha = smoothstep(size.y, size.y * 0.4, invertedY);
+float tintAlpha = smoothstep(size.y, size.y * 0.4, invertedY);
 return mix(content.eval(coord) * blurAlpha, tint * tintAlpha, tintIntensity);
 }"""
                                     ).apply {
