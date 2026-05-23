@@ -130,6 +130,16 @@ interface TodoDao {
     @Query(
         """
         UPDATE todo_items
+        SET isCompleted = 1,
+            completedDateTime = COALESCE(completedDateTime, :completedDateTime)
+        WHERE id = :id
+        """
+    )
+    suspend fun markCompletedById(id: Int, completedDateTime: LocalDateTime)
+
+    @Query(
+        """
+        UPDATE todo_items
         SET flag = :flag
         WHERE id IN (:ids)
         """

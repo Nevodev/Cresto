@@ -283,6 +283,8 @@
     <string name="reminder_notification_due_date">Due date: %1$s</string>
     <string name="reminder_notification_reminder_time">Reminder time: %1$s</string>
     <string name="reminder_notification_date_format">%1$d/%2$d</string>
+    <string name="reminder_notification_action_complete">Complete</string>
+    <string name="reminder_notification_action_snooze">Remind later</string>
     <string name="repeat">Repeat</string>
     <string name="repeat_cycle">Repeat Cycle</string>
     <string name="postpone_after_expiry">Postpone After Expiry</string>

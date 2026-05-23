@@ -34,6 +34,16 @@ class TodoAlarmScheduler(
             .toInstant()
             .toEpochMilli()
 
+        scheduleAt(todo, triggerAtMillis)
+    }
+
+    fun snooze(todo: TodoItem, delayMillis: Long = DEFAULT_SNOOZE_DELAY_MILLIS) {
+        if (todo.id <= 0 || todo.isCompleted) return
+        scheduleAt(todo, System.currentTimeMillis() + delayMillis)
+    }
+
+    private fun scheduleAt(todo: TodoItem, triggerAtMillis: Long) {
+
         if (triggerAtMillis <= System.currentTimeMillis()) return
 
         val pendingIntent = createPendingIntent(todo)
@@ -94,7 +104,7 @@ class TodoAlarmScheduler(
 
     private fun createPendingIntent(todo: TodoItem): PendingIntent {
         val intent = Intent(appContext, TodoAlarmReceiver::class.java).apply {
-            action = ACTION_TODO_REMINDER
+            setAction(ACTION_TODO_REMINDER)
             putExtra(EXTRA_REMINDER_TODO_ID, todo.id)
             putExtra(EXTRA_REMINDER_TODO_TITLE, todo.title)
             putExtra(EXTRA_REMINDER_TODO_NOTES, todo.notes)
@@ -113,7 +123,7 @@ class TodoAlarmScheduler(
 
     private fun findPendingIntent(todoId: Int): PendingIntent? {
         val intent = Intent(appContext, TodoAlarmReceiver::class.java).apply {
-            action = ACTION_TODO_REMINDER
+            setAction(ACTION_TODO_REMINDER)
         }
 
         return PendingIntent.getBroadcast(
@@ -212,4 +222,5 @@ const val EXTRA_REMINDER_FALLBACK_TEXT = "extra_reminder_fallback_text"
 const val EXTRA_REMINDER_PERSISTENT = "extra_reminder_persistent"
 const val EXTRA_REMINDER_STRONG = "extra_reminder_strong"
 
+private const val DEFAULT_SNOOZE_DELAY_MILLIS = 10 * 60 * 1000L
 private val REMINDER_TIME_FORMATTER = DateTimeFormatter.ofPattern("HH:mm")

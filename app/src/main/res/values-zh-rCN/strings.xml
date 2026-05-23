@@ -272,6 +272,8 @@
     <string name="reminder_notification_due_date">截止日：%1$s</string>
     <string name="reminder_notification_reminder_time">提醒时间：%1$s</string>
     <string name="reminder_notification_date_format">%1$d月%2$d日</string>
+    <string name="reminder_notification_action_complete">完成</string>
+    <string name="reminder_notification_action_snooze">稍后提示</string>
     <string name="repeat">重复</string>
     <string name="repeat_cycle">重复周期</string>
     <string name="postpone_after_expiry">过期后顺延</string>
