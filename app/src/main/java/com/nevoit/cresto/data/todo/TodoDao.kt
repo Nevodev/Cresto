@@ -59,15 +59,19 @@ interface TodoDao {
 
     @Transaction
     @Query("SELECT * FROM todo_items WHERE dueDate = :date ORDER BY creationDateTime DESC")
-    fun getTodosByDate(date: java.time.LocalDate): Flow<List<TodoItemWithSubTodos>>
+    fun getTodosByDate(date: LocalDate): Flow<List<TodoItemWithSubTodos>>
 
     @Query("SELECT DISTINCT dueDate FROM todo_items WHERE dueDate IS NOT NULL")
-    fun getDatesWithTodo(): Flow<List<java.time.LocalDate>>
+    fun getDatesWithTodo(): Flow<List<LocalDate>>
 
     // Fetches a single todo item with its sub-todos by ID.
     @Transaction
     @Query("SELECT * FROM todo_items WHERE id = :id")
     fun getTodoWithSubTodosById(id: Int): Flow<TodoItemWithSubTodos?>
+
+    @Transaction
+    @Query("SELECT * FROM todo_items WHERE id = :id")
+    suspend fun getTodoWithSubTodosByIdSnapshot(id: Int): TodoItemWithSubTodos?
 
     @Transaction
     @Query("SELECT * FROM todo_items WHERE id IN (:ids)")
@@ -78,6 +82,30 @@ interface TodoDao {
 
     @Query("DELETE FROM todo_items WHERE id IN (:ids)")
     suspend fun deleteByIds(ids: List<Int>)
+
+    @Query(
+        """
+        UPDATE todo_items
+        SET calendarEventId = :calendarEventId,
+            calendarSyncedAt = :calendarSyncedAt
+        WHERE id = :id
+        """
+    )
+    suspend fun updateCalendarSyncState(
+        id: Int,
+        calendarEventId: Long?,
+        calendarSyncedAt: LocalDateTime?
+    )
+
+    @Query(
+        """
+        UPDATE todo_items
+        SET calendarEventId = NULL,
+            calendarSyncedAt = NULL
+        WHERE id = :id
+        """
+    )
+    suspend fun clearCalendarSyncState(id: Int)
 
     @Query(
         """

@@ -18,6 +18,7 @@ class SettingsViewModel : ViewModel() {
     val isSuperGraphicUltraModernGirlEnabled = SettingsManager.isSuperGraphicUltraModernGirlState
     val hasReturnedToTodayByTitle = SettingsManager.hasReturnedToTodayByTitleState
     val isExtractScreenQuickTileEnabled = SettingsManager.isExtractScreenQuickTileEnabledState
+    val isAutoAddToSystemCalendar = SettingsManager.isAutoAddToSystemCalendarState
     val appIcon = SettingsManager.appIconState
 
     fun onCustomPrimaryColorChanged(isEnabled: Boolean) {
@@ -73,6 +74,10 @@ class SettingsViewModel : ViewModel() {
 
     fun onExtractScreenQuickTileChanged(isEnabled: Boolean) {
         SettingsManager.isExtractScreenQuickTileEnabled = isEnabled
+    }
+
+    fun onAutoAddToSystemCalendarChanged(isEnabled: Boolean) {
+        SettingsManager.isAutoAddToSystemCalendar = isEnabled
     }
 
     fun onAppIconChanged(context: Context, icon: AppIconManager.AppIcon) {

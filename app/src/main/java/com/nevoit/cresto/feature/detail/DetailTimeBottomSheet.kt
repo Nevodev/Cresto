@@ -153,12 +153,12 @@ private fun TimeConfigSection(
     var rangeEndTimeButtonBounds by remember { mutableStateOf(Rect.Zero) }
 
     ConfigItemContainer(
-        backgroundColor = AppColors.cardBackgroundElevated
+        backgroundColor = AppColors.elevatedCardBackground
     ) {
         Column {
             ConfigItem(title = stringResource(R.string.all_day)) {
                 GlasenseSwitch(
-                    backgroundColor = AppColors.cardBackgroundElevated,
+                    backgroundColor = AppColors.elevatedCardBackground,
                     checked = isAllDayEnabled,
                     onCheckedChange = onAllDayEnabledChange
                 )
@@ -168,7 +168,7 @@ private fun TimeConfigSection(
             Spacer(modifier = Modifier.height(8.dp))
             ConfigItem(title = stringResource(R.string.time_range)) {
                 GlasenseSwitch(
-                    backgroundColor = AppColors.cardBackgroundElevated,
+                    backgroundColor = AppColors.elevatedCardBackground,
                     checked = isTimeRangeEnabled,
                     onCheckedChange = onTimeRangeEnabledChange
                 )

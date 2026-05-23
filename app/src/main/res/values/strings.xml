@@ -223,6 +223,12 @@
     <string name="flag_purple">Purple</string>
     <string name="flag_gray">Gray</string>
     <string name="add_to_calendar">Add to calendar</string>
+    <string name="calendar_sync_completed">Added %1$d todo(s) to calendar</string>
+    <string name="calendar_sync_partial">Added %1$d, skipped %2$d, failed %3$d</string>
+    <string name="calendar_sync_no_due_date">Set a due date before adding to calendar</string>
+    <string name="calendar_sync_permission_required">Calendar permission is required</string>
+    <string name="calendar_sync_no_writable_calendar">No writable calendar found</string>
+    <string name="calendar_sync_failed">Could not add to calendar</string>
     <string name="skip_duplicates">Skip Duplicates</string>
     <string name="import_all">Import All</string>
     <string name="export_failed">Export Failed</string>

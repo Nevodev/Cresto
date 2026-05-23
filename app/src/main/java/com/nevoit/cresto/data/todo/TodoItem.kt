@@ -48,7 +48,9 @@ data class TodoItem(
     val reminderDayOffset: Int? = null,
     val reminderTime: LocalTime? = null,
     val reminderPersistent: Boolean = false,
-    val reminderStrong: Boolean = false
+    val reminderStrong: Boolean = false,
+    val calendarEventId: Long? = null,
+    val calendarSyncedAt: LocalDateTime? = null
 )
 
 fun TodoItem.reminderDateTime(): LocalDateTime? {

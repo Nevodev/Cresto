@@ -2,7 +2,10 @@ package com.nevoit.cresto.feature.detail
 
 import android.app.Activity
 import android.content.Intent
+import android.widget.Toast
 import androidx.activity.compose.LocalActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -79,6 +82,8 @@ import com.nevoit.cresto.data.todo.EXTRA_DELETE_ID
 import com.nevoit.cresto.data.todo.SubTodoItem
 import com.nevoit.cresto.data.todo.TodoItem
 import com.nevoit.cresto.data.todo.TodoViewModel
+import com.nevoit.cresto.data.todo.calendar.TodoCalendarSyncManager
+import com.nevoit.cresto.feature.calendar.toToastMessage
 import com.nevoit.cresto.feature.main.rememberFlagMenuItems
 import com.nevoit.cresto.feature.settings.util.SettingsViewModel
 import com.nevoit.cresto.feature.sharetodo.TodoShareSheet
@@ -240,6 +245,38 @@ fun DetailScreen(
 
     val context = LocalContext.current
     var isShareSheetVisible by remember { mutableStateOf(false) }
+    val requirePermission = stringResource(R.string.calendar_sync_permission_required)
+    val calendarPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        val granted = TodoCalendarSyncManager.REQUIRED_PERMISSIONS.all { permission ->
+            permissions[permission] == true
+        }
+        if (granted) {
+            viewModel.syncTodoToCalendar(todoId)
+        } else {
+            Toast.makeText(
+                context,
+                requirePermission,
+                Toast.LENGTH_SHORT
+            ).show()
+        }
+    }
+
+    LaunchedEffect(viewModel, context) {
+        viewModel.calendarSyncEvents.collect { summary ->
+            Toast.makeText(context, summary.toToastMessage(context), Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    fun syncCurrentTodoToCalendar() {
+        if (TodoCalendarSyncManager.hasCalendarPermissions(context)) {
+            viewModel.syncTodoToCalendar(todoId)
+        } else {
+            calendarPermissionLauncher.launch(TodoCalendarSyncManager.REQUIRED_PERMISSIONS)
+        }
+    }
+
     val moreMenu = rememberMoreMenuItems(
         onDuplicateSelected = {
             dismissMenu()
@@ -248,6 +285,10 @@ fun DetailScreen(
                 viewModel.duplicateById(todoId).join()
                 activity?.finish()
             }
+        },
+        onAddToCalendarSelected = {
+            dismissMenu()
+            syncCurrentTodoToCalendar()
         },
         onShareSelected = {
             dismissMenu()
@@ -800,10 +841,12 @@ fun DetailScreen(
                     reminderDraftConfig = mergedConfig
                     reminderDraftPersistent = persistent
                     reminderDraftStrong = strong
-                    viewModel.update(todoItem.withReminderConfig(mergedConfig).copy(
-                        reminderPersistent = persistent,
-                        reminderStrong = strong
-                    ))
+                    viewModel.update(
+                        todoItem.withReminderConfig(mergedConfig).copy(
+                            reminderPersistent = persistent,
+                            reminderStrong = strong
+                        )
+                    )
                 }
 
                 DetailReminderBottomSheet(

@@ -4,14 +4,17 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.nevoit.cresto.data.statistics.DailyStat
 import com.nevoit.cresto.data.statistics.TodoStat
+import com.nevoit.cresto.data.todo.calendar.CalendarSyncSummary
 import com.nevoit.cresto.data.todo.reminder.TodoAlarmScheduler
 import com.nevoit.cresto.data.utils.EventItem
 import com.tencent.mmkv.MMKV
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
@@ -101,6 +104,9 @@ class TodoViewModel(
 
     fun getTodoWithSubTodos(id: Int): Flow<TodoItemWithSubTodos?> = repository.getTodoById(id)
 
+    private val _calendarSyncEvents = MutableSharedFlow<CalendarSyncSummary>(extraBufferCapacity = 1)
+    val calendarSyncEvents = _calendarSyncEvents.asSharedFlow()
+
     /*select*/
 
     private val _selectedItemIds = MutableStateFlow<Set<Int>>(emptySet())
@@ -178,6 +184,20 @@ class TodoViewModel(
         alarmScheduler.cancelAll(selectedIds)
 
         clearSelections()
+    }
+
+    fun syncSelectedItemsToCalendar() = viewModelScope.launch {
+        val selectedIds = _selectedItemIds.value.toList()
+        if (selectedIds.isEmpty()) return@launch
+
+        val summary = repository.syncTodosToCalendar(selectedIds)
+        _calendarSyncEvents.emit(summary)
+        clearSelections()
+    }
+
+    fun syncTodoToCalendar(todoId: Int) = viewModelScope.launch {
+        val summary = CalendarSyncSummary.from(listOf(repository.syncTodoToCalendar(todoId)))
+        _calendarSyncEvents.emit(summary)
     }
 
     fun completeSelectedItems() = viewModelScope.launch {

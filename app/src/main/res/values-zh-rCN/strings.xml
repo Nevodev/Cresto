@@ -212,6 +212,12 @@
     <string name="flag_purple">紫色</string>
     <string name="flag_gray">灰色</string>
     <string name="add_to_calendar">添加到日历</string>
+    <string name="calendar_sync_completed">已添加 %1$d 条待办到日历</string>
+    <string name="calendar_sync_partial">已添加 %1$d 条，跳过 %2$d 条，失败 %3$d 条</string>
+    <string name="calendar_sync_no_due_date">请先设置截止日期再添加到日历</string>
+    <string name="calendar_sync_permission_required">需要日历权限</string>
+    <string name="calendar_sync_no_writable_calendar">未找到可写入的系统日历</string>
+    <string name="calendar_sync_failed">无法添加到日历</string>
     <string name="skip_duplicates">跳过重复</string>
     <string name="import_all">导入全部</string>
     <string name="export_failed">导出失败</string>

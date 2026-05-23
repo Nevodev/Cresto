@@ -451,7 +451,7 @@ fun BottomSheet(
                         bottomSheetShape
                     )
                     .background(
-                        color = AppColors.pageBackgroundElevated
+                        color = AppColors.elevatedPageBackground
                     )
                     .fillMaxWidth()
             ) {

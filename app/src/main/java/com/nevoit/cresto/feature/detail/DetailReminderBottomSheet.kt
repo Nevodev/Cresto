@@ -225,7 +225,7 @@ fun DetailReminderBottomSheet(
             }
             Spacer(modifier = Modifier.height(12.dp))
             ConfigItemContainer(
-                backgroundColor = AppColors.cardBackgroundElevated
+                backgroundColor = AppColors.elevatedCardBackground
             ) {
                 Column {
                     ConfigItem(title = stringResource(R.string.reminder_timing)) {
@@ -260,7 +260,7 @@ fun DetailReminderBottomSheet(
                     Spacer(modifier = Modifier.height(8.dp))
                     ConfigItem(title = stringResource(R.string.persistent_reminder)) {
                         GlasenseSwitch(
-                            backgroundColor = AppColors.cardBackgroundElevated,
+                            backgroundColor = AppColors.elevatedCardBackground,
                             checked = reminderPersistent,
                             onCheckedChange = onPersistentChange
                         )
@@ -270,7 +270,7 @@ fun DetailReminderBottomSheet(
                     Spacer(modifier = Modifier.height(8.dp))
                     ConfigItem(title = stringResource(R.string.strong_reminder)) {
                         GlasenseSwitch(
-                            backgroundColor = AppColors.cardBackgroundElevated,
+                            backgroundColor = AppColors.elevatedCardBackground,
                             checked = reminderStrong,
                             onCheckedChange = onStrongChange
                         )

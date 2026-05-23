@@ -133,7 +133,7 @@ fun GlasenseBottomSheet(
                     bottomSheetShape
                 )
                 .background(
-                    color = AppColors.pageBackgroundElevated
+                    color = AppColors.elevatedPageBackground
                 )
                 .fillMaxWidth()
                 .padding(bottom = 32.dp)

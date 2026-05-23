@@ -5,6 +5,11 @@ import com.nevoit.cresto.data.statistics.DailyStat
 import com.nevoit.cresto.data.todo.backup.SubTodoBackupDto
 import com.nevoit.cresto.data.todo.backup.TodoBackupDto
 import com.nevoit.cresto.data.todo.backup.TodoBackupFile
+import com.nevoit.cresto.data.todo.calendar.CalendarSyncResult
+import com.nevoit.cresto.data.todo.calendar.CalendarSyncStatus
+import com.nevoit.cresto.data.todo.calendar.CalendarSyncSummary
+import com.nevoit.cresto.data.todo.calendar.TodoCalendarSyncManager
+import com.nevoit.cresto.feature.settings.util.SettingsManager
 import kotlinx.coroutines.flow.Flow
 import kotlinx.serialization.json.Json
 import java.time.LocalDate
@@ -31,7 +36,8 @@ data class ImportResult(
  */
 class TodoRepository(
     private val todoDao: TodoDao,
-    private val todoDatabase: TodoDatabase
+    private val todoDatabase: TodoDatabase,
+    private val calendarSyncManager: TodoCalendarSyncManager
 ) {
 
     val allTodos: Flow<List<TodoItemWithSubTodos>> = todoDao.getAllTodosWithSubTodos()
@@ -49,7 +55,9 @@ class TodoRepository(
     }
 
     suspend fun insert(item: TodoItem): Long {
-        return todoDao.insertTodo(item)
+        val id = todoDao.insertTodo(item)
+        syncTodoByIdIfAutoEnabled(id.toInt())
+        return id
     }
 
     suspend fun insertAll(items: List<TodoItem>) {
@@ -57,21 +65,29 @@ class TodoRepository(
     }
 
     suspend fun update(item: TodoItem) {
-        todoDao.updateTodo(item)
+        val existingCalendarState = todoDao.getTodoWithSubTodosByIdSnapshot(item.id)?.todoItem
+        val itemToPersist = item.copy(
+            calendarEventId = item.calendarEventId ?: existingCalendarState?.calendarEventId,
+            calendarSyncedAt = item.calendarSyncedAt ?: existingCalendarState?.calendarSyncedAt
+        )
+        todoDao.updateTodo(itemToPersist)
+        syncTodoByIdIfAutoEnabled(itemToPersist.id)
     }
 
     suspend fun delete(item: TodoItem) {
+        deleteCalendarEventIfPresent(item)
         todoDao.deleteTodo(item)
     }
 
     suspend fun insertSubTodo(item: SubTodoItem) {
         todoDao.insertSubTodo(item)
+        syncTodoByIdIfAutoEnabled(item.parentId)
     }
 
     suspend fun insertAiGeneratedTodosWithSubTasks(aiItems: List<com.nevoit.cresto.data.utils.EventItem>): List<TodoItem> {
         if (aiItems.isEmpty()) return emptyList()
 
-        return todoDatabase.withTransaction {
+        val insertedTodos = todoDatabase.withTransaction {
             aiItems.map { eventItem ->
                 val todo = TodoItem(
                     title = eventItem.title,
@@ -136,21 +152,30 @@ class TodoRepository(
                 insertedTodo
             }
         }
+
+        syncTodoIdsIfAutoEnabled(insertedTodos.map { it.id })
+        return insertedTodos
     }
 
     suspend fun updateSubTodo(item: SubTodoItem) {
         todoDao.updateSubTodo(item)
+        syncTodoByIdIfAutoEnabled(item.parentId)
     }
 
     suspend fun deleteSubTodo(item: SubTodoItem) {
         todoDao.deleteSubTodo(item)
+        syncTodoByIdIfAutoEnabled(item.parentId)
     }
 
     suspend fun deleteById(id: Int) {
+        todoDao.getTodoWithSubTodosByIdSnapshot(id)?.let { deleteCalendarEventIfPresent(it.todoItem) }
         todoDao.deleteById(id)
     }
 
     suspend fun deleteByIds(ids: List<Int>) {
+        todoDao.getTodosWithSubTodosByIds(ids)
+            .map { it.todoItem }
+            .forEach { deleteCalendarEventIfPresent(it) }
         todoDao.deleteByIds(ids)
     }
 
@@ -173,7 +198,7 @@ class TodoRepository(
     suspend fun duplicateByIds(ids: List<Int>): List<TodoItem> {
         if (ids.isEmpty()) return emptyList()
 
-        return todoDatabase.withTransaction {
+        val insertedTodos = todoDatabase.withTransaction {
             val sourceTodosById = todoDao.getTodosWithSubTodosByIds(ids)
                 .associateBy { it.todoItem.id }
             val orderedSourceTodos = ids.mapNotNull(sourceTodosById::get).asReversed()
@@ -185,7 +210,9 @@ class TodoRepository(
                     id = 0,
                     creationDateTime = now.plusNanos(index * 1000000L),
                     isCompleted = false,
-                    completedDateTime = null
+                    completedDateTime = null,
+                    calendarEventId = null,
+                    calendarSyncedAt = null
                 )
             }
 
@@ -210,16 +237,22 @@ class TodoRepository(
                 todo.copy(id = newTodoId)
             }
         }
+
+        syncTodoIdsIfAutoEnabled(insertedTodos.map { it.id })
+        return insertedTodos
     }
 
     suspend fun mergeByIdsAsSubTodos(ids: List<Int>, newTodoTitle: String): Int {
         if (ids.isEmpty()) return 0
 
-        return todoDatabase.withTransaction {
+        var sourceTodosForCalendar = emptyList<TodoItem>()
+        var mergedTodoId = 0
+        val mergedSubTodoCount = todoDatabase.withTransaction {
             val sourceTodosById = todoDao.getTodosWithSubTodosByIds(ids)
                 .associateBy { it.todoItem.id }
             val orderedSourceTodos = ids.mapNotNull(sourceTodosById::get)
             if (orderedSourceTodos.isEmpty()) return@withTransaction 0
+            sourceTodosForCalendar = orderedSourceTodos.map { it.todoItem }
 
             val latestDueDate = orderedSourceTodos
                 .mapNotNull { it.todoItem.dueDate }
@@ -233,6 +266,7 @@ class TodoRepository(
                     dueDate = latestDueDate
                 )
             ).toInt()
+            mergedTodoId = newTodoId
 
             val mergedSubTodos = orderedSourceTodos.flatMap { source ->
                 buildList {
@@ -263,6 +297,10 @@ class TodoRepository(
 
             mergedSubTodos.size
         }
+
+        sourceTodosForCalendar.forEach { deleteCalendarEventIfPresent(it) }
+        syncTodoByIdIfAutoEnabled(mergedTodoId)
+        return mergedSubTodoCount
     }
 
     fun getTotalCount(): Flow<Int> {
@@ -320,6 +358,7 @@ class TodoRepository(
     }
 
     suspend fun deleteAll() {
+        todoDao.getAllTodosSnapshot().forEach { deleteCalendarEventIfPresent(it) }
         todoDao.deleteAllTodos()
     }
 
@@ -408,6 +447,7 @@ class TodoRepository(
 
         var imported = 0
         var skipped = 0
+        val importedTodoIds = mutableListOf<Int>()
 
         for (todoDto in backup.todos) {
             val relatedSubDtos = subTodosByParent[todoDto.id].orEmpty()
@@ -437,6 +477,7 @@ class TodoRepository(
                     reminderStrong = todoDto.reminderStrong
                 )
             ).toInt()
+            importedTodoIds += newTodoId
 
             relatedSubDtos.forEach { subDto ->
                 todoDao.insertSubTodoForImport(
@@ -454,6 +495,8 @@ class TodoRepository(
                 existingFingerprints.add(fp)
             }
         }
+
+        syncTodoIdsIfAutoEnabled(importedTodoIds)
 
         return ImportResult(
             total = backup.todos.size,
@@ -560,5 +603,63 @@ class TodoRepository(
 
     fun searchTodos(query: String): Flow<List<TodoItemWithSubTodos>> {
         return todoDao.searchTodosWithSubTodos(query.trim())
+    }
+
+    suspend fun syncTodoToCalendar(todoId: Int): CalendarSyncResult {
+        val todo = todoDao.getTodoWithSubTodosByIdSnapshot(todoId)
+            ?: return CalendarSyncResult(todoId, CalendarSyncStatus.Failed)
+        return syncTodoToCalendar(todo)
+    }
+
+    suspend fun syncTodosToCalendar(todoIds: List<Int>): CalendarSyncSummary {
+        if (todoIds.isEmpty()) return CalendarSyncSummary.from(emptyList())
+
+        val todosById = todoDao.getTodosWithSubTodosByIds(todoIds)
+            .associateBy { it.todoItem.id }
+        val results = todoIds
+            .mapNotNull(todosById::get)
+            .map { syncTodoToCalendar(it) }
+
+        return CalendarSyncSummary.from(results)
+    }
+
+    private suspend fun syncTodoToCalendar(todo: TodoItemWithSubTodos): CalendarSyncResult {
+        val result = calendarSyncManager.sync(todo)
+        if (result.status == CalendarSyncStatus.Synced && result.calendarEventId != null) {
+            todoDao.updateCalendarSyncState(
+                id = todo.todoItem.id,
+                calendarEventId = result.calendarEventId,
+                calendarSyncedAt = LocalDateTime.now()
+            )
+        }
+        return result
+    }
+
+    private suspend fun syncTodoByIdIfAutoEnabled(todoId: Int) {
+        if (!SettingsManager.isAutoAddToSystemCalendar) return
+        val todo = todoDao.getTodoWithSubTodosByIdSnapshot(todoId) ?: return
+        if (todo.todoItem.dueDate == null) {
+            deleteCalendarEventAndClearSyncState(todo.todoItem)
+            return
+        }
+        syncTodoToCalendar(todo)
+    }
+
+    private suspend fun syncTodoIdsIfAutoEnabled(todoIds: List<Int>) {
+        if (!SettingsManager.isAutoAddToSystemCalendar || todoIds.isEmpty()) return
+        todoIds.forEach { syncTodoByIdIfAutoEnabled(it) }
+    }
+
+    private suspend fun deleteCalendarEventAndClearSyncState(todo: TodoItem) {
+        if (todo.calendarEventId == null) return
+        if (calendarSyncManager.deleteEvent(todo)) {
+            todoDao.clearCalendarSyncState(todo.id)
+        }
+    }
+
+    private suspend fun deleteCalendarEventIfPresent(todo: TodoItem) {
+        if (todo.calendarEventId != null) {
+            calendarSyncManager.deleteEvent(todo)
+        }
     }
 }

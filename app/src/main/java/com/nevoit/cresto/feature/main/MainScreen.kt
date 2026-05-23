@@ -1,6 +1,9 @@
 package com.nevoit.cresto.feature.main
 
+import android.widget.Toast
 import androidx.activity.compose.BackHandler
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
@@ -43,6 +46,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
@@ -62,7 +66,9 @@ import com.kyant.shapes.Capsule
 import com.nevoit.cresto.R
 import com.nevoit.cresto.data.todo.TodoItem
 import com.nevoit.cresto.data.todo.TodoViewModel
+import com.nevoit.cresto.data.todo.calendar.TodoCalendarSyncManager
 import com.nevoit.cresto.feature.bottomsheet.BottomSheet
+import com.nevoit.cresto.feature.calendar.toToastMessage
 import com.nevoit.cresto.feature.screenextract.ScreenExtractEvents
 import com.nevoit.cresto.feature.settings.util.SettingsViewModel
 import com.nevoit.cresto.feature.sharetodo.TodoShareSheet
@@ -100,6 +106,7 @@ sealed class Screen(val route: String) {
 @Composable
 fun MainScreen() {
     val lifecycleOwner = LocalLifecycleOwner.current
+    val context = LocalContext.current
 
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
@@ -185,6 +192,37 @@ fun MainScreen() {
     val density = LocalDensity.current
 
     val viewModel: TodoViewModel = koinViewModel()
+    val requirePermission = stringResource(R.string.calendar_sync_permission_required)
+    val calendarPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        val granted = TodoCalendarSyncManager.REQUIRED_PERMISSIONS.all { permission ->
+            permissions[permission] == true
+        }
+        if (granted) {
+            viewModel.syncSelectedItemsToCalendar()
+        } else {
+            Toast.makeText(
+                context,
+                requirePermission,
+                Toast.LENGTH_SHORT
+            ).show()
+        }
+    }
+
+    LaunchedEffect(viewModel, context) {
+        viewModel.calendarSyncEvents.collect { summary ->
+            Toast.makeText(context, summary.toToastMessage(context), Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    fun syncSelectedItemsToCalendar() {
+        if (TodoCalendarSyncManager.hasCalendarPermissions(context)) {
+            viewModel.syncSelectedItemsToCalendar()
+        } else {
+            calendarPermissionLauncher.launch(TodoCalendarSyncManager.REQUIRED_PERMISSIONS)
+        }
+    }
 
     val bottomSheetState by viewModel.bottomSheetState.collectAsState()
 
@@ -472,7 +510,13 @@ fun MainScreen() {
                                 Box(
                                     modifier = Modifier
                                         .height(48.dp)
-                                        .width(48.dp),
+                                        .width(48.dp)
+                                        .clickable(
+                                            interactionSource = sharedInteractionSource,
+                                            indication = null
+                                        ) {
+                                            syncSelectedItemsToCalendar()
+                                        },
                                     contentAlignment = Alignment.Center
                                 ) {
                                     Icon(

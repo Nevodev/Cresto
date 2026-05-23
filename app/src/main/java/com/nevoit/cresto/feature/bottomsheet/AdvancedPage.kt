@@ -265,7 +265,7 @@ fun AdvancedPage(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(AppColors.pageBackgroundElevated)
+            .background(AppColors.elevatedPageBackground)
             .padding(horizontal = 12.dp)
     ) {
         val lazyListState = rememberLazyListState()
@@ -280,7 +280,7 @@ fun AdvancedPage(
                 ConfigTextField(
                     value = notesText,
                     onValueChange = onNotesChange,
-                    backgroundColor = AppColors.cardBackgroundElevated,
+                    backgroundColor = AppColors.elevatedCardBackground,
                     singleLine = false,
                     decorateText = stringResource(R.string.notes),
                     keyboardOptions = KeyboardOptions(
@@ -298,7 +298,7 @@ fun AdvancedPage(
                         modifier = Modifier
                             .fillMaxWidth()
                             .background(
-                                color = AppColors.cardBackgroundElevated,
+                                color = AppColors.elevatedCardBackground,
                                 shape = AppSpecs.cardShape
                             )
                             .padding(horizontal = 12.dp)
@@ -368,13 +368,13 @@ fun AdvancedPage(
             }
             item {
                 ConfigItemContainer(
-                    backgroundColor = AppColors.cardBackgroundElevated,
+                    backgroundColor = AppColors.elevatedCardBackground,
                     title = stringResource(R.string.time)
                 ) {
                     Column {
                         ConfigItem(title = stringResource(R.string.all_day)) {
                             GlasenseSwitch(
-                                backgroundColor = AppColors.cardBackgroundElevated,
+                                backgroundColor = AppColors.elevatedCardBackground,
                                 checked = isAllDayEnabled,
                                 onCheckedChange = { checked ->
                                     onAllDayEnabledChange(checked)
@@ -386,7 +386,7 @@ fun AdvancedPage(
                         Spacer(modifier = Modifier.height(8.dp))
                         ConfigItem(title = stringResource(R.string.time_range)) {
                             GlasenseSwitch(
-                                backgroundColor = AppColors.cardBackgroundElevated,
+                                backgroundColor = AppColors.elevatedCardBackground,
                                 checked = isTimeRangeEnabled,
                                 onCheckedChange = { checked ->
                                     onTimeRangeEnabledChange(checked)
@@ -518,7 +518,7 @@ fun AdvancedPage(
             }
             item {
                 ConfigItemContainer(
-                    backgroundColor = AppColors.cardBackgroundElevated,
+                    backgroundColor = AppColors.elevatedCardBackground,
                     title = stringResource(R.string.reminder)
                 ) {
                     Column {
@@ -559,7 +559,7 @@ fun AdvancedPage(
                         Spacer(modifier = Modifier.height(8.dp))
                         ConfigItem(title = stringResource(R.string.persistent_reminder)) {
                             GlasenseSwitch(
-                                backgroundColor = AppColors.cardBackgroundElevated,
+                                backgroundColor = AppColors.elevatedCardBackground,
                                 checked = reminderPersistent,
                                 onCheckedChange = onReminderPersistentChange
                             )
@@ -569,7 +569,7 @@ fun AdvancedPage(
                         Spacer(modifier = Modifier.height(8.dp))
                         ConfigItem(title = stringResource(R.string.strong_reminder)) {
                             GlasenseSwitch(
-                                backgroundColor = AppColors.cardBackgroundElevated,
+                                backgroundColor = AppColors.elevatedCardBackground,
                                 checked = reminderStrong,
                                 onCheckedChange = onReminderStrongChange
                             )
@@ -580,7 +580,7 @@ fun AdvancedPage(
             }
             item {
                 ConfigItemContainer(
-                    backgroundColor = AppColors.cardBackgroundElevated,
+                    backgroundColor = AppColors.elevatedCardBackground,
                     title = stringResource(R.string.repeat)
                 ) {
                     Column {
@@ -592,7 +592,7 @@ fun AdvancedPage(
                         Spacer(modifier = Modifier.height(8.dp))
                         ConfigItem(title = stringResource(R.string.postpone_after_expiry)) {
                             GlasenseSwitch(
-                                backgroundColor = AppColors.cardBackgroundElevated,
+                                backgroundColor = AppColors.elevatedCardBackground,
                                 checked = false,
                                 onCheckedChange = { })
                         }

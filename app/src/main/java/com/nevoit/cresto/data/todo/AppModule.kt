@@ -1,6 +1,7 @@
 package com.nevoit.cresto.data.todo
 
 import androidx.room.Room
+import com.nevoit.cresto.data.todo.calendar.TodoCalendarSyncManager
 import com.nevoit.cresto.data.todo.reminder.TodoAlarmScheduler
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.module.dsl.singleOf
@@ -21,6 +22,7 @@ val appModule = module {
 
     single { get<TodoDatabase>().todoDao() }
     single { TodoAlarmScheduler(androidContext()) }
+    single { TodoCalendarSyncManager(androidContext()) }
     singleOf(::TodoRepository)
     viewModelOf(::TodoViewModel)
 }
