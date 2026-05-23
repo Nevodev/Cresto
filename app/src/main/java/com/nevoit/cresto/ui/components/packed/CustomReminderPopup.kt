@@ -54,8 +54,8 @@ import com.nevoit.cresto.ui.components.glasense.GlasenseWheelPicker
 import com.nevoit.cresto.ui.components.glasense.PopupDirection
 import com.nevoit.cresto.ui.components.glasense.PopupState
 import com.nevoit.cresto.ui.components.glasense.ZeroWidthDivider
-import com.nevoit.glasense.core.animation.Springs
 import com.nevoit.glasense.core.component.Text
+import com.nevoit.glasense.theme.tokens.Springs
 
 private enum class ReminderCustomMode { Hour, Day }
 

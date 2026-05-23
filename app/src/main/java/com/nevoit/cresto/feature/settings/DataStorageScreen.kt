@@ -73,9 +73,9 @@ import com.nevoit.cresto.ui.components.packed.VGap
 import com.nevoit.glasense.core.component.Icon
 import com.nevoit.glasense.core.component.Text
 import com.nevoit.glasense.theme.GlasenseTheme
-import com.nevoit.glasense.theme.values.Amber400
-import com.nevoit.glasense.theme.values.Emerald400
-import com.nevoit.glasense.theme.values.Slate500
+import com.nevoit.glasense.theme.tokens.Amber400
+import com.nevoit.glasense.theme.tokens.Emerald400
+import com.nevoit.glasense.theme.tokens.Slate500
 import com.tencent.mmkv.MMKV
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch

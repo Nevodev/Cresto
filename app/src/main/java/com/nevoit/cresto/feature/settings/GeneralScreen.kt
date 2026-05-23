@@ -59,7 +59,7 @@ import com.nevoit.cresto.ui.components.packed.VGap
 import com.nevoit.glasense.core.component.Icon
 import com.nevoit.glasense.core.component.Text
 import com.nevoit.glasense.theme.GlasenseTheme
-import com.nevoit.glasense.theme.values.Slate500
+import com.nevoit.glasense.theme.tokens.Slate500
 import rikka.shizuku.Shizuku
 
 @Composable

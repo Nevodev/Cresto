@@ -33,9 +33,9 @@ import com.nevoit.cresto.theme.AppColors
 import com.nevoit.cresto.theme.AppSpecs
 import com.nevoit.cresto.ui.components.packed.rememberCupertinoDecaySpec
 import com.nevoit.cresto.ui.components.packed.rememberGlasenseSnapFlingBehavior
-import com.nevoit.glasense.core.animation.Springs
 import com.nevoit.glasense.core.component.Text
 import com.nevoit.glasense.theme.LocalGlasenseTextStyle
+import com.nevoit.glasense.theme.tokens.Springs
 import kotlin.math.absoluteValue
 import kotlin.math.sin
 

@@ -28,8 +28,8 @@ import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.unit.dp
 import com.kyant.shapes.Capsule
-import com.nevoit.glasense.core.animation.Springs
 import com.nevoit.glasense.theme.GlasenseTheme
+import com.nevoit.glasense.theme.tokens.Springs
 
 private const val TrackAlpha = 0.3f
 

@@ -36,7 +36,7 @@ import androidx.compose.ui.unit.constrainWidth
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.nevoit.cresto.theme.AppColors
-import com.nevoit.glasense.core.animation.Springs
+import com.nevoit.glasense.theme.tokens.Springs
 import kotlinx.coroutines.flow.distinctUntilChanged
 import java.time.DayOfWeek
 import java.time.LocalDate

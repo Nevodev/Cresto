@@ -6,10 +6,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalWindowInfo
-import com.nevoit.glasense.theme.values.Amber400
-import com.nevoit.glasense.theme.values.Pink400
-import com.nevoit.glasense.theme.values.Purple400
-import com.nevoit.glasense.theme.values.Rose400
+import com.nevoit.glasense.theme.tokens.Amber400
+import com.nevoit.glasense.theme.tokens.Pink400
+import com.nevoit.glasense.theme.tokens.Purple400
+import com.nevoit.glasense.theme.tokens.Rose400
 import io.github.vinceglb.confettikit.compose.ConfettiKit
 import io.github.vinceglb.confettikit.core.Party
 import io.github.vinceglb.confettikit.core.Position

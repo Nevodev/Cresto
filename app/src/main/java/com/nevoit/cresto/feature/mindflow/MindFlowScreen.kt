@@ -80,11 +80,11 @@ import com.nevoit.glasense.component.ProgressView
 import com.nevoit.glasense.core.component.Icon
 import com.nevoit.glasense.core.component.Text
 import com.nevoit.glasense.theme.GlasenseTheme
-import com.nevoit.glasense.theme.values.Blue600
-import com.nevoit.glasense.theme.values.Cyan500
-import com.nevoit.glasense.theme.values.Green500
-import com.nevoit.glasense.theme.values.Rose500
-import com.nevoit.glasense.theme.values.Yellow500
+import com.nevoit.glasense.theme.tokens.Blue600
+import com.nevoit.glasense.theme.tokens.Cyan500
+import com.nevoit.glasense.theme.tokens.Green500
+import com.nevoit.glasense.theme.tokens.Rose500
+import com.nevoit.glasense.theme.tokens.Yellow500
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 

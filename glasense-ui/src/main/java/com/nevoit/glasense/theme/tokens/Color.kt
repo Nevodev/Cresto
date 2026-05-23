@@ -1,4 +1,4 @@
-package com.nevoit.glasense.theme.values
+package com.nevoit.glasense.theme.tokens
 
 import androidx.compose.ui.graphics.Color
 

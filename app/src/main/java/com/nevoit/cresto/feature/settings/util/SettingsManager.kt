@@ -3,7 +3,7 @@ package com.nevoit.cresto.feature.settings.util
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.graphics.toArgb
-import com.nevoit.glasense.theme.values.Blue500
+import com.nevoit.glasense.theme.tokens.Blue500
 import com.tencent.mmkv.MMKV
 
 /**

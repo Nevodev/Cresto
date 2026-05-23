@@ -35,7 +35,7 @@ import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
 import com.nevoit.cresto.theme.AppColors
 import com.nevoit.cresto.util.deviceCornerShape
-import com.nevoit.glasense.core.animation.Springs
+import com.nevoit.glasense.theme.tokens.Springs
 import kotlinx.coroutines.launch
 
 @Composable

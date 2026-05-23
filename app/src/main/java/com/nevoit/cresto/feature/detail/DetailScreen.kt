@@ -90,7 +90,6 @@ import com.nevoit.cresto.theme.getFlagColor
 import com.nevoit.cresto.theme.isAppInDarkTheme
 import com.nevoit.cresto.ui.components.glasense.DialogItemData
 import com.nevoit.cresto.ui.components.glasense.DialogState
-import com.nevoit.cresto.ui.components.glasense.DimIndication
 import com.nevoit.cresto.ui.components.glasense.GlasenseBottomBar
 import com.nevoit.cresto.ui.components.glasense.GlasenseButton
 import com.nevoit.cresto.ui.components.glasense.GlasenseDialog
@@ -121,11 +120,12 @@ import com.nevoit.cresto.ui.modifier.pressIndentShaderEffect
 import com.nevoit.cresto.ui.modifier.shaderRipple
 import com.nevoit.cresto.util.formatRelativeTime
 import com.nevoit.glasense.component.ProgressView
-import com.nevoit.glasense.core.animation.Springs
 import com.nevoit.glasense.core.component.Icon
 import com.nevoit.glasense.core.component.Text
+import com.nevoit.glasense.core.interaction.DimIndication
 import com.nevoit.glasense.theme.GlasenseTheme
 import com.nevoit.glasense.theme.LocalGlasenseContentColor
+import com.nevoit.glasense.theme.tokens.Springs
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.time.LocalDate

@@ -49,7 +49,6 @@ import com.nevoit.cresto.data.todo.TodoReminderMode
 import com.nevoit.cresto.theme.AppButtonColors
 import com.nevoit.cresto.theme.AppColors
 import com.nevoit.cresto.theme.AppSpecs
-import com.nevoit.cresto.ui.components.glasense.DimIndication
 import com.nevoit.cresto.ui.components.glasense.GlasenseButton
 import com.nevoit.cresto.ui.components.glasense.GlasenseMenuItem
 import com.nevoit.cresto.ui.components.glasense.GlasenseSwitch
@@ -65,6 +64,7 @@ import com.nevoit.cresto.ui.components.packed.VGap
 import com.nevoit.cresto.ui.components.packed.displayText
 import com.nevoit.glasense.core.component.Icon
 import com.nevoit.glasense.core.component.Text
+import com.nevoit.glasense.core.interaction.DimIndication
 import com.nevoit.glasense.theme.GlasenseTheme
 import com.nevoit.glasense.theme.LocalGlasenseContentColor
 import java.time.LocalDate

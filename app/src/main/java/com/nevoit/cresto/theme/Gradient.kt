@@ -2,9 +2,9 @@ package com.nevoit.cresto.theme
 
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.colorspace.ColorSpaces
-import com.nevoit.glasense.theme.values.Blue500
-import com.nevoit.glasense.theme.values.Orange500
-import com.nevoit.glasense.theme.values.Violet500
+import com.nevoit.glasense.theme.tokens.Blue500
+import com.nevoit.glasense.theme.tokens.Orange500
+import com.nevoit.glasense.theme.tokens.Violet500
 
 val gradientColorsDark =
     listOf(

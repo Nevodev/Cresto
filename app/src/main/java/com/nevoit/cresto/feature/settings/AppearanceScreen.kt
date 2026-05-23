@@ -73,7 +73,6 @@ import com.nevoit.cresto.theme.AppButtonColors
 import com.nevoit.cresto.theme.AppColors
 import com.nevoit.cresto.theme.LocalGlasenseSettings
 import com.nevoit.cresto.theme.harmonize
-import com.nevoit.cresto.ui.components.glasense.DimIndication
 import com.nevoit.cresto.ui.components.glasense.GlasenseButton
 import com.nevoit.cresto.ui.components.glasense.GlasenseDynamicSmallTitle
 import com.nevoit.cresto.ui.components.glasense.GlasensePopup
@@ -93,25 +92,26 @@ import com.nevoit.cresto.ui.components.packed.PlainConfigItemContainer
 import com.nevoit.cresto.ui.components.packed.VGap
 import com.nevoit.glasense.core.component.Icon
 import com.nevoit.glasense.core.component.Text
+import com.nevoit.glasense.core.interaction.DimIndication
 import com.nevoit.glasense.overscroll.rememberOffsetOverscrollFactory
 import com.nevoit.glasense.theme.GlasenseTheme
-import com.nevoit.glasense.theme.values.Amber500
-import com.nevoit.glasense.theme.values.Blue500
-import com.nevoit.glasense.theme.values.Cyan500
-import com.nevoit.glasense.theme.values.Emerald500
-import com.nevoit.glasense.theme.values.Fuchsia500
-import com.nevoit.glasense.theme.values.Green500
-import com.nevoit.glasense.theme.values.Indigo500
-import com.nevoit.glasense.theme.values.Lime500
-import com.nevoit.glasense.theme.values.Orange500
-import com.nevoit.glasense.theme.values.Pink500
-import com.nevoit.glasense.theme.values.Purple500
-import com.nevoit.glasense.theme.values.Red500
-import com.nevoit.glasense.theme.values.Rose500
-import com.nevoit.glasense.theme.values.Sky500
-import com.nevoit.glasense.theme.values.Teal500
-import com.nevoit.glasense.theme.values.Violet500
-import com.nevoit.glasense.theme.values.Yellow500
+import com.nevoit.glasense.theme.tokens.Amber500
+import com.nevoit.glasense.theme.tokens.Blue500
+import com.nevoit.glasense.theme.tokens.Cyan500
+import com.nevoit.glasense.theme.tokens.Emerald500
+import com.nevoit.glasense.theme.tokens.Fuchsia500
+import com.nevoit.glasense.theme.tokens.Green500
+import com.nevoit.glasense.theme.tokens.Indigo500
+import com.nevoit.glasense.theme.tokens.Lime500
+import com.nevoit.glasense.theme.tokens.Orange500
+import com.nevoit.glasense.theme.tokens.Pink500
+import com.nevoit.glasense.theme.tokens.Purple500
+import com.nevoit.glasense.theme.tokens.Red500
+import com.nevoit.glasense.theme.tokens.Rose500
+import com.nevoit.glasense.theme.tokens.Sky500
+import com.nevoit.glasense.theme.tokens.Teal500
+import com.nevoit.glasense.theme.tokens.Violet500
+import com.nevoit.glasense.theme.tokens.Yellow500
 
 @Composable
 fun AppearanceScreen(settingsViewModel: SettingsViewModel = viewModel()) {

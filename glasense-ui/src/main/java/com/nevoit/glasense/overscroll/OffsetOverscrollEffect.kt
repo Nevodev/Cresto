@@ -32,7 +32,7 @@ import kotlinx.coroutines.launch
 import kotlin.math.abs
 import kotlin.math.sign
 
-
+// thanks kyant0 for provide these codes <3
 @Composable
 internal fun rememberOffsetOverscrollEffect(
     orientation: Orientation,

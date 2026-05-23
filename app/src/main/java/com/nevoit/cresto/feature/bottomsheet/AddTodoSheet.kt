@@ -59,7 +59,6 @@ import com.nevoit.cresto.theme.defaultEnterTransition
 import com.nevoit.cresto.theme.defaultExitTransition
 import com.nevoit.cresto.theme.getFlagColor
 import com.nevoit.cresto.ui.components.CustomAnimatedVisibility
-import com.nevoit.cresto.ui.components.glasense.DimIndication
 import com.nevoit.cresto.ui.components.glasense.GlasenseButton
 import com.nevoit.cresto.ui.components.glasense.GlasenseButtonAlt
 import com.nevoit.cresto.ui.components.glasense.glasenseHighlight
@@ -68,6 +67,7 @@ import com.nevoit.cresto.ui.components.packed.HorizontalPresetDatePicker
 import com.nevoit.cresto.ui.components.packed.VGap
 import com.nevoit.glasense.core.component.Icon
 import com.nevoit.glasense.core.component.Text
+import com.nevoit.glasense.core.interaction.DimIndication
 import com.nevoit.glasense.overscroll.rememberOffsetOverscrollFactory
 import com.nevoit.glasense.theme.GlasenseTheme
 import com.nevoit.glasense.theme.LocalGlasenseContentColor

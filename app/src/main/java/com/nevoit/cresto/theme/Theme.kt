@@ -22,8 +22,8 @@ import com.nevoit.glasense.theme.GlasenseSpecsStandard
 import com.nevoit.glasense.theme.GlasenseSpecsVariant
 import com.nevoit.glasense.theme.GlasenseTheme
 import com.nevoit.glasense.theme.purify
+import com.nevoit.glasense.theme.tokens.Blue500
 import com.nevoit.glasense.theme.umamify
-import com.nevoit.glasense.theme.values.Blue500
 
 val AppColors: GlasenseColors
     @Composable

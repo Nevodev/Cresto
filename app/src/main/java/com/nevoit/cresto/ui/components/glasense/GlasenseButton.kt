@@ -30,6 +30,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.kyant.shapes.Capsule
+import com.nevoit.glasense.core.interaction.DimIndication
 import com.nevoit.glasense.theme.LocalGlasenseContentColor
 
 @Immutable

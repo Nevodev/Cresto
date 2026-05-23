@@ -13,7 +13,7 @@ import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.unit.IntSize
-import com.nevoit.glasense.core.animation.Springs
+import com.nevoit.glasense.theme.tokens.Springs
 
 /**
  * A modifier that adds a 3D tilt effect when the element is pressed,

@@ -10,13 +10,13 @@ import com.materialkolor.dynamiccolor.ColorSpec
 import com.materialkolor.hct.Hct
 import com.materialkolor.scheme.DynamicScheme
 import com.materialkolor.scheme.SchemeTonalSpot
-import com.nevoit.glasense.theme.values.Blue500
-import com.nevoit.glasense.theme.values.Gray500
-import com.nevoit.glasense.theme.values.Green500
-import com.nevoit.glasense.theme.values.Orange500
-import com.nevoit.glasense.theme.values.Purple500
-import com.nevoit.glasense.theme.values.Red500
-import com.nevoit.glasense.theme.values.Yellow500
+import com.nevoit.glasense.theme.tokens.Blue500
+import com.nevoit.glasense.theme.tokens.Gray500
+import com.nevoit.glasense.theme.tokens.Green500
+import com.nevoit.glasense.theme.tokens.Orange500
+import com.nevoit.glasense.theme.tokens.Purple500
+import com.nevoit.glasense.theme.tokens.Red500
+import com.nevoit.glasense.theme.tokens.Yellow500
 
 @Composable
 fun getFlagColor(flag: Int): Color {
