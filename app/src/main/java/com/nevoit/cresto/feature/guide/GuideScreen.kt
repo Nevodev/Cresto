@@ -83,11 +83,11 @@ import com.nevoit.cresto.ui.components.glasense.GlasenseButtonAlt
 import com.nevoit.cresto.ui.components.glasense.glasenseHighlight
 import com.nevoit.cresto.ui.components.packed.VGap
 import com.nevoit.cresto.ui.modifier.tiltOnPress
-import com.nevoit.glasense.theme.Blue500
-import com.nevoit.glasense.theme.Indigo500
-import com.nevoit.glasense.theme.Pink400
-import com.nevoit.glasense.theme.Pink500
-import com.nevoit.glasense.theme.Purple500
+import com.nevoit.glasense.theme.values.Blue500
+import com.nevoit.glasense.theme.values.Indigo500
+import com.nevoit.glasense.theme.values.Pink400
+import com.nevoit.glasense.theme.values.Pink500
+import com.nevoit.glasense.theme.values.Purple500
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.math.sqrt

@@ -53,6 +53,7 @@ import com.nevoit.cresto.R
 import com.nevoit.cresto.theme.AppColors
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * A composable that represents a single entry item in a configuration or settings screen.
@@ -106,7 +107,7 @@ fun ConfigEntryItem(
                     // Custom click feedback animation.
                     scope.launch {
                         alphaValue = 0.5f
-                        delay(400)
+                        delay(400.milliseconds)
                         alphaValue = 1f
                     }
                     onClick()
@@ -239,7 +240,7 @@ fun AboutEntryItem(
                     // Custom click feedback animation.
                     scope.launch {
                         alphaValue = 0.5f
-                        delay(400)
+                        delay(400.milliseconds)
                         alphaValue = 1f
                     }
                     onClick()

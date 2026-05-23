@@ -184,7 +184,7 @@ fun GlasenseDialog(
             }
         }
 
-        BackHandler() { }
+        BackHandler { }
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             Box(
                 modifier = Modifier

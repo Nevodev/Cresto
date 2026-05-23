@@ -6,7 +6,6 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.os.Build
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import com.nevoit.cresto.R
@@ -16,11 +15,11 @@ import com.nevoit.cresto.data.todo.reminderDateTime
 import com.nevoit.cresto.feature.detail.DetailActivity
 import java.time.LocalDate
 import java.time.LocalTime
-import java.time.format.DateTimeFormatter
 import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 
 class TodoAlarmScheduler(
-    private val context: Context
+    context: Context
 ) {
     private val appContext = context.applicationContext
     private val alarmManager = appContext.getSystemService(AlarmManager::class.java)
@@ -48,7 +47,7 @@ class TodoAlarmScheduler(
 
         val pendingIntent = createPendingIntent(todo)
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && !alarmManager.canScheduleExactAlarms()) {
+        if (!alarmManager.canScheduleExactAlarms()) {
             try {
                 alarmManager.setAlarmClock(
                     AlarmManager.AlarmClockInfo(
@@ -95,16 +94,15 @@ class TodoAlarmScheduler(
     }
 
     fun hasNotificationPermission(): Boolean {
-        return Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU ||
-            ContextCompat.checkSelfPermission(
-                appContext,
-                Manifest.permission.POST_NOTIFICATIONS
-            ) == PackageManager.PERMISSION_GRANTED
+        return ContextCompat.checkSelfPermission(
+            appContext,
+            Manifest.permission.POST_NOTIFICATIONS
+        ) == PackageManager.PERMISSION_GRANTED
     }
 
     private fun createPendingIntent(todo: TodoItem): PendingIntent {
         val intent = Intent(appContext, TodoAlarmReceiver::class.java).apply {
-            setAction(ACTION_TODO_REMINDER)
+            this.action = ACTION_TODO_REMINDER
             putExtra(EXTRA_REMINDER_TODO_ID, todo.id)
             putExtra(EXTRA_REMINDER_TODO_TITLE, todo.title)
             putExtra(EXTRA_REMINDER_TODO_NOTES, todo.notes)
@@ -123,7 +121,7 @@ class TodoAlarmScheduler(
 
     private fun findPendingIntent(todoId: Int): PendingIntent? {
         val intent = Intent(appContext, TodoAlarmReceiver::class.java).apply {
-            setAction(ACTION_TODO_REMINDER)
+            this.action = ACTION_TODO_REMINDER
         }
 
         return PendingIntent.getBroadcast(
@@ -157,7 +155,8 @@ class TodoAlarmScheduler(
     }
 
     private fun TodoItem.buildStartReminderText(): String {
-        val start = startTime ?: return appContext.getString(R.string.reminder_notification_default_content)
+        val start =
+            startTime ?: return appContext.getString(R.string.reminder_notification_default_content)
         val startText = formatDateTime(dueDate, start)
         val endText = endTime?.format(REMINDER_TIME_FORMATTER)
 

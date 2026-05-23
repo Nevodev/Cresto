@@ -57,10 +57,10 @@ import com.nevoit.glasense.theme.GlasenseColors
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.android.awaitFrame
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlin.math.abs
+import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * A custom switch with a glassmorphism-style design.
@@ -215,7 +215,7 @@ fun GlasenseSwitch(
 ) {
     val liquidGlass = LocalGlasenseSettings.current.liquidGlass
     if (liquidGlass) {
-        val trackBackdrop = rememberLayerBackdrop() {
+        val trackBackdrop = rememberLayerBackdrop {
             drawRect(backgroundColor)
             drawContent()
         }
@@ -263,15 +263,12 @@ fun GlasenseSwitch(
 
                 var scaleJob: Job? = null
 
-                // 标记：是否正在执行 sync 动画
                 var isSyncing = false
 
                 val scaleProgress: Float
                     get() = ((1f - scaleAnim.value) / (1f - pressedScale)).coerceIn(0f, 1f)
 
                 fun press() {
-                    // 只有当没有正在进行的 sync 动画时，才重新开始变大
-                    // 这防止了连点时的动画冲突
                     if (!isSyncing) {
                         scaleJob?.cancel()
                         scaleJob = scope.launch {
@@ -281,7 +278,6 @@ fun GlasenseSwitch(
                 }
 
                 fun release() {
-                    // 如果正在 sync，绝对不能执行 release 缩小
                     if (isSyncing) return
 
                     scaleJob?.cancel()
@@ -299,38 +295,29 @@ fun GlasenseSwitch(
                     scope.launch {
                         val threshold = 1f + (pressedScale - 1f) * 0.5f
 
-                        // 1. 确保涨到足够大 (接管 press 的动画)
                         if (scaleAnim.value < threshold) {
                             try {
-                                kotlinx.coroutines.withTimeout(200) {
-                                    snapshotFlow { scaleAnim.value }
-                                        .filter { it >= threshold }
-                                        .first()
+                                kotlinx.coroutines.withTimeout(200.milliseconds) {
+                                    snapshotFlow { scaleAnim.value }.first { it >= threshold }
                                 }
-                            } catch (e: Exception) {
+                            } catch (_: Exception) {
                             }
                         }
 
-                        // 2. 开始位移
                         offsetAnim.animateTo(targetOffset, offsetSpec)
                     }
 
-                    // 3. 保持变大，直到位移结束
                     scaleJob?.cancel()
                     scaleJob = scope.launch {
                         val holdPressJob = launch {
                             scaleAnim.animateTo(pressedScale, scaleSpec)
                         }
 
-                        // 等待位移到达目标
                         awaitFrame()
                         if (offsetAnim.value != targetOffset) {
-                            snapshotFlow { offsetAnim.value }
-                                .filter { abs(it - targetOffset) < (moveDistance * 0.1f) }
-                                .first()
+                            snapshotFlow { offsetAnim.value }.first { abs(it - targetOffset) < (moveDistance * 0.1f) }
                         }
 
-                        // 位移完成，开始回弹缩小
                         holdPressJob.cancel()
                         scaleAnim.animateTo(1f, scaleSpec)
                         isSyncing = false
@@ -359,7 +346,7 @@ fun GlasenseSwitch(
                                     haptic.performHapticFeedback(HapticFeedbackType.ToggleOn)
                                     currentOnCheckedChange(!currentChecked)
                                     scope.launch {
-                                        delay(200)
+                                        delay(200.milliseconds)
                                         if (!physicsController.isSyncing) {
                                             physicsController.release()
                                         }

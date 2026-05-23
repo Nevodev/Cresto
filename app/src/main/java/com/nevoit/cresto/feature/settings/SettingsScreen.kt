@@ -46,10 +46,10 @@ import com.nevoit.cresto.ui.components.packed.ConfigContainer
 import com.nevoit.cresto.ui.components.packed.ConfigEntryItem
 import com.nevoit.cresto.ui.components.packed.PageContent
 import com.nevoit.cresto.ui.components.packed.VGap
-import com.nevoit.glasense.theme.Blue500
-import com.nevoit.glasense.theme.Pink400
-import com.nevoit.glasense.theme.Purple500
-import com.nevoit.glasense.theme.Slate500
+import com.nevoit.glasense.theme.values.Blue500
+import com.nevoit.glasense.theme.values.Pink400
+import com.nevoit.glasense.theme.values.Purple500
+import com.nevoit.glasense.theme.values.Slate500
 
 @Composable
 fun SettingsScreen() {

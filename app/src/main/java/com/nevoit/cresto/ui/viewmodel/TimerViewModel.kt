@@ -12,6 +12,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import java.util.Locale
+import kotlin.time.Duration.Companion.milliseconds
 
 class ModeTimerViewModel : ViewModel() {
     var setupMinutes by mutableIntStateOf(25)
@@ -72,7 +73,7 @@ class ModeTimerViewModel : ViewModel() {
                 val elapsedTime = System.currentTimeMillis() - startTime
                 val delayToNextSecond = 1000L - (elapsedTime % 1000L)
 
-                delay(delayToNextSecond)
+                delay(delayToNextSecond.milliseconds)
 
                 val now = System.currentTimeMillis()
                 val deltaSeconds = ((now - startTime) / 1000L).toInt()
@@ -117,7 +118,7 @@ class ModeTimerViewModel : ViewModel() {
         isPaused = false
         isFinished = false
         resetJob = viewModelScope.launch {
-            delay(500)
+            delay(500.milliseconds)
             currentSeconds = 0
             resetJob = null
         }

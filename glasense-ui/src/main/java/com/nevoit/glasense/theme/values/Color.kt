@@ -1,7 +1,6 @@
-package com.nevoit.glasense.theme
+package com.nevoit.glasense.theme.values
 
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.colorspace.ColorSpaces
 
 // Slate
 val Slate50 = Color(0xFFF8FAFC)
@@ -288,71 +287,3 @@ val Rose700 = Color(0xFFC70036)
 val Rose800 = Color(0xFFA50036)
 val Rose900 = Color(0xFF8B0836)
 val Rose950 = Color(0xFF4D0218)
-
-fun Color.adjustSaturationInOklab(factor: Float): Color {
-    val oklabColor = this.convert(ColorSpaces.Oklab)
-
-    val l = oklabColor.red
-    val a = oklabColor.green
-    val b = oklabColor.blue
-
-    val newA = a * factor
-    val newB = b * factor
-
-    val newOklabColor = Color(
-        red = l,
-        green = newA,
-        blue = newB,
-        alpha = this.alpha,
-        colorSpace = ColorSpaces.Oklab
-    )
-
-    return newOklabColor.convert(ColorSpaces.Srgb)
-}
-
-/**
- * Calculates what color (including alpha) when overlaid onto [background]
- * results in this color.
- *
- * The calculation follows the alpha blending formula:
- * Target = Foreground * Alpha + Background * (1 - Alpha)
- */
-fun Color.extractOverlay(background: Color): Color {
-    val tr = this.red
-    val tg = this.green
-    val tb = this.blue
-
-    val br = background.red
-    val bg = background.green
-    val bb = background.blue
-
-    // Calculate the minimum alpha needed for each channel to reach the target from the background
-    fun minAlpha(t: Float, b: Float): Float {
-        return when {
-            t > b -> (t - b) / (1f - b)
-            t < b -> (b - t) / b
-            else -> 0f
-        }
-    }
-
-    val ar = minAlpha(tr, br)
-    val ag = minAlpha(tg, bg)
-    val ab = minAlpha(tb, bb)
-
-    // The final alpha must be at least the maximum of the required alphas for each channel
-    val a = maxOf(ar, maxOf(ag, ab)).coerceIn(0f, 1f)
-
-    if (a <= 0f) return Color.Transparent
-
-    // Reverse the blending formula: Foreground = (Target - Background * (1 - Alpha)) / Alpha
-    val fr = (tr - br * (1f - a)) / a
-    val fg = (tg - bg * (1f - a)) / a
-    val fb = (tb - bb * (1f - a)) / a
-
-    return Color(
-        red = fr.coerceIn(0f, 1f),
-        green = fg.coerceIn(0f, 1f),
-        blue = fb.coerceIn(0f, 1f),
-        alpha = a
-    )
-}

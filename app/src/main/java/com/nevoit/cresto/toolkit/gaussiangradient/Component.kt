@@ -1,8 +1,6 @@
 package com.nevoit.cresto.toolkit.gaussiangradient
 
 import android.graphics.RuntimeShader
-import android.os.Build
-import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -22,7 +20,6 @@ import androidx.compose.ui.graphics.ShaderBrush
  * @return A Modifier with the gradient mask applied.
  */
 @Composable
-@RequiresApi(Build.VERSION_CODES.TIRAMISU)
 fun Modifier.smoothGradientMask(
     startColor: Color,
     endColor: Color,

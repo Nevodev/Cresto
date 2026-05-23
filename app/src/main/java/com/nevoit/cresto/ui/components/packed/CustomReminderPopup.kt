@@ -55,7 +55,6 @@ import com.nevoit.cresto.data.todo.TodoReminderMode
 import com.nevoit.cresto.theme.AppButtonColors
 import com.nevoit.cresto.theme.AppColors
 import com.nevoit.cresto.theme.AppSpecs
-import com.nevoit.cresto.theme.isAppInDarkTheme
 import com.nevoit.cresto.ui.components.glasense.GlasenseButton
 import com.nevoit.cresto.ui.components.glasense.GlasensePopup
 import com.nevoit.cresto.ui.components.glasense.GlasenseWheelPicker
@@ -304,8 +303,6 @@ private fun CustomReminderSegmentedControl(
         ),
         label = "CustomReminderSegmentedControlSelectedIndex"
     )
-
-    val darkTheme = isAppInDarkTheme()
 
     val indicatorColor = AppColors.segmentedControlIndicator
 

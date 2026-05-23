@@ -55,8 +55,8 @@ import com.nevoit.cresto.ui.components.packed.ConfigInfoHeader
 import com.nevoit.cresto.ui.components.packed.ConfigItemContainer
 import com.nevoit.cresto.ui.components.packed.PageContent
 import com.nevoit.cresto.ui.components.packed.VGap
-import com.nevoit.glasense.theme.Slate500
 import com.nevoit.glasense.theme.Springs
+import com.nevoit.glasense.theme.values.Slate500
 
 @Composable
 fun CreditsScreen() {

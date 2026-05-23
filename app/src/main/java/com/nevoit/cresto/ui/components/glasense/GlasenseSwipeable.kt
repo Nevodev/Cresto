@@ -341,9 +341,8 @@ fun GlasenseSwipeable(
                         coroutineScope.launch {
                             val currentOffset = flingOffset.value
                             val isFastSwipe = velocity < -velocityThreshold
-                            val actionToTrigger = deepSwipeAction
-                            if (actionToTrigger != null && ((isDeepSwipe && initialSwipeState == SwipeState.REVEALED) || (isFastSwipe && initialSwipeState == SwipeState.REVEALED))) {
-                                executeAction(actionToTrigger)
+                            if (deepSwipeAction != null && ((isDeepSwipe && initialSwipeState == SwipeState.REVEALED) || (isFastSwipe && initialSwipeState == SwipeState.REVEALED))) {
+                                executeAction(deepSwipeAction)
                             } else if ((currentOffset < snapThresholdPx || (isFastSwipe && currentOffset < 0)) && velocity <= 0) {
                                 swipeState = SwipeState.REVEALED
                                 val revealInitialVelocity =

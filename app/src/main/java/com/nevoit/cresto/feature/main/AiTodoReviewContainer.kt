@@ -9,7 +9,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
@@ -86,7 +85,7 @@ private data class ReviewTodoItem(
 )
 
 @Composable
-fun BoxScope.AiTodoReviewContainer(
+fun AiTodoReviewContainer(
     backdrop: Backdrop,
     pendingTodos: PendingAiTodos,
     onDismiss: () -> Unit,
@@ -108,7 +107,7 @@ fun BoxScope.AiTodoReviewContainer(
     val isDueTodayMarkerEnabled = SettingsManager.isDueTodayMarkerState.value
     val isOverdueMarkerEnabled = SettingsManager.isOverdueMarkerState.value
 
-    val availbaleHeight =
+    val availableHeight =
         LocalWindowInfo.current.containerDpSize.height - WindowInsets.statusBars.asPaddingValues()
             .calculateTopPadding() - WindowInsets.navigationBars.asPaddingValues()
             .calculateBottomPadding()
@@ -279,7 +278,7 @@ fun BoxScope.AiTodoReviewContainer(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 24.dp)
-                    .height(availbaleHeight * 0.7f)
+                    .height(availableHeight * 0.7f)
                     .graphicsLayer {
                         this.alpha = 0.8f * alpha.value
                     },
@@ -295,7 +294,7 @@ fun BoxScope.AiTodoReviewContainer(
                     }
                     .fillMaxWidth()
                     .padding(horizontal = 24.dp)
-                    .height(availbaleHeight * 0.7f)
+                    .height(availableHeight * 0.7f)
                     .clip(AppSpecs.dialogShape)
                     .drawBehind {
                         drawRect(

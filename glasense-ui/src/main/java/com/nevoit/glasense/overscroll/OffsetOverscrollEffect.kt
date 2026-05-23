@@ -149,7 +149,7 @@ class OffsetOverscrollEffect(
                 ).toFloat()
                 if (unconsumed != 0f) {
                     overscrollOffsetAnimation.snapTo(
-                        animationSpec.vectorize(Float.Companion.VectorConverter).getValueFromNanos(
+                        animationSpec.vectorize(Float.VectorConverter).getValueFromNanos(
                             frameTimeNanos,
                             AnimationVector(0f),
                             AnimationVector(0f),
@@ -200,7 +200,7 @@ class OffsetOverscrollEffect(
                 ).toFloat()
                 if (unconsumed != 0f) {
                     overscrollOffsetAnimation.snapTo(
-                        animationSpec.vectorize(Float.Companion.VectorConverter).getValueFromNanos(
+                        animationSpec.vectorize(Float.VectorConverter).getValueFromNanos(
                             frameTimeNanos,
                             AnimationVector(0f),
                             AnimationVector(0f),

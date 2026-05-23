@@ -83,7 +83,7 @@ fun LineThroughText(
         text = text,
         style = style,
         onTextLayout = { textLayoutResult = it },
-        modifier = modifier.drawWithContent() {
+        modifier = modifier.drawWithContent {
             drawContent()
 
             val layout = textLayoutResult ?: return@drawWithContent

@@ -1,5 +1,6 @@
 package com.nevoit.cresto.feature.settings.util
 
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 
@@ -9,7 +10,7 @@ class AISettingsViewModel : ViewModel() {
     val apiKey = mutableStateOf(SettingsManager.aiApiKey)
     val textModel = mutableStateOf(SettingsManager.aiTextModel)
     val multimodalModel = mutableStateOf(SettingsManager.aiMultimodalModel)
-    val lastSavedAt = mutableStateOf(0L)
+    val lastSavedAt = mutableLongStateOf(0L)
 
     fun onApiUrlChanged(value: String) {
         apiUrl.value = value
@@ -37,7 +38,7 @@ class AISettingsViewModel : ViewModel() {
         apiKey.value = SettingsManager.aiApiKey
         textModel.value = SettingsManager.aiTextModel
         multimodalModel.value = SettingsManager.aiMultimodalModel
-        lastSavedAt.value = System.currentTimeMillis()
+        lastSavedAt.longValue = System.currentTimeMillis()
     }
 
     fun saveSettings() {
@@ -50,7 +51,7 @@ class AISettingsViewModel : ViewModel() {
         SettingsManager.aiApiKey = newApiKey
         SettingsManager.aiTextModel = newTextModel
         SettingsManager.aiMultimodalModel = newMultimodalModel
-        lastSavedAt.value = System.currentTimeMillis()
+        lastSavedAt.longValue = System.currentTimeMillis()
     }
 
     private fun saveSettingsIfChanged() {

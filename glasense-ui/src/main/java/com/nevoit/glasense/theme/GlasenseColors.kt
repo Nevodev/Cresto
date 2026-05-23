@@ -6,6 +6,10 @@ import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.colorspace.ColorSpaces
+import com.nevoit.glasense.theme.values.Blue500
+import com.nevoit.glasense.theme.values.Green500
+import com.nevoit.glasense.theme.values.Red500
+import com.nevoit.glasense.theme.values.Yellow500
 import kotlin.math.PI
 import kotlin.math.atan2
 import kotlin.math.cos

@@ -95,23 +95,23 @@ import com.nevoit.cresto.ui.components.packed.PageContent
 import com.nevoit.cresto.ui.components.packed.PlainConfigItemContainer
 import com.nevoit.cresto.ui.components.packed.VGap
 import com.nevoit.glasense.overscroll.rememberOffsetOverscrollFactory
-import com.nevoit.glasense.theme.Amber500
-import com.nevoit.glasense.theme.Blue500
-import com.nevoit.glasense.theme.Cyan500
-import com.nevoit.glasense.theme.Emerald500
-import com.nevoit.glasense.theme.Fuchsia500
-import com.nevoit.glasense.theme.Green500
-import com.nevoit.glasense.theme.Indigo500
-import com.nevoit.glasense.theme.Lime500
-import com.nevoit.glasense.theme.Orange500
-import com.nevoit.glasense.theme.Pink500
-import com.nevoit.glasense.theme.Purple500
-import com.nevoit.glasense.theme.Red500
-import com.nevoit.glasense.theme.Rose500
-import com.nevoit.glasense.theme.Sky500
-import com.nevoit.glasense.theme.Teal500
-import com.nevoit.glasense.theme.Violet500
-import com.nevoit.glasense.theme.Yellow500
+import com.nevoit.glasense.theme.values.Amber500
+import com.nevoit.glasense.theme.values.Blue500
+import com.nevoit.glasense.theme.values.Cyan500
+import com.nevoit.glasense.theme.values.Emerald500
+import com.nevoit.glasense.theme.values.Fuchsia500
+import com.nevoit.glasense.theme.values.Green500
+import com.nevoit.glasense.theme.values.Indigo500
+import com.nevoit.glasense.theme.values.Lime500
+import com.nevoit.glasense.theme.values.Orange500
+import com.nevoit.glasense.theme.values.Pink500
+import com.nevoit.glasense.theme.values.Purple500
+import com.nevoit.glasense.theme.values.Red500
+import com.nevoit.glasense.theme.values.Rose500
+import com.nevoit.glasense.theme.values.Sky500
+import com.nevoit.glasense.theme.values.Teal500
+import com.nevoit.glasense.theme.values.Violet500
+import com.nevoit.glasense.theme.values.Yellow500
 
 @Composable
 fun AppearanceScreen(settingsViewModel: SettingsViewModel = viewModel()) {

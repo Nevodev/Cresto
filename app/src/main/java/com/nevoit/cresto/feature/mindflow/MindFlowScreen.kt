@@ -80,11 +80,11 @@ import com.nevoit.cresto.ui.components.packed.StrictText
 import com.nevoit.cresto.ui.components.packed.ZenCirclesBreathing
 import com.nevoit.cresto.ui.viewmodel.ModeTimerViewModel
 import com.nevoit.glasense.component.ProgressView
-import com.nevoit.glasense.theme.Blue600
-import com.nevoit.glasense.theme.Cyan500
-import com.nevoit.glasense.theme.Green500
-import com.nevoit.glasense.theme.Rose500
-import com.nevoit.glasense.theme.Yellow500
+import com.nevoit.glasense.theme.values.Blue600
+import com.nevoit.glasense.theme.values.Cyan500
+import com.nevoit.glasense.theme.values.Green500
+import com.nevoit.glasense.theme.values.Rose500
+import com.nevoit.glasense.theme.values.Yellow500
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 
@@ -111,7 +111,6 @@ fun BoxScope.MindFlowScreen(
 
     val isSmallTitleVisible by lazyListState.isScrolledPast(statusBarHeight + 24.dp)
 
-    val stats by viewModel.statistics.collectAsStateWithLifecycle()
     val dailyStats by viewModel.dailyStats.collectAsStateWithLifecycle()
     val todayStat = dailyStats.find { it.date == LocalDate.now() }
     val completedCount = todayStat?.count ?: 0

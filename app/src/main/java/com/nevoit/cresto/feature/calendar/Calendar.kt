@@ -264,7 +264,6 @@ private fun MonthGrid(
     ) {
         val spacingPx = spacing.toPx()
         val cellWidth = (size.width - spacingPx * 6) / 7f
-        val cellHeight = cellWidth
 
         for (row in 0 until 6) {
             for (col in 0 until 7) {
@@ -297,8 +296,8 @@ private fun MonthGrid(
                 val hasTodo = datesWithTodo.contains(date)
 
                 val x = col * (cellWidth + spacingPx)
-                val y = row * (cellHeight + spacingPx)
-                val cellCenter = Offset(x + cellWidth / 2f, y + cellHeight / 2f)
+                val y = row * (cellWidth + spacingPx)
+                val cellCenter = Offset(x + cellWidth / 2f, y + cellWidth / 2f)
 
                 if (isSelected || isToday) {
                     val bgColor = if (isSelected) selectedBgColor else todayBgColor

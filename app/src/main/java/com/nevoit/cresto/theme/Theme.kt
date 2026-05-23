@@ -18,7 +18,6 @@ import androidx.core.view.WindowCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.nevoit.cresto.feature.settings.util.SettingsManager
 import com.nevoit.cresto.feature.settings.util.SettingsViewModel
-import com.nevoit.glasense.theme.Blue500
 import com.nevoit.glasense.theme.GlasenseColors
 import com.nevoit.glasense.theme.GlasenseDarkPalette
 import com.nevoit.glasense.theme.GlasenseLightPalette
@@ -29,6 +28,7 @@ import com.nevoit.glasense.theme.LocalGlasenseColors
 import com.nevoit.glasense.theme.LocalGlasenseDarkTheme
 import com.nevoit.glasense.theme.LocalGlasenseSpecs
 import com.nevoit.glasense.theme.glasenseColorsFromScheme
+import com.nevoit.glasense.theme.values.Blue500
 
 private val DarkColorScheme = darkColorScheme(
     onBackground = Color.White,

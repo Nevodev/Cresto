@@ -48,9 +48,9 @@ import com.nevoit.cresto.ui.components.packed.ConfigItemContainer
 import com.nevoit.cresto.ui.components.packed.ConfigTextField
 import com.nevoit.cresto.ui.components.packed.PageContent
 import com.nevoit.cresto.ui.components.packed.VGap
-import com.nevoit.glasense.theme.Blue500
-import com.nevoit.glasense.theme.Pink400
-import com.nevoit.glasense.theme.Purple500
+import com.nevoit.glasense.theme.values.Blue500
+import com.nevoit.glasense.theme.values.Pink400
+import com.nevoit.glasense.theme.values.Purple500
 
 @Composable
 fun AIScreen(aiSettingsViewModel: AISettingsViewModel = viewModel()) {

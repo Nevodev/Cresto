@@ -25,7 +25,7 @@ fun rememberCupertinoDecaySpec(
     decelerationRate: Float = UIScrollViewDecelerationRateNormal
 ): DecayAnimationSpec<Float> {
     return remember(decelerationRate) {
-        CupertinoScrollDecayAnimationSpec(decelerationRate).generateDecayAnimationSpec<Float>()
+        CupertinoScrollDecayAnimationSpec(decelerationRate).generateDecayAnimationSpec()
     }
 }
 

@@ -705,14 +705,13 @@ fun MainScreen() {
 
         pendingAiTodos?.let { pendingTodos ->
             AiTodoReviewContainer(
+                backdrop = superBackdrop,
                 pendingTodos = pendingTodos,
-                onDismiss = { ScreenExtractEvents.clearPendingTodos() },
-                onInsert = { items ->
-                    viewModel.insertAiGeneratedTodos(items)
-                    ScreenExtractEvents.clearPendingTodos()
-                },
-                backdrop = superBackdrop
-            )
+                onDismiss = { ScreenExtractEvents.clearPendingTodos() }
+            ) { items ->
+                viewModel.insertAiGeneratedTodos(items)
+                ScreenExtractEvents.clearPendingTodos()
+            }
         }
     }
 }

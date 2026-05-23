@@ -333,7 +333,6 @@ fun CircularTimer(
             val angleInDegrees = i * 6f - 90f
             val angleInRad = Math.toRadians(angleInDegrees.toDouble())
 
-            i % 5 == 0
             val tickLength = 12.dp.toPx()
             val tickWidth = 2.dp.toPx()
 

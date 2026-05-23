@@ -169,7 +169,7 @@ fun Modifier.pressIndentShaderEffect(
     var pressAnimationJob by remember { mutableStateOf<Job?>(null) }
     var releaseAnimationJob by remember { mutableStateOf<Job?>(null) }
 
-    var size by remember { mutableStateOf(androidx.compose.ui.unit.IntSize.Zero) }
+    var size by remember { mutableStateOf(IntSize.Zero) }
     var touch by remember { mutableStateOf(Offset.Unspecified) }
 
     val radiusPx = with(density) { radiusDp.dp.toPx() }
