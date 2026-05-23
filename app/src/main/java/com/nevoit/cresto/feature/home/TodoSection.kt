@@ -42,7 +42,7 @@ import com.nevoit.cresto.theme.AppSpecs
 import com.nevoit.cresto.ui.components.glasense.DimIndication
 import com.nevoit.cresto.ui.components.glasense.SwipeableListState
 import com.nevoit.cresto.ui.components.packed.SwipeableTodoItem
-import com.nevoit.glasense.theme.Springs
+import com.nevoit.glasense.core.animation.Springs
 
 @Composable
 fun LazyItemScope.TodoListItemRow(

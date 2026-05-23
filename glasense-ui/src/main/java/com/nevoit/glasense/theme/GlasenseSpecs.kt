@@ -34,7 +34,7 @@ val GlasenseSpecsStandard = GlasenseSpecs(
 val GlasenseSpecsVariant = GlasenseSpecs(
     cardCorner = 16.dp,
     cardShape = RoundedRectangle(16.dp),
-    buttonCorner = 1000000.dp,
+    buttonCorner = Dp.Infinity,
     buttonShape = Capsule(),
     textFieldCorner = 16.dp,
     textFieldShape = RoundedRectangle(16.dp),
@@ -42,4 +42,4 @@ val GlasenseSpecsVariant = GlasenseSpecs(
     dialogShape = RoundedRectangle(24.dp)
 )
 
-val LocalGlasenseSpecs = staticCompositionLocalOf { GlasenseSpecsStandard }
+internal val LocalGlasenseSpecs = staticCompositionLocalOf { GlasenseSpecsStandard }

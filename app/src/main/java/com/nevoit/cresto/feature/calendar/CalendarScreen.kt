@@ -101,7 +101,7 @@ import com.nevoit.cresto.ui.components.myScaleIn
 import com.nevoit.cresto.ui.components.myScaleOut
 import com.nevoit.cresto.ui.components.packed.PageContent
 import com.nevoit.cresto.ui.components.packed.VGap
-import com.nevoit.glasense.theme.Springs
+import com.nevoit.glasense.core.animation.Springs
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.YearMonth

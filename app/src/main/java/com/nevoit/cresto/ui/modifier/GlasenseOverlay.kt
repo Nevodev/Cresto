@@ -1,4 +1,4 @@
-package com.nevoit.glasense.modifier
+package com.nevoit.cresto.ui.modifier
 
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithContent

@@ -1,7 +1,6 @@
 package com.nevoit.glasense.theme
 
 import android.util.Log
-import androidx.compose.material3.ColorScheme
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
@@ -104,48 +103,7 @@ val GlasenseDarkPalette = GlasenseColors(
     segmentedControlIndicator = Color(0xFF636366)
 )
 
-fun glasenseColorsFromScheme(scheme: ColorScheme, isDark: Boolean): GlasenseColors {
-    val pageBackground = if (isDark) Color.Black else scheme.surfaceContainer
-    val cardBackground = if (isDark) scheme.surfaceContainer else scheme.surface
-
-    val pageBackgroundElevated = if (isDark) scheme.surfaceContainer else pageBackground
-    val cardBackgroundElevated = if (isDark) scheme.surfaceContainerHigh else cardBackground
-
-    val contentColor = if (isDark) Color.White else Color.Black
-
-    val scrimLight = contentColor.copy(alpha = if (isDark) 0.05f else 0.025f)
-    val scrimNormal = contentColor.copy(alpha = if (isDark) 0.1f else 0.05f)
-    val scrimMedium = contentColor.copy(alpha = if (isDark) 0.2f else 0.1f)
-    val scrimBold = contentColor.copy(alpha = if (isDark) 0.4f else 0.2f)
-
-    return GlasenseColors(
-        activeTrack = scheme.primary,
-        inactiveTrack = scheme.surfaceContainerHighest,
-        activeThumb = scheme.onPrimary,
-        inactiveThumb = scheme.outline,
-        pageBackground = pageBackground,
-        cardBackground = cardBackground,
-        elevatedPageBackground = pageBackgroundElevated,
-        elevatedCardBackground = cardBackgroundElevated,
-        scrimLight = scrimLight,
-        scrimNormal = scrimNormal,
-        scrimMedium = scrimMedium,
-        scrimBold = scrimBold,
-        primary = scheme.primary,
-        onPrimary = scheme.onPrimary,
-        content = contentColor,
-        contentVariant = contentColor.copy(.5f),
-        highlightText = scheme.tertiary.purify(0.8f),
-        error = scheme.error.umamify(1.5f),
-        onError = scheme.onError.umamify(1.5f),
-        segmentedControlBackground = scheme.secondaryContainer,
-        onSegmentedControlBackground = scheme.onSecondaryContainer,
-        segmentedControlIndicator = scheme.secondary,
-        onSegmentedControlIndicator = scheme.onSecondary
-    )
-}
-
-val LocalGlasenseColors = staticCompositionLocalOf { GlasenseLightPalette }
+internal val LocalGlasenseColors = staticCompositionLocalOf { GlasenseLightPalette }
 
 data class OklchColor(
     val l: Float,

@@ -2,7 +2,7 @@ package com.nevoit.cresto.ui.components.glasense.material
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
-import com.nevoit.glasense.theme.LocalGlasenseDarkTheme
+import com.nevoit.glasense.theme.GlasenseTheme
 
 @Immutable
 data class Vec4(
@@ -61,55 +61,55 @@ object MaterialRecipes {
 
     @Composable
     fun ultraThin(
-        isDark: Boolean = LocalGlasenseDarkTheme.current,
+        isDark: Boolean = GlasenseTheme.darkTheme,
         extraBrightness: Float = 0f
     ): MaterialRecipe =
         if (isDark) UltraThinDark(extraBrightness) else UltraThinLight(extraBrightness)
 
     @Composable
     fun thin(
-        isDark: Boolean = LocalGlasenseDarkTheme.current,
+        isDark: Boolean = GlasenseTheme.darkTheme,
         extraBrightness: Float = 0f
     ): MaterialRecipe =
         if (isDark) ThinDark(extraBrightness) else ThinLight(extraBrightness)
 
     @Composable
     fun regular(
-        isDark: Boolean = LocalGlasenseDarkTheme.current,
+        isDark: Boolean = GlasenseTheme.darkTheme,
         extraBrightness: Float = 0f
     ): MaterialRecipe =
         if (isDark) RegularDark(extraBrightness) else RegularLight(extraBrightness)
 
     @Composable
     fun medium(
-        isDark: Boolean = LocalGlasenseDarkTheme.current,
+        isDark: Boolean = GlasenseTheme.darkTheme,
         extraBrightness: Float = 0f
     ): MaterialRecipe =
         if (isDark) MediumDark(extraBrightness) else MediumLight(extraBrightness)
 
     @Composable
     fun thick(
-        isDark: Boolean = LocalGlasenseDarkTheme.current,
+        isDark: Boolean = GlasenseTheme.darkTheme,
         extraBrightness: Float = 0f
     ): MaterialRecipe =
         if (isDark) ThickDark(extraBrightness) else ThickLight(extraBrightness)
 
     @Composable
     fun chrome(
-        isDark: Boolean = LocalGlasenseDarkTheme.current,
+        isDark: Boolean = GlasenseTheme.darkTheme,
         extraBrightness: Float = 0f
     ): MaterialRecipe =
         if (isDark) ChromeDark(extraBrightness) else ChromeLight(extraBrightness)
 
     @Composable
     fun appBar(
-        isDark: Boolean = LocalGlasenseDarkTheme.current
+        isDark: Boolean = GlasenseTheme.darkTheme
     ): MaterialRecipe =
         if (isDark) ChromeDark else ChromeLight
 
     @Composable
     fun menu(
-        isDark: Boolean = LocalGlasenseDarkTheme.current
+        isDark: Boolean = GlasenseTheme.darkTheme
     ): MaterialRecipe =
         if (isDark) RegularDark else RegularLight
 }

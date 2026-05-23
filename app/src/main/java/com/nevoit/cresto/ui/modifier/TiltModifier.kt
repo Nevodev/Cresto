@@ -13,7 +13,7 @@ import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.unit.IntSize
-import com.nevoit.glasense.theme.Springs
+import com.nevoit.glasense.core.animation.Springs
 
 /**
  * A modifier that adds a 3D tilt effect when the element is pressed,
@@ -84,7 +84,7 @@ fun Modifier.tiltOnPress(
                             tapOffset = change.position
                         } else {
                             val releasedInside = change.position.x in 0f..size.width.toFloat() &&
-                                change.position.y in 0f..size.height.toFloat()
+                                    change.position.y in 0f..size.height.toFloat()
                             if (isPressed && releasedInside) onClick()
                             isPressed = false
                         }

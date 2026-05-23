@@ -28,9 +28,8 @@ import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.unit.dp
 import com.kyant.shapes.Capsule
-import com.nevoit.glasense.theme.LocalGlasenseColors
-import com.nevoit.glasense.theme.LocalGlasenseDarkTheme
-import com.nevoit.glasense.theme.Springs
+import com.nevoit.glasense.core.animation.Springs
+import com.nevoit.glasense.theme.GlasenseTheme
 
 private const val TrackAlpha = 0.3f
 
@@ -42,7 +41,7 @@ enum class ProgressViewStyle {
 @Composable
 fun ProgressView(
     modifier: Modifier = Modifier,
-    dark: Boolean = !LocalGlasenseDarkTheme.current
+    dark: Boolean = !GlasenseTheme.darkTheme
 ) {
     IndeterminateProgressView(
         modifier = modifier,
@@ -55,7 +54,7 @@ fun ProgressView(
     modifier: Modifier = Modifier,
     value: Float,
     progressViewStyle: ProgressViewStyle = ProgressViewStyle.Linear,
-    color: Color = LocalGlasenseColors.current.primary
+    color: Color = GlasenseTheme.colors.primary
 ) {
     when (progressViewStyle) {
         ProgressViewStyle.Linear -> LinearDeterminateProgressView(

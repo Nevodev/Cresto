@@ -1,4 +1,4 @@
-package com.nevoit.glasense.theme
+package com.nevoit.glasense.core.animation
 
 import androidx.compose.animation.core.SpringSpec
 import androidx.compose.animation.core.spring

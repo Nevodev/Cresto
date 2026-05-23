@@ -2,6 +2,7 @@ package com.nevoit.glasense.theme.values
 
 import androidx.compose.ui.graphics.Color
 
+// these colors are from tailwind CSS
 // Slate
 val Slate50 = Color(0xFFF8FAFC)
 val Slate100 = Color(0xFFF1F5F9)
