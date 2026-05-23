@@ -2,7 +2,6 @@ package com.nevoit.cresto.theme
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.colorspace.ColorSpaces
 import androidx.compose.ui.graphics.toArgb
@@ -11,7 +10,6 @@ import com.materialkolor.dynamiccolor.ColorSpec
 import com.materialkolor.hct.Hct
 import com.materialkolor.scheme.DynamicScheme
 import com.materialkolor.scheme.SchemeTonalSpot
-import com.nevoit.cresto.feature.settings.util.SettingsManager
 import com.nevoit.glasense.theme.values.Blue500
 import com.nevoit.glasense.theme.values.Gray500
 import com.nevoit.glasense.theme.values.Green500
@@ -37,11 +35,8 @@ fun getFlagColor(flag: Int): Color {
 
 @Composable
 fun harmonize(color: Color): Color {
-    val isUseDynamicColor by SettingsManager.isUseDynamicColorState
-    val primary = AppColors.primary
-
-    return if (isUseDynamicColor) {
-        color.harmonizeWith(primary)
+    return if (LocalGlasenseSettings.current.dynamicColor) {
+        color.harmonizeWith(AppColors.primary)
     } else {
         color
     }

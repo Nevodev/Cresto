@@ -6,12 +6,14 @@ import androidx.compose.runtime.staticCompositionLocalOf
 @Immutable
 data class GlasenseSettings(
     val liquidGlass: Boolean,
-    val liteMode: Boolean
+    val liteMode: Boolean,
+    val dynamicColor: Boolean
 )
 
 val LocalGlasenseSettings = staticCompositionLocalOf {
     GlasenseSettings(
         liquidGlass = false,
-        liteMode = false
+        liteMode = false,
+        dynamicColor = false
     )
 }

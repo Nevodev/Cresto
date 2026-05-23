@@ -131,7 +131,8 @@ fun GlasenseTheme(
     val glasenseSettings = remember(liquidGlass, liteMode) {
         GlasenseSettings(
             liquidGlass = liquidGlass,
-            liteMode = liteMode
+            liteMode = liteMode,
+            dynamicColor = dynamicColor
         )
     }
 
