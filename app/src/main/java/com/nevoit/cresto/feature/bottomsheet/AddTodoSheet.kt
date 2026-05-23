@@ -16,7 +16,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -46,7 +45,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -59,9 +57,8 @@ import com.nevoit.cresto.theme.defaultEnterTransition
 import com.nevoit.cresto.theme.defaultExitTransition
 import com.nevoit.cresto.theme.getFlagColor
 import com.nevoit.cresto.ui.components.CustomAnimatedVisibility
-import com.nevoit.cresto.ui.components.glasense.GlasenseButton
 import com.nevoit.cresto.ui.components.glasense.GlasenseButtonAlt
-import com.nevoit.cresto.ui.components.glasense.glasenseHighlight
+import com.nevoit.cresto.ui.components.glasense.GlasenseModalTopBar
 import com.nevoit.cresto.ui.components.packed.HorizontalFlagPicker
 import com.nevoit.cresto.ui.components.packed.HorizontalPresetDatePicker
 import com.nevoit.glasense.core.component.Icon
@@ -130,55 +127,25 @@ fun AddTodoSheet(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         VGap()
-        // Header row with close, title, and add buttons.
-        Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-            // Close button.
-            GlasenseButton(
-                enabled = true,
-                shape = CircleShape,
-                onClick = { onClose() },
-                modifier = Modifier
-                    .width(48.dp)
-                    .height(48.dp),
-                colors = AppButtonColors.action(),
-            ) {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_cross),
+        GlasenseModalTopBar(
+            leading = {
+                Action(
+                    icon = painterResource(id = R.drawable.ic_cross),
+                    contentDescription = stringResource(R.string.cancel),
+                    onClick = onClose
+                )
+            },
+            title = stringResource(R.string.new_todo),
+            trailing = {
+                Action(
+                    icon = painterResource(id = R.drawable.ic_checkmark),
                     contentDescription = stringResource(R.string.done),
-                    modifier = Modifier.width(28.dp)
+                    onClick = onAdd,
+                    colors = AppButtonColors.primary(),
+                    highlight = true
                 )
             }
-            // Title text.
-            Text(
-                text = stringResource(R.string.new_todo),
-                modifier = Modifier.weight(1f),
-                textAlign = TextAlign.Center,
-                style = GlasenseTheme.type.smallTitle
-            )
-            // Add button with a custom border.
-            GlasenseButton(
-                enabled = true,
-                shape = CircleShape,
-                onClick = onAdd,
-                modifier = Modifier
-                    .width(48.dp)
-                    .height(48.dp),
-                colors = AppButtonColors.primary()
-            ) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .glasenseHighlight(48.dp), contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_checkmark),
-                        contentDescription = stringResource(R.string.done),
-                        modifier = Modifier.width(28.dp)
-                    )
-                }
-
-            }
-        }
+        )
         VGap()
         // Text field
         Box(

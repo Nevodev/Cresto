@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
@@ -59,7 +58,6 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -75,12 +73,12 @@ import com.nevoit.cresto.theme.LocalGlasenseSettings
 import com.nevoit.cresto.theme.harmonize
 import com.nevoit.cresto.ui.components.glasense.GlasenseButton
 import com.nevoit.cresto.ui.components.glasense.GlasenseDynamicSmallTitle
+import com.nevoit.cresto.ui.components.glasense.GlasenseModalTopBar
 import com.nevoit.cresto.ui.components.glasense.GlasensePopup
 import com.nevoit.cresto.ui.components.glasense.GlasenseSwitch
 import com.nevoit.cresto.ui.components.glasense.PopupDirection
 import com.nevoit.cresto.ui.components.glasense.PopupState
 import com.nevoit.cresto.ui.components.glasense.extend.overscrollSpacer
-import com.nevoit.cresto.ui.components.glasense.glasenseHighlight
 import com.nevoit.cresto.ui.components.glasense.isScrolledPast
 import com.nevoit.cresto.ui.components.packed.ColorModeSelector
 import com.nevoit.cresto.ui.components.packed.ConfigInfoHeader
@@ -386,65 +384,36 @@ fun AppearanceScreen(settingsViewModel: SettingsViewModel = viewModel()) {
             anchorGap = 12.dp,
             direction = PopupDirection.Up
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                GlasenseButton(
-                    enabled = true,
-                    shape = CircleShape,
-                    onClick = {
-                        pendingThemePrimaryColor = currentThemePrimaryColor
-                        showColorPicker = false
-                    },
-                    modifier = Modifier
-                        .width(48.dp)
-                        .height(48.dp),
-                    colors = AppButtonColors.action(),
-                ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_cross),
+            GlasenseModalTopBar(
+                leading = {
+                    Action(
+                        icon = painterResource(id = R.drawable.ic_cross),
                         contentDescription = stringResource(R.string.cancel),
-                        modifier = Modifier.width(28.dp)
+                        onClick = {
+                            pendingThemePrimaryColor = currentThemePrimaryColor
+                            showColorPicker = false
+                        }
+                    )
+                },
+                title = stringResource(R.string.custom_primary_color),
+                trailing = {
+                    Action(
+                        icon = painterResource(id = R.drawable.ic_checkmark),
+                        contentDescription = stringResource(R.string.done),
+                        onClick = {
+                            if (pendingThemePrimaryColor != currentThemePrimaryColor) {
+                                settingsViewModel.onThemePrimaryColorChanged(
+                                    pendingThemePrimaryColor
+                                )
+                            }
+                            showColorPicker = false
+                        },
+                        colors = AppButtonColors.primary()
+                            .copy(containerColor = Color(pendingThemePrimaryColor)),
+                        highlight = true
                     )
                 }
-                Text(
-                    text = stringResource(R.string.custom_primary_color),
-                    modifier = Modifier.weight(1f),
-                    textAlign = TextAlign.Center,
-                    style = GlasenseTheme.type.smallTitle
-                )
-                GlasenseButton(
-                    enabled = true,
-                    shape = CircleShape,
-                    onClick = {
-                        if (pendingThemePrimaryColor != currentThemePrimaryColor) {
-                            settingsViewModel.onThemePrimaryColorChanged(
-                                pendingThemePrimaryColor
-                            )
-                        }
-                        showColorPicker = false
-                    },
-                    modifier = Modifier
-                        .width(48.dp)
-                        .height(48.dp),
-                    colors = AppButtonColors.primary()
-                        .copy(containerColor = Color(pendingThemePrimaryColor))
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .glasenseHighlight(48.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_checkmark),
-                            contentDescription = stringResource(R.string.done),
-                            modifier = Modifier.width(28.dp)
-                        )
-                    }
-                }
-            }
+            )
             VGap()
             val hapticController = LocalHapticFeedback.current
 

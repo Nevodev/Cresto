@@ -3,12 +3,9 @@ package com.nevoit.cresto.ui.components.packed
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
@@ -25,22 +22,17 @@ import androidx.compose.ui.platform.LocalLocale
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.nevoit.cresto.R
 import com.nevoit.cresto.theme.AppButtonColors
 import com.nevoit.cresto.theme.AppColors
 import com.nevoit.cresto.theme.AppSpecs
-import com.nevoit.cresto.ui.components.glasense.GlasenseButton
+import com.nevoit.cresto.ui.components.glasense.GlasenseModalTopBar
 import com.nevoit.cresto.ui.components.glasense.GlasensePopup
 import com.nevoit.cresto.ui.components.glasense.GlasenseWheelPicker
 import com.nevoit.cresto.ui.components.glasense.PopupDirection
 import com.nevoit.cresto.ui.components.glasense.PopupState
-import com.nevoit.cresto.ui.components.glasense.glasenseHighlight
 import com.nevoit.glasense.core.component.HDivider
-import com.nevoit.glasense.core.component.Icon
-import com.nevoit.glasense.core.component.Text
-import com.nevoit.glasense.theme.GlasenseTheme
 import java.time.LocalDate
 import java.time.Month
 import java.time.YearMonth
@@ -122,62 +114,33 @@ fun DueDatePicker(
         anchorGap = 12.dp,
         direction = direction
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            GlasenseButton(
-                enabled = true,
-                shape = CircleShape,
-                onClick = onDismiss,
-                modifier = Modifier
-                    .width(48.dp)
-                    .height(48.dp),
-                colors = AppButtonColors.action(),
-            ) {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_cross),
+        GlasenseModalTopBar(
+            leading = {
+                Action(
+                    icon = painterResource(id = R.drawable.ic_cross),
                     contentDescription = stringResource(R.string.cancel),
-                    modifier = Modifier.width(28.dp)
+                    onClick = onDismiss
+                )
+            },
+            title = stringResource(R.string.select_due_date),
+            trailing = {
+                Action(
+                    icon = painterResource(id = R.drawable.ic_checkmark),
+                    contentDescription = stringResource(R.string.done),
+                    onClick = {
+                        if (selectedYearIndex == 0) {
+                            onDateSelected(null)
+                        } else {
+                            val year = selectedYearIndex - 1 + (currentYear - 1)
+                            onDateSelected(LocalDate.of(year, selectedMonth, selectedDay))
+                        }
+                        onDismiss()
+                    },
+                    colors = AppButtonColors.primary(),
+                    highlight = true
                 )
             }
-            Text(
-                text = stringResource(R.string.select_due_date),
-                modifier = Modifier.weight(1f),
-                textAlign = TextAlign.Center,
-                style = GlasenseTheme.type.smallTitle
-            )
-            GlasenseButton(
-                enabled = true,
-                shape = CircleShape,
-                onClick = {
-                    if (selectedYearIndex == 0) {
-                        onDateSelected(null)
-                    } else {
-                        val year = selectedYearIndex - 1 + (currentYear - 1)
-                        onDateSelected(LocalDate.of(year, selectedMonth, selectedDay))
-                    }
-                    onDismiss()
-                },
-                modifier = Modifier
-                    .width(48.dp)
-                    .height(48.dp),
-                colors = AppButtonColors.primary()
-            ) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .glasenseHighlight(48.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_checkmark),
-                        contentDescription = stringResource(R.string.done),
-                        modifier = Modifier.width(28.dp)
-                    )
-                }
-            }
-        }
+        )
         Box {
             Row(
                 modifier = Modifier

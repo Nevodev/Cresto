@@ -3,7 +3,6 @@ package com.nevoit.cresto.feature.detail
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -13,10 +12,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -35,11 +31,10 @@ import androidx.compose.ui.unit.dp
 import com.kyant.shapes.Capsule
 import com.nevoit.cresto.R
 import com.nevoit.cresto.data.todo.TodoReminderMode
-import com.nevoit.cresto.theme.AppButtonColors
 import com.nevoit.cresto.theme.AppColors
 import com.nevoit.cresto.ui.components.glasense.GlasenseBottomSheet
-import com.nevoit.cresto.ui.components.glasense.GlasenseButton
 import com.nevoit.cresto.ui.components.glasense.GlasenseMenuItem
+import com.nevoit.cresto.ui.components.glasense.GlasenseModalTopBar
 import com.nevoit.cresto.ui.components.glasense.GlasenseSwitch
 import com.nevoit.cresto.ui.components.glasense.MenuDivider
 import com.nevoit.cresto.ui.components.glasense.MenuItemData
@@ -47,11 +42,9 @@ import com.nevoit.cresto.ui.components.packed.ConfigItem
 import com.nevoit.cresto.ui.components.packed.ConfigItemContainer
 import com.nevoit.cresto.ui.components.packed.TodoReminderConfig
 import com.nevoit.cresto.ui.components.packed.displayText
-import com.nevoit.glasense.core.component.Icon
 import com.nevoit.glasense.core.component.Text
 import com.nevoit.glasense.core.component.VDivider
 import com.nevoit.glasense.core.interaction.DimIndication
-import com.nevoit.glasense.theme.GlasenseTheme
 import java.time.LocalTime
 
 @Composable
@@ -196,32 +189,17 @@ fun DetailReminderBottomSheet(
                 .padding(horizontal = 12.dp)
                 .padding(top = 12.dp, bottom = navigationBarHeight + 12.dp)
         ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(48.dp)
-            ) {
-                GlasenseButton(
-                    enabled = true,
-                    shape = CircleShape,
-                    onClick = slideOut,
-                    modifier = Modifier
-                        .size(48.dp)
-                        .align(Alignment.TopStart),
-                    colors = AppButtonColors.action()
-                ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_forward_nav),
+            GlasenseModalTopBar(
+                leading = {
+                    Action(
+                        icon = painterResource(id = R.drawable.ic_forward_nav),
                         contentDescription = stringResource(R.string.back),
-                        modifier = Modifier.width(32.dp)
+                        onClick = slideOut,
+                        iconSize = 32.dp
                     )
-                }
-                Text(
-                    text = stringResource(R.string.reminder),
-                    modifier = Modifier.align(Alignment.Center),
-                    style = GlasenseTheme.type.smallTitle
-                )
-            }
+                },
+                title = stringResource(R.string.reminder)
+            )
             Spacer(modifier = Modifier.height(12.dp))
             ConfigItemContainer(
                 backgroundColor = AppColors.elevatedCardBackground

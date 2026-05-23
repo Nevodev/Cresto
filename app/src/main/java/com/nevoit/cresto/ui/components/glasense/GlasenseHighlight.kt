@@ -7,6 +7,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Outline
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.drawOutline
 import androidx.compose.ui.graphics.drawscope.ContentDrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
@@ -23,30 +24,35 @@ import com.kyant.shapes.RoundedRectangle
 fun Modifier.glasenseHighlight(
     cornerRadius: Dp,
     strokeWidth: Dp = 1.5.dp
-): Modifier = this then GlasenseHighlightElement(cornerRadius, strokeWidth)
+): Modifier = glasenseHighlight(RoundedRectangle(cornerRadius), strokeWidth)
+
+fun Modifier.glasenseHighlight(
+    shape: Shape,
+    strokeWidth: Dp = 1.5.dp
+): Modifier = this then GlasenseHighlightElement(shape, strokeWidth)
 
 private data class GlasenseHighlightElement(
-    val cornerRadius: Dp,
+    val shape: Shape,
     val strokeWidth: Dp
 ) : ModifierNodeElement<GlasenseHighlightNode>() {
 
     override fun create(): GlasenseHighlightNode {
-        return GlasenseHighlightNode(cornerRadius, strokeWidth)
+        return GlasenseHighlightNode(shape, strokeWidth)
     }
 
     override fun update(node: GlasenseHighlightNode) {
-        node.update(cornerRadius, strokeWidth)
+        node.update(shape, strokeWidth)
     }
 
     override fun InspectorInfo.inspectableProperties() {
         name = "glasenseHighlight"
-        properties["cornerRadius"] = cornerRadius
+        properties["shape"] = shape
         properties["strokeWidth"] = strokeWidth
     }
 }
 
 private class GlasenseHighlightNode(
-    var cornerRadius: Dp,
+    var shape: Shape,
     var strokeWidth: Dp
 ) : Modifier.Node(), DrawModifierNode {
 
@@ -55,8 +61,6 @@ private class GlasenseHighlightNode(
         1.0f to Color.White.copy(alpha = 0.02f)
     )
 
-    private var shape = RoundedRectangle(cornerRadius)
-
     private var cachedOutline: Outline? = null
 
     private var cachedClipPath: Path? = null
@@ -64,12 +68,11 @@ private class GlasenseHighlightNode(
     private var lastSize: Size = Size.Unspecified
     private var lastLayoutDirection: LayoutDirection? = null
 
-    fun update(newCornerRadius: Dp, newStrokeWidth: Dp) {
+    fun update(newShape: Shape, newStrokeWidth: Dp) {
         var needsInvalidate = false
 
-        if (cornerRadius != newCornerRadius) {
-            cornerRadius = newCornerRadius
-            shape = RoundedRectangle(newCornerRadius)
+        if (shape != newShape) {
+            shape = newShape
             cachedOutline = null
             cachedClipPath = null
             needsInvalidate = true

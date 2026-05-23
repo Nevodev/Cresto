@@ -1,6 +1,7 @@
 package com.nevoit.cresto.ui.components.glasense
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -31,7 +32,8 @@ interface GlasenseModalTopBarScope {
         onClick: () -> Unit,
         enabled: Boolean = true,
         shape: Shape = CircleShape,
-        colors: GlasenseButtonColors = AppButtonColors.action()
+        colors: GlasenseButtonColors = AppButtonColors.action(),
+        highlight: Boolean = false
     )
 }
 
@@ -45,7 +47,8 @@ private object ModalTopBarScope : GlasenseModalTopBarScope {
         onClick: () -> Unit,
         enabled: Boolean,
         shape: Shape,
-        colors: GlasenseButtonColors
+        colors: GlasenseButtonColors,
+        highlight: Boolean
     ) {
         GlasenseButton(
             enabled = enabled,
@@ -54,6 +57,14 @@ private object ModalTopBarScope : GlasenseModalTopBarScope {
             modifier = modifier.size(48.dp),
             colors = colors
         ) {
+            if (highlight) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .glasenseHighlight(shape)
+                )
+            }
+            
             Icon(
                 painter = icon,
                 contentDescription = contentDescription,
@@ -73,8 +84,6 @@ fun GlasenseModalTopBar(
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .padding(top = 12.dp)
-            .padding(horizontal = 12.dp)
             .height(48.dp)
     ) {
         if (leading != null) {

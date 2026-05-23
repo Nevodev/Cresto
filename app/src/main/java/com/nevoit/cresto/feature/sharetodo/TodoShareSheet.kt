@@ -146,9 +146,13 @@ fun TodoShareSheet(
                 Action(
                     icon = painterResource(id = R.drawable.ic_forward_nav),
                     contentDescription = stringResource(R.string.back),
-                    onClick = { slideOut() }
+                    onClick = { slideOut() },
+                    iconSize = 32.dp
                 )
-            }
+            },
+            modifier = Modifier
+                .padding(horizontal = 12.dp)
+                .padding(top = 12.dp)
         )
 
         Row(
