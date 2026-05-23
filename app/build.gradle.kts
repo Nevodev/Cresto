@@ -64,6 +64,10 @@ android {
     }
 }
 
+configurations.configureEach {
+    exclude(group = "androidx.compose.material3")
+}
+
 base {
     archivesName.set(vCodeProvider.map { "cresto-alpha$it" })
 }
@@ -87,7 +91,6 @@ dependencies {
     implementation(libs.androidx.compose.ui)
     implementation(libs.androidx.compose.ui.graphics)
     implementation(libs.androidx.compose.ui.tooling.preview)
-    implementation(libs.androidx.compose.material3)
     implementation(libs.androidx.compose.animation)
     implementation(libs.androidx.compose.foundation)
     implementation(libs.androidx.compose.runtime)
@@ -114,7 +117,7 @@ dependencies {
     implementation(libs.shapes)
     implementation(libs.backdrop)
     implementation(libs.confetti.kit)
-    implementation(libs.materialKolor)
+    implementation(libs.material.color.utilities)
     implementation(libs.aboutlibraries.core)
     implementation(libs.aboutlibraries.compose.core)
     implementation(libs.shizuku.api)

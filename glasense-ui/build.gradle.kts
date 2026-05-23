@@ -26,6 +26,10 @@ android {
 
 }
 
+configurations.configureEach {
+    exclude(group = "androidx.compose.material3")
+}
+
 dependencies {
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.core.ktx)

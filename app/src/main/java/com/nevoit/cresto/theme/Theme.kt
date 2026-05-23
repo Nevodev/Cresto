@@ -1,12 +1,8 @@
 package com.nevoit.cresto.theme
 
 import android.app.Activity
+import android.content.Context
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.material3.ColorScheme
-import androidx.compose.material3.darkColorScheme
-import androidx.compose.material3.dynamicDarkColorScheme
-import androidx.compose.material3.dynamicLightColorScheme
-import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.SideEffect
@@ -29,22 +25,6 @@ import com.nevoit.glasense.theme.purify
 import com.nevoit.glasense.theme.umamify
 import com.nevoit.glasense.theme.values.Blue500
 
-private val DarkColorScheme = darkColorScheme(
-    onBackground = Color.White,
-    onSurface = Color.White,
-    primary = Blue500,
-    background = Color.Black,
-    surface = Color(0xFF1B1C1D),
-)
-
-private val LightColorScheme = lightColorScheme(
-    onBackground = Color.Black,
-    onSurface = Color.Black,
-    primary = Blue500,
-    background = Color.White,
-    surface = Color(0xFFF3F4F6)
-)
-
 val AppColors: GlasenseColors
     @Composable
     get() = GlasenseTheme.colors
@@ -52,6 +32,9 @@ val AppColors: GlasenseColors
 val AppSpecs: GlasenseSpecs
     @Composable
     get() = GlasenseTheme.specs
+
+private fun systemDynamicSeedColor(context: Context): Color =
+    Color(context.getColor(android.R.color.system_accent1_600))
 
 private fun glasenseColorsFromScheme(scheme: ColorScheme, isDark: Boolean): GlasenseColors {
     val pageBackground = if (isDark) Color.Black else scheme.surfaceContainer
@@ -85,8 +68,8 @@ private fun glasenseColorsFromScheme(scheme: ColorScheme, isDark: Boolean): Glas
         content = contentColor,
         contentVariant = contentColor.copy(.5f),
         highlightText = scheme.tertiary.purify(0.8f),
-        error = scheme.error.umamify(1.5f),
-        onError = scheme.onError.umamify(1.5f),
+        error = scheme.error.umamify(1.2f),
+        onError = scheme.onError.umamify(1.2f),
         segmentedControlBackground = scheme.secondaryContainer,
         onSegmentedControlBackground = scheme.onSecondaryContainer,
         segmentedControlIndicator = scheme.secondary,
@@ -113,17 +96,14 @@ fun GlasenseTheme(
         else -> systemInDark
     }
 
-    val colorScheme = when {
-        dynamicColor -> {
-            val context = LocalContext.current
-            if (useDarkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
-        }
-
-        useDarkTheme -> DarkColorScheme
-        else -> LightColorScheme
-    }
-
+    val context = LocalContext.current
     val baseGlasenseColors = if (dynamicColor) {
+        val colorScheme = remember(context, useDarkTheme) {
+            dynamicColorScheme(
+                seedColor = systemDynamicSeedColor(context),
+                isDark = useDarkTheme
+            )
+        }
         glasenseColorsFromScheme(colorScheme, useDarkTheme)
     } else {
         if (useDarkTheme) GlasenseDarkPalette else GlasenseLightPalette

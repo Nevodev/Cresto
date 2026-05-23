@@ -19,7 +19,7 @@ navigationCompose = "2.9.8"
 roomRuntime = "2.8.4"
 koin-bom = "4.2.1"
 confettiKit = "0.8.0"
-materialKolor = "4.1.1"
+materialColorUtilities = "4.1.1"
 aboutLibraries = "14.2.0"
 shizuku = "13.1.5"
 
@@ -47,7 +47,6 @@ androidx-compose-ui-tooling = { group = "androidx.compose.ui", name = "ui-toolin
 androidx-compose-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview" }
 androidx-compose-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest" }
 androidx-compose-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
-androidx-compose-material3 = { group = "androidx.compose.material3", name = "material3" }
 androidx-compose-animation = { group = "androidx.compose.animation", name = "animation" }
 androidx-compose-animation-graphics = { group = "androidx.compose.animation", name = "animation-graphics" }
 androidx-compose-runtime = { group = "androidx.compose.runtime", name = "runtime" }
@@ -63,7 +62,7 @@ backdrop = { module = "io.github.kyant0:backdrop", version.ref = "backdrop" }
 shapes = { module = "io.github.kyant0:shapes", version.ref = "shapes" }
 mmkv = { module = "com.tencent:mmkv", version.ref = "mmkv" }
 confetti-kit = { module = "io.github.vinceglb:confettikit", version.ref = "confettiKit" }
-materialKolor = { module = "com.materialkolor:material-kolor", version.ref = "materialKolor" }
+material-color-utilities = { module = "com.materialkolor:material-color-utilities", version.ref = "materialColorUtilities" }
 
 koin-bom = { module = "io.insert-koin:koin-bom", version.ref = "koin-bom" }
 koin-androidx-compose = { module = "io.insert-koin:koin-androidx-compose" }
