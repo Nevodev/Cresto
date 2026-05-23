@@ -42,11 +42,11 @@ import com.nevoit.cresto.theme.AppSpecs
 import com.nevoit.cresto.ui.components.glasense.GlasenseBottomSheet
 import com.nevoit.cresto.ui.components.glasense.GlasenseButton
 import com.nevoit.cresto.ui.components.glasense.GlasenseSwitch
-import com.nevoit.cresto.ui.components.glasense.ZeroHeightDivider
 import com.nevoit.cresto.ui.components.packed.ConfigItem
 import com.nevoit.cresto.ui.components.packed.ConfigItemContainer
 import com.nevoit.glasense.core.component.Icon
 import com.nevoit.glasense.core.component.Text
+import com.nevoit.glasense.core.component.VDivider
 import com.nevoit.glasense.core.interaction.DimIndication
 import com.nevoit.glasense.theme.GlasenseTheme
 import java.time.LocalTime
@@ -164,7 +164,7 @@ private fun TimeConfigSection(
                 )
             }
             Spacer(modifier = Modifier.height(8.dp))
-            ZeroHeightDivider()
+            VDivider()
             Spacer(modifier = Modifier.height(8.dp))
             ConfigItem(title = stringResource(R.string.time_range)) {
                 GlasenseSwitch(

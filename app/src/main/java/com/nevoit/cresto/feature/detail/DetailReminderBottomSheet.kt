@@ -43,13 +43,13 @@ import com.nevoit.cresto.ui.components.glasense.GlasenseMenuItem
 import com.nevoit.cresto.ui.components.glasense.GlasenseSwitch
 import com.nevoit.cresto.ui.components.glasense.MenuDivider
 import com.nevoit.cresto.ui.components.glasense.MenuItemData
-import com.nevoit.cresto.ui.components.glasense.ZeroHeightDivider
 import com.nevoit.cresto.ui.components.packed.ConfigItem
 import com.nevoit.cresto.ui.components.packed.ConfigItemContainer
 import com.nevoit.cresto.ui.components.packed.TodoReminderConfig
 import com.nevoit.cresto.ui.components.packed.displayText
 import com.nevoit.glasense.core.component.Icon
 import com.nevoit.glasense.core.component.Text
+import com.nevoit.glasense.core.component.VDivider
 import com.nevoit.glasense.core.interaction.DimIndication
 import com.nevoit.glasense.theme.GlasenseTheme
 import java.time.LocalTime
@@ -253,7 +253,7 @@ fun DetailReminderBottomSheet(
                         }
                     }
                     Spacer(modifier = Modifier.height(8.dp))
-                    ZeroHeightDivider()
+                    VDivider()
                     Spacer(modifier = Modifier.height(8.dp))
                     ConfigItem(title = stringResource(R.string.persistent_reminder)) {
                         GlasenseSwitch(
@@ -263,7 +263,7 @@ fun DetailReminderBottomSheet(
                         )
                     }
                     Spacer(modifier = Modifier.height(8.dp))
-                    ZeroHeightDivider()
+                    VDivider()
                     Spacer(modifier = Modifier.height(8.dp))
                     ConfigItem(title = stringResource(R.string.strong_reminder)) {
                         GlasenseSwitch(

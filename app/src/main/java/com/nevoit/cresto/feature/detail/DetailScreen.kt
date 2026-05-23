@@ -98,7 +98,6 @@ import com.nevoit.cresto.ui.components.glasense.GlasenseMenu
 import com.nevoit.cresto.ui.components.glasense.GlasenseMenuItem
 import com.nevoit.cresto.ui.components.glasense.MenuState
 import com.nevoit.cresto.ui.components.glasense.PopupDirection
-import com.nevoit.cresto.ui.components.glasense.ZeroHeightDivider
 import com.nevoit.cresto.ui.components.glasense.extend.overscrollSpacer
 import com.nevoit.cresto.ui.components.glasense.isScrolledPast
 import com.nevoit.cresto.ui.components.glasense.rememberSwipeableListState
@@ -111,7 +110,6 @@ import com.nevoit.cresto.ui.components.packed.SwipeableSubTodoItemRowEditable
 import com.nevoit.cresto.ui.components.packed.TimePicker
 import com.nevoit.cresto.ui.components.packed.TodoItemRowEditable
 import com.nevoit.cresto.ui.components.packed.TodoReminderConfig
-import com.nevoit.cresto.ui.components.packed.VGap
 import com.nevoit.cresto.ui.components.packed.compatibleWithAllDay
 import com.nevoit.cresto.ui.components.packed.displayText
 import com.nevoit.cresto.ui.components.packed.toReminderConfig
@@ -122,6 +120,8 @@ import com.nevoit.cresto.util.formatRelativeTime
 import com.nevoit.glasense.component.ProgressView
 import com.nevoit.glasense.core.component.Icon
 import com.nevoit.glasense.core.component.Text
+import com.nevoit.glasense.core.component.VDivider
+import com.nevoit.glasense.core.component.VGap
 import com.nevoit.glasense.core.interaction.DimIndication
 import com.nevoit.glasense.theme.GlasenseTheme
 import com.nevoit.glasense.theme.LocalGlasenseContentColor
@@ -482,7 +482,7 @@ fun DetailScreen(
                                     color = AppColors.content
                                 )
                             }
-                            ZeroHeightDivider()
+                            VDivider()
                             TodoConfigRow(
                                 icon = painterResource(id = R.drawable.ic_calendar),
                                 contentDescription = stringResource(R.string.due_date),
@@ -499,7 +499,7 @@ fun DetailScreen(
                                     color = AppColors.content
                                 )
                             }
-                            ZeroHeightDivider()
+                            VDivider()
                             TodoConfigRow(
                                 icon = painterResource(id = R.drawable.ic_clock),
                                 contentDescription = stringResource(R.string.time),
@@ -516,7 +516,7 @@ fun DetailScreen(
                                     color = AppColors.content
                                 )
                             }
-                            ZeroHeightDivider()
+                            VDivider()
                             TodoConfigRow(
                                 icon = painterResource(id = R.drawable.ic_alarm),
                                 contentDescription = stringResource(R.string.reminder),

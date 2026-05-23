@@ -44,8 +44,8 @@ import com.nevoit.cresto.ui.components.packed.AboutEntryItem
 import com.nevoit.cresto.ui.components.packed.ConfigContainer
 import com.nevoit.cresto.ui.components.packed.ConfigEntryItem
 import com.nevoit.cresto.ui.components.packed.PageContent
-import com.nevoit.cresto.ui.components.packed.VGap
 import com.nevoit.glasense.core.component.Icon
+import com.nevoit.glasense.core.component.VGap
 import com.nevoit.glasense.theme.tokens.Blue500
 import com.nevoit.glasense.theme.tokens.Pink400
 import com.nevoit.glasense.theme.tokens.Purple500

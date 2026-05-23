@@ -48,16 +48,16 @@ import com.nevoit.cresto.theme.harmonize
 import com.nevoit.cresto.ui.components.glasense.GlasenseButton
 import com.nevoit.cresto.ui.components.glasense.GlasenseDynamicSmallTitle
 import com.nevoit.cresto.ui.components.glasense.GlasenseSwitch
-import com.nevoit.cresto.ui.components.glasense.ZeroHeightDivider
 import com.nevoit.cresto.ui.components.glasense.extend.overscrollSpacer
 import com.nevoit.cresto.ui.components.glasense.isScrolledPast
 import com.nevoit.cresto.ui.components.packed.ConfigInfoHeader
 import com.nevoit.cresto.ui.components.packed.ConfigItem
 import com.nevoit.cresto.ui.components.packed.ConfigItemContainer
 import com.nevoit.cresto.ui.components.packed.PageContent
-import com.nevoit.cresto.ui.components.packed.VGap
 import com.nevoit.glasense.core.component.Icon
 import com.nevoit.glasense.core.component.Text
+import com.nevoit.glasense.core.component.VDivider
+import com.nevoit.glasense.core.component.VGap
 import com.nevoit.glasense.theme.GlasenseTheme
 import com.nevoit.glasense.theme.tokens.Slate500
 import rikka.shizuku.Shizuku
@@ -171,7 +171,7 @@ fun GeneralScreen(settingsViewModel: SettingsViewModel = viewModel()) {
                             )
                         }
                         Spacer(modifier = Modifier.height(8.dp))
-                        ZeroHeightDivider()
+                        VDivider()
                         Spacer(modifier = Modifier.height(8.dp))
                         ConfigItem(title = stringResource(R.string.completion_sound)) {
                             GlasenseSwitch(
@@ -181,7 +181,7 @@ fun GeneralScreen(settingsViewModel: SettingsViewModel = viewModel()) {
                             )
                         }
                         Spacer(modifier = Modifier.height(8.dp))
-                        ZeroHeightDivider()
+                        VDivider()
                         Spacer(modifier = Modifier.height(8.dp))
                         ConfigItem(title = stringResource(R.string.language)) {
                             Text(
@@ -300,7 +300,7 @@ fun GeneralScreen(settingsViewModel: SettingsViewModel = viewModel()) {
                             )
                         }
                         Spacer(modifier = Modifier.height(8.dp))
-                        ZeroHeightDivider()
+                        VDivider()
                         Spacer(modifier = Modifier.height(8.dp))
                         ConfigItem(title = stringResource(R.string.enable_extract_screen_quick_toggle)) {
                             GlasenseSwitch(

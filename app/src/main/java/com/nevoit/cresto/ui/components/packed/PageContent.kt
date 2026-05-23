@@ -15,6 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import com.nevoit.glasense.core.interaction.rememberFlingBehavior
 
 @Composable
 fun PageContent(
@@ -28,7 +29,7 @@ fun PageContent(
     content: LazyListScope.() -> Unit
 ) {
     val navigationBarHeight = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
-    val flingBehavior = rememberCupertinoFlingBehavior()
+    val flingBehavior = rememberFlingBehavior()
 
     val paddingValues = remember(tabPadding, bottomPadding, navigationBarHeight) {
         object : PaddingValues {

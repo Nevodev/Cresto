@@ -74,11 +74,11 @@ import com.nevoit.cresto.ui.components.glasense.GlasensePageHeader
 import com.nevoit.cresto.ui.components.glasense.extend.overscrollSpacer
 import com.nevoit.cresto.ui.components.glasense.isScrolledPast
 import com.nevoit.cresto.ui.components.packed.CardWithTitle
-import com.nevoit.cresto.ui.components.packed.HGap
 import com.nevoit.cresto.ui.components.packed.PageContent
-import com.nevoit.cresto.ui.components.packed.VGap
+import com.nevoit.glasense.core.component.HGap
 import com.nevoit.glasense.core.component.Icon
 import com.nevoit.glasense.core.component.Text
+import com.nevoit.glasense.core.component.VGap
 import com.nevoit.glasense.theme.GlasenseTheme
 import com.nevoit.glasense.theme.lumify
 import java.time.format.DateTimeFormatter

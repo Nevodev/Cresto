@@ -32,9 +32,9 @@ import com.nevoit.cresto.R
 import com.nevoit.cresto.theme.AppColors
 import com.nevoit.cresto.ui.components.glasense.GlasenseCheckbox
 import com.nevoit.cresto.ui.components.glasense.GlasenseSwitch
-import com.nevoit.cresto.ui.components.glasense.ZeroHeightDivider
 import com.nevoit.cresto.ui.components.glasense.rememberCheckBoxState
 import com.nevoit.glasense.core.component.Text
+import com.nevoit.glasense.core.component.VDivider
 
 @Composable
 fun ColorModeSelector(
@@ -135,7 +135,7 @@ fun ColorModeSelector(
                 }
             }
             Spacer(modifier = Modifier.height(16.dp))
-            ZeroHeightDivider(
+            VDivider(
                 color = onBackground.copy(.1f),
                 width = 1.dp,
                 blendMode = BlendMode.SrcOver

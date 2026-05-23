@@ -97,9 +97,9 @@ import com.nevoit.cresto.ui.components.myFadeOut
 import com.nevoit.cresto.ui.components.myScaleIn
 import com.nevoit.cresto.ui.components.myScaleOut
 import com.nevoit.cresto.ui.components.packed.PageContent
-import com.nevoit.cresto.ui.components.packed.VGap
 import com.nevoit.glasense.core.component.Icon
 import com.nevoit.glasense.core.component.Text
+import com.nevoit.glasense.core.component.VGap
 import com.nevoit.glasense.theme.GlasenseTheme
 import com.nevoit.glasense.theme.tokens.Springs
 import kotlinx.coroutines.launch

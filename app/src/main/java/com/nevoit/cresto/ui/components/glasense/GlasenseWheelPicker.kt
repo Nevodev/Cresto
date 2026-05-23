@@ -31,9 +31,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.times
 import com.nevoit.cresto.theme.AppColors
 import com.nevoit.cresto.theme.AppSpecs
-import com.nevoit.cresto.ui.components.packed.rememberCupertinoDecaySpec
-import com.nevoit.cresto.ui.components.packed.rememberGlasenseSnapFlingBehavior
 import com.nevoit.glasense.core.component.Text
+import com.nevoit.glasense.core.interaction.rememberDecaySpec
+import com.nevoit.glasense.core.interaction.rememberSnapFlingBehavior
 import com.nevoit.glasense.theme.LocalGlasenseTextStyle
 import com.nevoit.glasense.theme.tokens.Springs
 import kotlin.math.absoluteValue
@@ -67,11 +67,11 @@ fun GlasenseWheelPicker(
         SnapLayoutInfoProvider(lazyListState = listState)
     }
 
-    val decayAnimationSpec = rememberCupertinoDecaySpec()
+    val decayAnimationSpec = rememberDecaySpec()
 
     val customSnapAnimationSpec = remember { Springs.smooth<Float>() }
 
-    val flingBehavior = rememberGlasenseSnapFlingBehavior(
+    val flingBehavior = rememberSnapFlingBehavior(
         snapLayoutInfoProvider = snapLayoutInfoProvider,
         decayAnimationSpec = decayAnimationSpec,
         snapAnimationSpec = customSnapAnimationSpec,

@@ -79,10 +79,10 @@ import com.nevoit.cresto.toolkit.gradientmapping.GradientMappedImage
 import com.nevoit.cresto.ui.components.CustomAnimatedVisibility
 import com.nevoit.cresto.ui.components.glasense.GlasenseButtonAlt
 import com.nevoit.cresto.ui.components.glasense.glasenseHighlight
-import com.nevoit.cresto.ui.components.packed.VGap
 import com.nevoit.cresto.ui.modifier.tiltOnPress
 import com.nevoit.glasense.core.component.Icon
 import com.nevoit.glasense.core.component.Text
+import com.nevoit.glasense.core.component.VGap
 import com.nevoit.glasense.theme.GlasenseTheme
 import com.nevoit.glasense.theme.tokens.Blue500
 import com.nevoit.glasense.theme.tokens.Indigo500

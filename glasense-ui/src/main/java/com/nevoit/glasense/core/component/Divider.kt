@@ -1,4 +1,4 @@
-package com.nevoit.cresto.ui.components.glasense
+package com.nevoit.glasense.core.component
 
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -13,21 +13,12 @@ import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.nevoit.cresto.theme.AppColors
+import com.nevoit.glasense.theme.LocalGlasenseContentColor
 
-/**
- * A composable that draws a horizontal line with zero height.
- * This is useful for creating dividers that don't take up any vertical space in the layout.
- *
- * @param color The color of the divider line.
- * @param width The stroke width of the divider line.
- * @param modifier The modifier to be applied to the divider.
- * @param blendMode The blend mode to be applied when drawing the line.
- */
 @Composable
-fun ZeroHeightDivider(
+fun VDivider(
     modifier: Modifier = Modifier,
-    color: Color = AppColors.content.copy(.1f),
+    color: Color = LocalGlasenseContentColor.current.copy(.1f),
     width: Dp = 1.dp,
     blendMode: BlendMode = BlendMode.SrcOver
 ) {
@@ -48,9 +39,9 @@ fun ZeroHeightDivider(
 }
 
 @Composable
-fun ZeroWidthDivider(
+fun HDivider(
     modifier: Modifier = Modifier,
-    color: Color = AppColors.content.copy(.1f),
+    color: Color = LocalGlasenseContentColor.current.copy(.1f),
     width: Dp = 1.dp,
     blendMode: BlendMode = BlendMode.SrcOver
 ) {

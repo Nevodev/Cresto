@@ -79,7 +79,6 @@ import com.nevoit.cresto.ui.components.glasense.GlasensePopup
 import com.nevoit.cresto.ui.components.glasense.GlasenseSwitch
 import com.nevoit.cresto.ui.components.glasense.PopupDirection
 import com.nevoit.cresto.ui.components.glasense.PopupState
-import com.nevoit.cresto.ui.components.glasense.ZeroHeightDivider
 import com.nevoit.cresto.ui.components.glasense.extend.overscrollSpacer
 import com.nevoit.cresto.ui.components.glasense.glasenseHighlight
 import com.nevoit.cresto.ui.components.glasense.isScrolledPast
@@ -89,9 +88,10 @@ import com.nevoit.cresto.ui.components.packed.ConfigItem
 import com.nevoit.cresto.ui.components.packed.ConfigItemContainer
 import com.nevoit.cresto.ui.components.packed.PageContent
 import com.nevoit.cresto.ui.components.packed.PlainConfigItemContainer
-import com.nevoit.cresto.ui.components.packed.VGap
 import com.nevoit.glasense.core.component.Icon
 import com.nevoit.glasense.core.component.Text
+import com.nevoit.glasense.core.component.VDivider
+import com.nevoit.glasense.core.component.VGap
 import com.nevoit.glasense.core.interaction.DimIndication
 import com.nevoit.glasense.overscroll.rememberOffsetOverscrollFactory
 import com.nevoit.glasense.theme.GlasenseTheme
@@ -247,7 +247,7 @@ fun AppearanceScreen(settingsViewModel: SettingsViewModel = viewModel()) {
                         }
                         Spacer(modifier = Modifier.height(8.dp))
                         // Visual divider line
-                        ZeroHeightDivider()
+                        VDivider()
                         Spacer(modifier = Modifier.height(8.dp))
                         ConfigItem(title = stringResource(R.string.use_dynamic_color_scheme)) {
                             GlasenseSwitch(

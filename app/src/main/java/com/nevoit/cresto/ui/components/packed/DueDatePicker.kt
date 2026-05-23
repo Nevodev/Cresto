@@ -36,8 +36,8 @@ import com.nevoit.cresto.ui.components.glasense.GlasensePopup
 import com.nevoit.cresto.ui.components.glasense.GlasenseWheelPicker
 import com.nevoit.cresto.ui.components.glasense.PopupDirection
 import com.nevoit.cresto.ui.components.glasense.PopupState
-import com.nevoit.cresto.ui.components.glasense.ZeroWidthDivider
 import com.nevoit.cresto.ui.components.glasense.glasenseHighlight
+import com.nevoit.glasense.core.component.HDivider
 import com.nevoit.glasense.core.component.Icon
 import com.nevoit.glasense.core.component.Text
 import com.nevoit.glasense.theme.GlasenseTheme
@@ -192,9 +192,9 @@ fun DueDatePicker(
                     .padding(vertical = 8.dp)
             ) {
                 Spacer(Modifier.weight(1f))
-                ZeroWidthDivider()
+                HDivider()
                 Spacer(Modifier.weight(1f))
-                ZeroWidthDivider()
+                HDivider()
                 Spacer(Modifier.weight(1f))
             }
             Row {

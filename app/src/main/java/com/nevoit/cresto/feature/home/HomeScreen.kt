@@ -55,7 +55,7 @@ import com.nevoit.cresto.ui.components.glasense.extend.overscrollSpacer
 import com.nevoit.cresto.ui.components.glasense.isScrolledPast
 import com.nevoit.cresto.ui.components.glasense.rememberSwipeableListState
 import com.nevoit.cresto.ui.components.packed.PageContent
-import com.nevoit.cresto.ui.components.packed.VGap
+import com.nevoit.glasense.core.component.VGap
 import com.nevoit.glasense.theme.tokens.Springs
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay

@@ -45,15 +45,15 @@ import com.nevoit.cresto.theme.AppColors
 import com.nevoit.cresto.theme.harmonize
 import com.nevoit.cresto.ui.components.glasense.GlasenseButton
 import com.nevoit.cresto.ui.components.glasense.GlasenseDynamicSmallTitle
-import com.nevoit.cresto.ui.components.glasense.ZeroHeightDivider
 import com.nevoit.cresto.ui.components.glasense.extend.overscrollSpacer
 import com.nevoit.cresto.ui.components.glasense.isScrolledPast
 import com.nevoit.cresto.ui.components.packed.ConfigInfoHeader
 import com.nevoit.cresto.ui.components.packed.ConfigItemContainer
 import com.nevoit.cresto.ui.components.packed.PageContent
-import com.nevoit.cresto.ui.components.packed.VGap
 import com.nevoit.glasense.core.component.Icon
 import com.nevoit.glasense.core.component.Text
+import com.nevoit.glasense.core.component.VDivider
+import com.nevoit.glasense.core.component.VGap
 import com.nevoit.glasense.theme.GlasenseTheme
 import com.nevoit.glasense.theme.tokens.Slate500
 import com.nevoit.glasense.theme.tokens.Springs
@@ -115,7 +115,7 @@ fun CreditsScreen() {
                                     LibraryItem(library = library)
                                     if (index < libs.libraries.size - 1) {
                                         Spacer(modifier = Modifier.height(8.dp))
-                                        ZeroHeightDivider()
+                                        VDivider()
                                         Spacer(modifier = Modifier.height(8.dp))
                                     }
                                 }

@@ -1,4 +1,4 @@
-package com.nevoit.cresto.ui.components.packed
+package com.nevoit.glasense.core.interaction
 
 import androidx.compose.animation.core.AnimationSpec
 import androidx.compose.animation.core.AnimationState
@@ -21,10 +21,10 @@ private const val DEFAULT_MIN_FLING_VELOCITY = 1f
 private const val DEFAULT_UNCONSUMED_DELTA_THRESHOLD = 0.5f
 
 @Composable
-fun rememberGlasenseSnapFlingBehavior(
+fun rememberSnapFlingBehavior(
     lazyListState: LazyListState,
     snapPosition: SnapPosition = SnapPosition.Center,
-    decayAnimationSpec: DecayAnimationSpec<Float> = rememberCupertinoDecaySpec(),
+    decayAnimationSpec: DecayAnimationSpec<Float> = rememberDecaySpec(),
     snapAnimationSpec: AnimationSpec<Float> = spring(stiffness = 200f),
     minFlingVelocity: Float = DEFAULT_MIN_FLING_VELOCITY,
     unconsumedDeltaThreshold: Float = DEFAULT_UNCONSUMED_DELTA_THRESHOLD,
@@ -32,7 +32,7 @@ fun rememberGlasenseSnapFlingBehavior(
     val provider = remember(lazyListState, snapPosition) {
         SnapLayoutInfoProvider(lazyListState = lazyListState, snapPosition = snapPosition)
     }
-    return rememberGlasenseSnapFlingBehavior(
+    return rememberSnapFlingBehavior(
         snapLayoutInfoProvider = provider,
         decayAnimationSpec = decayAnimationSpec,
         snapAnimationSpec = snapAnimationSpec,
@@ -42,9 +42,9 @@ fun rememberGlasenseSnapFlingBehavior(
 }
 
 @Composable
-fun rememberGlasenseSnapFlingBehavior(
+fun rememberSnapFlingBehavior(
     snapLayoutInfoProvider: SnapLayoutInfoProvider,
-    decayAnimationSpec: DecayAnimationSpec<Float> = rememberCupertinoDecaySpec(),
+    decayAnimationSpec: DecayAnimationSpec<Float> = rememberDecaySpec(),
     snapAnimationSpec: AnimationSpec<Float> = spring(stiffness = 200f),
     minFlingVelocity: Float = DEFAULT_MIN_FLING_VELOCITY,
     unconsumedDeltaThreshold: Float = DEFAULT_UNCONSUMED_DELTA_THRESHOLD,
@@ -88,7 +88,6 @@ private class VelocityPreservingSnapFlingBehavior(
             velocityLeft = runApproach(approachOffset, velocityLeft)
         }
 
-        // For interrupted drags / very low release speed, force a settle-to-nearest snap.
         val snapVelocity = if (abs(velocityLeft) >= minFlingVelocity) velocityLeft else 0f
         val snapOffset = snapLayoutInfoProvider.calculateSnapOffset(snapVelocity)
         if (snapOffset.isNaN() || abs(snapOffset) <= 0f) {

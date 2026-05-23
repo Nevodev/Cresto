@@ -1,4 +1,4 @@
-package com.nevoit.cresto.ui.components.packed
+package com.nevoit.glasense.core.interaction
 
 import androidx.compose.animation.core.AnimationState
 import androidx.compose.animation.core.DecayAnimationSpec
@@ -14,32 +14,32 @@ import kotlin.math.abs
 import kotlin.math.ln
 import kotlin.math.pow
 import kotlin.math.roundToLong
+import kotlin.math.sign
 
-private const val UIScrollViewDecelerationRateNormal = 0.998f
+private const val DecelerationRateNormal = 0.998f
 private const val SecondsToNanos: Long = 1_000_000_000L
-private const val decayStopVelocityThreshold =
-    50.0f //weird value but looks natural in practice, similar to the default threshold used by iOS
+private const val decayStopVelocityThreshold = 50.0f
 
 @Composable
-fun rememberCupertinoDecaySpec(
-    decelerationRate: Float = UIScrollViewDecelerationRateNormal
+fun rememberDecaySpec(
+    decelerationRate: Float = DecelerationRateNormal
 ): DecayAnimationSpec<Float> {
     return remember(decelerationRate) {
-        CupertinoScrollDecayAnimationSpec(decelerationRate).generateDecayAnimationSpec()
+        GlasenseScrollDecayAnimationSpec(decelerationRate).generateDecayAnimationSpec()
     }
 }
 
 @Composable
-fun rememberCupertinoFlingBehavior(
-    decelerationRate: Float = UIScrollViewDecelerationRateNormal
+fun rememberFlingBehavior(
+    decelerationRate: Float = DecelerationRateNormal
 ): FlingBehavior {
-    val decaySpec = rememberCupertinoDecaySpec(decelerationRate)
+    val decaySpec = rememberDecaySpec(decelerationRate)
     return remember(decaySpec) {
-        CupertinoFlingBehavior(decaySpec)
+        GlasenseFlingBehavior(decaySpec)
     }
 }
 
-private class CupertinoFlingBehavior(
+private class GlasenseFlingBehavior(
     private val flingDecay: DecayAnimationSpec<Float>,
     private val velocityThreshold: Float = 500f
 ) : FlingBehavior {
@@ -59,7 +59,7 @@ private class CupertinoFlingBehavior(
                 val delta = value - lastValue
                 val consumed = try {
                     scrollBy(delta)
-                } catch (exception: CancellationException) {
+                } catch (_: CancellationException) {
                     0.0f
                 }
                 lastValue = value
@@ -76,8 +76,8 @@ private class CupertinoFlingBehavior(
     }
 }
 
-private class CupertinoScrollDecayAnimationSpec(
-    private val decelerationRate: Float = UIScrollViewDecelerationRateNormal
+private class GlasenseScrollDecayAnimationSpec(
+    private val decelerationRate: Float = DecelerationRateNormal
 ) : FloatDecayAnimationSpec {
     private val coefficient: Float = 1000f * ln(decelerationRate)
 
@@ -89,7 +89,7 @@ private class CupertinoScrollDecayAnimationSpec(
             return initialValue
         }
 
-        val targetVelocity = kotlin.math.sign(initialVelocity) * absVelocityThreshold
+        val targetVelocity = sign(initialVelocity) * absVelocityThreshold
 
         return initialValue + (targetVelocity - initialVelocity) / coefficient
     }

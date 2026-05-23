@@ -70,6 +70,7 @@ import com.nevoit.cresto.ui.components.glasense.material.MaterialRecipes
 import com.nevoit.cresto.ui.components.glasense.material.rememberMaterialRenderEffect
 import com.nevoit.glasense.core.component.Icon
 import com.nevoit.glasense.core.component.Text
+import com.nevoit.glasense.core.component.VDivider
 import com.nevoit.glasense.core.interaction.DimIndication
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
@@ -385,7 +386,7 @@ fun CustomMenuContent(items: List<GlasenseMenuItem>, onDismiss: () -> Unit) {
                     )
                     // Add a divider between items, but not after the last one.
                     if (index < items.size - 1 && items[index + 1] !is MenuDivider) {
-                        ZeroHeightDivider(
+                        VDivider(
                             color = dividerColor,
                             width = 1.dp,
                             blendMode = BlendMode.Luminosity
@@ -417,7 +418,7 @@ fun CustomMenuContent(items: List<GlasenseMenuItem>, onDismiss: () -> Unit) {
                         }
                     )
                     if (index < items.size - 1 && items[index + 1] !is MenuDivider) {
-                        ZeroHeightDivider(
+                        VDivider(
                             color = dividerColor,
                             width = 1.dp,
                             blendMode = BlendMode.Luminosity
