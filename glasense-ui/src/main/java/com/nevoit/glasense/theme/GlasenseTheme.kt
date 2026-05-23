@@ -29,6 +29,8 @@ fun GlasenseTheme(
         LocalGlasenseColors provides colors,
         LocalGlasenseSpecs provides specs,
         LocalGlasenseType provides type,
+        LocalGlasenseTextStyle provides type.body,
+        LocalGlasenseContentColor provides colors.content,
         LocalDarkTheme provides darkTheme
     ) {
         content()

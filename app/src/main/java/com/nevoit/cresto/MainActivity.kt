@@ -9,7 +9,6 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.LocalOverscrollFactory
 import androidx.compose.foundation.gestures.Orientation
-import androidx.compose.material3.LocalContentColor
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.core.content.ContextCompat
 import androidx.core.view.WindowCompat
@@ -20,6 +19,7 @@ import com.nevoit.cresto.feature.settings.util.SettingsManager
 import com.nevoit.cresto.theme.AppColors
 import com.nevoit.cresto.theme.GlasenseTheme
 import com.nevoit.glasense.overscroll.rememberOffsetOverscrollFactory
+import com.nevoit.glasense.theme.LocalGlasenseContentColor
 
 /**
  * The main activity of the application.
@@ -49,7 +49,7 @@ class MainActivity : ComponentActivity() {
 
                 CompositionLocalProvider(
                     LocalOverscrollFactory provides overscrollFactory,
-                    LocalContentColor provides AppColors.content //provide content color
+                    LocalGlasenseContentColor provides AppColors.content //provide content color
                 ) {
                     MainScreen()
                 }

@@ -8,8 +8,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.requiredHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material3.LocalTextStyle
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
@@ -36,6 +34,8 @@ import com.nevoit.cresto.theme.AppSpecs
 import com.nevoit.cresto.ui.components.packed.rememberCupertinoDecaySpec
 import com.nevoit.cresto.ui.components.packed.rememberGlasenseSnapFlingBehavior
 import com.nevoit.glasense.core.animation.Springs
+import com.nevoit.glasense.core.component.Text
+import com.nevoit.glasense.theme.LocalGlasenseTextStyle
 import kotlin.math.absoluteValue
 import kotlin.math.sin
 
@@ -46,7 +46,7 @@ fun GlasenseWheelPicker(
     currentSelected: Int = 0,
     visibleItemsCount: Int = 7,
     itemHeight: Dp = 40.dp,
-    textStyle: TextStyle = LocalTextStyle.current,
+    textStyle: TextStyle = LocalGlasenseTextStyle.current,
     indicator: Boolean = true,
     onItemSelected: (Int) -> Unit
 ) {

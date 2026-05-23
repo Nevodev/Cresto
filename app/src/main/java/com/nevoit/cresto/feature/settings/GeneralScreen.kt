@@ -21,8 +21,6 @@ import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.Icon
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
@@ -37,7 +35,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.kyant.backdrop.backdrops.layerBackdrop
 import com.kyant.backdrop.backdrops.rememberLayerBackdrop
@@ -59,6 +56,9 @@ import com.nevoit.cresto.ui.components.packed.ConfigItem
 import com.nevoit.cresto.ui.components.packed.ConfigItemContainer
 import com.nevoit.cresto.ui.components.packed.PageContent
 import com.nevoit.cresto.ui.components.packed.VGap
+import com.nevoit.glasense.core.component.Icon
+import com.nevoit.glasense.core.component.Text
+import com.nevoit.glasense.theme.GlasenseTheme
 import com.nevoit.glasense.theme.values.Slate500
 import rikka.shizuku.Shizuku
 
@@ -222,8 +222,7 @@ fun GeneralScreen(settingsViewModel: SettingsViewModel = viewModel()) {
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
                     text = stringResource(R.string.automatically_add_new_todos_as_events_in_system_calendar),
-                    fontSize = 14.sp,
-                    lineHeight = 18.sp,
+                    style = GlasenseTheme.type.callout,
                     modifier = Modifier.padding(horizontal = 12.dp),
                     color = AppColors.contentVariant.copy(alpha = .3f)
                 )
@@ -246,8 +245,7 @@ fun GeneralScreen(settingsViewModel: SettingsViewModel = viewModel()) {
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
                     text = stringResource(R.string.add_a_marker_to_todos_due_today),
-                    fontSize = 14.sp,
-                    lineHeight = 18.sp,
+                    style = GlasenseTheme.type.callout,
                     modifier = Modifier.padding(horizontal = 12.dp),
                     color = AppColors.contentVariant.copy(alpha = .3f)
                 )
@@ -270,8 +268,7 @@ fun GeneralScreen(settingsViewModel: SettingsViewModel = viewModel()) {
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
                     text = stringResource(R.string.add_a_marker_to_overdue_todos_on_the_next_day),
-                    fontSize = 14.sp,
-                    lineHeight = 18.sp,
+                    style = GlasenseTheme.type.callout,
                     modifier = Modifier.padding(horizontal = 12.dp),
                     color = AppColors.contentVariant.copy(alpha = .3f)
                 )
@@ -322,8 +319,7 @@ fun GeneralScreen(settingsViewModel: SettingsViewModel = viewModel()) {
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
                     text = stringResource(R.string.add_a_quick_toggle_to_control_center_for_one_tap_ai_screen_extraction_shizuku_required),
-                    fontSize = 14.sp,
-                    lineHeight = 18.sp,
+                    style = GlasenseTheme.type.callout,
                     modifier = Modifier.padding(horizontal = 12.dp),
                     color = AppColors.contentVariant.copy(alpha = .3f)
                 )
@@ -352,8 +348,7 @@ fun GeneralScreen(settingsViewModel: SettingsViewModel = viewModel()) {
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
                         text = "We're leaving the planet and you can't come.",
-                        fontSize = 14.sp,
-                        lineHeight = 18.sp,
+                        style = GlasenseTheme.type.callout,
                         modifier = Modifier.padding(horizontal = 12.dp),
                         color = AppColors.contentVariant.copy(alpha = .3f)
                     )

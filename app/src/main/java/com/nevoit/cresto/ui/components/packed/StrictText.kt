@@ -2,8 +2,6 @@ package com.nevoit.cresto.ui.components.packed
 
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.TextAutoSize
-import androidx.compose.material3.LocalContentColor
-import androidx.compose.material3.LocalTextStyle
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -22,6 +20,8 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.takeOrElse
+import com.nevoit.glasense.theme.LocalGlasenseContentColor
+import com.nevoit.glasense.theme.LocalGlasenseTextStyle
 import kotlin.math.roundToInt
 
 
@@ -44,10 +44,11 @@ fun StrictText(
     maxLines: Int = Int.MAX_VALUE,
     minLines: Int = 1,
     onTextLayout: ((TextLayoutResult) -> Unit)? = null,
-    style: TextStyle = LocalTextStyle.current,
+    style: TextStyle = LocalGlasenseTextStyle.current,
 ) {
 
-    val textColor = color.takeOrElse { style.color.takeOrElse { LocalContentColor.current } }
+    val textColor =
+        color.takeOrElse { style.color.takeOrElse { LocalGlasenseContentColor.current } }
 
     val styleOverlay = TextStyle(
         color = textColor,

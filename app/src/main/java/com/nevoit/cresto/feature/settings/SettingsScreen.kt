@@ -17,7 +17,6 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -46,6 +45,7 @@ import com.nevoit.cresto.ui.components.packed.ConfigContainer
 import com.nevoit.cresto.ui.components.packed.ConfigEntryItem
 import com.nevoit.cresto.ui.components.packed.PageContent
 import com.nevoit.cresto.ui.components.packed.VGap
+import com.nevoit.glasense.core.component.Icon
 import com.nevoit.glasense.theme.values.Blue500
 import com.nevoit.glasense.theme.values.Pink400
 import com.nevoit.glasense.theme.values.Purple500

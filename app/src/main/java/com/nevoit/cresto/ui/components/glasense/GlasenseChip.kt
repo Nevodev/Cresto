@@ -14,9 +14,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.LocalContentColor
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
@@ -27,10 +24,11 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.kyant.shapes.Capsule
 import com.nevoit.cresto.theme.AppColors
+import com.nevoit.glasense.core.component.Text
 import com.nevoit.glasense.overscroll.rememberOffsetOverscrollFactory
+import com.nevoit.glasense.theme.LocalGlasenseContentColor
 
 @Composable
 fun GlasenseChipGroup(
@@ -71,12 +69,12 @@ private fun GlasenseChipItem(
     onClick: () -> Unit
 ) {
     val backgroundColor by animateColorAsState(
-        targetValue = if (isSelected) MaterialTheme.colorScheme.primary else AppColors.cardBackground,
+        targetValue = if (isSelected) AppColors.primary else AppColors.cardBackground,
         animationSpec = tween(durationMillis = 100)
     )
 
     val textColor by animateColorAsState(
-        targetValue = if (isSelected) Color.White else LocalContentColor.current,
+        targetValue = if (isSelected) Color.White else LocalGlasenseContentColor.current,
         animationSpec = tween(durationMillis = 100)
     )
 
@@ -94,7 +92,6 @@ private fun GlasenseChipItem(
         Text(
             text = text,
             color = textColor,
-            fontSize = 16.sp,
             fontWeight = if (isSelected) FontWeight.Medium else FontWeight.Normal
         )
     }

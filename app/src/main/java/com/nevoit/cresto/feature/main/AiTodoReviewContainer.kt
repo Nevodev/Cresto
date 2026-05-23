@@ -25,9 +25,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -73,6 +70,9 @@ import com.nevoit.cresto.ui.components.glasense.RotatingGlowBorder
 import com.nevoit.cresto.ui.components.glasense.rememberSwipeableListState
 import com.nevoit.cresto.ui.components.packed.SwipeableTodoItem
 import com.nevoit.glasense.core.animation.Springs
+import com.nevoit.glasense.core.component.Icon
+import com.nevoit.glasense.core.component.Text
+import com.nevoit.glasense.theme.GlasenseTheme
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -331,7 +331,7 @@ fun AiTodoReviewContainer(
                 if (reviewItems.isEmpty()) {
                     Text(
                         text = stringResource(R.string.ai_todo_review_empty),
-                        style = MaterialTheme.typography.bodyMedium,
+                        style = GlasenseTheme.type.body,
                         color = AppColors.content
                     )
                 } else {

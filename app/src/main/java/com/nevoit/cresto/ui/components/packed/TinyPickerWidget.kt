@@ -20,8 +20,6 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -45,6 +43,8 @@ import androidx.compose.ui.unit.dp
 import com.nevoit.cresto.R
 import com.nevoit.cresto.theme.AppColors
 import com.nevoit.cresto.theme.getFlagColor
+import com.nevoit.glasense.core.component.Text
+import com.nevoit.glasense.theme.GlasenseTheme
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -402,7 +402,7 @@ private fun SelectorBox(
         Text(
             text = text,
             color = AppColors.content,
-            style = MaterialTheme.typography.bodyMedium
+            style = GlasenseTheme.type.body
         )
     }
 }
@@ -471,7 +471,7 @@ private fun DateSelectorBox(
         Text(
             text = text,
             color = AppColors.content,
-            style = MaterialTheme.typography.bodyMedium
+            style = GlasenseTheme.type.body
         )
     }
 }

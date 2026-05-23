@@ -12,8 +12,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyItemScope
-import androidx.compose.material3.Icon
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
@@ -43,6 +41,9 @@ import com.nevoit.cresto.ui.components.glasense.DimIndication
 import com.nevoit.cresto.ui.components.glasense.SwipeableListState
 import com.nevoit.cresto.ui.components.packed.SwipeableTodoItem
 import com.nevoit.glasense.core.animation.Springs
+import com.nevoit.glasense.core.component.Icon
+import com.nevoit.glasense.core.component.Text
+import com.nevoit.glasense.theme.GlasenseTheme
 
 @Composable
 fun LazyItemScope.TodoListItemRow(
@@ -169,8 +170,7 @@ fun LazyItemScope.TodoListSectionHead(
     ) {
         Text(
             text = title,
-            fontSize = 14.sp,
-            lineHeight = 14.sp,
+            style = GlasenseTheme.type.callout.copy(lineHeight = 14.sp),
             fontWeight = FontWeight.Normal,
             color = AppColors.contentVariant
         )

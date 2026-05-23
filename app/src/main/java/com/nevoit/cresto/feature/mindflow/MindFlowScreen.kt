@@ -23,9 +23,6 @@ import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -80,6 +77,9 @@ import com.nevoit.cresto.ui.components.packed.StrictText
 import com.nevoit.cresto.ui.components.packed.ZenCirclesBreathing
 import com.nevoit.cresto.ui.viewmodel.ModeTimerViewModel
 import com.nevoit.glasense.component.ProgressView
+import com.nevoit.glasense.core.component.Icon
+import com.nevoit.glasense.core.component.Text
+import com.nevoit.glasense.theme.GlasenseTheme
 import com.nevoit.glasense.theme.values.Blue600
 import com.nevoit.glasense.theme.values.Cyan500
 import com.nevoit.glasense.theme.values.Green500
@@ -425,7 +425,7 @@ fun BoxScope.MindFlowScreen(
                                         Spacer(modifier = Modifier.width(4.dp))
                                         Text(
                                             text = stringResource(R.string.start),
-                                            style = MaterialTheme.typography.bodyMedium
+                                            style = GlasenseTheme.type.body
                                         )
                                     }
                                 }

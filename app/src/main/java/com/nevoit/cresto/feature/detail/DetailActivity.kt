@@ -5,7 +5,6 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.LocalOverscrollFactory
 import androidx.compose.foundation.gestures.Orientation
-import androidx.compose.material3.LocalContentColor
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.core.view.WindowCompat
 import com.nevoit.cresto.data.todo.EXTRA_TODO_ID
@@ -13,6 +12,7 @@ import com.nevoit.cresto.data.todo.TodoViewModel
 import com.nevoit.cresto.theme.AppColors
 import com.nevoit.cresto.theme.GlasenseTheme
 import com.nevoit.glasense.overscroll.rememberOffsetOverscrollFactory
+import com.nevoit.glasense.theme.LocalGlasenseContentColor
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class DetailActivity : ComponentActivity() {
@@ -31,7 +31,7 @@ class DetailActivity : ComponentActivity() {
                 )
                 CompositionLocalProvider(
                     LocalOverscrollFactory provides overscrollFactory,
-                    LocalContentColor provides AppColors.content
+                    LocalGlasenseContentColor provides AppColors.content
                 ) {
                     DetailScreen(todoId = todoId, viewModel = todoViewModel)
                 }

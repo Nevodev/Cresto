@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.material3.LocalContentColor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.Immutable
@@ -31,6 +30,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.kyant.shapes.Capsule
+import com.nevoit.glasense.theme.LocalGlasenseContentColor
 
 @Immutable
 data class GlasenseButtonColors(
@@ -113,7 +113,9 @@ fun GlasenseButton(
             ),
         contentAlignment = Alignment.Center
     ) {
-        CompositionLocalProvider(LocalContentColor provides contentColor) {
+        CompositionLocalProvider(
+            LocalGlasenseContentColor provides contentColor
+        ) {
             content()
         }
     }
@@ -159,7 +161,9 @@ fun GlasenseButtonAlt(
             ),
         contentAlignment = Alignment.Center
     ) {
-        CompositionLocalProvider(LocalContentColor provides contentColor) {
+        CompositionLocalProvider(
+            LocalGlasenseContentColor provides contentColor
+        ) {
             content()
         }
     }
@@ -250,7 +254,9 @@ fun GlasenseButtonAdaptable(
             ),
         contentAlignment = Alignment.Center
     ) {
-        CompositionLocalProvider(LocalContentColor provides contentColor) {
+        CompositionLocalProvider(
+            LocalGlasenseContentColor provides contentColor
+        ) {
             content()
         }
     }
@@ -286,7 +292,9 @@ fun GlasenseButtonCompact(
             .padding(padding),
         contentAlignment = Alignment.Center
     ) {
-        CompositionLocalProvider(LocalContentColor provides contentColor) {
+        CompositionLocalProvider(
+            LocalGlasenseContentColor provides contentColor
+        ) {
             content()
         }
     }
@@ -354,7 +362,9 @@ fun GlasenseButton(
             ),
         contentAlignment = Alignment.Center
     ) {
-        CompositionLocalProvider(LocalContentColor provides contentColor) {
+        CompositionLocalProvider(
+            LocalGlasenseContentColor provides contentColor
+        ) {
             content()
         }
     }
@@ -377,7 +387,7 @@ fun GlasenseButtonToolBar(
     // Animate scale and alpha for press feedback.
     val isPressed by interactionSource.collectIsPressedAsState()
     val pressed = isPressed && animated()
-    
+
     val scale by animateFloatAsState(
         targetValue = if (pressed) 1.2f else 1.0f,
         animationSpec = spring(0.5f, 300f, 0.0001f)
@@ -419,7 +429,9 @@ fun GlasenseButtonToolBar(
             },
         contentAlignment = Alignment.Center
     ) {
-        CompositionLocalProvider(LocalContentColor provides contentColor) {
+        CompositionLocalProvider(
+            LocalGlasenseContentColor provides contentColor
+        ) {
             content()
         }
     }

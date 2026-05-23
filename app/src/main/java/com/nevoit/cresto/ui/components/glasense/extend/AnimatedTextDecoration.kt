@@ -8,8 +8,6 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.input.KeyboardActionHandler
 import androidx.compose.foundation.text.input.TextFieldDecorator
 import androidx.compose.foundation.text.input.TextFieldState
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -29,12 +27,14 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.nevoit.cresto.theme.AppColors
+import com.nevoit.glasense.core.component.Text
+import com.nevoit.glasense.theme.GlasenseTheme
 
 @Composable
 fun LineThroughText(
     text: String,
     modifier: Modifier = Modifier,
-    style: TextStyle = MaterialTheme.typography.bodyMedium,
+    style: TextStyle = GlasenseTheme.type.body,
     lineColor: Color = AppColors.primary,
     strokeWidth: Dp = 2.dp,
     animationDuration: Int = 300,
@@ -128,7 +128,7 @@ fun LineThroughBasicTextField(
     state: TextFieldState,
     modifier: Modifier = Modifier,
     lineThrough: Boolean = false,
-    textStyle: TextStyle = MaterialTheme.typography.bodyMedium,
+    textStyle: TextStyle = GlasenseTheme.type.body,
     lineColor: Color = AppColors.primary,
     strokeWidth: Dp = 2.dp,
     animationDuration: Int = 300,

@@ -25,8 +25,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.material3.Icon
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -87,6 +85,8 @@ import com.nevoit.cresto.ui.components.glasense.GlasenseMenuItem
 import com.nevoit.cresto.ui.components.glasense.glasenseHighlight
 import com.nevoit.cresto.ui.components.glasense.material.MaterialRecipes
 import com.nevoit.cresto.ui.components.glasense.material.rememberMaterialRenderEffect
+import com.nevoit.glasense.core.component.Icon
+import com.nevoit.glasense.core.component.Text
 import kotlinx.coroutines.launch
 
 @Composable

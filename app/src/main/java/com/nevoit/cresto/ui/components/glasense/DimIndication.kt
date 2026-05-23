@@ -5,7 +5,6 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.IndicationNodeFactory
 import androidx.compose.foundation.interaction.InteractionSource
 import androidx.compose.foundation.interaction.PressInteraction
-import androidx.compose.material3.LocalContentColor
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
@@ -16,6 +15,7 @@ import androidx.compose.ui.node.CompositionLocalConsumerModifierNode
 import androidx.compose.ui.node.DelegatableNode
 import androidx.compose.ui.node.DrawModifierNode
 import androidx.compose.ui.node.currentValueOf
+import com.nevoit.glasense.theme.LocalGlasenseContentColor
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
@@ -71,7 +71,7 @@ private class DimIndicationNode(
             val targetColor = if (color != Color.Unspecified) {
                 color
             } else {
-                currentValueOf(LocalContentColor)
+                currentValueOf(LocalGlasenseContentColor)
             }
 
             val outline = shape.createOutline(size, layoutDirection, this)

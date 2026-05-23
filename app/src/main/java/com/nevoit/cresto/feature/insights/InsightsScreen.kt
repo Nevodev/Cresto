@@ -25,8 +25,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Icon
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -79,6 +77,9 @@ import com.nevoit.cresto.ui.components.packed.CardWithTitle
 import com.nevoit.cresto.ui.components.packed.HGap
 import com.nevoit.cresto.ui.components.packed.PageContent
 import com.nevoit.cresto.ui.components.packed.VGap
+import com.nevoit.glasense.core.component.Icon
+import com.nevoit.glasense.core.component.Text
+import com.nevoit.glasense.theme.GlasenseTheme
 import com.nevoit.glasense.theme.lumify
 import java.time.format.DateTimeFormatter
 import java.util.Locale
@@ -290,8 +291,7 @@ private fun PressureGauge(
             Text(
                 text = score.toString(),
                 color = color,
-                fontSize = 32.sp,
-                lineHeight = 32.sp,
+                style = GlasenseTheme.type.largeTitle.copy(lineHeight = 32.sp),
                 fontWeight = FontWeight.W500,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
@@ -299,8 +299,7 @@ private fun PressureGauge(
             Text(
                 text = level,
                 color = AppColors.contentVariant,
-                fontSize = 12.sp,
-                lineHeight = 14.sp,
+                style = GlasenseTheme.type.footnote,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
@@ -532,8 +531,7 @@ private fun WeeklyTrendBars(
             Text(
                 text = stringResource(R.string.insights_empty_trend),
                 color = AppColors.contentVariant,
-                fontSize = 14.sp,
-                lineHeight = 18.sp,
+                style = GlasenseTheme.type.callout,
                 modifier = Modifier.align(Alignment.Center)
             )
         }

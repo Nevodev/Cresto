@@ -22,10 +22,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.Icon
-import androidx.compose.material3.LocalContentColor
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
@@ -67,6 +63,10 @@ import com.nevoit.cresto.ui.components.packed.ConfigTextField
 import com.nevoit.cresto.ui.components.packed.TodoReminderConfig
 import com.nevoit.cresto.ui.components.packed.VGap
 import com.nevoit.cresto.ui.components.packed.displayText
+import com.nevoit.glasense.core.component.Icon
+import com.nevoit.glasense.core.component.Text
+import com.nevoit.glasense.theme.GlasenseTheme
+import com.nevoit.glasense.theme.LocalGlasenseContentColor
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
@@ -292,7 +292,7 @@ fun AdvancedPage(
             }
             item {
                 CompositionLocalProvider(
-                    LocalContentColor provides AppColors.contentVariant
+                    LocalGlasenseContentColor provides AppColors.contentVariant
                 ) {
                     Column(
                         modifier = Modifier
@@ -318,8 +318,6 @@ fun AdvancedPage(
                             )
                             Text(
                                 text = stringResource(R.string.due_date),
-                                fontSize = 16.sp,
-                                lineHeight = 18.sp,
                                 fontWeight = FontWeight.Normal,
                                 modifier = Modifier
                                     .align(Alignment.CenterVertically)
@@ -351,8 +349,6 @@ fun AdvancedPage(
                                 Text(
                                     text = finalDate?.format(DateTimeFormatter.ofPattern("yyyy/M/d"))
                                         ?: stringResource(R.string.none),
-                                    fontSize = 16.sp,
-                                    lineHeight = 18.sp,
                                     fontWeight = FontWeight.Normal,
                                     modifier = Modifier.padding(
                                         horizontal = 8.dp,
@@ -547,8 +543,6 @@ fun AdvancedPage(
                             ) {
                                 Text(
                                     text = reminderTimingText,
-                                    fontSize = 16.sp,
-                                    lineHeight = 18.sp,
                                     fontWeight = FontWeight.Normal,
                                     color = AppColors.content
                                 )
@@ -628,7 +622,7 @@ fun AdvancedPage(
             Text(
                 text = stringResource(R.string.advanced),
                 modifier = Modifier.align(Alignment.Center),
-                style = MaterialTheme.typography.headlineSmall
+                style = GlasenseTheme.type.smallTitle
             )
         }
     }

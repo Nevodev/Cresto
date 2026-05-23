@@ -5,11 +5,11 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.nevoit.glasense.core.component.Text
 import com.nevoit.glasense.theme.GlasenseTheme
 
 /**
@@ -24,7 +24,7 @@ fun GlasensePageHeader(
 ) {
     Text(
         text = title,
-        style = GlasenseTheme.type.largeTitle,
+        style = GlasenseTheme.type.largeTitleEmphasized,
         modifier = modifier
             .statusBarsPadding()
             .height(160.dp)
@@ -41,7 +41,7 @@ fun GlasensePageHeaderCompact(
 ) {
     Text(
         text = title,
-        style = GlasenseTheme.type.largeTitle,
+        style = GlasenseTheme.type.largeTitleEmphasized,
         modifier = modifier
             .statusBarsPadding()
             .fillMaxWidth()

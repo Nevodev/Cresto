@@ -19,9 +19,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -51,6 +48,9 @@ import androidx.compose.ui.unit.sp
 import com.kyant.shapes.RoundedRectangle
 import com.nevoit.cresto.R
 import com.nevoit.cresto.theme.AppColors
+import com.nevoit.glasense.core.component.Icon
+import com.nevoit.glasense.core.component.Text
+import com.nevoit.glasense.theme.GlasenseTheme
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.time.Duration.Companion.milliseconds
@@ -160,7 +160,7 @@ fun ConfigEntryItem(
         // The title text.
         Text(
             text = title,
-            style = MaterialTheme.typography.bodyMedium,
+            style = GlasenseTheme.type.body,
             modifier = Modifier
                 .weight(1f)
                 .align(Alignment.CenterVertically)

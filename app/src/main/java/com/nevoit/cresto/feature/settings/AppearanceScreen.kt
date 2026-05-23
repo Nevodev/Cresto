@@ -33,9 +33,6 @@ import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
@@ -94,7 +91,10 @@ import com.nevoit.cresto.ui.components.packed.ConfigItemContainer
 import com.nevoit.cresto.ui.components.packed.PageContent
 import com.nevoit.cresto.ui.components.packed.PlainConfigItemContainer
 import com.nevoit.cresto.ui.components.packed.VGap
+import com.nevoit.glasense.core.component.Icon
+import com.nevoit.glasense.core.component.Text
 import com.nevoit.glasense.overscroll.rememberOffsetOverscrollFactory
+import com.nevoit.glasense.theme.GlasenseTheme
 import com.nevoit.glasense.theme.values.Amber500
 import com.nevoit.glasense.theme.values.Blue500
 import com.nevoit.glasense.theme.values.Cyan500
@@ -260,8 +260,7 @@ fun AppearanceScreen(settingsViewModel: SettingsViewModel = viewModel()) {
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
                     text = stringResource(R.string.when_use_dynamic_color_scheme_is_enabled_custom_primary_color_is_automatically_turned_off),
-                    fontSize = 14.sp,
-                    lineHeight = 18.sp,
+                    style = GlasenseTheme.type.callout,
                     modifier = Modifier.padding(horizontal = 12.dp),
                     color = AppColors.contentVariant.copy(alpha = .3f)
                 )
@@ -283,8 +282,7 @@ fun AppearanceScreen(settingsViewModel: SettingsViewModel = viewModel()) {
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
                     text = stringResource(R.string.enabling_lite_mode_will_disable_some_blur_effects),
-                    fontSize = 14.sp,
-                    lineHeight = 18.sp,
+                    style = GlasenseTheme.type.callout,
                     modifier = Modifier.padding(horizontal = 12.dp),
                     color = AppColors.contentVariant.copy(alpha = .3f)
                 )
@@ -310,8 +308,7 @@ fun AppearanceScreen(settingsViewModel: SettingsViewModel = viewModel()) {
                     text = stringResource(
                         R.string.enabling_liquid_glass_can_significantly_impact_performance
                     ),
-                    fontSize = 14.sp,
-                    lineHeight = 18.sp,
+                    style = GlasenseTheme.type.callout,
                     modifier = Modifier.padding(horizontal = 12.dp),
                     color = AppColors.contentVariant.copy(alpha = .3f)
                 )
@@ -329,7 +326,7 @@ fun AppearanceScreen(settingsViewModel: SettingsViewModel = viewModel()) {
                         ) {
                             itemsIndexed(
                                 items = appIconEntries,
-                                key = { index, icon -> "${index}_${icon.alias}" }) { index, icon ->
+                                key = { index, icon -> "${index}_${icon.alias}" }) { _, icon ->
                                 AppIconOption(
                                     icon = icon,
                                     selected = currentAppIcon == icon,
@@ -415,7 +412,7 @@ fun AppearanceScreen(settingsViewModel: SettingsViewModel = viewModel()) {
                     text = stringResource(R.string.custom_primary_color),
                     modifier = Modifier.weight(1f),
                     textAlign = TextAlign.Center,
-                    style = MaterialTheme.typography.headlineSmall
+                    style = GlasenseTheme.type.smallTitle
                 )
                 GlasenseButton(
                     enabled = true,

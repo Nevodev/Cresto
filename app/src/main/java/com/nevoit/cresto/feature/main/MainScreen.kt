@@ -22,7 +22,6 @@ import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -91,6 +90,7 @@ import com.nevoit.cresto.ui.components.packed.TimePicker
 import com.nevoit.cresto.ui.components.packed.TodoReminderConfig
 import com.nevoit.cresto.ui.modifier.pressIndentShaderEffect
 import com.nevoit.cresto.ui.modifier.shaderRipple
+import com.nevoit.glasense.core.component.Icon
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 import java.time.LocalDate

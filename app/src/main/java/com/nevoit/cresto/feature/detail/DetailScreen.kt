@@ -31,10 +31,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.Icon
-import androidx.compose.material3.LocalContentColor
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
@@ -126,6 +122,10 @@ import com.nevoit.cresto.ui.modifier.shaderRipple
 import com.nevoit.cresto.util.formatRelativeTime
 import com.nevoit.glasense.component.ProgressView
 import com.nevoit.glasense.core.animation.Springs
+import com.nevoit.glasense.core.component.Icon
+import com.nevoit.glasense.core.component.Text
+import com.nevoit.glasense.theme.GlasenseTheme
+import com.nevoit.glasense.theme.LocalGlasenseContentColor
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.time.LocalDate
@@ -441,7 +441,7 @@ fun DetailScreen(
                 }
                 item(key = "information") {
                     CompositionLocalProvider(
-                        LocalContentColor provides AppColors.contentVariant
+                        LocalGlasenseContentColor provides AppColors.contentVariant
                     ) {
                         Column(
                             modifier = Modifier
@@ -478,8 +478,6 @@ fun DetailScreen(
                                 }
                                 Text(
                                     text = getFlagText(selectedIndex),
-                                    fontSize = 16.sp,
-                                    lineHeight = 18.sp,
                                     fontWeight = FontWeight.Normal,
                                     color = AppColors.content
                                 )
@@ -496,8 +494,6 @@ fun DetailScreen(
                                 Text(
                                     text = finalDate?.format(DateTimeFormatter.ofPattern("yyyy/M/d"))
                                         ?: stringResource(R.string.none),
-                                    fontSize = 16.sp,
-                                    lineHeight = 18.sp,
                                     fontWeight = FontWeight.Normal,
                                     modifier = Modifier,
                                     color = AppColors.content
@@ -516,8 +512,6 @@ fun DetailScreen(
                                 val timeText = currentItem.todoItem.formatTimeText()
                                 Text(
                                     text = timeText ?: stringResource(R.string.all_day),
-                                    fontSize = 16.sp,
-                                    lineHeight = 18.sp,
                                     fontWeight = FontWeight.Normal,
                                     color = AppColors.content
                                 )
@@ -557,8 +551,6 @@ fun DetailScreen(
                                 }
                                 Text(
                                     text = currentItem.todoItem.formatReminderText(),
-                                    fontSize = 16.sp,
-                                    lineHeight = 18.sp,
                                     fontWeight = FontWeight.Normal,
                                     color = AppColors.content
                                 )
@@ -568,11 +560,9 @@ fun DetailScreen(
                     VGap()
                 }
                 item(key = "small_title") {
-
                     Text(
                         text = stringResource(R.string.task),
-                        fontSize = 14.sp,
-                        lineHeight = 14.sp,
+                        style = GlasenseTheme.type.callout.copy(lineHeight = 14.sp),
                         fontWeight = FontWeight.Normal,
                         color = AppColors.contentVariant,
                         modifier = Modifier
@@ -721,17 +711,15 @@ fun DetailScreen(
                     modifier = Modifier
                         .padding(start = 12.dp)
                         .weight(1f),
-                    fontSize = 14.sp,
-                    lineHeight = 14.sp,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    style = MaterialTheme.typography.bodyMedium.copy(
-                        shadow = Shadow(
+                    style = GlasenseTheme.type.callout.copy(
+                        lineHeight = 14.sp, shadow = Shadow(
                             color = surfaceColor.copy(alpha = 1f),
                             offset = Offset(x = 0f, y = 0f),
                             blurRadius = 8f
                         )
-                    )
+                    ),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
                 )
                 val subTodoCount = itemWithSubTodos?.subTodos?.size ?: 0
                 val deleteTodoSimpleText = stringResource(R.string.delete_todo_simple)
@@ -992,8 +980,6 @@ fun TodoConfigRow(
         )
         Text(
             text = title,
-            fontSize = 16.sp,
-            lineHeight = 18.sp,
             fontWeight = FontWeight.Normal,
             modifier = Modifier
                 .align(Alignment.CenterVertically)

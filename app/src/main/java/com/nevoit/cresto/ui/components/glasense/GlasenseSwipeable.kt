@@ -20,7 +20,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.LaunchedEffect
@@ -48,6 +47,7 @@ import com.nevoit.cresto.ui.components.myFadeOut
 import com.nevoit.cresto.ui.components.myScaleIn
 import com.nevoit.cresto.ui.components.myScaleOut
 import com.nevoit.glasense.core.animation.Springs
+import com.nevoit.glasense.core.component.Icon
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.joinAll

@@ -17,9 +17,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -35,7 +32,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.kyant.shapes.Capsule
 import com.nevoit.cresto.R
 import com.nevoit.cresto.data.todo.TodoReminderMode
@@ -53,6 +49,9 @@ import com.nevoit.cresto.ui.components.packed.ConfigItem
 import com.nevoit.cresto.ui.components.packed.ConfigItemContainer
 import com.nevoit.cresto.ui.components.packed.TodoReminderConfig
 import com.nevoit.cresto.ui.components.packed.displayText
+import com.nevoit.glasense.core.component.Icon
+import com.nevoit.glasense.core.component.Text
+import com.nevoit.glasense.theme.GlasenseTheme
 import java.time.LocalTime
 
 @Composable
@@ -220,7 +219,7 @@ fun DetailReminderBottomSheet(
                 Text(
                     text = stringResource(R.string.reminder),
                     modifier = Modifier.align(Alignment.Center),
-                    style = MaterialTheme.typography.headlineSmall
+                    style = GlasenseTheme.type.smallTitle
                 )
             }
             Spacer(modifier = Modifier.height(12.dp))
@@ -248,8 +247,6 @@ fun DetailReminderBottomSheet(
                         ) {
                             Text(
                                 text = reminderTimingText,
-                                fontSize = 16.sp,
-                                lineHeight = 18.sp,
                                 fontWeight = FontWeight.Normal,
                                 color = AppColors.content
                             )

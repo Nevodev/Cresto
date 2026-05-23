@@ -22,9 +22,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.input.delete
 import androidx.compose.foundation.text.input.rememberTextFieldState
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -81,6 +78,9 @@ import com.nevoit.cresto.ui.components.glasense.SwipeableActionButton
 import com.nevoit.cresto.ui.components.glasense.SwipeableListState
 import com.nevoit.cresto.ui.components.glasense.extend.LineThroughBasicTextField
 import com.nevoit.cresto.ui.components.glasense.extend.LineThroughText
+import com.nevoit.glasense.core.component.Icon
+import com.nevoit.glasense.core.component.Text
+import com.nevoit.glasense.theme.GlasenseTheme
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.delay
 import java.time.LocalDate
@@ -274,7 +274,7 @@ fun TodoItemRow(
                 }
             }
 
-            val metadataStyle = MaterialTheme.typography.bodyMedium
+            val metadataStyle = GlasenseTheme.type.body
             val metadataFontSize = 14.sp
             val areCompleted = totalTaskCount > 0 && totalTaskCount == completedTaskCount
 

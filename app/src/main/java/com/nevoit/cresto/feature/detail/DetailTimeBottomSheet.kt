@@ -17,9 +17,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -49,6 +46,9 @@ import com.nevoit.cresto.ui.components.glasense.GlasenseSwitch
 import com.nevoit.cresto.ui.components.glasense.ZeroHeightDivider
 import com.nevoit.cresto.ui.components.packed.ConfigItem
 import com.nevoit.cresto.ui.components.packed.ConfigItemContainer
+import com.nevoit.glasense.core.component.Icon
+import com.nevoit.glasense.core.component.Text
+import com.nevoit.glasense.theme.GlasenseTheme
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
@@ -98,7 +98,7 @@ fun DetailTimeBottomSheet(
                 Text(
                     text = stringResource(R.string.time),
                     modifier = Modifier.align(Alignment.Center),
-                    style = MaterialTheme.typography.headlineSmall
+                    style = GlasenseTheme.type.smallTitle
                 )
             }
             Spacer(modifier = Modifier.height(12.dp))

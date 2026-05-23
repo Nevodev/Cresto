@@ -9,9 +9,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
@@ -41,6 +38,9 @@ import com.nevoit.cresto.ui.components.glasense.PopupDirection
 import com.nevoit.cresto.ui.components.glasense.PopupState
 import com.nevoit.cresto.ui.components.glasense.ZeroWidthDivider
 import com.nevoit.cresto.ui.components.glasense.glasenseHighlight
+import com.nevoit.glasense.core.component.Icon
+import com.nevoit.glasense.core.component.Text
+import com.nevoit.glasense.theme.GlasenseTheme
 import java.time.LocalDate
 import java.time.Month
 import java.time.YearMonth
@@ -145,7 +145,7 @@ fun DueDatePicker(
                 text = stringResource(R.string.select_due_date),
                 modifier = Modifier.weight(1f),
                 textAlign = TextAlign.Center,
-                style = MaterialTheme.typography.headlineSmall
+                style = GlasenseTheme.type.smallTitle
             )
             GlasenseButton(
                 enabled = true,

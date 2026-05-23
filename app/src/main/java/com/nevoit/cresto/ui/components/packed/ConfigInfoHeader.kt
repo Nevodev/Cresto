@@ -8,9 +8,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -24,8 +21,10 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.nevoit.cresto.theme.AppSpecs
+import com.nevoit.glasense.core.component.Icon
+import com.nevoit.glasense.core.component.Text
+import com.nevoit.glasense.theme.GlasenseTheme
 
 /**
  * A composable function that displays a header for a configuration screen.
@@ -98,7 +97,7 @@ fun ConfigInfoHeader(
         // The main title text.
         Text(
             text = title,
-            style = MaterialTheme.typography.headlineMedium,
+            style = GlasenseTheme.type.mediumTitle,
             modifier = Modifier
                 .padding(horizontal = 12.dp, vertical = 8.dp)
                 .fillMaxWidth(),
@@ -109,8 +108,7 @@ fun ConfigInfoHeader(
         Text(
             text = info,
             fontWeight = FontWeight.Normal,
-            fontSize = 14.sp,
-            lineHeight = 18.sp,
+            style = GlasenseTheme.type.callout,
             textAlign = TextAlign.Center,
             modifier = Modifier
                 .padding(start = 24.dp, top = 0.dp, end = 24.dp, bottom = 20.dp)

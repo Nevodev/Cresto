@@ -9,8 +9,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyListState
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.remember
@@ -35,6 +33,8 @@ import com.nevoit.cresto.ui.components.myFadeIn
 import com.nevoit.cresto.ui.components.myFadeOut
 import com.nevoit.cresto.ui.components.myScaleIn
 import com.nevoit.cresto.ui.components.myScaleOut
+import com.nevoit.glasense.core.component.Text
+import com.nevoit.glasense.theme.GlasenseTheme
 
 /**
  * A dynamic small title bar that appears with an animation.
@@ -138,7 +138,7 @@ return mix(content.eval(coord) * blurAlpha, tint * tintAlpha, tintIntensity);
         ) {
             Text(
                 title,
-                style = MaterialTheme.typography.headlineSmall.merge(textStyle),
+                style = GlasenseTheme.type.smallTitle.merge(textStyle),
                 maxLines = 1,
                 modifier = Modifier.padding(horizontal = titleHorizontalPadding),
                 overflow = TextOverflow.Ellipsis,

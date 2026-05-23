@@ -20,9 +20,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -52,7 +49,6 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.kyant.backdrop.Backdrop
 import com.kyant.backdrop.drawBackdrop
 import com.kyant.backdrop.effects.blur
@@ -67,6 +63,9 @@ import com.nevoit.cresto.theme.LocalGlasenseSettings
 import com.nevoit.cresto.theme.isAppInDarkTheme
 import com.nevoit.cresto.ui.components.glasense.material.MaterialRecipes
 import com.nevoit.cresto.ui.components.glasense.material.rememberMaterialRenderEffect
+import com.nevoit.glasense.core.component.Icon
+import com.nevoit.glasense.core.component.Text
+import com.nevoit.glasense.theme.GlasenseTheme
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -127,7 +126,7 @@ fun GlasenseDialogButton(
             }
             Text(
                 text = text,
-                style = MaterialTheme.typography.bodyMedium,
+                style = GlasenseTheme.type.body,
                 textAlign = TextAlign.Center
             )
         }
@@ -292,7 +291,7 @@ fun GlasenseDialog(
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
                         text = dialogState.title,
-                        style = MaterialTheme.typography.headlineSmall,
+                        style = GlasenseTheme.type.smallTitle,
                         modifier = Modifier.fillMaxWidth(),
                         textAlign = TextAlign.Center
                     )
@@ -303,8 +302,7 @@ fun GlasenseDialog(
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
                             text = it,
-                            style = MaterialTheme.typography.bodyMedium,
-                            lineHeight = 20.sp,
+                            style = GlasenseTheme.type.body,
                             modifier = Modifier
                                 .graphicsLayer(alpha = 0.5f)
                                 .padding(horizontal = 4.dp)

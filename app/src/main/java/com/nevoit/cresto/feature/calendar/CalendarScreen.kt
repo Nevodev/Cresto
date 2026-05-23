@@ -27,9 +27,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -102,6 +99,9 @@ import com.nevoit.cresto.ui.components.myScaleOut
 import com.nevoit.cresto.ui.components.packed.PageContent
 import com.nevoit.cresto.ui.components.packed.VGap
 import com.nevoit.glasense.core.animation.Springs
+import com.nevoit.glasense.core.component.Icon
+import com.nevoit.glasense.core.component.Text
+import com.nevoit.glasense.theme.GlasenseTheme
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.YearMonth
@@ -306,17 +306,14 @@ fun CalendarScreen() {
                             Text(
                                 text = stringResource(id = R.string.no_task_this_day),
                                 color = AppColors.content,
-                                fontSize = 16.sp,
-                                lineHeight = 16.sp,
                                 modifier = Modifier.padding(top = 4.dp),
                                 fontWeight = FontWeight.Medium
                             )
                             Text(
                                 text = stringResource(id = R.string.take_a_break),
                                 color = AppColors.contentVariant.copy(.4f),
-                                fontSize = 14.sp,
-                                lineHeight = 14.sp,
-                                modifier = Modifier.padding(top = 4.dp)
+                                modifier = Modifier.padding(top = 4.dp),
+                                style = GlasenseTheme.type.callout
                             )
                         }
 
@@ -588,7 +585,7 @@ return mix(content.eval(coord) * blurAlpha, tint * tintAlpha, tintIntensity);
                             R.string.selected_todos,
                             lastNonZeroSelected
                         ),
-                        style = MaterialTheme.typography.headlineSmall.copy(fontFeatureSettings = "tnum"),
+                        style = GlasenseTheme.type.smallTitle.copy(fontFeatureSettings = "tnum"),
                         maxLines = 1,
                         modifier = Modifier.padding(horizontal = 80.dp),
                         overflow = TextOverflow.Ellipsis,
@@ -645,8 +642,7 @@ return mix(content.eval(coord) * blurAlpha, tint * tintAlpha, tintIntensity);
         Text(
             text = stringResource(R.string.quick_return_to_today),
             color = AppColors.content,
-            fontSize = 14.sp,
-            lineHeight = 14.sp,
+            style = GlasenseTheme.type.callout.copy(lineHeight = 14.sp),
             fontWeight = FontWeight.Medium,
             textAlign = TextAlign.Center,
             modifier = Modifier.padding(horizontal = 4.dp)

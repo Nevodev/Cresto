@@ -14,9 +14,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.input.TextFieldState
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -51,6 +48,9 @@ import com.nevoit.cresto.ui.components.glasense.glasenseHighlight
 import com.nevoit.cresto.ui.components.glasense.material.MaterialRecipes
 import com.nevoit.cresto.ui.components.glasense.material.rememberMaterialRenderEffect
 import com.nevoit.cresto.ui.viewmodel.AiViewModel
+import com.nevoit.glasense.core.component.Icon
+import com.nevoit.glasense.core.component.Text
+import com.nevoit.glasense.theme.GlasenseTheme
 
 @Composable
 fun GlowContainer(
@@ -171,7 +171,7 @@ fun AiInputBox(
                             onKeyboardAction = {
                                 aiViewModel.generateContent(textFieldState.text.toString())
                             },
-                            textStyle = MaterialTheme.typography.bodyLarge.copy(
+                            textStyle = GlasenseTheme.type.body.copy(
                                 color = AppColors.content
                             ),
                             cursorBrush = SolidColor(AppColors.primary)
@@ -187,8 +187,8 @@ fun AiInputBox(
                                         blendMode =
                                             if (darkTheme) BlendMode.Plus else BlendMode.Luminosity
                                     },
-                                style = MaterialTheme.typography.bodyLarge,
-                                color = if (!darkTheme) Color(0xFF545454) else MaterialTheme.typography.bodyLarge.color
+                                style = GlasenseTheme.type.body,
+                                color = if (!darkTheme) Color(0xFF545454) else GlasenseTheme.type.body.color
                             )
                         }
                     }
@@ -273,8 +273,8 @@ fun AiInputBox(
                             blendMode =
                                 if (darkTheme) BlendMode.Plus else BlendMode.Luminosity
                         },
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = if (!darkTheme) Color(0xFF545454) else MaterialTheme.typography.bodyLarge.color
+                    style = GlasenseTheme.type.body,
+                    color = if (!darkTheme) Color(0xFF545454) else GlasenseTheme.type.body.color
                 )
             }
         }

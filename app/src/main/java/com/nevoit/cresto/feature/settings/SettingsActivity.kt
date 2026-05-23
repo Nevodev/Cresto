@@ -8,12 +8,12 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.LocalOverscrollFactory
 import androidx.compose.foundation.gestures.Orientation
-import androidx.compose.material3.LocalContentColor
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.core.view.WindowCompat
 import com.nevoit.cresto.theme.AppColors
 import com.nevoit.cresto.theme.GlasenseTheme
 import com.nevoit.glasense.overscroll.rememberOffsetOverscrollFactory
+import com.nevoit.glasense.theme.LocalGlasenseContentColor
 
 enum class SettingsDestination(val value: String) {
     SETTINGS("settings"),
@@ -58,7 +58,7 @@ class SettingsActivity : ComponentActivity() {
                 )
                 CompositionLocalProvider(
                     LocalOverscrollFactory provides overscrollFactory,
-                    LocalContentColor provides AppColors.content
+                    LocalGlasenseContentColor provides AppColors.content
                 ) {
                     when (destination) {
                         SettingsDestination.SETTINGS -> SettingsScreen()

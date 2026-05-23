@@ -20,10 +20,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.Icon
-import androidx.compose.material3.LocalContentColor
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
@@ -70,7 +66,11 @@ import com.nevoit.cresto.ui.components.glasense.glasenseHighlight
 import com.nevoit.cresto.ui.components.packed.HorizontalFlagPicker
 import com.nevoit.cresto.ui.components.packed.HorizontalPresetDatePicker
 import com.nevoit.cresto.ui.components.packed.VGap
+import com.nevoit.glasense.core.component.Icon
+import com.nevoit.glasense.core.component.Text
 import com.nevoit.glasense.overscroll.rememberOffsetOverscrollFactory
+import com.nevoit.glasense.theme.GlasenseTheme
+import com.nevoit.glasense.theme.LocalGlasenseContentColor
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.time.LocalDate
@@ -153,7 +153,7 @@ fun AddTodoSheet(
                 text = stringResource(R.string.new_todo),
                 modifier = Modifier.weight(1f),
                 textAlign = TextAlign.Center,
-                style = MaterialTheme.typography.headlineSmall
+                style = GlasenseTheme.type.smallTitle
             )
             // Add button with a custom border.
             GlasenseButton(
@@ -199,7 +199,7 @@ fun AddTodoSheet(
                     .focusRequester(focusRequester),
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                 keyboardActions = KeyboardActions(onDone = { onAdd() }),
-                textStyle = MaterialTheme.typography.bodyLarge.copy(color = AppColors.content),
+                textStyle = GlasenseTheme.type.body.copy(color = AppColors.content),
                 cursorBrush = SolidColor(AppColors.primary),
                 singleLine = true
             )
@@ -398,7 +398,7 @@ fun AddTodoSheet(
         }
         VGap()
         CompositionLocalProvider(
-            LocalContentColor provides AppColors.contentVariant
+            LocalGlasenseContentColor provides AppColors.contentVariant
         ) {
             Column(
                 modifier = Modifier

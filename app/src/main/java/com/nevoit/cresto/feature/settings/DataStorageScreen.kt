@@ -24,9 +24,6 @@ import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -73,6 +70,9 @@ import com.nevoit.cresto.ui.components.packed.ConfigItem
 import com.nevoit.cresto.ui.components.packed.ConfigItemContainer
 import com.nevoit.cresto.ui.components.packed.PageContent
 import com.nevoit.cresto.ui.components.packed.VGap
+import com.nevoit.glasense.core.component.Icon
+import com.nevoit.glasense.core.component.Text
+import com.nevoit.glasense.theme.GlasenseTheme
 import com.nevoit.glasense.theme.values.Amber400
 import com.nevoit.glasense.theme.values.Emerald400
 import com.nevoit.glasense.theme.values.Slate500
@@ -454,8 +454,7 @@ fun DataStorageScreen() {
                 Column(modifier = Modifier.fillMaxWidth()) {
                     Text(
                         text = stringResource(R.string.storage_usage),
-                        fontSize = 14.sp,
-                        lineHeight = 14.sp,
+                        style = GlasenseTheme.type.callout.copy(lineHeight = 14.sp),
                         color = AppColors.contentVariant,
                         modifier = Modifier
                             .padding(
@@ -761,7 +760,7 @@ private fun LegendItem(color: Color, text: String) {
         Spacer(modifier = Modifier.width(6.dp))
         Text(
             text = text,
-            style = MaterialTheme.typography.bodySmall,
+            style = GlasenseTheme.type.body,
             color = AppColors.content.copy(alpha = 0.5f)
         )
     }

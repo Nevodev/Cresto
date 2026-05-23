@@ -10,8 +10,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.width
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
@@ -20,6 +18,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.dp
+import com.nevoit.glasense.core.component.Text
+import com.nevoit.glasense.theme.GlasenseTheme
 
 /**
  * A composable that represents a generic configuration item in a settings screen.
@@ -81,7 +81,7 @@ fun ConfigItem(
         // The text label for the configuration item.
         Text(
             text = title,
-            style = MaterialTheme.typography.bodyMedium,
+            style = GlasenseTheme.type.body,
             modifier = Modifier
                 .weight(1f)
                 .align(Alignment.CenterVertically),

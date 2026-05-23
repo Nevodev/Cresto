@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -14,6 +13,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.nevoit.cresto.theme.AppColors
 import com.nevoit.cresto.theme.AppSpecs
+import com.nevoit.glasense.core.component.Text
+import com.nevoit.glasense.theme.GlasenseTheme
 
 /**
  * A container composable for configuration items, providing a consistent layout with an optional title and a background.
@@ -34,8 +35,7 @@ fun ConfigContainer(
         if (title != null) {
             Text(
                 text = title,
-                fontSize = 14.sp,
-                lineHeight = 14.sp,
+                style = GlasenseTheme.type.callout.copy(lineHeight = 14.sp),
                 color = AppColors.contentVariant,
                 modifier = Modifier
                     .padding(

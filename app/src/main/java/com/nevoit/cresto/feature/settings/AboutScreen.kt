@@ -23,8 +23,6 @@ import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.Icon
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -78,6 +76,9 @@ import com.nevoit.cresto.ui.components.packed.VGap
 import com.nevoit.cresto.ui.modifier.pressIndentShaderEffect
 import com.nevoit.cresto.ui.modifier.shaderRipple
 import com.nevoit.cresto.ui.modifier.tiltOnPress
+import com.nevoit.glasense.core.component.Icon
+import com.nevoit.glasense.core.component.Text
+import com.nevoit.glasense.theme.GlasenseTheme
 import com.nevoit.glasense.theme.values.Amber400
 import com.nevoit.glasense.theme.values.Blue400
 import com.nevoit.glasense.theme.values.Green400
@@ -400,8 +401,7 @@ fun AboutScreen(settingsViewModel: SettingsViewModel = viewModel()) {
                 Column(modifier = Modifier.fillMaxWidth()) {
                     Text(
                         text = stringResource(R.string.version_info),
-                        fontSize = 14.sp,
-                        lineHeight = 14.sp,
+                        style = GlasenseTheme.type.callout.copy(lineHeight = 14.sp),
                         color = AppColors.contentVariant,
                         modifier = Modifier
                             .padding(

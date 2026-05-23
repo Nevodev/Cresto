@@ -22,9 +22,6 @@ import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -56,6 +53,9 @@ import com.nevoit.cresto.ui.components.packed.ConfigItemContainer
 import com.nevoit.cresto.ui.components.packed.PageContent
 import com.nevoit.cresto.ui.components.packed.VGap
 import com.nevoit.glasense.core.animation.Springs
+import com.nevoit.glasense.core.component.Icon
+import com.nevoit.glasense.core.component.Text
+import com.nevoit.glasense.theme.GlasenseTheme
 import com.nevoit.glasense.theme.values.Slate500
 
 @Composable
@@ -198,14 +198,14 @@ fun LibraryItem(library: Library) {
         ) {
             Text(
                 text = library.name,
-                style = MaterialTheme.typography.bodyLarge,
+                style = GlasenseTheme.type.body,
                 color = AppColors.content,
                 modifier = Modifier.weight(1f)
             )
             library.artifactVersion?.let {
                 Text(
                     text = it,
-                    style = MaterialTheme.typography.bodySmall,
+                    style = GlasenseTheme.type.body,
                     color = AppColors.contentVariant
                 )
             }
@@ -214,7 +214,7 @@ fun LibraryItem(library: Library) {
         if (developers.isNotEmpty()) {
             Text(
                 text = developers,
-                style = MaterialTheme.typography.bodySmall,
+                style = GlasenseTheme.type.body,
                 color = AppColors.contentVariant
             )
         }

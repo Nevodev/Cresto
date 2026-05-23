@@ -34,8 +34,6 @@ import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.material3.Icon
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -83,6 +81,9 @@ import com.nevoit.cresto.ui.components.glasense.GlasenseButtonAlt
 import com.nevoit.cresto.ui.components.glasense.glasenseHighlight
 import com.nevoit.cresto.ui.components.packed.VGap
 import com.nevoit.cresto.ui.modifier.tiltOnPress
+import com.nevoit.glasense.core.component.Icon
+import com.nevoit.glasense.core.component.Text
+import com.nevoit.glasense.theme.GlasenseTheme
 import com.nevoit.glasense.theme.values.Blue500
 import com.nevoit.glasense.theme.values.Indigo500
 import com.nevoit.glasense.theme.values.Pink400
@@ -542,8 +543,7 @@ fun InformationPage() {
                     )
                     Text(
                         text = stringResource(R.string.introduction_1),
-                        fontSize = 14.sp,
-                        lineHeight = 18.sp,
+                        style = GlasenseTheme.type.callout,
                         modifier = Modifier.alpha(.5f)
                     )
                 }
@@ -596,13 +596,11 @@ fun InformationPage() {
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = stringResource(R.string.introduction_title_2),
-                        fontSize = 16.sp,
                         fontWeight = FontWeight.Medium
                     )
                     Text(
                         text = stringResource(R.string.introduction_2),
-                        fontSize = 14.sp,
-                        lineHeight = 18.sp,
+                        style = GlasenseTheme.type.callout,
                         modifier = Modifier.alpha(.5f)
                     )
                 }
@@ -635,13 +633,11 @@ fun InformationPage() {
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = stringResource(R.string.introduction_title_3),
-                        fontSize = 16.sp,
                         fontWeight = FontWeight.Medium
                     )
                     Text(
                         text = stringResource(R.string.introduction_3),
-                        fontSize = 14.sp,
-                        lineHeight = 18.sp,
+                        style = GlasenseTheme.type.callout,
                         modifier = Modifier.alpha(.5f)
                     )
                 }
@@ -685,8 +681,7 @@ fun NotificationPage() {
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 48.dp),
-                fontSize = 14.sp,
-                lineHeight = 18.sp,
+                style = GlasenseTheme.type.callout,
                 textAlign = TextAlign.Center,
                 color = AppColors.contentVariant
             )

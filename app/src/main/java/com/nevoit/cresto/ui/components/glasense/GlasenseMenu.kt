@@ -24,8 +24,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Icon
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -70,6 +68,8 @@ import com.nevoit.cresto.theme.AppColors
 import com.nevoit.cresto.theme.isAppInDarkTheme
 import com.nevoit.cresto.ui.components.glasense.material.MaterialRecipes
 import com.nevoit.cresto.ui.components.glasense.material.rememberMaterialRenderEffect
+import com.nevoit.glasense.core.component.Icon
+import com.nevoit.glasense.core.component.Text
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -182,8 +182,10 @@ fun GlasenseMenu(
     val density = LocalDensity.current
     val layoutDirection = LocalLayoutDirection.current
     val statusBarTopPx = WindowInsets.statusBars.getTop(density).toFloat()
-    val navigationBarLeftPx = WindowInsets.navigationBars.getLeft(density, layoutDirection).toFloat()
-    val navigationBarRightPx = WindowInsets.navigationBars.getRight(density, layoutDirection).toFloat()
+    val navigationBarLeftPx =
+        WindowInsets.navigationBars.getLeft(density, layoutDirection).toFloat()
+    val navigationBarRightPx =
+        WindowInsets.navigationBars.getRight(density, layoutDirection).toFloat()
     val navigationBarBottomPx = WindowInsets.navigationBars.getBottom(density).toFloat()
     val imeBottomPx = WindowInsets.ime.getBottom(density).toFloat()
     val liveAvailableBounds = Rect(

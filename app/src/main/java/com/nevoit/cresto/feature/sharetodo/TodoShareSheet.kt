@@ -24,9 +24,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -64,10 +61,13 @@ import com.nevoit.cresto.theme.AppColors
 import com.nevoit.cresto.theme.AppSpecs
 import com.nevoit.cresto.theme.getFlagColor
 import com.nevoit.cresto.ui.components.glasense.GlasenseBottomSheet
-import com.nevoit.cresto.ui.components.glasense.GlasenseButton
 import com.nevoit.cresto.ui.components.glasense.GlasenseButtonAlt
+import com.nevoit.cresto.ui.components.glasense.GlasenseModalTopBar
 import com.nevoit.cresto.ui.components.glasense.extend.LineThroughText
 import com.nevoit.cresto.ui.components.glasense.glasenseHighlight
+import com.nevoit.glasense.core.component.Icon
+import com.nevoit.glasense.core.component.Text
+import com.nevoit.glasense.theme.GlasenseTheme
 import kotlinx.coroutines.launch
 import java.io.File
 import java.io.FileOutputStream
@@ -140,34 +140,16 @@ fun TodoShareSheet(
                 )
             }
         }
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 12.dp)
-                .padding(horizontal = 12.dp)
-                .height(48.dp)
-        ) {
-            GlasenseButton(
-                enabled = true,
-                shape = CircleShape,
-                onClick = { slideOut() },
-                modifier = Modifier
-                    .width(48.dp)
-                    .height(48.dp),
-                colors = AppButtonColors.action(),
-            ) {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_forward_nav),
+        GlasenseModalTopBar(
+            title = stringResource(R.string.share_todos_title),
+            leading = {
+                Action(
+                    icon = painterResource(id = R.drawable.ic_forward_nav),
                     contentDescription = stringResource(R.string.back),
-                    modifier = Modifier.width(32.dp)
+                    onClick = { slideOut() }
                 )
             }
-            Text(
-                text = stringResource(R.string.share_todos_title),
-                modifier = Modifier.align(Alignment.Center),
-                style = MaterialTheme.typography.headlineSmall
-            )
-        }
+        )
 
         Row(
             modifier = Modifier
@@ -291,14 +273,11 @@ fun TodoShareCard(
             Column {
                 Text(
                     text = stringResource(R.string.todos),
-                    fontSize = 16.sp,
-                    lineHeight = 18.sp,
                     color = AppColors.content
                 )
                 Text(
                     text = DateTimeFormatter.ofPattern("yyyy/MM/dd").format(today),
-                    fontSize = 14.sp,
-                    lineHeight = 16.sp,
+                    style = GlasenseTheme.type.callout,
                     color = AppColors.contentVariant
                 )
             }
@@ -318,7 +297,7 @@ fun TodoShareCard(
             Text(
                 text = emptyText,
                 color = AppColors.contentVariant,
-                style = MaterialTheme.typography.bodyMedium,
+                style = GlasenseTheme.type.body,
                 modifier = Modifier.padding(horizontal = 12.dp)
             )
         } else {
@@ -352,8 +331,7 @@ fun TodoShareCard(
         ) {
             Text(
                 text = footer,
-                fontSize = 14.sp,
-                lineHeight = 14.sp,
+                style = GlasenseTheme.type.callout,
                 color = AppColors.contentVariant
             )
         }
@@ -506,7 +484,7 @@ private fun ShareDueDateMeta(
         Spacer(modifier = Modifier.width(2.dp))
         Text(
             text = text,
-            style = MaterialTheme.typography.bodyMedium,
+            style = GlasenseTheme.type.body,
             fontSize = 14.sp,
             color = color,
             maxLines = 2,

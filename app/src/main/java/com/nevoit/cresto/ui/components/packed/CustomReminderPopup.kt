@@ -10,15 +10,9 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.defaultMinSize
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -52,17 +46,16 @@ import androidx.compose.ui.unit.sp
 import com.kyant.shapes.Capsule
 import com.nevoit.cresto.R
 import com.nevoit.cresto.data.todo.TodoReminderMode
-import com.nevoit.cresto.theme.AppButtonColors
 import com.nevoit.cresto.theme.AppColors
 import com.nevoit.cresto.theme.AppSpecs
-import com.nevoit.cresto.ui.components.glasense.GlasenseButton
+import com.nevoit.cresto.ui.components.glasense.GlasenseModalTopBar
 import com.nevoit.cresto.ui.components.glasense.GlasensePopup
 import com.nevoit.cresto.ui.components.glasense.GlasenseWheelPicker
 import com.nevoit.cresto.ui.components.glasense.PopupDirection
 import com.nevoit.cresto.ui.components.glasense.PopupState
 import com.nevoit.cresto.ui.components.glasense.ZeroWidthDivider
-import com.nevoit.cresto.ui.components.glasense.glasenseHighlight
 import com.nevoit.glasense.core.animation.Springs
+import com.nevoit.glasense.core.component.Text
 
 private enum class ReminderCustomMode { Hour, Day }
 
@@ -123,68 +116,37 @@ fun CustomReminderPopup(
         anchorGap = 12.dp,
         direction = PopupDirection.Down
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            GlasenseButton(
-                enabled = true,
-                shape = CircleShape,
-                onClick = onDismiss,
-                modifier = Modifier
-                    .width(48.dp)
-                    .height(48.dp),
-                colors = AppButtonColors.action(),
-            ) {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_cross),
+        GlasenseModalTopBar(
+            leading = {
+                Action(
+                    icon = painterResource(id = R.drawable.ic_cross),
                     contentDescription = stringResource(R.string.cancel),
-                    modifier = Modifier.width(28.dp)
+                    onClick = onDismiss
+                )
+            },
+            title = stringResource(R.string.custom_reminder),
+            trailing = {
+                Action(
+                    icon = painterResource(id = R.drawable.ic_checkmark),
+                    contentDescription = stringResource(R.string.done),
+                    onClick = {
+                        val config = when (selectedMode) {
+                            ReminderCustomMode.Hour -> TodoReminderConfig(
+                                mode = TodoReminderMode.BeforeStart,
+                                offsetMinutes = selectedHourBefore * 60 + selectedMinuteBefore
+                            )
+
+                            ReminderCustomMode.Day -> TodoReminderConfig(
+                                mode = TodoReminderMode.BeforeDueDate,
+                                dayOffset = selectedDayBefore,
+                                time = java.time.LocalTime.of(selectedHour, selectedMinute)
+                            )
+                        }
+                        onConfirm(config)
+                    }
                 )
             }
-            Text(
-                text = stringResource(R.string.custom_reminder),
-                modifier = Modifier.weight(1f),
-                textAlign = TextAlign.Center,
-                style = MaterialTheme.typography.headlineSmall
-            )
-            GlasenseButton(
-                enabled = true,
-                shape = CircleShape,
-                onClick = {
-                    val config = when (selectedMode) {
-                        ReminderCustomMode.Hour -> TodoReminderConfig(
-                            mode = TodoReminderMode.BeforeStart,
-                            offsetMinutes = selectedHourBefore * 60 + selectedMinuteBefore
-                        )
-
-                        ReminderCustomMode.Day -> TodoReminderConfig(
-                            mode = TodoReminderMode.BeforeDueDate,
-                            dayOffset = selectedDayBefore,
-                            time = java.time.LocalTime.of(selectedHour, selectedMinute)
-                        )
-                    }
-                    onConfirm(config)
-                },
-                modifier = Modifier
-                    .width(48.dp)
-                    .height(48.dp),
-                colors = AppButtonColors.primary()
-            ) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .glasenseHighlight(48.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_checkmark),
-                        contentDescription = stringResource(R.string.done),
-                        modifier = Modifier.width(28.dp)
-                    )
-                }
-            }
-        }
+        )
 
         if (!isAllDayEnabled) {
             Spacer(modifier = Modifier.height(12.dp))

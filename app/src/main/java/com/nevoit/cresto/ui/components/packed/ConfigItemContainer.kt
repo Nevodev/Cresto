@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -23,6 +22,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.nevoit.cresto.theme.AppColors
 import com.nevoit.cresto.theme.AppSpecs
+import com.nevoit.glasense.core.component.Text
+import com.nevoit.glasense.theme.GlasenseTheme
 
 /**
  * A container for configuration items.
@@ -43,8 +44,7 @@ fun ConfigItemContainer(
         if (title != null) {
             Text(
                 text = title,
-                fontSize = 14.sp,
-                lineHeight = 14.sp,
+                style = GlasenseTheme.type.callout.copy(lineHeight = 14.sp),
                 color = AppColors.contentVariant,
                 modifier = Modifier
                     .padding(
@@ -95,8 +95,7 @@ fun ConfigTextField(
         if (title != null) {
             Text(
                 text = title,
-                fontSize = 14.sp,
-                lineHeight = 14.sp,
+                style = GlasenseTheme.type.callout.copy(lineHeight = 14.sp),
                 color = AppColors.contentVariant,
                 modifier = Modifier
                     .padding(
@@ -161,8 +160,7 @@ fun PlainConfigItemContainer(
         if (title != null) {
             Text(
                 text = title,
-                fontSize = 14.sp,
-                lineHeight = 14.sp,
+                style = GlasenseTheme.type.callout.copy(lineHeight = 14.sp),
                 color = AppColors.contentVariant,
                 modifier = Modifier
                     .padding(
