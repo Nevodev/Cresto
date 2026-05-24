@@ -5,9 +5,8 @@ A modern, elegant and neat To-Do App
 - Elegant & clean UI design.
 - Fluent UX.
 - AI powered task creating.
-- Built-in countdown & timer.
+- Insights.
 - \[WIP\] Widgets.
-- \[WIP\] Analytics.
 
 ## Glasense UI \[WIP\]
 A package includes fluent and beautiful components from Cresto. Glasense is the name of my own design system.
