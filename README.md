@@ -9,8 +9,8 @@ Cresto is a modern Android to-do app built with Kotlin and Jetpack Compose. It c
 - Clean Compose UI with Cresto's Glasense design system and optional Liquid Glass styling.
 - Full to-do workflow.
 - Rich task details.
-- AI task extraction from typed text, shared text, shared images, and current-screen screenshots.
-- Share selected todos as plain text or as a generated image card.
+- AI task extraction.
+- Share todos.
 - Calendar view.
 - Manual or automatic sync of todos into the Android system calendar.
 - Insights page.
