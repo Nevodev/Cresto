@@ -5,14 +5,15 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun VGap() {
-    Spacer(modifier = Modifier.height(12.dp))
+fun VGap(gap: Dp = 12.dp) {
+    Spacer(modifier = Modifier.height(gap))
 }
 
 @Composable
-fun HGap() {
-    Spacer(modifier = Modifier.width(12.dp))
+fun HGap(gap: Dp = 12.dp) {
+    Spacer(modifier = Modifier.width(gap))
 }
