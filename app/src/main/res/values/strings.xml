@@ -285,6 +285,8 @@
     <string name="reminder_notification_date_format">%1$d/%2$d</string>
     <string name="reminder_notification_action_complete">Complete</string>
     <string name="reminder_notification_action_snooze">Remind later</string>
+    <string name="reminder_notification_permission_description">Cresto requires notification permission to send reminders. Notifications will only be sent for reminders you set, and never for marketing purposes.</string>
+    <string name="enable_reminder_notifications">Enable Notifications</string>
     <string name="repeat">Repeat</string>
     <string name="repeat_cycle">Repeat Cycle</string>
     <string name="postpone_after_expiry">Postpone After Expiry</string>
