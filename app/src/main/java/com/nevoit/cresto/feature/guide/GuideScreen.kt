@@ -655,7 +655,7 @@ fun NotificationPage() {
         item { Spacer(modifier = Modifier.height(96.dp)) }
         item {
             Text(
-                text = "打开通知",
+                text = stringResource(R.string.enable_reminder_notifications),
                 modifier = Modifier.fillMaxWidth(),
                 fontSize = 24.sp,
                 textAlign = TextAlign.Center,
@@ -677,7 +677,7 @@ fun NotificationPage() {
         item { Spacer(modifier = Modifier.height(24.dp)) }
         item {
             Text(
-                text = "Cresto需要通知权限才可以向您发送提醒。我们保证只会在您设置了提醒的待办事项到达时发送通知，并且不会发送任何营销相关的内容。",
+                text = stringResource(R.string.reminder_notification_permission_description),
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 48.dp),
