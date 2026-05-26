@@ -274,9 +274,7 @@
     <string name="reminder_notification_date_format">%1$d月%2$d日</string>
     <string name="reminder_notification_action_complete">完成</string>
     <string name="reminder_notification_action_snooze">稍后提示</string>
-    <string name="reminder_notification_permission_description">
-        Cresto 需要通知权限来发送提醒。通知只会用于您设置的待办提醒，绝不会用于任何营销用途。
-    </string>
+    <string name="reminder_notification_permission_description">Cresto 需要通知权限来发送提醒。通知只会用于您设置的待办提醒，绝不会用于任何营销用途。</string>
     <string name="enable_reminder_notifications">打开通知</string>
     <string name="repeat">重复</string>
     <string name="repeat_cycle">重复周期</string>
