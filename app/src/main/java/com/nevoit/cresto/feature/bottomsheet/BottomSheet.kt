@@ -51,7 +51,6 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Constraints
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.nevoit.cresto.R
 import com.nevoit.cresto.data.todo.TodoViewModel
@@ -424,7 +423,6 @@ fun BottomSheet(
                     }
                 }
         ) {
-            Box(modifier = Modifier.height(300.dp))
             if (composeAiInput) {
                 AiInputBox(
                     modifier = Modifier.graphicsLayer {
