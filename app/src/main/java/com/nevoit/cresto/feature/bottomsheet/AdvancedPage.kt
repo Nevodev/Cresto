@@ -572,30 +572,30 @@ fun AdvancedPage(
                 }
                 VGap()
             }
-            item {
-                ConfigItemContainer(
-                    backgroundColor = AppColors.elevatedCardBackground,
-                    title = stringResource(R.string.repeat)
-                ) {
-                    Column {
-                        ConfigItem(title = stringResource(R.string.repeat_cycle)) {
-
-                        }
-                        Spacer(modifier = Modifier.height(8.dp))
-                        VDivider()
-                        Spacer(modifier = Modifier.height(8.dp))
-                        ConfigItem(title = stringResource(R.string.postpone_after_expiry)) {
-                            GlasenseSwitch(
-                                backgroundColor = AppColors.elevatedCardBackground,
-                                checked = false,
-                                onCheckedChange = { })
-                        }
-                    }
-                }
-            }
-            item {
-                VGap()
-            }
+//            item {
+//                ConfigItemContainer(
+//                    backgroundColor = AppColors.elevatedCardBackground,
+//                    title = stringResource(R.string.repeat)
+//                ) {
+//                    Column {
+//                        ConfigItem(title = stringResource(R.string.repeat_cycle)) {
+//
+//                        }
+//                        Spacer(modifier = Modifier.height(8.dp))
+//                        VDivider()
+//                        Spacer(modifier = Modifier.height(8.dp))
+//                        ConfigItem(title = stringResource(R.string.postpone_after_expiry)) {
+//                            GlasenseSwitch(
+//                                backgroundColor = AppColors.elevatedCardBackground,
+//                                checked = false,
+//                                onCheckedChange = { })
+//                        }
+//                    }
+//                }
+//            }
+//            item {
+//                VGap()
+//            }
             overscrollSpacer(lazyListState)
         }
         Box(
