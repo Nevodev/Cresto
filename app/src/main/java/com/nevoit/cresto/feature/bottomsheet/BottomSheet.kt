@@ -255,6 +255,7 @@ fun BottomSheet(
     var isReady by remember { mutableStateOf(false) }
 
     var composeAiInput by remember { mutableStateOf(false) }
+    var targetAiInputVisible by remember { mutableStateOf(false) }
     var notesText by remember { mutableStateOf("") }
     var isTimeRangeEnabled by remember { mutableStateOf(false) }
     var isAllDayEnabled by remember { mutableStateOf(true) }
@@ -266,23 +267,33 @@ fun BottomSheet(
     var reminderStrong by remember { mutableStateOf(false) }
 
     fun closeAiInput() {
+        targetAiInputVisible = false
         scope.launch {
             scaleAnimation.animateTo(
                 targetValue = 0f,
                 animationSpec = tween(200)
             )
-            composeAiInput = false
+            // Wait for advanced page slide animation to complete 
+            // before removing AiInputBox from composition to avoid mid-animation stutters
+            // caused by TextField disposal and InputMethodManager IPC overhead.
+            delay(200.milliseconds)
+            if (!targetAiInputVisible) {
+                composeAiInput = false
+            }
         }
     }
 
     fun showAiInput() {
+        targetAiInputVisible = true
         scope.launch {
             composeAiInput = true
             delay(300.milliseconds)
-            scaleAnimation.animateTo(
-                targetValue = 1f,
-                animationSpec = spring(0.8f, 300f, 0.001f)
-            )
+            if (targetAiInputVisible) {
+                scaleAnimation.animateTo(
+                    targetValue = 1f,
+                    animationSpec = spring(0.8f, 300f, 0.001f)
+                )
+            }
         }
     }
 

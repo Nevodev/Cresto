@@ -13,56 +13,65 @@ import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.drawOutline
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
+import androidx.compose.ui.composed
+import androidx.compose.runtime.remember
+import androidx.compose.ui.draw.CacheDrawScope
+import androidx.compose.ui.draw.DrawResult
 
 fun Modifier.cachedClip(
     shape: Shape,
     clip: Boolean = true
-): Modifier {
+): Modifier = composed {
     if (!clip) {
-        return this
+        return@composed this
     }
 
-    return this.drawWithCache {
-        val mask = ImageBitmap(
-            width = size.width.toInt().coerceAtLeast(1),
-            height = size.height.toInt().coerceAtLeast(1),
-            config = ImageBitmapConfig.Alpha8
-        )
-
-        val canvas = Canvas(mask)
-
-        val paint = Paint().apply {
-            color = Color.White
-            isAntiAlias = true
-        }
-
-        val outline = shape.createOutline(size, layoutDirection, this)
-
-        canvas.drawOutline(
-            outline = outline,
-            paint = paint
-        )
-
-        val layerPaint = Paint()
-
-        val bounds = Rect(Offset.Zero, size)
-
-        onDrawWithContent {
-            drawIntoCanvas { canvas ->
-                canvas.saveLayer(bounds, layerPaint)
-            }
-
-            drawContent()
-
-            drawImage(
-                image = mask,
-                topLeft = Offset.Zero,
-                blendMode = BlendMode.DstIn
+    val drawCacheBlock = remember(shape) {
+        val block: CacheDrawScope.() -> DrawResult = {
+            val mask = ImageBitmap(
+                width = size.width.toInt().coerceAtLeast(1),
+                height = size.height.toInt().coerceAtLeast(1),
+                config = ImageBitmapConfig.Alpha8
             )
 
-            drawIntoCanvas { canvas ->
-                canvas.restore()
+            val canvas = Canvas(mask)
+
+            val paint = Paint().apply {
+                color = Color.White
+                isAntiAlias = true
+            }
+
+            val outline = shape.createOutline(size, layoutDirection, this)
+
+            canvas.drawOutline(
+                outline = outline,
+                paint = paint
+            )
+
+            val layerPaint = Paint()
+
+            val bounds = Rect(Offset.Zero, size)
+
+            onDrawWithContent {
+                drawIntoCanvas { canvas ->
+                    canvas.saveLayer(bounds, layerPaint)
+                }
+
+                drawContent()
+
+                drawImage(
+                    image = mask,
+                    topLeft = Offset.Zero,
+                    blendMode = BlendMode.DstIn
+                )
+
+                drawIntoCanvas { canvas ->
+                    canvas.restore()
+                }
             }
         }
+        block
     }
+
+    this.drawWithCache(drawCacheBlock)
 }

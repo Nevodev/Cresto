@@ -178,7 +178,7 @@ fun GlasenseDialog(
                     launch {
                         scaleAni.animateTo(
                             1f,
-                            Springs.smooth(durationMillis = 400, visibilityThreshold = 0.0001f)
+                            Springs.smooth(durationMillis = 350, visibilityThreshold = 0.0001f)
                         )
                     }
                     launch { alphaAni.animateTo(1f, tween(300)) }
