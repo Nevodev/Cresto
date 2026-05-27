@@ -3,7 +3,6 @@ package com.nevoit.cresto.ui.components.glasense
 import android.graphics.BlurMaskFilter
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -43,7 +42,6 @@ import androidx.compose.ui.graphics.nativePaint
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
-import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalWindowInfo
@@ -66,6 +64,7 @@ import com.nevoit.cresto.ui.components.glasense.material.rememberMaterialRenderE
 import com.nevoit.glasense.core.component.Icon
 import com.nevoit.glasense.core.component.Text
 import com.nevoit.glasense.theme.GlasenseTheme
+import com.nevoit.glasense.theme.tokens.Springs
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -167,18 +166,23 @@ fun GlasenseDialog(
     val material = rememberMaterialRenderEffect(MaterialRecipes.regular())
 
     if (dialogState.isVisible) {
-        var isVisible by remember { mutableStateOf(false) }
+        var isReady by remember { mutableStateOf(true) }
 
-        val scaleAni = remember { Animatable(1.3f) }
+        val scaleAni = remember { Animatable(1.15f) }
         val alphaAni = remember { Animatable(0f) }
         val alphaAni2 = remember { Animatable(0f) }
 
-        LaunchedEffect(isVisible) {
-            if (isVisible) {
+        LaunchedEffect(isReady) {
+            if (isReady) {
                 coroutineScope {
-                    launch { scaleAni.animateTo(1f, spring(1.3f, 1000f, .0001f)) }
-                    launch { alphaAni.animateTo(1f, tween(300, 0)) }
-                    launch { alphaAni2.animateTo(1f, tween(200, 0)) }
+                    launch {
+                        scaleAni.animateTo(
+                            1f,
+                            Springs.smooth(durationMillis = 400, visibilityThreshold = 0.0001f)
+                        )
+                    }
+                    launch { alphaAni.animateTo(1f, tween(300)) }
+                    launch { alphaAni2.animateTo(1f, tween(300)) }
                 }
             }
         }
@@ -194,9 +198,8 @@ fun GlasenseDialog(
                         interactionSource = interactionSource,
                         indication = null,
                         enabled = true,
-                        onClick = {}),
-                contentAlignment = Alignment.Center,
-            ) {}
+                        onClick = {})
+            )
 
             Box(
                 modifier = modifier
@@ -282,7 +285,7 @@ fun GlasenseDialog(
                             alpha = alphaAni.value
                         })
                     .then(if (!liquidGlass) Modifier.glasenseHighlight(AppSpecs.dialogCorner) else Modifier)
-                    .onGloballyPositioned { isVisible = true }
+
             ) {
                 Column(
                     modifier = Modifier
