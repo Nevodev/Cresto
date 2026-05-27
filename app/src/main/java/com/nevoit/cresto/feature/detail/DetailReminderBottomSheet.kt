@@ -32,7 +32,6 @@ import com.kyant.shapes.Capsule
 import com.nevoit.cresto.R
 import com.nevoit.cresto.data.todo.TodoReminderMode
 import com.nevoit.cresto.theme.AppColors
-import com.nevoit.cresto.ui.components.glasense.GlasenseBottomSheet
 import com.nevoit.cresto.ui.components.glasense.GlasenseMenuItem
 import com.nevoit.cresto.ui.components.glasense.GlasenseModalTopBar
 import com.nevoit.cresto.ui.components.glasense.GlasenseSwitch
@@ -42,6 +41,7 @@ import com.nevoit.cresto.ui.components.packed.ConfigItem
 import com.nevoit.cresto.ui.components.packed.ConfigItemContainer
 import com.nevoit.cresto.ui.components.packed.TodoReminderConfig
 import com.nevoit.cresto.ui.components.packed.displayText
+import com.nevoit.glasense.component.BottomSheet
 import com.nevoit.glasense.core.component.Text
 import com.nevoit.glasense.core.component.VDivider
 import com.nevoit.glasense.core.interaction.DimIndication
@@ -182,7 +182,7 @@ fun DetailReminderBottomSheet(
         }
     }
 
-    GlasenseBottomSheet(onDismissed = onDismissed) { slideOut ->
+    BottomSheet(onDismissed = onDismissed) { slideOut ->
         Column(
             modifier = Modifier
                 .fillMaxWidth()

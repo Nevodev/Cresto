@@ -60,11 +60,11 @@ import com.nevoit.cresto.theme.AppButtonColors
 import com.nevoit.cresto.theme.AppColors
 import com.nevoit.cresto.theme.AppSpecs
 import com.nevoit.cresto.theme.getFlagColor
-import com.nevoit.cresto.ui.components.glasense.GlasenseBottomSheet
 import com.nevoit.cresto.ui.components.glasense.GlasenseButtonAlt
 import com.nevoit.cresto.ui.components.glasense.GlasenseModalTopBar
 import com.nevoit.cresto.ui.components.glasense.extend.LineThroughText
 import com.nevoit.cresto.ui.components.glasense.glasenseHighlight
+import com.nevoit.glasense.component.BottomSheet
 import com.nevoit.glasense.core.component.Icon
 import com.nevoit.glasense.core.component.Text
 import com.nevoit.glasense.theme.GlasenseTheme
@@ -90,7 +90,7 @@ fun TodoShareSheet(
     val isDueTodayMarkerEnabled by SettingsManager.isDueTodayMarkerState
     val isOverdueMarkerEnabled by SettingsManager.isOverdueMarkerState
 
-    GlasenseBottomSheet(onDismissed = onDismiss) { slideOut ->
+    BottomSheet(onDismissed = onDismiss) { slideOut ->
         Box(
             modifier = Modifier
                 .fillMaxHeight()

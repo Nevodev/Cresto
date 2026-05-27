@@ -1,4 +1,4 @@
-package com.nevoit.cresto.ui.components.glasense
+package com.nevoit.glasense.component
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.Animatable
@@ -25,7 +25,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.layout
@@ -33,13 +32,15 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
-import com.nevoit.cresto.theme.AppColors
-import com.nevoit.cresto.util.deviceCornerShape
+import com.nevoit.glasense.core.modifier.cachedClip
+import com.nevoit.glasense.core.modifier.nullClickable
+import com.nevoit.glasense.core.utility.deviceCornerShape
+import com.nevoit.glasense.theme.GlasenseTheme
 import com.nevoit.glasense.theme.tokens.Springs
 import kotlinx.coroutines.launch
 
 @Composable
-fun GlasenseBottomSheet(
+fun BottomSheet(
     onDismissed: () -> Unit,
     onDismissRequest: (slideOut: () -> Unit) -> Unit = { slideOut -> slideOut() },
     content: @Composable BoxScope.(slideOut: () -> Unit) -> Unit,
@@ -123,17 +124,12 @@ fun GlasenseBottomSheet(
                     }
                 }
                 .height(bottomSheetHeight + 32.dp)
-                .clickable(
-                    interactionSource = remember { MutableInteractionSource() },
-                    indication = null,
-                    enabled = true,
-                    onClick = {}
-                )
-                .clip(
+                .nullClickable()
+                .cachedClip(
                     bottomSheetShape
                 )
                 .background(
-                    color = AppColors.elevatedPageBackground
+                    color = GlasenseTheme.colors.elevatedPageBackground
                 )
                 .fillMaxWidth()
                 .padding(bottom = 32.dp)

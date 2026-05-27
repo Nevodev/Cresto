@@ -35,11 +35,11 @@ import androidx.compose.ui.unit.sp
 import com.nevoit.cresto.R
 import com.nevoit.cresto.theme.AppColors
 import com.nevoit.cresto.theme.AppSpecs
-import com.nevoit.cresto.ui.components.glasense.GlasenseBottomSheet
 import com.nevoit.cresto.ui.components.glasense.GlasenseModalTopBar
 import com.nevoit.cresto.ui.components.glasense.GlasenseSwitch
 import com.nevoit.cresto.ui.components.packed.ConfigItem
 import com.nevoit.cresto.ui.components.packed.ConfigItemContainer
+import com.nevoit.glasense.component.BottomSheet
 import com.nevoit.glasense.core.component.Text
 import com.nevoit.glasense.core.component.VDivider
 import com.nevoit.glasense.core.interaction.DimIndication
@@ -60,7 +60,7 @@ fun DetailTimeBottomSheet(
     val rangeStartTime = startTime ?: LocalTime.of(9, 0)
     val rangeEndTime = endTime ?: defaultRangeEndTime(rangeStartTime)
 
-    GlasenseBottomSheet(
+    BottomSheet(
         onDismissed = onDismissed
     ) { slideOut ->
         Column(

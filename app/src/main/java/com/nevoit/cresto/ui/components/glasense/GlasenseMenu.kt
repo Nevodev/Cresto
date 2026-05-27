@@ -48,6 +48,7 @@ import androidx.compose.ui.graphics.nativePaint
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
@@ -73,10 +74,8 @@ import com.nevoit.glasense.core.component.Text
 import com.nevoit.glasense.core.component.VDivider
 import com.nevoit.glasense.core.interaction.DimIndication
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.math.max
-import kotlin.time.Duration.Companion.milliseconds
 
 data class MenuItemData(
     val text: String,
@@ -219,31 +218,35 @@ fun GlasenseMenu(
             gapPx = with(density) { 8.dp.toPx() }
         )
     }
+
+    var isReady by remember { mutableStateOf(false) }
+
     val scaleAni = remember { Animatable(0.4f) }
     val alphaAni = remember { Animatable(0f) }
     var isMenuInComposition by remember { mutableStateOf(false) }
     val hapticController = LocalHapticFeedback.current
 
-    LaunchedEffect(menuState.isVisible) {
-        if (menuState.isVisible) {
-            hapticController.performHapticFeedback(HapticFeedbackType.ContextClick)
-        }
-    }
-    LaunchedEffect(menuState.isVisible) {
-        if (menuState.isVisible) {
-            delay(50.milliseconds)
-            isMenuInComposition = true
+    LaunchedEffect(isReady, isMenuInComposition, menuState.isVisible) {
+        if (isReady && isMenuInComposition) {
             coroutineScope {
                 launch { scaleAni.animateTo(1f, spring(0.8f, 450f, 0.001f)) }
                 launch { alphaAni.animateTo(1f) }
             }
+        }
+    }
+
+    LaunchedEffect(menuState.isVisible) {
+        if (menuState.isVisible) {
+            hapticController.performHapticFeedback(HapticFeedbackType.ContextClick)
+            isMenuInComposition = true
+
         } else {
-            delay(50.milliseconds)
             coroutineScope {
                 launch { scaleAni.animateTo(0.4f, spring(0.7f, 600f)) }
                 launch { alphaAni.animateTo(0f) }
             }
             isMenuInComposition = false
+            isReady = false
         }
     }
 
@@ -351,6 +354,13 @@ fun GlasenseMenu(
                     }
                 )
                 .glasenseHighlight(16.dp)
+                .layout { measurable, constraints ->
+                    val placeable = measurable.measure(constraints)
+                    layout(placeable.width, placeable.height) {
+                        placeable.place(0, 0)
+                        if (!isReady) isReady = true
+                    }
+                }
         ) {
             // Display the actual menu items.
             CustomMenuContent(items = menuState.items, onDismiss = onDismiss)

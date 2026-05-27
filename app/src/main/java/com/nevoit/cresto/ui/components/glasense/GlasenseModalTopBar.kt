@@ -4,18 +4,19 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.layout.Layout
+import androidx.compose.ui.layout.layoutId
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.util.fastCoerceAtLeast
 import com.nevoit.cresto.theme.AppButtonColors
 import com.nevoit.cresto.theme.AppColors
 import com.nevoit.glasense.core.component.Icon
@@ -64,7 +65,7 @@ private object ModalTopBarScope : GlasenseModalTopBarScope {
                         .glasenseHighlight(shape)
                 )
             }
-            
+
             Icon(
                 painter = icon,
                 contentDescription = contentDescription,
@@ -76,49 +77,81 @@ private object ModalTopBarScope : GlasenseModalTopBarScope {
 
 @Composable
 fun GlasenseModalTopBar(
-    title: String,
     modifier: Modifier = Modifier,
+    title: String? = null,
     leading: (@Composable GlasenseModalTopBarScope.() -> Unit)? = null,
     trailing: (@Composable GlasenseModalTopBarScope.() -> Unit)? = null
 ) {
-    Box(
+    Layout(
         modifier = modifier
             .fillMaxWidth()
-            .height(48.dp)
-    ) {
-        if (leading != null) {
-            Box(
-                modifier = Modifier
-                    .align(Alignment.CenterStart)
-                    .size(48.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                ModalTopBarScope.leading()
+            .height(48.dp),
+        content = {
+            if (leading != null) {
+                Box(modifier = Modifier.layoutId("leading")) { ModalTopBarScope.leading() }
+            }
+            if (trailing != null) {
+                Box(modifier = Modifier.layoutId("trailing")) { ModalTopBarScope.trailing() }
+            }
+
+            if (title != null) {
+                Text(
+                    text = title,
+                    modifier = Modifier.layoutId("title"),
+                    color = AppColors.content,
+                    style = GlasenseTheme.type.smallTitle,
+                    textAlign = TextAlign.Center,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
             }
         }
-
-        Text(
-            text = title,
-            modifier = Modifier
-                .align(Alignment.Center)
-                .fillMaxWidth()
-                .padding(horizontal = 64.dp),
-            color = AppColors.content,
-            style = GlasenseTheme.type.smallTitle,
-            textAlign = TextAlign.Center,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis
+    ) { measurables, constraints ->
+        val sideConstraints = constraints.copy(
+            minWidth = 0,
+            minHeight = 0,
+            maxWidth = constraints.maxWidth / 2
         )
 
-        if (trailing != null) {
-            Box(
-                modifier = Modifier
-                    .align(Alignment.CenterEnd)
-                    .size(48.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                ModalTopBarScope.trailing()
-            }
+        val leadingPlaceable =
+            measurables.find { it.layoutId == "leading" }?.measure(sideConstraints)
+        val trailingPlaceable =
+            measurables.find { it.layoutId == "trailing" }?.measure(sideConstraints)
+
+        val leadingWidth = leadingPlaceable?.width ?: 0
+        val trailingWidth = trailingPlaceable?.width ?: 0
+
+        val safePaddingPx = 12.dp.roundToPx()
+        val maxSideWidth = maxOf(leadingWidth, trailingWidth)
+        val sidePadding = if (maxSideWidth > 0) maxSideWidth + safePaddingPx else 24.dp.roundToPx()
+
+        val titleMaxWidth = (constraints.maxWidth - sidePadding * 2).fastCoerceAtLeast(0)
+
+        val titlePlaceable = measurables.find { it.layoutId == "title" }?.measure(
+            constraints.copy(
+                minWidth = 0,
+                maxWidth = titleMaxWidth,
+                minHeight = 0
+            )
+        )
+
+        layout(constraints.maxWidth, constraints.maxHeight) {
+            fun centerVertically(childHeight: Int) = (constraints.maxHeight - childHeight) / 2
+
+            leadingPlaceable?.placeRelative(
+                x = 0,
+                y = centerVertically(leadingPlaceable.height)
+            )
+
+            trailingPlaceable?.placeRelative(
+                x = constraints.maxWidth - trailingWidth,
+                y = centerVertically(trailingPlaceable.height)
+            )
+
+            titlePlaceable?.placeRelative(
+                x = (constraints.maxWidth - titlePlaceable.width) / 2,
+                y = centerVertically(titlePlaceable.height)
+            )
         }
     }
 }

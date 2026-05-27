@@ -40,6 +40,7 @@ import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.nativePaint
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
@@ -52,11 +53,10 @@ import androidx.compose.ui.zIndex
 import com.nevoit.cresto.theme.AppColors
 import com.nevoit.cresto.theme.AppSpecs
 import com.nevoit.cresto.theme.isAppInDarkTheme
+import com.nevoit.glasense.core.modifier.cachedClip
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.math.max
-import kotlin.time.Duration.Companion.milliseconds
 
 data class PopupState(
     val isVisible: Boolean = false,
@@ -113,38 +113,46 @@ private fun pickPopupPlacement(
             Offset(targetXCenter, topPos),
             Offset(targetXCenter, bottomPos)
         )
+
         PopupDirection.Down -> listOf(
             Offset(targetXCenter, bottomPos),
             Offset(targetXCenter, topPos)
         )
+
         PopupDirection.Left -> listOf(
             Offset(leftPos, targetYCenter),
             Offset(rightPos, targetYCenter)
         )
+
         PopupDirection.Right -> listOf(
             Offset(rightPos, targetYCenter),
             Offset(leftPos, targetYCenter)
         )
+
         PopupDirection.UpLeft -> listOf(
             Offset(alignLeft, topPos),
             Offset(alignLeft, bottomPos),
             Offset(alignRight, topPos)
         )
+
         PopupDirection.UpRight -> listOf(
             Offset(alignRight, topPos),
             Offset(alignRight, bottomPos),
             Offset(alignLeft, topPos)
         )
+
         PopupDirection.DownLeft -> listOf(
             Offset(alignLeft, bottomPos),
             Offset(alignLeft, topPos),
             Offset(alignRight, bottomPos)
         )
+
         PopupDirection.DownRight -> listOf(
             Offset(alignRight, bottomPos),
             Offset(alignRight, topPos),
             Offset(alignLeft, bottomPos)
         )
+
         PopupDirection.Auto -> listOf(
             Offset(targetXCenter, bottomPos),
             Offset(targetXCenter, topPos),
@@ -187,8 +195,10 @@ fun GlasensePopup(
     val density = LocalDensity.current
     val layoutDirection = LocalLayoutDirection.current
     val statusBarTopPx = WindowInsets.statusBars.getTop(density).toFloat()
-    val navigationBarLeftPx = WindowInsets.navigationBars.getLeft(density, layoutDirection).toFloat()
-    val navigationBarRightPx = WindowInsets.navigationBars.getRight(density, layoutDirection).toFloat()
+    val navigationBarLeftPx =
+        WindowInsets.navigationBars.getLeft(density, layoutDirection).toFloat()
+    val navigationBarRightPx =
+        WindowInsets.navigationBars.getRight(density, layoutDirection).toFloat()
     val navigationBarBottomPx = WindowInsets.navigationBars.getBottom(density).toFloat()
     val imeBottomPx = WindowInsets.ime.getBottom(density).toFloat()
     val liveAvailableBounds = Rect(
@@ -231,26 +241,33 @@ fun GlasensePopup(
         )
     }
 
+    var isReady by remember { mutableStateOf(false) }
+
     val scaleAni = remember { Animatable(0.4f) }
     val alphaAni = remember { Animatable(0f) }
     var isPopupInComposition by remember { mutableStateOf(false) }
     val hapticController = LocalHapticFeedback.current
-    LaunchedEffect(popupState.isVisible) {
-        if (popupState.isVisible) {
-            hapticController.performHapticFeedback(HapticFeedbackType.ContextClick)
-            delay(50.milliseconds)
-            isPopupInComposition = true
+
+    LaunchedEffect(isReady, isPopupInComposition, popupState.isVisible) {
+        if (isReady && isPopupInComposition) {
             coroutineScope {
                 launch { scaleAni.animateTo(1f, spring(0.8f, 450f, 0.001f)) }
                 launch { alphaAni.animateTo(1f) }
             }
+        }
+    }
+
+    LaunchedEffect(popupState.isVisible) {
+        if (popupState.isVisible) {
+            hapticController.performHapticFeedback(HapticFeedbackType.ContextClick)
+            isPopupInComposition = true
         } else {
-            delay(50.milliseconds)
             coroutineScope {
                 launch { scaleAni.animateTo(0.4f, spring(0.7f, 600f)) }
                 launch { alphaAni.animateTo(0f) }
             }
             isPopupInComposition = false
+            isReady = false
         }
     }
 
@@ -342,12 +359,20 @@ fun GlasensePopup(
                     }
                 }
                 .graphicsLayer { alpha = alphaAni.value }
-                .background(color = containerColor, shape = shape)
+                .cachedClip(shape)
+                .background(color = containerColor)
                 .clickable(
                     interactionSource = remember { MutableInteractionSource() },
                     indication = null
                 ) {}
                 .padding(contentPadding)
+                .layout { measurable, constraints ->
+                    val placeable = measurable.measure(constraints)
+                    layout(placeable.width, placeable.height) {
+                        placeable.place(0, 0)
+                        if (!isReady) isReady = true
+                    }
+                }
         ) {
             content()
         }

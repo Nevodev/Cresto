@@ -1,13 +1,13 @@
 package com.nevoit.cresto.ui.components.glasense
 
 import android.graphics.RenderEffect
-import androidx.compose.animation.core.CubicBezierEasing
-import androidx.compose.animation.core.EaseInQuad
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
@@ -16,6 +16,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextStyle
@@ -28,13 +29,9 @@ import com.kyant.backdrop.effects.blur
 import com.kyant.backdrop.effects.effect
 import com.nevoit.cresto.theme.AppColors
 import com.nevoit.cresto.theme.LocalGlasenseSettings
-import com.nevoit.cresto.ui.components.CustomAnimatedVisibility
-import com.nevoit.cresto.ui.components.myFadeIn
-import com.nevoit.cresto.ui.components.myFadeOut
-import com.nevoit.cresto.ui.components.myScaleIn
-import com.nevoit.cresto.ui.components.myScaleOut
 import com.nevoit.glasense.core.component.Text
 import com.nevoit.glasense.theme.GlasenseTheme
+import com.nevoit.glasense.theme.tokens.Springs
 
 /**
  * A dynamic small title bar that appears with an animation.
@@ -62,33 +59,35 @@ fun GlasenseDynamicSmallTitle(
 ) {
     val blur = !LocalGlasenseSettings.current.liteMode
 
-    // Main container for the title bar and content.
+    val alpha =
+        animateFloatAsState(targetValue = if (isVisible) 1f else 0f, animationSpec = tween(300))
+
+    val textAlpha = animateFloatAsState(
+        targetValue = if (isVisible) 1f else 0f,
+        animationSpec = tween(if (isVisible) 300 else 200)
+    )
+    val scale = animateFloatAsState(
+        targetValue = if (isVisible) 1f else 0.8f,
+        animationSpec = Springs.smooth(if (isVisible) 300 else 400)
+    )
+
     Box(
-        modifier = modifier
+        modifier = Modifier
+            .graphicsLayer {
+                this.alpha = alpha.value
+            }
             .height(48.dp + statusBarHeight + 48.dp)
             .fillMaxWidth()
-    ) {
-        // Animated background with haze and gradient effect.
-        CustomAnimatedVisibility(
-            visible = isVisible,
-            enter = myFadeIn(),
-            exit = myFadeOut()
-        ) {
-            Box(
-                modifier = Modifier
-                    .height(48.dp + statusBarHeight + 48.dp)
-                    .fillMaxWidth()
-                    .align(Alignment.TopCenter)
-                    .drawPlainBackdrop(
-                        backdrop = backdrop,
-                        shape = { RectangleShape },
-                        effects = {
-                            if (blur) blur(3f.dp.toPx())
-                            effect(
-                                RenderEffect.createRuntimeShaderEffect(
-                                    obtainRuntimeShader(
-                                        "AlphaMask",
-                                        """
+            .drawPlainBackdrop(
+                backdrop = backdrop,
+                shape = { RectangleShape },
+                effects = {
+                    if (blur) blur(3f.dp.toPx())
+                    effect(
+                        RenderEffect.createRuntimeShaderEffect(
+                            obtainRuntimeShader(
+                                "AlphaMask",
+                                """
 uniform shader content;
 
 uniform float2 size;
@@ -100,50 +99,39 @@ float blurAlpha = smoothstep(size.y, size.y * 0.7, coord.y);
 float tintAlpha = smoothstep(size.y, size.y * 0.6, coord.y);
 return mix(content.eval(coord) * blurAlpha, tint * tintAlpha, tintIntensity);
 }"""
-                                    ).apply {
-                                        setFloatUniform("size", size.width, size.height)
-                                        setColorUniform("tint", surfaceColor.toArgb())
-                                        setFloatUniform("tintIntensity", 0.7f)
-                                    },
-                                    "content"
-                                )
-                            )
-                        }
+                            ).apply {
+                                setFloatUniform("size", size.width, size.height)
+                                setColorUniform("tint", surfaceColor.toArgb())
+                                setFloatUniform("tintIntensity", 0.7f)
+                            },
+                            "content"
+                        )
                     )
-//                    .smoothGradientMask(
-//                        surfaceColor.copy(alpha = 1f),
-//                        surfaceColor.copy(alpha = 0f),
-//                        0.5f,
-//                        0.5f,
-//                        0.7f
-//                    )
-            ) {}
-        }
-        // The primary content of the screen.
-        content()
-        // Animated title text.
-        CustomAnimatedVisibility(
-            visible = isVisible,
-            enter = myScaleIn(
-                tween(200, 0, CubicBezierEasing(0.2f, 0.2f, 0f, 1f)),
-                0.9f
-            ) + myFadeIn(tween(100)),
-            exit = myScaleOut(
-                tween(200, 0, EaseInQuad),
-                0.9f
-            ) + myFadeOut(tween(200)),
-            modifier = Modifier
-                .align(Alignment.Center)
-                .padding(top = statusBarHeight, bottom = 48.dp)
-        ) {
-            Text(
-                title,
-                style = GlasenseTheme.type.smallTitle.merge(textStyle),
-                maxLines = 1,
-                modifier = Modifier.padding(horizontal = titleHorizontalPadding),
-                overflow = TextOverflow.Ellipsis,
+                }
             )
-        }
+    ) {}
+    Box(
+        modifier = modifier
+            .statusBarsPadding()
+            .height(48.dp)
+            .fillMaxWidth()
+    ) {
+        content()
+
+        Text(
+            title,
+            style = GlasenseTheme.type.smallTitle.merge(textStyle),
+            maxLines = 1,
+            modifier = Modifier
+                .padding(horizontal = titleHorizontalPadding)
+                .align(Alignment.Center)
+                .graphicsLayer {
+                    this.scaleX = scale.value
+                    this.scaleY = scale.value
+                    this.alpha = textAlpha.value
+                },
+            overflow = TextOverflow.Ellipsis,
+        )
     }
 }
 

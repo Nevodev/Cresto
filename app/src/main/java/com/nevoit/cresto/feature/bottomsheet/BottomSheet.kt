@@ -39,7 +39,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
@@ -64,7 +63,8 @@ import com.nevoit.cresto.ui.components.packed.compatibleWithAllDay
 import com.nevoit.cresto.ui.viewmodel.AiSideEffect
 import com.nevoit.cresto.ui.viewmodel.AiViewModel
 import com.nevoit.cresto.ui.viewmodel.UiState
-import com.nevoit.cresto.util.deviceCornerShape
+import com.nevoit.glasense.core.modifier.cachedClip
+import com.nevoit.glasense.core.utility.deviceCornerShape
 import com.nevoit.glasense.theme.tokens.Springs
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -445,7 +445,7 @@ fun BottomSheet(
                         enabled = true,
                         onClick = {}
                     )
-                    .clip(
+                    .cachedClip(
                         bottomSheetShape
                     )
                     .background(
