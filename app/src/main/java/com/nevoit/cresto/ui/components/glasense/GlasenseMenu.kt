@@ -397,6 +397,7 @@ fun CustomMenuContent(items: List<GlasenseMenuItem>, onDismiss: () -> Unit) {
                     // Add a divider between items, but not after the last one.
                     if (index < items.size - 1 && items[index + 1] !is MenuDivider) {
                         VDivider(
+                            modifier = Modifier.padding(horizontal = 1.5.dp),
                             color = dividerColor,
                             width = 1.dp,
                             blendMode = BlendMode.Luminosity
@@ -412,6 +413,7 @@ fun CustomMenuContent(items: List<GlasenseMenuItem>, onDismiss: () -> Unit) {
                                 alpha = 0.5f
                             }
                             .fillMaxWidth()
+                            .padding(horizontal = 1.5.dp)
                             .height(12.dp)
                             .background(color = dividerColor)
                     )
@@ -429,6 +431,7 @@ fun CustomMenuContent(items: List<GlasenseMenuItem>, onDismiss: () -> Unit) {
                     )
                     if (index < items.size - 1 && items[index + 1] !is MenuDivider) {
                         VDivider(
+                            modifier = Modifier.padding(horizontal = 1.5.dp),
                             color = dividerColor,
                             width = 1.dp,
                             blendMode = BlendMode.Luminosity
