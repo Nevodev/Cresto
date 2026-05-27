@@ -590,35 +590,32 @@ fun DataStorageScreen() {
             item { VGap() }
             overscrollSpacer(lazyListState)
         }
-        // A small title that dynamically appears at the top when the user scrolls down
-        GlasenseDynamicSmallTitle(
-            modifier = Modifier.align(Alignment.TopCenter),
-            title = stringResource(R.string.data_storage),
-            statusBarHeight = statusBarHeight,
-            isVisible = isSmallTitleVisible,
-            backdrop = backdrop
-        ) {
-            // This lambda is empty as the component handles its own content
-        }
-        // Back button positioned at the top-start of the screen
-        GlasenseButton(
-            enabled = true,
-            shape = CircleShape,
-            onClick = { activity?.finish() }, // Closes the current activity, navigating back
-            modifier = Modifier
-                .padding(top = statusBarHeight, start = 12.dp)
-                .size(48.dp)
-                .align(Alignment.TopStart),
-            colors = AppButtonColors.action()
-        ) {
-            Icon(
-                painter = painterResource(id = R.drawable.ic_forward_nav),
-                contentDescription = stringResource(R.string.back),
-                modifier = Modifier.width(32.dp)
-            )
-        }
     }
-
+    GlasenseDynamicSmallTitle(
+        modifier = Modifier,
+        title = stringResource(R.string.data_storage),
+        statusBarHeight = statusBarHeight,
+        isVisible = isSmallTitleVisible,
+        backdrop = backdrop
+    ) {
+        // This lambda is empty as the component handles its own content
+    }
+    // Back button positioned at the top-start of the screen
+    GlasenseButton(
+        enabled = true,
+        shape = CircleShape,
+        onClick = { activity?.finish() }, // Closes the current activity, navigating back
+        modifier = Modifier
+            .padding(top = statusBarHeight, start = 12.dp)
+            .size(48.dp),
+        colors = AppButtonColors.action()
+    ) {
+        Icon(
+            painter = painterResource(id = R.drawable.ic_forward_nav),
+            contentDescription = stringResource(R.string.back),
+            modifier = Modifier.width(32.dp)
+        )
+    }
     GlasenseDialog(
         dialogState = dialogState,
         backdrop = backdrop,

@@ -67,10 +67,9 @@ fun GlasenseDynamicSmallTitle(
         animationSpec = tween(if (isVisible) 300 else 200)
     )
     val scale = animateFloatAsState(
-        targetValue = if (isVisible) 1f else 0.8f,
+        targetValue = if (isVisible) 1f else 0.85f,
         animationSpec = Springs.smooth(if (isVisible) 300 else 400)
     )
-
     Box(
         modifier = Modifier
             .graphicsLayer {
