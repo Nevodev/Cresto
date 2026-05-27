@@ -20,6 +20,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateMapOf
@@ -33,6 +34,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -174,15 +176,26 @@ fun BoxScope.HomeScreen(
         }
     }
 
-    val backdroundColor = AppColors.pageBackground
+    val backgroundColor = AppColors.pageBackground
 
     val backdrop = rememberLayerBackdrop {
         drawRect(
-            color = backdroundColor,
+            color = backgroundColor,
             size = Size(this.size.width * 3, this.size.height * 3),
             topLeft = Offset(-this.size.width, -this.size.height)
         )
         drawContent()
+    }
+
+    val titleFadeProgress = remember {
+        derivedStateOf {
+            val fadeDistance = 120f
+            val offset = when {
+                lazyListState.firstVisibleItemIndex > 0 -> fadeDistance
+                else -> lazyListState.firstVisibleItemScrollOffset.toFloat()
+            }
+            (1f - (offset / fadeDistance)).coerceIn(0f, 1f)
+        }
     }
 
     PageContent(
@@ -203,7 +216,9 @@ fun BoxScope.HomeScreen(
         } else {
             item(key = "title") {
                 GlasensePageHeader(
-                    modifier = Modifier.animateItem(placementSpec = Springs.crisp()),
+                    modifier = Modifier
+                        .animateItem(placementSpec = Springs.crisp())
+                        .graphicsLayer { alpha = titleFadeProgress.value },
                     title = stringResource(R.string.all_todos)
                 )
             }
@@ -226,7 +241,6 @@ fun BoxScope.HomeScreen(
                 if (item.todoItem.isCompleted == isChecked) item
                 else item.copy(todoItem = item.todoItem.copy(isCompleted = isChecked))
             }
-
 
             TodoListItemRow(
                 item = displayItem,
