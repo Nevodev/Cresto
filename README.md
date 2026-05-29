@@ -86,13 +86,3 @@ I don't recommend you using `glasense-ui` at the time. It is still unfinished.
 ## Third-Party Notices
 
 See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) for third-party license attributions.
-
-## Star History
-
-<a href="https://www.star-history.com/?repos=Nevodev%2FCresto&type=date&legend=bottom-right">
- <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/image?repos=Nevodev/Cresto&type=date&theme=dark&legend=bottom-right" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/image?repos=Nevodev/Cresto&type=date&legend=bottom-right" />
-   <img alt="Star History Chart" src="https://api.star-history.com/image?repos=Nevodev/Cresto&type=date&legend=bottom-right" />
- </picture>
-</a>
