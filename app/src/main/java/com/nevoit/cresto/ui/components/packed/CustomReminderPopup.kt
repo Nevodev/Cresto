@@ -46,6 +46,7 @@ import androidx.compose.ui.unit.sp
 import com.kyant.shapes.Capsule
 import com.nevoit.cresto.R
 import com.nevoit.cresto.data.todo.TodoReminderMode
+import com.nevoit.cresto.theme.AppButtonColors
 import com.nevoit.cresto.theme.AppColors
 import com.nevoit.cresto.theme.AppSpecs
 import com.nevoit.cresto.ui.components.glasense.GlasenseModalTopBar
@@ -143,7 +144,9 @@ fun CustomReminderPopup(
                             )
                         }
                         onConfirm(config)
-                    }
+                    },
+                    colors = AppButtonColors.primary(),
+                    highlight = true
                 )
             }
         )
@@ -193,9 +196,7 @@ fun CustomReminderPopup(
                         Text(
                             text = stringResource(R.string.reminder_before_prefix),
                             modifier = Modifier.weight(1f),
-                            textAlign = TextAlign.Center,
-                            fontSize = 18.sp,
-                            color = AppColors.content
+                            textAlign = TextAlign.Center
                         )
                         GlasenseWheelPicker(
                             modifier = Modifier.weight(1f),

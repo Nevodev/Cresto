@@ -220,11 +220,7 @@ fun AddTodoSheet(
                                 exit = defaultExitTransition
                             ) {
                                 Icon(
-                                    painter = if (finalDate != null) {
-                                        painterResource(id = R.drawable.ic_calendar_clock)
-                                    } else {
-                                        painterResource(id = R.drawable.ic_calendar)
-                                    },
+                                    painter = painterResource(id = R.drawable.ic_calendar),
                                     contentDescription = stringResource(R.string.due_date),
                                     modifier = Modifier.width(28.dp),
                                     tint = if (finalDate != null) {
