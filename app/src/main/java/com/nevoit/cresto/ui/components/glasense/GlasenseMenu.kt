@@ -39,6 +39,7 @@ import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Outline
 import androidx.compose.ui.graphics.Paint
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.asAndroidPath
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
@@ -63,7 +64,6 @@ import com.kyant.backdrop.backdrops.LayerBackdrop
 import com.kyant.backdrop.drawPlainBackdrop
 import com.kyant.backdrop.effects.blur
 import com.kyant.backdrop.effects.effect
-import com.kyant.shapes.RoundedRectangle
 import com.nevoit.cresto.R
 import com.nevoit.cresto.theme.AppColors
 import com.nevoit.cresto.theme.isAppInDarkTheme
@@ -73,6 +73,7 @@ import com.nevoit.glasense.core.component.Icon
 import com.nevoit.glasense.core.component.Text
 import com.nevoit.glasense.core.component.VDivider
 import com.nevoit.glasense.core.interaction.DimIndication
+import com.nevoit.glasense.core.modifier.cachedClip
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlin.math.max
@@ -340,10 +341,11 @@ fun GlasenseMenu(
                         }
                     }
                 }
+                .cachedClip(shape)
                 // Core of the blur effect, drawing a blurred version of the content behind it.
                 .drawPlainBackdrop(
                     backdrop = backdrop,
-                    shape = { RoundedRectangle(16.dp) },
+                    shape = { RectangleShape },
                     layerBlock = {
                         alpha = alphaAni.value
                     },

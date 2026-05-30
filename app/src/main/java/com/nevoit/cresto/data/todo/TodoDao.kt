@@ -19,6 +19,9 @@ interface TodoDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertTodo(item: TodoItem): Long
 
+    @Insert(onConflict = OnConflictStrategy.ABORT)
+    suspend fun insertRepeatRule(rule: RepeatRule)
+
     // Inserts a list of todo items, ignoring any that already exist.
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertAll(items: List<TodoItem>)
@@ -27,6 +30,9 @@ interface TodoDao {
     @Update
     suspend fun updateTodo(item: TodoItem)
 
+    @Update
+    suspend fun updateRepeatRule(rule: RepeatRule)
+
     // Deletes a todo item from the table.
     @Delete
     suspend fun deleteTodo(item: TodoItem)
@@ -34,6 +40,9 @@ interface TodoDao {
     // Deletes all todo items from the table.
     @Query("DELETE FROM todo_items")
     suspend fun deleteAllTodos()
+
+    @Query("DELETE FROM repeat_rules")
+    suspend fun deleteAllRepeatRules()
 
     // --- New operations for SubTodoItem ---
     @Insert(onConflict = OnConflictStrategy.REPLACE)
@@ -76,6 +85,21 @@ interface TodoDao {
     @Transaction
     @Query("SELECT * FROM todo_items WHERE id IN (:ids)")
     suspend fun getTodosWithSubTodosByIds(ids: List<Int>): List<TodoItemWithSubTodos>
+
+    @Query("SELECT * FROM repeat_rules WHERE id = :id")
+    suspend fun getRepeatRuleByIdSnapshot(id: String): RepeatRule?
+
+    @Query("SELECT * FROM repeat_rules ORDER BY id ASC")
+    suspend fun getAllRepeatRulesSnapshot(): List<RepeatRule>
+
+    @Query("SELECT * FROM todo_items WHERE seriesId = :seriesId AND occurrenceDate = :occurrenceDate LIMIT 1")
+    suspend fun getTodoBySeriesOccurrenceSnapshot(
+        seriesId: String,
+        occurrenceDate: LocalDate
+    ): TodoItem?
+
+    @Query("SELECT * FROM todo_items WHERE generatedFromTodoId = :todoId ORDER BY occurrenceDate ASC LIMIT 1")
+    suspend fun getGeneratedTodoFromSnapshot(todoId: Int): TodoItem?
 
     @Query("DELETE FROM todo_items WHERE id = :id")
     suspend fun deleteById(id: Int)
@@ -140,11 +164,24 @@ interface TodoDao {
     @Query(
         """
         UPDATE todo_items
-        SET flag = :flag
+        SET flag = :flag,
+            occurrenceEditedAt = CASE
+                WHEN generatedFromTodoId IS NOT NULL THEN COALESCE(occurrenceEditedAt, :editedAt)
+                ELSE occurrenceEditedAt
+            END
         WHERE id IN (:ids)
         """
     )
-    suspend fun updateFlagByIds(ids: List<Int>, flag: Int)
+    suspend fun updateFlagByIds(ids: List<Int>, flag: Int, editedAt: LocalDateTime)
+
+    @Query(
+        """
+        UPDATE todo_items
+        SET occurrenceEditedAt = COALESCE(occurrenceEditedAt, :editedAt)
+        WHERE id = :id AND generatedFromTodoId IS NOT NULL
+        """
+    )
+    suspend fun markOccurrenceEdited(id: Int, editedAt: LocalDateTime)
 
     @Query("SELECT COUNT(*) FROM todo_items")
     fun getTotalCount(): Flow<Int>
@@ -234,6 +271,9 @@ interface TodoDao {
 
     @Insert(onConflict = OnConflictStrategy.ABORT)
     suspend fun insertSubTodosForMerge(items: List<SubTodoItem>)
+
+    @Insert(onConflict = OnConflictStrategy.ABORT)
+    suspend fun insertRepeatRuleForImport(rule: RepeatRule)
 
     @Query("SELECT * FROM todo_items ORDER BY id ASC")
     suspend fun getAllTodosSnapshot(): List<TodoItem>

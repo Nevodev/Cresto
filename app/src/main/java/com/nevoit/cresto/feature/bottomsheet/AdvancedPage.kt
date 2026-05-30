@@ -45,6 +45,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.kyant.shapes.Capsule
 import com.nevoit.cresto.R
+import com.nevoit.cresto.data.todo.RepeatFrequency
 import com.nevoit.cresto.data.todo.TodoReminderMode
 import com.nevoit.cresto.theme.AppButtonColors
 import com.nevoit.cresto.theme.AppColors
@@ -53,7 +54,7 @@ import com.nevoit.cresto.ui.components.glasense.GlasenseButton
 import com.nevoit.cresto.ui.components.glasense.GlasenseMenuItem
 import com.nevoit.cresto.ui.components.glasense.GlasenseSwitch
 import com.nevoit.cresto.ui.components.glasense.MenuDivider
-import com.nevoit.cresto.ui.components.glasense.MenuItemData
+import com.nevoit.cresto.ui.components.glasense.SelectiveMenuItemData
 import com.nevoit.cresto.ui.components.glasense.extend.overscrollSpacer
 import com.nevoit.cresto.ui.components.packed.ConfigItem
 import com.nevoit.cresto.ui.components.packed.ConfigItemContainer
@@ -92,6 +93,10 @@ fun AdvancedPage(
     reminderStrong: Boolean,
     onReminderPersistentChange: (Boolean) -> Unit,
     onReminderStrongChange: (Boolean) -> Unit,
+    repeatFrequency: RepeatFrequency?,
+    customRepeatConfig: CustomRepeatConfig?,
+    onRepeatFrequencyChange: (RepeatFrequency?) -> Unit,
+    onRequestCustomRepeat: () -> Unit,
     showMenu: (anchorBounds: Rect, items: List<GlasenseMenuItem>) -> Unit,
     onRequestCustomDate: (Rect, LocalDate?, (LocalDate?) -> Unit) -> Unit,
     onRequestCustomTime: (Rect, LocalTime?, LocalTime?, LocalTime?, (LocalTime?) -> Unit) -> Unit,
@@ -104,9 +109,14 @@ fun AdvancedPage(
     var rangeStartTimeButtonBounds by remember { mutableStateOf(Rect.Zero) }
     var rangeEndTimeButtonBounds by remember { mutableStateOf(Rect.Zero) }
     var reminderButtonBounds by remember { mutableStateOf(Rect.Zero) }
+    var repeatButtonBounds by remember { mutableStateOf(Rect.Zero) }
 
     val noneText = stringResource(R.string.none)
     val customText = stringResource(R.string.custom)
+    val repeatDailyText = stringResource(R.string.repeat_daily)
+    val repeatWeeklyText = stringResource(R.string.repeat_weekly)
+    val repeatMonthlyText = stringResource(R.string.repeat_monthly)
+    val repeatYearlyText = stringResource(R.string.repeat_yearly)
     val allDayMorningText = stringResource(R.string.reminder_all_day_morning_8)
     val oneMinuteBeforeText = stringResource(R.string.reminder_before_1_minute)
     val fiveMinutesBeforeText = stringResource(R.string.reminder_before_5_minutes)
@@ -118,8 +128,6 @@ fun AdvancedPage(
     val reminderBeforePrefix = stringResource(R.string.reminder_before_prefix)
     val reminderHoursUnitFormat = stringResource(R.string.reminder_hours_unit_format)
     val reminderMinutesUnitFormat = stringResource(R.string.reminder_minutes_unit_format)
-    val reminderIcon = painterResource(R.drawable.ic_alarm)
-    val noneReminderIcon = painterResource(R.drawable.ic_alarm_slash)
 
     val reminderTimingText = remember(
         reminderConfig,
@@ -153,6 +161,7 @@ fun AdvancedPage(
     }
 
     val reminderMenuItems = remember(
+        reminderConfig,
         isAllDayEnabled,
         noneText,
         customText,
@@ -161,15 +170,14 @@ fun AdvancedPage(
         fiveMinutesBeforeText,
         thirtyMinutesBeforeText,
         oneHourBeforeText,
-        twoHoursBeforeText,
-        reminderIcon,
-        noneReminderIcon
+        twoHoursBeforeText
     ) {
         buildList {
             if (isAllDayEnabled) {
                 add(
-                    MenuItemData(
+                    SelectiveMenuItemData(
                         text = allDayMorningText,
+                        isSelected = { reminderConfig.isAllDayMorningReminder() },
                         onClick = {
                             onReminderConfigChange(
                                 TodoReminderConfig(
@@ -182,8 +190,9 @@ fun AdvancedPage(
                 )
             } else {
                 add(
-                    MenuItemData(
+                    SelectiveMenuItemData(
                         text = oneMinuteBeforeText,
+                        isSelected = { reminderConfig.isStartOffsetReminder(1) },
                         onClick = {
                             onReminderConfigChange(
                                 TodoReminderConfig(
@@ -194,8 +203,9 @@ fun AdvancedPage(
                         })
                 )
                 add(
-                    MenuItemData(
+                    SelectiveMenuItemData(
                         text = fiveMinutesBeforeText,
+                        isSelected = { reminderConfig.isStartOffsetReminder(5) },
                         onClick = {
                             onReminderConfigChange(
                                 TodoReminderConfig(
@@ -206,8 +216,9 @@ fun AdvancedPage(
                         })
                 )
                 add(
-                    MenuItemData(
+                    SelectiveMenuItemData(
                         text = thirtyMinutesBeforeText,
+                        isSelected = { reminderConfig.isStartOffsetReminder(30) },
                         onClick = {
                             onReminderConfigChange(
                                 TodoReminderConfig(
@@ -218,8 +229,9 @@ fun AdvancedPage(
                         })
                 )
                 add(
-                    MenuItemData(
+                    SelectiveMenuItemData(
                         text = oneHourBeforeText,
+                        isSelected = { reminderConfig.isStartOffsetReminder(60) },
                         onClick = {
                             onReminderConfigChange(
                                 TodoReminderConfig(
@@ -230,8 +242,9 @@ fun AdvancedPage(
                         })
                 )
                 add(
-                    MenuItemData(
+                    SelectiveMenuItemData(
                         text = twoHoursBeforeText,
+                        isSelected = { reminderConfig.isStartOffsetReminder(120) },
                         onClick = {
                             onReminderConfigChange(
                                 TodoReminderConfig(
@@ -244,8 +257,9 @@ fun AdvancedPage(
             }
             add(MenuDivider)
             add(
-                MenuItemData(
+                SelectiveMenuItemData(
                     text = customText,
+                    isSelected = { reminderConfig.isCustomReminder(isAllDayEnabled) },
                     onClick = {
                         onRequestCustomReminder(reminderButtonBounds)
                     }
@@ -253,13 +267,82 @@ fun AdvancedPage(
             )
             add(MenuDivider)
             add(
-                MenuItemData(
+                SelectiveMenuItemData(
                     text = noneText,
-                    icon = noneReminderIcon,
+                    isSelected = { reminderConfig == null },
                     onClick = { onReminderConfigChange(null) }
                 )
             )
         }
+    }
+
+    val repeatText = remember(
+        repeatFrequency,
+        customRepeatConfig,
+        noneText,
+        customText,
+        repeatDailyText,
+        repeatWeeklyText,
+        repeatMonthlyText,
+        repeatYearlyText
+    ) {
+        if (customRepeatConfig != null) {
+            customText
+        } else {
+            repeatFrequency.displayText(
+                noneText = noneText,
+                dailyText = repeatDailyText,
+                weeklyText = repeatWeeklyText,
+                monthlyText = repeatMonthlyText,
+                yearlyText = repeatYearlyText
+            )
+        }
+    }
+
+    val repeatMenuItems = remember(
+        repeatFrequency,
+        customRepeatConfig,
+        noneText,
+        customText,
+        repeatDailyText,
+        repeatWeeklyText,
+        repeatMonthlyText,
+        repeatYearlyText
+    ) {
+        listOf(
+            SelectiveMenuItemData(
+                text = repeatDailyText,
+                isSelected = { repeatFrequency == RepeatFrequency.Daily },
+                onClick = { onRepeatFrequencyChange(RepeatFrequency.Daily) }
+            ),
+            SelectiveMenuItemData(
+                text = repeatWeeklyText,
+                isSelected = { repeatFrequency == RepeatFrequency.Weekly },
+                onClick = { onRepeatFrequencyChange(RepeatFrequency.Weekly) }
+            ),
+            SelectiveMenuItemData(
+                text = repeatMonthlyText,
+                isSelected = { repeatFrequency == RepeatFrequency.Monthly },
+                onClick = { onRepeatFrequencyChange(RepeatFrequency.Monthly) }
+            ),
+            SelectiveMenuItemData(
+                text = repeatYearlyText,
+                isSelected = { repeatFrequency == RepeatFrequency.Yearly },
+                onClick = { onRepeatFrequencyChange(RepeatFrequency.Yearly) }
+            ),
+            MenuDivider,
+            SelectiveMenuItemData(
+                text = customText,
+                isSelected = { customRepeatConfig != null },
+                onClick = onRequestCustomRepeat
+            ),
+            MenuDivider,
+            SelectiveMenuItemData(
+                text = noneText,
+                isSelected = { repeatFrequency == null && customRepeatConfig == null },
+                onClick = { onRepeatFrequencyChange(null) }
+            )
+        )
     }
 
     Box(
@@ -572,30 +655,44 @@ fun AdvancedPage(
                 }
                 VGap()
             }
-//            item {
-//                ConfigItemContainer(
-//                    backgroundColor = AppColors.elevatedCardBackground,
-//                    title = stringResource(R.string.repeat)
-//                ) {
-//                    Column {
-//                        ConfigItem(title = stringResource(R.string.repeat_cycle)) {
-//
-//                        }
-//                        Spacer(modifier = Modifier.height(8.dp))
-//                        VDivider()
-//                        Spacer(modifier = Modifier.height(8.dp))
-//                        ConfigItem(title = stringResource(R.string.postpone_after_expiry)) {
-//                            GlasenseSwitch(
-//                                backgroundColor = AppColors.elevatedCardBackground,
-//                                checked = false,
-//                                onCheckedChange = { })
-//                        }
-//                    }
-//                }
-//            }
-//            item {
-//                VGap()
-//            }
+            item {
+                ConfigItemContainer(
+                    backgroundColor = AppColors.elevatedCardBackground,
+                    title = stringResource(R.string.repeat)
+                ) {
+                    ConfigItem(title = stringResource(R.string.repeat_cycle)) {
+                        Row(
+                            modifier = Modifier
+                                .onGloballyPositioned { coordinates ->
+                                    repeatButtonBounds = coordinates.boundsInWindow()
+                                }
+                                .wrapContentSize()
+                                .clip(Capsule())
+                                .background(
+                                    color = AppColors.scrimNormal
+                                )
+                                .clickable(
+                                    interactionSource = remember { MutableInteractionSource() },
+                                    indication = DimIndication()
+                                ) {
+                                    showMenu(repeatButtonBounds, repeatMenuItems)
+                                }
+                                .padding(
+                                    horizontal = 8.dp,
+                                    vertical = 4.dp
+                                ),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = repeatText,
+                                fontWeight = FontWeight.Normal,
+                                color = AppColors.content
+                            )
+                        }
+                    }
+                }
+                VGap()
+            }
             overscrollSpacer(lazyListState)
         }
         Box(
@@ -625,6 +722,41 @@ fun AdvancedPage(
                 style = GlasenseTheme.type.smallTitle
             )
         }
+    }
+}
+
+private fun RepeatFrequency?.displayText(
+    noneText: String,
+    dailyText: String,
+    weeklyText: String,
+    monthlyText: String,
+    yearlyText: String
+): String {
+    return when (this) {
+        RepeatFrequency.Daily -> dailyText
+        RepeatFrequency.Weekly -> weeklyText
+        RepeatFrequency.Monthly -> monthlyText
+        RepeatFrequency.Yearly -> yearlyText
+        null -> noneText
+    }
+}
+
+private fun TodoReminderConfig?.isAllDayMorningReminder(): Boolean {
+    return this?.mode == TodoReminderMode.BeforeDueDate &&
+            dayOffset == 0 &&
+            time == LocalTime.of(8, 0)
+}
+
+private fun TodoReminderConfig?.isStartOffsetReminder(offsetMinutes: Int): Boolean {
+    return this?.mode == TodoReminderMode.BeforeStart && this.offsetMinutes == offsetMinutes
+}
+
+private fun TodoReminderConfig?.isCustomReminder(isAllDayEnabled: Boolean): Boolean {
+    if (this == null) return false
+    return if (isAllDayEnabled) {
+        !isAllDayMorningReminder()
+    } else {
+        !listOf(1, 5, 30, 60, 120).any { isStartOffsetReminder(it) }
     }
 }
 

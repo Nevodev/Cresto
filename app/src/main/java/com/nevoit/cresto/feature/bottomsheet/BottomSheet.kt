@@ -52,6 +52,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Constraints
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.nevoit.cresto.R
+import com.nevoit.cresto.data.todo.RepeatFrequency
 import com.nevoit.cresto.data.todo.TodoViewModel
 import com.nevoit.cresto.feature.screenextract.AiExtractSource
 import com.nevoit.cresto.feature.screenextract.ScreenExtractEvents
@@ -105,7 +106,7 @@ private fun defaultRangeEndTime(startTime: LocalTime): LocalTime {
 @Composable
 fun BottomSheet(
     onDismiss: () -> Unit,
-    onAddClick: (String, String, Int, LocalDate?, LocalTime?, LocalTime?, TodoReminderConfig?) -> Unit,
+    onAddClick: (String, String, Int, LocalDate?, LocalTime?, LocalTime?, TodoReminderConfig?, RepeatFrequency?) -> Unit,
     aiViewModel: AiViewModel = viewModel(),
     showDialog: (items: List<DialogItemData>, title: String, message: String?) -> Unit,
     showMenu: (anchorBounds: Rect, items: List<GlasenseMenuItem>) -> Unit,
@@ -265,6 +266,9 @@ fun BottomSheet(
     var reminderConfig by remember { mutableStateOf<TodoReminderConfig?>(null) }
     var reminderPersistent by remember { mutableStateOf(false) }
     var reminderStrong by remember { mutableStateOf(false) }
+    var repeatFrequency by remember { mutableStateOf<RepeatFrequency?>(null) }
+    var customRepeatConfig by remember { mutableStateOf<CustomRepeatConfig?>(null) }
+    var isCustomRepeatBottomSheetVisible by remember { mutableStateOf(false) }
 
     fun closeAiInput() {
         targetAiInputVisible = false
@@ -500,7 +504,8 @@ fun BottomSheet(
                                 date,
                                 startTime,
                                 endTime,
-                                reminder
+                                reminder,
+                                repeatFrequency
                             )
                         }
                     }, onClose = {
@@ -576,6 +581,15 @@ fun BottomSheet(
                         reminderStrong = reminderStrong,
                         onReminderPersistentChange = { reminderPersistent = it },
                         onReminderStrongChange = { reminderStrong = it },
+                        repeatFrequency = repeatFrequency,
+                        customRepeatConfig = customRepeatConfig,
+                        onRepeatFrequencyChange = {
+                            repeatFrequency = it
+                            customRepeatConfig = null
+                        },
+                        onRequestCustomRepeat = {
+                            isCustomRepeatBottomSheetVisible = true
+                        },
                         showMenu = showMenu,
                         onRequestCustomDate = onRequestCustomDate,
                         onRequestCustomTime = onRequestCustomTime,
@@ -587,6 +601,20 @@ fun BottomSheet(
                         navigateToBasic = {
                             navigateToBasic()
                         })
+                }
+                if (isCustomRepeatBottomSheetVisible) {
+                    CustomRepeatBottomSheet(
+                        initialDate = finalDate,
+                        initialConfig = customRepeatConfig,
+                        showMenu = showMenu,
+                        onConfirm = { config ->
+                            customRepeatConfig = config
+                            repeatFrequency = null
+                        },
+                        onDismissed = {
+                            isCustomRepeatBottomSheetVisible = false
+                        }
+                    )
                 }
             }
         }

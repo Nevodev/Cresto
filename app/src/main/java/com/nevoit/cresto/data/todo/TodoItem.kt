@@ -28,7 +28,10 @@ enum class TodoReminderMode {
         Index(value = ["isCompleted", "completedDateTime"]),
         Index(value = ["dueDate"]),
         Index(value = ["isCompleted", "dueDate"]),
-        Index(value = ["creationDateTime"])
+        Index(value = ["creationDateTime"]),
+        Index(value = ["repeatRuleId"]),
+        Index(value = ["seriesId", "occurrenceDate"], unique = true),
+        Index(value = ["generatedFromTodoId"])
     ]
 )
 data class TodoItem(
@@ -50,7 +53,12 @@ data class TodoItem(
     val reminderPersistent: Boolean = false,
     val reminderStrong: Boolean = false,
     val calendarEventId: Long? = null,
-    val calendarSyncedAt: LocalDateTime? = null
+    val calendarSyncedAt: LocalDateTime? = null,
+    val repeatRuleId: String? = null,
+    val seriesId: String? = null,
+    val occurrenceDate: LocalDate? = null,
+    val generatedFromTodoId: Int? = null,
+    val occurrenceEditedAt: LocalDateTime? = null
 )
 
 fun TodoItem.reminderDateTime(): LocalDateTime? {

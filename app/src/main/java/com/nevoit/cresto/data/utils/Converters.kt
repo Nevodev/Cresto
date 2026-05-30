@@ -1,6 +1,7 @@
 package com.nevoit.cresto.data.utils
 
 import androidx.room.TypeConverter
+import com.nevoit.cresto.data.todo.RepeatFrequency
 import com.nevoit.cresto.data.todo.TodoReminderMode
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -56,5 +57,15 @@ class Converters {
     @TypeConverter
     fun reminderModeToString(mode: TodoReminderMode?): String? {
         return mode?.name
+    }
+
+    @TypeConverter
+    fun fromRepeatFrequency(value: String?): RepeatFrequency? {
+        return value?.let(RepeatFrequency::valueOf)
+    }
+
+    @TypeConverter
+    fun repeatFrequencyToString(frequency: RepeatFrequency?): String? {
+        return frequency?.name
     }
 }

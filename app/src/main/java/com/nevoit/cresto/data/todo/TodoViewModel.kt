@@ -208,7 +208,7 @@ class TodoViewModel(
         val allSelectedCompleted = completedCount == selectedIds.size
         val targetCompletedState = !allSelectedCompleted
 
-        repository.updateCompletedStatusByIds(
+        val result = repository.updateCompletedStatusByIds(
             ids = selectedIds,
             isCompleted = targetCompletedState,
             completedDateTime = if (targetCompletedState) LocalDateTime.now() else null
@@ -216,13 +216,10 @@ class TodoViewModel(
 
         if (targetCompletedState) {
             alarmScheduler.cancelAll(selectedIds)
+            result.insertedTodos.forEach(alarmScheduler::schedule)
         } else {
-            allTodos.value
-                .asSequence()
-                .map { it.todoItem }
-                .filter { it.id in selectedIds }
-                .map { it.copy(isCompleted = false, completedDateTime = null) }
-                .forEach(alarmScheduler::schedule)
+            result.updatedTodos.forEach(alarmScheduler::schedule)
+            alarmScheduler.cancelAll(result.deletedTodos.map { it.id })
         }
 
         clearSelections()
@@ -295,13 +292,34 @@ class TodoViewModel(
     )
 
     /*select*/
-    fun insert(item: TodoItem) = viewModelScope.launch {
-        val id = repository.insert(item).toInt()
-        alarmScheduler.schedule(item.copy(id = id))
+    fun insert(item: TodoItem, repeatFrequency: RepeatFrequency? = null) = viewModelScope.launch {
+        val id = repository.insert(item, repeatFrequency).toInt()
+        alarmScheduler.schedule(repository.getTodoByIdSnapshot(id) ?: item.copy(id = id))
     }
 
     fun update(item: TodoItem) = viewModelScope.launch {
         alarmScheduler.cancel(item)
+        val existingItem = allTodos.value
+            .firstOrNull { it.todoItem.id == item.id }
+            ?.todoItem
+        val completionChanged = existingItem != null && existingItem.isCompleted != item.isCompleted
+
+        if (completionChanged) {
+            val result = repository.updateCompletedStatusByIds(
+                ids = listOf(item.id),
+                isCompleted = item.isCompleted,
+                completedDateTime = if (item.isCompleted) LocalDateTime.now() else null
+            )
+
+            if (item.isCompleted) {
+                alarmScheduler.cancel(item.id)
+                result.insertedTodos.forEach(alarmScheduler::schedule)
+            } else {
+                result.updatedTodos.forEach(alarmScheduler::schedule)
+                alarmScheduler.cancelAll(result.deletedTodos.map { it.id })
+            }
+            return@launch
+        }
 
         val itemToPersist = when {
             item.isCompleted && item.completedDateTime == null -> {

@@ -2,6 +2,7 @@ package com.nevoit.cresto.data.todo
 
 import androidx.room.withTransaction
 import com.nevoit.cresto.data.statistics.DailyStat
+import com.nevoit.cresto.data.todo.backup.RepeatRuleBackupDto
 import com.nevoit.cresto.data.todo.backup.SubTodoBackupDto
 import com.nevoit.cresto.data.todo.backup.TodoBackupDto
 import com.nevoit.cresto.data.todo.backup.TodoBackupFile
@@ -16,6 +17,7 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
+import java.util.UUID
 
 enum class DuplicatePolicy {
     SKIP_DUPLICATES,
@@ -26,6 +28,12 @@ data class ImportResult(
     val total: Int,
     val imported: Int,
     val skipped: Int
+)
+
+data class RepeatCompletionResult(
+    val updatedTodos: List<TodoItem> = emptyList(),
+    val insertedTodos: List<TodoItem> = emptyList(),
+    val deletedTodos: List<TodoItem> = emptyList()
 )
 
 /**
@@ -54,8 +62,34 @@ class TodoRepository(
         return todoDao.getTodoWithSubTodosById(id)
     }
 
-    suspend fun insert(item: TodoItem): Long {
-        val id = todoDao.insertTodo(item)
+    suspend fun getTodoByIdSnapshot(id: Int): TodoItem? {
+        return todoDao.getTodoWithSubTodosByIdSnapshot(id)?.todoItem
+    }
+
+    suspend fun insert(item: TodoItem, repeatFrequency: RepeatFrequency? = null): Long {
+        val id = todoDatabase.withTransaction {
+            if (repeatFrequency == null) {
+                return@withTransaction todoDao.insertTodo(item)
+            }
+
+            val occurrenceDate = item.dueDate ?: LocalDate.now()
+            val seriesId = UUID.randomUUID().toString()
+            val ruleId = UUID.randomUUID().toString()
+            val rule = RepeatRule(
+                id = ruleId,
+                seriesId = seriesId,
+                frequency = repeatFrequency,
+                anchorDate = occurrenceDate
+            )
+            todoDao.insertRepeatRule(rule)
+            todoDao.insertTodo(
+                item.copy(
+                    repeatRuleId = ruleId,
+                    seriesId = seriesId,
+                    occurrenceDate = occurrenceDate
+                )
+            )
+        }
         syncTodoByIdIfAutoEnabled(id.toInt())
         return id
     }
@@ -66,9 +100,16 @@ class TodoRepository(
 
     suspend fun update(item: TodoItem) {
         val existingCalendarState = todoDao.getTodoWithSubTodosByIdSnapshot(item.id)?.todoItem
+        val occurrenceWasEdited = existingCalendarState?.generatedFromTodoId != null &&
+            existingCalendarState.userEditableSignature() != item.userEditableSignature()
         val itemToPersist = item.copy(
             calendarEventId = item.calendarEventId ?: existingCalendarState?.calendarEventId,
-            calendarSyncedAt = item.calendarSyncedAt ?: existingCalendarState?.calendarSyncedAt
+            calendarSyncedAt = item.calendarSyncedAt ?: existingCalendarState?.calendarSyncedAt,
+            occurrenceEditedAt = when {
+                item.occurrenceEditedAt != null -> item.occurrenceEditedAt
+                occurrenceWasEdited -> LocalDateTime.now()
+                else -> existingCalendarState?.occurrenceEditedAt
+            }
         )
         todoDao.updateTodo(itemToPersist)
         syncTodoByIdIfAutoEnabled(itemToPersist.id)
@@ -81,6 +122,7 @@ class TodoRepository(
 
     suspend fun insertSubTodo(item: SubTodoItem) {
         todoDao.insertSubTodo(item)
+        todoDao.markOccurrenceEdited(item.parentId, LocalDateTime.now())
         syncTodoByIdIfAutoEnabled(item.parentId)
     }
 
@@ -159,11 +201,13 @@ class TodoRepository(
 
     suspend fun updateSubTodo(item: SubTodoItem) {
         todoDao.updateSubTodo(item)
+        todoDao.markOccurrenceEdited(item.parentId, LocalDateTime.now())
         syncTodoByIdIfAutoEnabled(item.parentId)
     }
 
     suspend fun deleteSubTodo(item: SubTodoItem) {
         todoDao.deleteSubTodo(item)
+        todoDao.markOccurrenceEdited(item.parentId, LocalDateTime.now())
         syncTodoByIdIfAutoEnabled(item.parentId)
     }
 
@@ -183,8 +227,32 @@ class TodoRepository(
         ids: List<Int>,
         isCompleted: Boolean,
         completedDateTime: LocalDateTime?
-    ) {
-        todoDao.updateCompletedStatusByIds(ids, isCompleted, completedDateTime)
+    ): RepeatCompletionResult {
+        if (ids.isEmpty()) return RepeatCompletionResult()
+
+        val result = todoDatabase.withTransaction {
+            val todosById = todoDao.getTodosWithSubTodosByIds(ids)
+                .associateBy { it.todoItem.id }
+            val orderedTodos = ids.mapNotNull(todosById::get)
+            val result = RepeatCompletionResultBuilder()
+
+            orderedTodos.forEach { itemWithSubTodos ->
+                if (isCompleted) {
+                    completeTodoInTransaction(
+                        itemWithSubTodos = itemWithSubTodos,
+                        completedDateTime = completedDateTime ?: LocalDateTime.now(),
+                        result = result
+                    )
+                } else {
+                    reopenTodoInTransaction(itemWithSubTodos.todoItem, result)
+                }
+            }
+
+            result.build()
+        }
+        result.deletedTodos.forEach { deleteCalendarEventIfPresent(it) }
+        syncTodoIdsIfAutoEnabled(result.insertedTodos.map { it.id })
+        return result
     }
 
     suspend fun getCompletedCountByIds(ids: List<Int>): Int {
@@ -192,7 +260,11 @@ class TodoRepository(
     }
 
     suspend fun updateFlagByIds(ids: List<Int>, flag: Int) {
-        todoDao.updateFlagByIds(ids, flag)
+        todoDao.updateFlagByIds(ids, flag, LocalDateTime.now())
+    }
+
+    suspend fun markCompletedById(id: Int, completedDateTime: LocalDateTime): RepeatCompletionResult {
+        return updateCompletedStatusByIds(listOf(id), true, completedDateTime)
     }
 
     suspend fun duplicateByIds(ids: List<Int>): List<TodoItem> {
@@ -212,7 +284,12 @@ class TodoRepository(
                     isCompleted = false,
                     completedDateTime = null,
                     calendarEventId = null,
-                    calendarSyncedAt = null
+                    calendarSyncedAt = null,
+                    repeatRuleId = null,
+                    seriesId = null,
+                    occurrenceDate = null,
+                    generatedFromTodoId = null,
+                    occurrenceEditedAt = null
                 )
             }
 
@@ -360,6 +437,87 @@ class TodoRepository(
     suspend fun deleteAll() {
         todoDao.getAllTodosSnapshot().forEach { deleteCalendarEventIfPresent(it) }
         todoDao.deleteAllTodos()
+        todoDao.deleteAllRepeatRules()
+    }
+
+    private class RepeatCompletionResultBuilder {
+        val updatedTodos = mutableListOf<TodoItem>()
+        val insertedTodos = mutableListOf<TodoItem>()
+        val deletedTodos = mutableListOf<TodoItem>()
+
+        fun build(): RepeatCompletionResult {
+            return RepeatCompletionResult(
+                updatedTodos = updatedTodos,
+                insertedTodos = insertedTodos,
+                deletedTodos = deletedTodos
+            )
+        }
+    }
+
+    private suspend fun completeTodoInTransaction(
+        itemWithSubTodos: TodoItemWithSubTodos,
+        completedDateTime: LocalDateTime,
+        result: RepeatCompletionResultBuilder
+    ) {
+        val todo = itemWithSubTodos.todoItem
+        val completedTodo = todo.copy(
+            isCompleted = true,
+            completedDateTime = todo.completedDateTime ?: completedDateTime
+        )
+        todoDao.updateTodo(completedTodo)
+        result.updatedTodos += completedTodo
+
+        val ruleId = completedTodo.repeatRuleId ?: return
+        val seriesId = completedTodo.seriesId ?: return
+        val occurrenceDate = completedTodo.occurrenceDate ?: completedTodo.dueDate ?: return
+        val rule = todoDao.getRepeatRuleByIdSnapshot(ruleId) ?: return
+        val nextDate = rule.nextOccurrence(occurrenceDate) ?: return
+        if (todoDao.getTodoBySeriesOccurrenceSnapshot(seriesId, nextDate) != null) return
+
+        val nextTodo = completedTodo.copy(
+            id = 0,
+            dueDate = if (completedTodo.dueDate != null) nextDate else null,
+            creationDateTime = LocalDateTime.now(),
+            isCompleted = false,
+            completedDateTime = null,
+            calendarEventId = null,
+            calendarSyncedAt = null,
+            occurrenceDate = nextDate,
+            generatedFromTodoId = completedTodo.id,
+            occurrenceEditedAt = null
+        )
+        val nextTodoId = todoDao.insertTodo(nextTodo).toInt()
+        itemWithSubTodos.subTodos.forEach { subTodo ->
+            todoDao.insertSubTodoForImport(
+                subTodo.copy(
+                    id = 0,
+                    parentId = nextTodoId,
+                    isCompleted = false
+                )
+            )
+        }
+        result.insertedTodos += nextTodo.copy(id = nextTodoId)
+    }
+
+    private suspend fun reopenTodoInTransaction(
+        todo: TodoItem,
+        result: RepeatCompletionResultBuilder
+    ) {
+        val reopenedTodo = todo.copy(
+            isCompleted = false,
+            completedDateTime = null
+        )
+        todoDao.updateTodo(reopenedTodo)
+        result.updatedTodos += reopenedTodo
+
+        val generatedTodo = todoDao.getGeneratedTodoFromSnapshot(todo.id) ?: return
+        if (!generatedTodo.canDeleteOnReopen()) return
+        todoDao.deleteById(generatedTodo.id)
+        result.deletedTodos += generatedTodo
+    }
+
+    private fun TodoItem.canDeleteOnReopen(): Boolean {
+        return !isCompleted && occurrenceEditedAt == null
     }
 
     suspend fun getReminderTodosSnapshot(): List<TodoItem> {
@@ -386,6 +544,11 @@ class TodoRepository(
         val reminderTime: String?,
         val reminderPersistent: Boolean,
         val reminderStrong: Boolean,
+        val repeatRuleId: String?,
+        val seriesId: String?,
+        val occurrenceDate: String?,
+        val generatedFromTodoId: Int?,
+        val occurrenceEditedAt: String?,
         val subTodos: List<SubTodoFingerprint>
     )
 
@@ -397,9 +560,10 @@ class TodoRepository(
     suspend fun exportToJson(): String {
         val todos = todoDao.getAllTodosSnapshot()
         val subTodos = todoDao.getAllSubTodosSnapshot()
+        val repeatRules = todoDao.getAllRepeatRulesSnapshot()
 
         val backup = TodoBackupFile(
-            schemaVersion = 1,
+            schemaVersion = 2,
             exportedAt = LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME),
             todos = todos.map {
                 TodoBackupDto(
@@ -417,7 +581,12 @@ class TodoRepository(
                     reminderDayOffset = it.reminderDayOffset,
                     reminderTime = it.reminderTime?.format(DateTimeFormatter.ISO_LOCAL_TIME),
                     reminderPersistent = it.reminderPersistent,
-                    reminderStrong = it.reminderStrong
+                    reminderStrong = it.reminderStrong,
+                    repeatRuleId = it.repeatRuleId,
+                    seriesId = it.seriesId,
+                    occurrenceDate = it.occurrenceDate?.toString(),
+                    generatedFromTodoId = it.generatedFromTodoId,
+                    occurrenceEditedAt = it.occurrenceEditedAt?.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)
                 )
             },
             subTodos = subTodos.map {
@@ -426,6 +595,20 @@ class TodoRepository(
                     parentId = it.parentId,
                     description = it.description,
                     isCompleted = it.isCompleted
+                )
+            },
+            repeatRules = repeatRules.map {
+                RepeatRuleBackupDto(
+                    id = it.id,
+                    seriesId = it.seriesId,
+                    frequency = it.frequency.name,
+                    interval = it.interval,
+                    weekdays = it.weekdays,
+                    monthDay = it.monthDay,
+                    endDate = it.endDate?.toString(),
+                    maxOccurrences = it.maxOccurrences,
+                    anchorDate = it.anchorDate.toString(),
+                    createNextOnCompletion = it.createNextOnCompletion
                 )
             }
         )
@@ -440,6 +623,10 @@ class TodoRepository(
         val backup = backupJson.decodeFromString<TodoBackupFile>(json)
 
         val subTodosByParent = backup.subTodos.groupBy { it.parentId }
+        val repeatRuleIdMap = backup.repeatRules.associate { it.id to UUID.randomUUID().toString() }
+        val seriesIdMap = backup.repeatRules.associate { it.seriesId to UUID.randomUUID().toString() }
+        val importedRuleIds = mutableSetOf<String>()
+        val todoIdMap = mutableMapOf<Int, Int>()
 
         val existingFingerprints = todoDao.getAllTodosWithSubTodosSnapshot()
             .map { it.toFingerprint() }
@@ -458,6 +645,15 @@ class TodoRepository(
                 continue
             }
 
+            val mappedRepeatRuleId = todoDto.repeatRuleId?.let(repeatRuleIdMap::get)
+            val mappedSeriesId = todoDto.seriesId?.let(seriesIdMap::get)
+            if (todoDto.repeatRuleId != null && mappedRepeatRuleId != null && mappedRepeatRuleId !in importedRuleIds) {
+                backup.repeatRules.firstOrNull { it.id == todoDto.repeatRuleId }?.let { ruleDto ->
+                    todoDao.insertRepeatRuleForImport(ruleDto.toRepeatRule(mappedRepeatRuleId, mappedSeriesId ?: UUID.randomUUID().toString()))
+                    importedRuleIds += mappedRepeatRuleId
+                }
+            }
+
             val newTodoId = todoDao.insertTodoForImport(
                 TodoItem(
                     id = 0, // auto-generate
@@ -474,10 +670,16 @@ class TodoRepository(
                     reminderDayOffset = todoDto.reminderDayOffset,
                     reminderTime = todoDto.reminderTime?.let(LocalTime::parse),
                     reminderPersistent = todoDto.reminderPersistent,
-                    reminderStrong = todoDto.reminderStrong
+                    reminderStrong = todoDto.reminderStrong,
+                    repeatRuleId = mappedRepeatRuleId,
+                    seriesId = mappedSeriesId,
+                    occurrenceDate = todoDto.occurrenceDate?.let(LocalDate::parse),
+                    generatedFromTodoId = todoDto.generatedFromTodoId?.let(todoIdMap::get),
+                    occurrenceEditedAt = todoDto.occurrenceEditedAt?.let(LocalDateTime::parse)
                 )
             ).toInt()
             importedTodoIds += newTodoId
+            todoIdMap[todoDto.id] = newTodoId
 
             relatedSubDtos.forEach { subDto ->
                 todoDao.insertSubTodoForImport(
@@ -521,6 +723,11 @@ class TodoRepository(
             reminderTime = todoItem.reminderTime?.format(DateTimeFormatter.ISO_LOCAL_TIME),
             reminderPersistent = todoItem.reminderPersistent,
             reminderStrong = todoItem.reminderStrong,
+            repeatRuleId = todoItem.repeatRuleId,
+            seriesId = todoItem.seriesId,
+            occurrenceDate = todoItem.occurrenceDate?.toString(),
+            generatedFromTodoId = todoItem.generatedFromTodoId,
+            occurrenceEditedAt = todoItem.occurrenceEditedAt?.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME),
             subTodos = subTodos
                 .map { SubTodoFingerprint(it.description, it.isCompleted) }
                 .sortedWith(
@@ -552,6 +759,11 @@ class TodoRepository(
             reminderTime = todo.reminderTime,
             reminderPersistent = todo.reminderPersistent,
             reminderStrong = todo.reminderStrong,
+            repeatRuleId = todo.repeatRuleId,
+            seriesId = todo.seriesId,
+            occurrenceDate = todo.occurrenceDate,
+            generatedFromTodoId = todo.generatedFromTodoId,
+            occurrenceEditedAt = todo.occurrenceEditedAt,
             subTodos = subTodos
                 .map { SubTodoFingerprint(it.description, it.isCompleted) }
                 .sortedWith(
@@ -661,5 +873,52 @@ class TodoRepository(
         if (todo.calendarEventId != null) {
             calendarSyncManager.deleteEvent(todo)
         }
+    }
+
+    private fun RepeatRuleBackupDto.toRepeatRule(newId: String, newSeriesId: String): RepeatRule {
+        return RepeatRule(
+            id = newId,
+            seriesId = newSeriesId,
+            frequency = RepeatFrequency.valueOf(frequency),
+            interval = interval,
+            weekdays = weekdays,
+            monthDay = monthDay,
+            endDate = endDate?.let(LocalDate::parse),
+            maxOccurrences = maxOccurrences,
+            anchorDate = LocalDate.parse(anchorDate),
+            createNextOnCompletion = createNextOnCompletion
+        )
+    }
+
+    private data class TodoEditableSignature(
+        val title: String,
+        val dueDate: LocalDate?,
+        val flag: Int,
+        val notes: String,
+        val startTime: LocalTime?,
+        val endTime: LocalTime?,
+        val reminderMode: TodoReminderMode?,
+        val reminderOffsetMinutes: Int?,
+        val reminderDayOffset: Int?,
+        val reminderTime: LocalTime?,
+        val reminderPersistent: Boolean,
+        val reminderStrong: Boolean
+    )
+
+    private fun TodoItem.userEditableSignature(): TodoEditableSignature {
+        return TodoEditableSignature(
+            title = title,
+            dueDate = dueDate,
+            flag = flag,
+            notes = notes,
+            startTime = startTime,
+            endTime = endTime,
+            reminderMode = reminderMode,
+            reminderOffsetMinutes = reminderOffsetMinutes,
+            reminderDayOffset = reminderDayOffset,
+            reminderTime = reminderTime,
+            reminderPersistent = reminderPersistent,
+            reminderStrong = reminderStrong
+        )
     }
 }

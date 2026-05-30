@@ -37,6 +37,7 @@ import com.nevoit.cresto.ui.components.glasense.GlasenseModalTopBar
 import com.nevoit.cresto.ui.components.glasense.GlasenseSwitch
 import com.nevoit.cresto.ui.components.glasense.MenuDivider
 import com.nevoit.cresto.ui.components.glasense.MenuItemData
+import com.nevoit.cresto.ui.components.glasense.SelectiveMenuItemData
 import com.nevoit.cresto.ui.components.packed.ConfigItem
 import com.nevoit.cresto.ui.components.packed.ConfigItemContainer
 import com.nevoit.cresto.ui.components.packed.TodoReminderConfig
@@ -76,6 +77,7 @@ fun DetailReminderBottomSheet(
     val reminderBeforePrefix = stringResource(R.string.reminder_before_prefix)
     val reminderHoursUnitFormat = stringResource(R.string.reminder_hours_unit_format)
     val reminderMinutesUnitFormat = stringResource(R.string.reminder_minutes_unit_format)
+    val reminderIcon = painterResource(R.drawable.ic_alarm)
     val noneReminderIcon = painterResource(R.drawable.ic_alarm_slash)
 
     val reminderTimingText = remember(
@@ -110,7 +112,10 @@ fun DetailReminderBottomSheet(
     }
 
     val reminderMenuItems = remember(
+        reminderConfig,
         isAllDayEnabled,
+        reminderPersistent,
+        reminderStrong,
         noneText,
         customText,
         allDayMorningText,
@@ -119,13 +124,15 @@ fun DetailReminderBottomSheet(
         thirtyMinutesBeforeText,
         oneHourBeforeText,
         twoHoursBeforeText,
+        reminderIcon,
         noneReminderIcon
     ) {
         buildList {
             if (isAllDayEnabled) {
                 add(
-                    MenuItemData(
+                    SelectiveMenuItemData(
                         text = allDayMorningText,
+                        isSelected = { reminderConfig.isAllDayMorningReminder() },
                         onClick = {
                             onReminderConfigChange(
                                 TodoReminderConfig(
@@ -148,8 +155,9 @@ fun DetailReminderBottomSheet(
                     twoHoursBeforeText to 120
                 ).forEach { (text, offsetMinutes) ->
                     add(
-                        MenuItemData(
+                        SelectiveMenuItemData(
                             text = text,
+                            isSelected = { reminderConfig.isStartOffsetReminder(offsetMinutes) },
                             onClick = {
                                 onReminderConfigChange(
                                     TodoReminderConfig(
@@ -166,16 +174,19 @@ fun DetailReminderBottomSheet(
             }
             add(MenuDivider)
             add(
-                MenuItemData(
+                SelectiveMenuItemData(
                     text = customText,
+                    icon = reminderIcon,
+                    isSelected = { reminderConfig.isCustomReminder(isAllDayEnabled) },
                     onClick = { onRequestCustomReminder(reminderButtonBounds) }
                 )
             )
             add(MenuDivider)
             add(
-                MenuItemData(
+                SelectiveMenuItemData(
                     text = noneText,
                     icon = noneReminderIcon,
+                    isSelected = { reminderConfig == null },
                     onClick = { onReminderConfigChange(null) }
                 )
             )
@@ -253,5 +264,24 @@ fun DetailReminderBottomSheet(
                 }
             }
         }
+    }
+}
+
+private fun TodoReminderConfig?.isAllDayMorningReminder(): Boolean {
+    return this?.mode == TodoReminderMode.BeforeDueDate &&
+        dayOffset == 0 &&
+        time == LocalTime.of(8, 0)
+}
+
+private fun TodoReminderConfig?.isStartOffsetReminder(offsetMinutes: Int): Boolean {
+    return this?.mode == TodoReminderMode.BeforeStart && this.offsetMinutes == offsetMinutes
+}
+
+private fun TodoReminderConfig?.isCustomReminder(isAllDayEnabled: Boolean): Boolean {
+    if (this == null) return false
+    return if (isAllDayEnabled) {
+        !isAllDayMorningReminder()
+    } else {
+        !listOf(1, 5, 30, 60, 120).any { isStartOffsetReminder(it) }
     }
 }

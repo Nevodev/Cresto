@@ -6,8 +6,8 @@ import androidx.room.TypeConverters
 import com.nevoit.cresto.data.utils.Converters
 
 @Database(
-    entities = [TodoItem::class, SubTodoItem::class],
-    version = 25,
+    entities = [TodoItem::class, SubTodoItem::class, RepeatRule::class],
+    version = 26,
     exportSchema = false
 )
 

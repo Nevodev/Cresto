@@ -24,6 +24,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import org.koin.core.context.GlobalContext
 import java.time.LocalDateTime
+import com.nevoit.cresto.data.todo.TodoRepository
 
 class TodoAlarmReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
@@ -156,11 +157,12 @@ class TodoAlarmReceiver : BroadcastReceiver() {
         CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {
             try {
                 val koin = GlobalContext.getOrNull() ?: return@launch
-                val database = koin.get<TodoDatabase>()
+                val repository = koin.get<TodoRepository>()
                 val scheduler = koin.get<TodoAlarmScheduler>()
 
-                database.todoDao().markCompletedById(todoId, LocalDateTime.now())
+                val result = repository.markCompletedById(todoId, LocalDateTime.now())
                 scheduler.cancel(todoId)
+                result.insertedTodos.forEach(scheduler::schedule)
             } finally {
                 pendingResult.finish()
             }

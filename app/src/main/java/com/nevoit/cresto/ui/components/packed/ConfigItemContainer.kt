@@ -14,13 +14,13 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.nevoit.cresto.theme.AppColors
 import com.nevoit.cresto.theme.AppSpecs
 import com.nevoit.glasense.core.component.Text
 import com.nevoit.glasense.theme.GlasenseTheme
@@ -34,18 +34,19 @@ import com.nevoit.glasense.theme.GlasenseTheme
  */
 @Composable
 fun ConfigItemContainer(
+    modifier: Modifier = Modifier,
     title: String? = null,
     backgroundColor: Color,
     compact: Boolean = false,
     content: @Composable () -> Unit
 ) {
-    Column(modifier = Modifier.fillMaxWidth()) {
+    Column(modifier = modifier.fillMaxWidth()) {
         // Display the title if it's provided.
         if (title != null) {
             Text(
                 text = title,
                 style = GlasenseTheme.type.callout.copy(lineHeight = 14.sp),
-                color = AppColors.contentVariant,
+                color = GlasenseTheme.colors.contentVariant,
                 modifier = Modifier
                     .padding(
                         start = 12.dp,
@@ -96,7 +97,7 @@ fun ConfigTextField(
             Text(
                 text = title,
                 style = GlasenseTheme.type.callout.copy(lineHeight = 14.sp),
-                color = AppColors.contentVariant,
+                color = GlasenseTheme.colors.contentVariant,
                 modifier = Modifier
                     .padding(
                         start = 12.dp,
@@ -122,9 +123,9 @@ fun ConfigTextField(
                     .padding(horizontal = 12.dp, vertical = 8.dp)
                     .align(Alignment.CenterStart)
                     .fillMaxSize(),
-                cursorBrush = SolidColor(AppColors.primary),
+                cursorBrush = SolidColor(GlasenseTheme.colors.primary),
                 textStyle = TextStyle(
-                    color = AppColors.content,
+                    color = GlasenseTheme.colors.content,
                     fontSize = 16.sp
                 ),
                 singleLine = singleLine,
@@ -135,7 +136,7 @@ fun ConfigTextField(
                         if (decorateText != null && value.isEmpty()) {
                             Text(
                                 text = decorateText,
-                                color = AppColors.contentVariant,
+                                color = GlasenseTheme.colors.contentVariant,
                                 fontSize = 16.sp
                             )
                         }
@@ -152,16 +153,18 @@ fun ConfigTextField(
 
 @Composable
 fun PlainConfigItemContainer(
+    modifier: Modifier = Modifier,
     title: String? = null,
+    elevated: Boolean = false,
     content: @Composable () -> Unit
 ) {
-    Column(modifier = Modifier.fillMaxWidth()) {
+    Column(modifier = modifier.fillMaxWidth()) {
         // Display the title if it's provided.
         if (title != null) {
             Text(
                 text = title,
                 style = GlasenseTheme.type.callout.copy(lineHeight = 14.sp),
-                color = AppColors.contentVariant,
+                color = GlasenseTheme.colors.contentVariant,
                 modifier = Modifier
                     .padding(
                         start = 12.dp,
@@ -176,7 +179,10 @@ fun PlainConfigItemContainer(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(color = AppColors.cardBackground, shape = AppSpecs.cardShape)
+                .clip(AppSpecs.cardShape)
+                .background(
+                    color = if (!elevated) GlasenseTheme.colors.cardBackground else GlasenseTheme.colors.elevatedCardBackground
+                )
         ) {
             content()
         }

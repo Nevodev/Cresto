@@ -4,10 +4,11 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class TodoBackupFile(
-    val schemaVersion: Int = 1,
+    val schemaVersion: Int = 2,
     val exportedAt: String,     // ISO_LOCAL_DATE_TIME
     val todos: List<TodoBackupDto>,
-    val subTodos: List<SubTodoBackupDto>
+    val subTodos: List<SubTodoBackupDto>,
+    val repeatRules: List<RepeatRuleBackupDto> = emptyList()
 )
 
 @Serializable
@@ -26,7 +27,12 @@ data class TodoBackupDto(
     val reminderDayOffset: Int? = null,
     val reminderTime: String? = null, // ISO_LOCAL_TIME
     val reminderPersistent: Boolean = false,
-    val reminderStrong: Boolean = false
+    val reminderStrong: Boolean = false,
+    val repeatRuleId: String? = null,
+    val seriesId: String? = null,
+    val occurrenceDate: String? = null, // ISO_LOCAL_DATE
+    val generatedFromTodoId: Int? = null,
+    val occurrenceEditedAt: String? = null // ISO_LOCAL_DATE_TIME
 )
 
 @Serializable
@@ -35,4 +41,18 @@ data class SubTodoBackupDto(
     val parentId: Int,
     val description: String,
     val isCompleted: Boolean
+)
+
+@Serializable
+data class RepeatRuleBackupDto(
+    val id: String,
+    val seriesId: String,
+    val frequency: String,
+    val interval: Int = 1,
+    val weekdays: String? = null,
+    val monthDay: Int? = null,
+    val endDate: String? = null, // ISO_LOCAL_DATE
+    val maxOccurrences: Int? = null,
+    val anchorDate: String, // ISO_LOCAL_DATE
+    val createNextOnCompletion: Boolean = true
 )
