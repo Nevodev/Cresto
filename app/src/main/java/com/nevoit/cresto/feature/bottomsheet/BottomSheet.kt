@@ -602,21 +602,22 @@ fun BottomSheet(
                             navigateToBasic()
                         })
                 }
-                if (isCustomRepeatBottomSheetVisible) {
-                    CustomRepeatBottomSheet(
-                        initialDate = finalDate,
-                        initialConfig = customRepeatConfig,
-                        showMenu = showMenu,
-                        onConfirm = { config ->
-                            customRepeatConfig = config
-                            repeatFrequency = null
-                        },
-                        onDismissed = {
-                            isCustomRepeatBottomSheetVisible = false
-                        }
-                    )
-                }
             }
+        }
+
+        if (isCustomRepeatBottomSheetVisible) {
+            CustomRepeatBottomSheet(
+                initialDate = finalDate,
+                initialConfig = customRepeatConfig,
+                showMenu = showMenu,
+                onConfirm = { config ->
+                    customRepeatConfig = config
+                    repeatFrequency = null
+                },
+                onDismissed = {
+                    isCustomRepeatBottomSheetVisible = false
+                }
+            )
         }
     }
 }
