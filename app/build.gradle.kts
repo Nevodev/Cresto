@@ -64,6 +64,10 @@ android {
     }
 }
 
+ksp {
+    arg("room.schemaLocation", "$projectDir/schemas")
+}
+
 configurations.configureEach {
     exclude(group = "androidx.compose.material3")
 }
