@@ -79,6 +79,7 @@ fun ConfigItemContainer(
 
 @Composable
 fun ConfigTextField(
+    modifier: Modifier = Modifier,
     title: String? = null,
     backgroundColor: Color,
     value: String,
@@ -91,7 +92,7 @@ fun ConfigTextField(
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     keyboardActions: KeyboardActions = KeyboardActions.Default
 ) {
-    Column(modifier = Modifier.fillMaxWidth()) {
+    Column(modifier = modifier.fillMaxWidth()) {
         // Display the title if it's provided.
         if (title != null) {
             Text(

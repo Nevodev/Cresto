@@ -425,15 +425,16 @@ fun CustomRepeatBottomSheet(
             modifier = Modifier.padding(12.dp)
         )
 
-        RepeatEndDatePicker(
-            isVisible = isEndDatePickerVisible,
-            anchorBounds = endDateButtonBounds,
-            minDate = anchorDate,
-            initialDate = endDate,
-            onDismiss = { isEndDatePickerVisible = false },
-            onDateSelected = { date -> endDate = date }
-        )
     }
+
+    RepeatEndDatePicker(
+        isVisible = isEndDatePickerVisible,
+        anchorBounds = endDateButtonBounds,
+        minDate = anchorDate,
+        initialDate = endDate,
+        onDismiss = { isEndDatePickerVisible = false },
+        onDateSelected = { date -> endDate = date }
+    )
 }
 
 @Composable

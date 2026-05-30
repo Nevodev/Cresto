@@ -82,10 +82,10 @@ import com.nevoit.cresto.data.todo.SubTodoItem
 import com.nevoit.cresto.data.todo.TodoItem
 import com.nevoit.cresto.data.todo.TodoViewModel
 import com.nevoit.cresto.data.todo.calendar.TodoCalendarSyncManager
-import com.nevoit.cresto.feature.calendar.toToastMessage
 import com.nevoit.cresto.feature.bottomsheet.CustomRepeatBottomSheet
 import com.nevoit.cresto.feature.bottomsheet.CustomRepeatConfig
 import com.nevoit.cresto.feature.bottomsheet.CustomRepeatEndMode
+import com.nevoit.cresto.feature.calendar.toToastMessage
 import com.nevoit.cresto.feature.main.rememberFlagMenuItems
 import com.nevoit.cresto.feature.settings.util.SettingsViewModel
 import com.nevoit.cresto.feature.sharetodo.TodoShareSheet
@@ -102,8 +102,8 @@ import com.nevoit.cresto.ui.components.glasense.GlasenseDialog
 import com.nevoit.cresto.ui.components.glasense.GlasenseDynamicSmallTitle
 import com.nevoit.cresto.ui.components.glasense.GlasenseMenu
 import com.nevoit.cresto.ui.components.glasense.GlasenseMenuItem
-import com.nevoit.cresto.ui.components.glasense.MenuState
 import com.nevoit.cresto.ui.components.glasense.MenuDivider
+import com.nevoit.cresto.ui.components.glasense.MenuState
 import com.nevoit.cresto.ui.components.glasense.PopupDirection
 import com.nevoit.cresto.ui.components.glasense.SelectiveMenuItemData
 import com.nevoit.cresto.ui.components.glasense.extend.overscrollSpacer
@@ -162,6 +162,15 @@ fun DetailScreen(
     val surfaceColor = AppColors.pageBackground
 
     val backdrop = rememberLayerBackdrop {
+        drawRect(
+            color = surfaceColor,
+            size = Size(this.size.width * 3, this.size.height * 3),
+            topLeft = Offset(-this.size.width, -this.size.height)
+        )
+        drawContent()
+    }
+
+    val backdrop2 = rememberLayerBackdrop {
         drawRect(
             color = surfaceColor,
             size = Size(this.size.width * 3, this.size.height * 3),
@@ -350,8 +359,28 @@ fun DetailScreen(
         }
     }
 
-    val repeatMenuItems = remember(repeatRule, noneText, customText, repeatDailyText, repeatWeeklyText, repeatMonthlyText, repeatYearlyText) {
+    val repeatMenuItems = remember(
+        repeatRule,
+        noneText,
+        customText,
+        repeatDailyText,
+        repeatWeeklyText,
+        repeatMonthlyText,
+        repeatYearlyText
+    ) {
         listOf(
+            SelectiveMenuItemData(
+                text = noneText,
+                isSelected = { repeatRule == null },
+                onClick = { updateRepeat(null) }
+            ),
+            MenuDivider,
+            SelectiveMenuItemData(
+                text = customText,
+                isSelected = { repeatRule?.isCustom() == true },
+                onClick = { isCustomRepeatBottomSheetVisible = true }
+            ),
+            MenuDivider,
             SelectiveMenuItemData(
                 text = repeatDailyText,
                 isSelected = { repeatRule?.isSimpleFrequency(RepeatFrequency.Daily) == true },
@@ -371,18 +400,6 @@ fun DetailScreen(
                 text = repeatYearlyText,
                 isSelected = { repeatRule?.isSimpleFrequency(RepeatFrequency.Yearly) == true },
                 onClick = { updateRepeat(RepeatRuleConfig(frequency = RepeatFrequency.Yearly)) }
-            ),
-            MenuDivider,
-            SelectiveMenuItemData(
-                text = customText,
-                isSelected = { repeatRule?.isCustom() == true },
-                onClick = { isCustomRepeatBottomSheetVisible = true }
-            ),
-            MenuDivider,
-            SelectiveMenuItemData(
-                text = noneText,
-                isSelected = { repeatRule == null },
-                onClick = { updateRepeat(null) }
             )
         )
     }
@@ -437,7 +454,7 @@ fun DetailScreen(
 
     val density = LocalDensity.current
     Box(
-        modifier = Modifier
+        Modifier
             .fillMaxSize()
             .background(surfaceColor)
             .then(
@@ -450,560 +467,568 @@ fun DetailScreen(
                 }
             )
     ) {
-        if (currentItem == null) {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                ProgressView()
-            }
-        } else {
-            PageContent(
-                state = lazyListState,
-                modifier = Modifier
-                    .layerBackdrop(backdrop)
-                    .imePadding(),
-                tabPadding = false,
-                bottomPadding = 64.dp + navigationBarHeight * 2
-            ) {
-                item(key = "status_bar") {
-                    Box(
-                        modifier = Modifier
-                            .animateItem(placementSpec = Springs.crisp())
-                            .padding(top = 48.dp + statusBarHeight + 12.dp)
-                    )
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .layerBackdrop(backdrop2)
+        ) {
+            if (currentItem == null) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    ProgressView()
                 }
-                item(key = "edit") {
-                    TodoItemRowEditable(
-                        item = currentItem.todoItem,
-                        onCheckedChange = { isChecked ->
-                            viewModel.update(currentItem.todoItem.copy(isCompleted = isChecked))
-                        },
-                        modifier = Modifier.animateItem(placementSpec = Springs.crisp()),
-                        onEditEnd = { string ->
-                            // if update here will cause conflict
-                            title = string
-                        }
-                    )
-                    VGap()
-                }
-                item(key = "notes") {
-                    ConfigTextField(
-                        value = notesText,
-                        onValueChange = { notesText = it },
-                        backgroundColor = AppColors.cardBackground,
-                        singleLine = false,
-                        decorateText = stringResource(R.string.notes),
-                        keyboardOptions = KeyboardOptions(
-                            keyboardType = KeyboardType.Text,
-                            imeAction = ImeAction.Default
+            } else {
+                PageContent(
+                    state = lazyListState,
+                    modifier = Modifier
+                        .layerBackdrop(backdrop)
+                        .imePadding(),
+                    tabPadding = false,
+                    bottomPadding = 64.dp + navigationBarHeight * 2
+                ) {
+                    item(key = "status_bar") {
+                        Box(
+                            modifier = Modifier
+                                .animateItem(placementSpec = Springs.crisp())
+                                .padding(top = 48.dp + statusBarHeight + 12.dp)
                         )
-                    )
-                    VGap()
-                }
-                item(key = "information") {
-                    CompositionLocalProvider(
-                        LocalGlasenseContentColor provides AppColors.contentVariant
-                    ) {
-                        Column(
+                    }
+                    item(key = "edit") {
+                        TodoItemRowEditable(
+                            item = currentItem.todoItem,
+                            onCheckedChange = { isChecked ->
+                                viewModel.update(currentItem.todoItem.copy(isCompleted = isChecked))
+                            },
+                            modifier = Modifier.animateItem(placementSpec = Springs.crisp()),
+                            onEditEnd = { string ->
+                                // if update here will cause conflict
+                                title = string
+                            }
+                        )
+                        VGap()
+                    }
+                    item(key = "notes") {
+                        ConfigTextField(
+                            modifier = Modifier.animateItem(placementSpec = Springs.crisp()),
+                            value = notesText,
+                            onValueChange = { notesText = it },
+                            backgroundColor = AppColors.cardBackground,
+                            singleLine = false,
+                            decorateText = stringResource(R.string.notes),
+                            keyboardOptions = KeyboardOptions(
+                                keyboardType = KeyboardType.Text,
+                                imeAction = ImeAction.Default
+                            )
+                        )
+                        VGap()
+                    }
+                    item(key = "information") {
+                        CompositionLocalProvider(
+                            LocalGlasenseContentColor provides AppColors.contentVariant
+                        ) {
+                            Column(
+                                modifier = Modifier
+                                    .animateItem(placementSpec = Springs.crisp())
+                                    .fillMaxWidth()
+                                    .background(
+                                        color = AppColors.cardBackground,
+                                        shape = AppSpecs.cardShape
+                                    )
+                                    .padding(horizontal = 12.dp)
+
+                            ) {
+                                TodoConfigRow(
+                                    icon = painterResource(id = R.drawable.ic_flag),
+                                    contentDescription = stringResource(R.string.flag),
+                                    title = stringResource(R.string.flag),
+                                    onButtonClick = { bounds ->
+                                        showMenu(
+                                            bounds,
+                                            flagMenu
+                                        )
+                                    }
+                                ) {
+                                    if (selectedIndex != 0) {
+                                        Box(
+                                            modifier = Modifier
+                                                .padding(end = 6.dp)
+                                                .size(12.dp)
+                                                .background(
+                                                    color = getFlagColor(selectedIndex),
+                                                    shape = CircleShape
+                                                )
+                                        )
+                                    }
+                                    Text(
+                                        text = getFlagText(selectedIndex),
+                                        fontWeight = FontWeight.Normal,
+                                        color = AppColors.content
+                                    )
+                                }
+                                VDivider()
+                                TodoConfigRow(
+                                    icon = painterResource(id = R.drawable.ic_calendar),
+                                    contentDescription = stringResource(R.string.due_date),
+                                    title = stringResource(R.string.due_date),
+                                    onButtonClick = { bounds ->
+                                        showDatePicker(bounds)
+                                    }
+                                ) {
+                                    Text(
+                                        text = finalDate?.format(DateTimeFormatter.ofPattern("yyyy/M/d"))
+                                            ?: stringResource(R.string.none),
+                                        fontWeight = FontWeight.Normal,
+                                        modifier = Modifier,
+                                        color = AppColors.content
+                                    )
+                                }
+                                VDivider()
+                                TodoConfigRow(
+                                    icon = painterResource(id = R.drawable.ic_clock),
+                                    contentDescription = stringResource(R.string.time),
+                                    title = stringResource(R.string.time),
+                                    onButtonClick = {
+                                        performPressHaptic()
+                                        isTimeBottomSheetVisible = true
+                                    }
+                                ) {
+                                    val timeText = currentItem.todoItem.formatTimeText()
+                                    Text(
+                                        text = timeText ?: stringResource(R.string.all_day),
+                                        fontWeight = FontWeight.Normal,
+                                        color = AppColors.content
+                                    )
+                                }
+                                VDivider()
+                                TodoConfigRow(
+                                    icon = painterResource(id = R.drawable.ic_alarm),
+                                    contentDescription = stringResource(R.string.reminder),
+                                    title = stringResource(R.string.reminder),
+                                    onButtonClick = {
+                                        performPressHaptic()
+                                        isReminderBottomSheetVisible = true
+                                    }
+                                ) {
+                                    val height = with(density) { 18.sp.toDp() }
+                                    if (currentItem.todoItem.reminderStrong) {
+                                        Icon(
+                                            painter = painterResource(id = R.drawable.ic_star),
+                                            contentDescription = stringResource(R.string.strong_reminder),
+                                            modifier = Modifier
+                                                .padding(end = 4.dp)
+                                                .size(20.dp)
+                                                .shrinkBounds(DpSize(height, height)),
+                                            tint = AppColors.highlightText
+                                        )
+                                    }
+                                    if (currentItem.todoItem.reminderPersistent) {
+                                        Icon(
+                                            painter = painterResource(id = R.drawable.ic_clock_cycle),
+                                            contentDescription = stringResource(R.string.persistent_reminder),
+                                            modifier = Modifier
+                                                .padding(end = 6.dp)
+                                                .size(20.dp)
+                                                .shrinkBounds(DpSize(height, height)),
+                                            tint = AppColors.primary
+                                        )
+                                    }
+                                    Text(
+                                        text = currentItem.todoItem.formatReminderText(),
+                                        fontWeight = FontWeight.Normal,
+                                        color = AppColors.content
+                                    )
+                                }
+                                VDivider()
+                                TodoConfigRow(
+                                    icon = painterResource(id = R.drawable.ic_repeat),
+                                    contentDescription = stringResource(R.string.repeat),
+                                    title = stringResource(R.string.repeat),
+                                    onButtonClick = { bounds ->
+                                        showMenu(bounds, repeatMenuItems)
+                                    }
+                                ) {
+                                    Text(
+                                        text = repeatRule.displayText(
+                                            noneText = noneText,
+                                            customText = customText,
+                                            dailyText = repeatDailyText,
+                                            weeklyText = repeatWeeklyText,
+                                            monthlyText = repeatMonthlyText,
+                                            yearlyText = repeatYearlyText
+                                        ),
+                                        fontWeight = FontWeight.Normal,
+                                        color = AppColors.content
+                                    )
+                                }
+                            }
+                        }
+                        VGap()
+                    }
+                    item(key = "small_title") {
+                        Text(
+                            text = stringResource(R.string.task),
+                            style = GlasenseTheme.type.callout.copy(lineHeight = 14.sp),
+                            fontWeight = FontWeight.Normal,
+                            color = AppColors.contentVariant,
                             modifier = Modifier
                                 .animateItem(placementSpec = Springs.crisp())
                                 .fillMaxWidth()
-                                .background(
-                                    color = AppColors.cardBackground,
-                                    shape = AppSpecs.cardShape
-                                )
-                                .padding(horizontal = 12.dp)
-
-                        ) {
-                            TodoConfigRow(
-                                icon = painterResource(id = R.drawable.ic_flag),
-                                contentDescription = stringResource(R.string.flag),
-                                title = stringResource(R.string.flag),
-                                onButtonClick = { bounds ->
-                                    showMenu(
-                                        bounds,
-                                        flagMenu
-                                    )
-                                }
-                            ) {
-                                if (selectedIndex != 0) {
-                                    Box(
-                                        modifier = Modifier
-                                            .padding(end = 6.dp)
-                                            .size(12.dp)
-                                            .background(
-                                                color = getFlagColor(selectedIndex),
-                                                shape = CircleShape
-                                            )
-                                    )
-                                }
-                                Text(
-                                    text = getFlagText(selectedIndex),
-                                    fontWeight = FontWeight.Normal,
-                                    color = AppColors.content
-                                )
-                            }
-                            VDivider()
-                            TodoConfigRow(
-                                icon = painterResource(id = R.drawable.ic_calendar),
-                                contentDescription = stringResource(R.string.due_date),
-                                title = stringResource(R.string.due_date),
-                                onButtonClick = { bounds ->
-                                    showDatePicker(bounds)
-                                }
-                            ) {
-                                Text(
-                                    text = finalDate?.format(DateTimeFormatter.ofPattern("yyyy/M/d"))
-                                        ?: stringResource(R.string.none),
-                                    fontWeight = FontWeight.Normal,
-                                    modifier = Modifier,
-                                    color = AppColors.content
-                                )
-                            }
-                            VDivider()
-                            TodoConfigRow(
-                                icon = painterResource(id = R.drawable.ic_clock),
-                                contentDescription = stringResource(R.string.time),
-                                title = stringResource(R.string.time),
-                                onButtonClick = {
-                                    performPressHaptic()
-                                    isTimeBottomSheetVisible = true
-                                }
-                            ) {
-                                val timeText = currentItem.todoItem.formatTimeText()
-                                Text(
-                                    text = timeText ?: stringResource(R.string.all_day),
-                                    fontWeight = FontWeight.Normal,
-                                    color = AppColors.content
-                                )
-                            }
-                            VDivider()
-                            TodoConfigRow(
-                                icon = painterResource(id = R.drawable.ic_alarm),
-                                contentDescription = stringResource(R.string.reminder),
-                                title = stringResource(R.string.reminder),
-                                onButtonClick = {
-                                    performPressHaptic()
-                                    isReminderBottomSheetVisible = true
-                                }
-                            ) {
-                                val height = with(density) { 18.sp.toDp() }
-                                if (currentItem.todoItem.reminderStrong) {
-                                    Icon(
-                                        painter = painterResource(id = R.drawable.ic_star),
-                                        contentDescription = stringResource(R.string.strong_reminder),
-                                        modifier = Modifier
-                                            .padding(end = 4.dp)
-                                            .size(20.dp)
-                                            .shrinkBounds(DpSize(height, height)),
-                                        tint = AppColors.highlightText
-                                    )
-                                }
-                                if (currentItem.todoItem.reminderPersistent) {
-                                    Icon(
-                                        painter = painterResource(id = R.drawable.ic_clock_cycle),
-                                        contentDescription = stringResource(R.string.persistent_reminder),
-                                        modifier = Modifier
-                                            .padding(end = 6.dp)
-                                            .size(20.dp)
-                                            .shrinkBounds(DpSize(height, height)),
-                                        tint = AppColors.primary
-                                    )
-                                }
-                                Text(
-                                    text = currentItem.todoItem.formatReminderText(),
-                                    fontWeight = FontWeight.Normal,
-                                    color = AppColors.content
-                                )
-                            }
-                            VDivider()
-                            TodoConfigRow(
-                                icon = painterResource(id = R.drawable.ic_repeat),
-                                contentDescription = stringResource(R.string.repeat),
-                                title = stringResource(R.string.repeat),
-                                onButtonClick = { bounds ->
-                                    performPressHaptic()
-                                    showMenu(bounds, repeatMenuItems)
-                                }
-                            ) {
-                                Text(
-                                    text = repeatRule.displayText(
-                                        noneText = noneText,
-                                        customText = customText,
-                                        dailyText = repeatDailyText,
-                                        weeklyText = repeatWeeklyText,
-                                        monthlyText = repeatMonthlyText,
-                                        yearlyText = repeatYearlyText
-                                    ),
-                                    fontWeight = FontWeight.Normal,
-                                    color = AppColors.content
-                                )
-                            }
-                        }
+                                .padding(top = 8.dp, bottom = 8.dp, start = 12.dp)
+                        )
                     }
-                    VGap()
-                }
-                item(key = "small_title") {
-                    Text(
-                        text = stringResource(R.string.task),
-                        style = GlasenseTheme.type.callout.copy(lineHeight = 14.sp),
-                        fontWeight = FontWeight.Normal,
-                        color = AppColors.contentVariant,
-                        modifier = Modifier
-                            .animateItem(placementSpec = Springs.crisp())
-                            .fillMaxWidth()
-                            .padding(top = 8.dp, bottom = 8.dp, start = 12.dp)
-                    )
-                }
-                items(items = currentItem.subTodos, key = { it.id }) { subTodo ->
-                    SwipeableSubTodoItemRowEditable(
-                        listState = swipeListState,
-                        subTodo = subTodo,
-                        modifier = Modifier.animateItem(placementSpec = Springs.crisp()),
-                        onEditEnd = { string, checked ->
-                            viewModel.updateSubTodo(
-                                subTodo.copy(
-                                    description = string,
-                                    isCompleted = checked
-                                )
-                            )
-                        },
-                        onDelete = {
-                            viewModel.deleteSubTodo(subTodo)
-                        },
-                        onPromote = {
-                            scope.launch {
-                                viewModel.insert(
-                                    TodoItem(
-                                        title = subTodo.description,
-                                        isCompleted = subTodo.isCompleted
+                    items(items = currentItem.subTodos, key = { it.id }) { subTodo ->
+                        SwipeableSubTodoItemRowEditable(
+                            listState = swipeListState,
+                            subTodo = subTodo,
+                            modifier = Modifier.animateItem(placementSpec = Springs.crisp()),
+                            onEditEnd = { string, checked ->
+                                viewModel.updateSubTodo(
+                                    subTodo.copy(
+                                        description = string,
+                                        isCompleted = checked
                                     )
                                 )
+                            },
+                            onDelete = {
                                 viewModel.deleteSubTodo(subTodo)
-                            }
-                        },
-                    )
-                    VGap()
-                }
-                item(key = "add") {
-                    SubTodoItemRowAdd(
-                        modifier = Modifier.animateItem(placementSpec = Springs.crisp()),
-                        onEditEnd = { description, checked ->
-                            viewModel.insertSubTodo(
-                                SubTodoItem(
-                                    parentId = currentItem.todoItem.id,
-                                    description = description,
-                                    isCompleted = checked
-                                )
-                            )
-                        }
-                    )
-                }
-                overscrollSpacer(lazyListState)
-            }
-        }
-        // A small title that dynamically appears at the top when the user scrolls down
-        GlasenseDynamicSmallTitle(
-            modifier = Modifier.align(Alignment.TopCenter),
-            title = itemWithSubTodos?.todoItem?.title ?: stringResource(R.string.detail),
-            statusBarHeight = statusBarHeight,
-            isVisible = isSmallTitleVisible,
-            backdrop = backdrop,
-            surfaceColor = surfaceColor
-        ) {
-            // This lambda is empty as the component handles its own content
-        }
-        // Back button positioned at the top-start of the screen
-        GlasenseButton(
-            enabled = true,
-            shape = CircleShape,
-            onClick = { activity?.finish() }, // Closes the current activity, navigating back
-            modifier = Modifier
-                .padding(top = statusBarHeight, start = 12.dp)
-                .size(48.dp)
-                .align(Alignment.TopStart),
-            colors = AppButtonColors.action()
-        ) {
-            Icon(
-                painter = painterResource(id = R.drawable.ic_forward_nav),
-                contentDescription = stringResource(R.string.back),
-                modifier = Modifier.width(32.dp)
-            )
-        }
-        val sharedInteractionSource = remember { MutableInteractionSource() }
-        GlasenseButton(
-            enabled = true,
-            interactionSource = sharedInteractionSource,
-            shape = CircleShape,
-            onClick = {},
-            modifier = Modifier
-                .padding(top = statusBarHeight, end = 12.dp)
-                .size(48.dp)
-                .align(Alignment.TopEnd),
-            colors = AppButtonColors.action()
-        ) {
-            Box(
-                modifier = Modifier
-                    .onGloballyPositioned { coordinates ->
-                        moreButtonBounds = coordinates
+                            },
+                            onPromote = {
+                                scope.launch {
+                                    viewModel.insert(
+                                        TodoItem(
+                                            title = subTodo.description,
+                                            isCompleted = subTodo.isCompleted
+                                        )
+                                    )
+                                    viewModel.deleteSubTodo(subTodo)
+                                }
+                            },
+                        )
+                        VGap()
                     }
-                    .height(48.dp)
-                    .width(48.dp)
-                    .clickable(
-                        interactionSource = sharedInteractionSource,
-                        indication = null
-                    ) {
-                        moreButtonBounds?.let {
-                            showMenu(
-                                it.boundsInWindow(),
-                                moreMenu
-                            )
-                        }
-                    },
-                contentAlignment = Alignment.Center
+                    item(key = "add") {
+                        SubTodoItemRowAdd(
+                            modifier = Modifier.animateItem(placementSpec = Springs.crisp()),
+                            onEditEnd = { description, checked ->
+                                viewModel.insertSubTodo(
+                                    SubTodoItem(
+                                        parentId = currentItem.todoItem.id,
+                                        description = description,
+                                        isCompleted = checked
+                                    )
+                                )
+                            }
+                        )
+                    }
+                    overscrollSpacer(lazyListState)
+                }
+            }
+            // A small title that dynamically appears at the top when the user scrolls down
+            GlasenseDynamicSmallTitle(
+                modifier = Modifier.align(Alignment.TopCenter),
+                title = itemWithSubTodos?.todoItem?.title ?: stringResource(R.string.detail),
+                statusBarHeight = statusBarHeight,
+                isVisible = isSmallTitleVisible,
+                backdrop = backdrop,
+                surfaceColor = surfaceColor
+            ) {
+                // This lambda is empty as the component handles its own content
+            }
+            // Back button positioned at the top-start of the screen
+            GlasenseButton(
+                enabled = true,
+                shape = CircleShape,
+                onClick = { activity?.finish() }, // Closes the current activity, navigating back
+                modifier = Modifier
+                    .padding(top = statusBarHeight, start = 12.dp)
+                    .size(48.dp)
+                    .align(Alignment.TopStart),
+                colors = AppButtonColors.action()
             ) {
                 Icon(
-                    painter = painterResource(id = R.drawable.ic_ellipsis),
-                    contentDescription = stringResource(R.string.more),
-                    modifier = Modifier.width(32.dp),
-                    tint = AppColors.primary
+                    painter = painterResource(id = R.drawable.ic_forward_nav),
+                    contentDescription = stringResource(R.string.back),
+                    modifier = Modifier.width(32.dp)
                 )
             }
-        }
-        GlasenseBottomBar(
-            modifier = Modifier.align(Alignment.BottomCenter),
-            navigationBarHeight = navigationBarHeight,
-            isVisible = true,
-            backdrop = backdrop,
-            surfaceColor = surfaceColor,
-            height = 64.dp
-        ) {
-            Row(
+            val sharedInteractionSource = remember { MutableInteractionSource() }
+            GlasenseButton(
+                enabled = true,
+                interactionSource = sharedInteractionSource,
+                shape = CircleShape,
+                onClick = {},
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(start = 12.dp, end = 12.dp, bottom = navigationBarHeight + 16.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                    .padding(top = statusBarHeight, end = 12.dp)
+                    .size(48.dp)
+                    .align(Alignment.TopEnd),
+                colors = AppButtonColors.action()
             ) {
-                val creationTime = remember(itemWithSubTodos, ticker) {
-                    itemWithSubTodos?.todoItem?.creationDateTime?.let {
-                        formatRelativeTime(it, context)
-                    } ?: ""
-                }
-                Text(
-                    text = stringResource(R.string.created, creationTime),
+                Box(
                     modifier = Modifier
-                        .padding(start = 12.dp)
-                        .weight(1f),
-                    style = GlasenseTheme.type.callout.copy(
-                        lineHeight = 14.sp, shadow = Shadow(
-                            color = surfaceColor.copy(alpha = 1f),
-                            offset = Offset(x = 0f, y = 0f),
-                            blurRadius = 8f
-                        )
-                    ),
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-                val subTodoCount = itemWithSubTodos?.subTodos?.size ?: 0
-                val deleteTodoSimpleText = stringResource(R.string.delete_todo_simple)
-                val deletePluralsText =
-                    pluralStringResource(R.plurals.delete_todo_with_subtasks, subTodoCount)
-                val deleteCurrentTodoText = stringResource(R.string.delete_current_todo)
-                val message = if (subTodoCount == 0) {
-                    deleteTodoSimpleText
-                } else {
-                    deletePluralsText
-                }
-                GlasenseButton(
-                    enabled = true,
-                    shape = CircleShape,
-                    onClick = {
-                        showDialog(
-                            deleteDialogItems,
-                            deleteCurrentTodoText,
-                            message
-                        )
-                    },
-                    modifier = Modifier
-                        .size(48.dp),
-                    colors = AppButtonColors.action()
+                        .onGloballyPositioned { coordinates ->
+                            moreButtonBounds = coordinates
+                        }
+                        .height(48.dp)
+                        .width(48.dp)
+                        .clickable(
+                            interactionSource = sharedInteractionSource,
+                            indication = null
+                        ) {
+                            moreButtonBounds?.let {
+                                showMenu(
+                                    it.boundsInWindow(),
+                                    moreMenu
+                                )
+                            }
+                        },
+                    contentAlignment = Alignment.Center
                 ) {
                     Icon(
-                        painter = painterResource(id = R.drawable.ic_trash),
-                        contentDescription = stringResource(R.string.delete_current_todo),
+                        painter = painterResource(id = R.drawable.ic_ellipsis),
+                        contentDescription = stringResource(R.string.more),
                         modifier = Modifier.width(32.dp),
-                        tint = AppColors.error
+                        tint = AppColors.primary
+                    )
+                }
+            }
+            GlasenseBottomBar(
+                modifier = Modifier.align(Alignment.BottomCenter),
+                navigationBarHeight = navigationBarHeight,
+                isVisible = true,
+                backdrop = backdrop,
+                surfaceColor = surfaceColor,
+                height = 64.dp
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = 12.dp, end = 12.dp, bottom = navigationBarHeight + 16.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    val creationTime = remember(itemWithSubTodos, ticker) {
+                        itemWithSubTodos?.todoItem?.creationDateTime?.let {
+                            formatRelativeTime(it, context)
+                        } ?: ""
+                    }
+                    Text(
+                        text = stringResource(R.string.created, creationTime),
+                        modifier = Modifier
+                            .padding(start = 12.dp)
+                            .weight(1f),
+                        style = GlasenseTheme.type.callout.copy(
+                            lineHeight = 14.sp, shadow = Shadow(
+                                color = surfaceColor.copy(alpha = 1f),
+                                offset = Offset(x = 0f, y = 0f),
+                                blurRadius = 8f
+                            )
+                        ),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                    val subTodoCount = itemWithSubTodos?.subTodos?.size ?: 0
+                    val deleteTodoSimpleText = stringResource(R.string.delete_todo_simple)
+                    val deletePluralsText =
+                        pluralStringResource(R.plurals.delete_todo_with_subtasks, subTodoCount)
+                    val deleteCurrentTodoText = stringResource(R.string.delete_current_todo)
+                    val message = if (subTodoCount == 0) {
+                        deleteTodoSimpleText
+                    } else {
+                        deletePluralsText
+                    }
+                    GlasenseButton(
+                        enabled = true,
+                        shape = CircleShape,
+                        onClick = {
+                            showDialog(
+                                deleteDialogItems,
+                                deleteCurrentTodoText,
+                                message
+                            )
+                        },
+                        modifier = Modifier
+                            .size(48.dp),
+                        colors = AppButtonColors.action()
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_trash),
+                            contentDescription = stringResource(R.string.delete_current_todo),
+                            modifier = Modifier.width(32.dp),
+                            tint = AppColors.error
+                        )
+                    }
+                }
+
+            }
+
+            DueDatePicker(
+                isVisible = isDatePickerVisible,
+                anchorBounds = dateButtonBounds,
+                initialDate = finalDate,
+                onDismiss = dismissDatePicker,
+                onDateSelected = { date ->
+                    finalDate = date
+                },
+                direction = PopupDirection.Down
+            )
+
+            if (isTimeBottomSheetVisible) {
+                DetailTimeBottomSheet(
+                    startTime = currentItem?.todoItem?.startTime,
+                    endTime = currentItem?.todoItem?.endTime,
+                    onTimeChange = { newStartTime, newEndTime ->
+                        currentItem?.let {
+                            val isAllDayEnabled = newStartTime == null && newEndTime == null
+                            val reminderConfig = it.todoItem
+                                .toReminderConfig()
+                                .compatibleWithAllDay(isAllDayEnabled)
+                            viewModel.update(
+                                it.todoItem.copy(
+                                    startTime = newStartTime,
+                                    endTime = newEndTime
+                                ).withReminderConfig(reminderConfig)
+                            )
+                        }
+                    },
+                    onDismissed = {
+                        isTimeBottomSheetVisible = false
+                    },
+                    onRequestCustomTime = { bounds, initialTime, minTime, maxTime, onSelected ->
+                        timePickerRequestKey++
+                        timeButtonBounds = bounds
+                        sheetFinalTime = initialTime
+                        sheetMinTime = minTime
+                        sheetMaxTime = maxTime
+                        onTimeSelectedCallback = onSelected
+                        isTimePickerVisible = true
+                    }
+                )
+            }
+
+            if (isReminderBottomSheetVisible) {
+                currentItem?.todoItem?.let { todoItem ->
+                    val isAllDayEnabled = todoItem.startTime == null && todoItem.endTime == null
+                    if (reminderDraftTodoId != todoItem.id) {
+                        reminderDraftTodoId = todoItem.id
+                        reminderDraftConfig = todoItem.toReminderConfig()
+                        reminderDraftPersistent = todoItem.reminderPersistent
+                        reminderDraftStrong = todoItem.reminderStrong
+                    }
+
+                    fun updateReminderDraft(
+                        config: TodoReminderConfig? = reminderDraftConfig,
+                        persistent: Boolean = reminderDraftPersistent,
+                        strong: Boolean = reminderDraftStrong
+                    ) {
+                        isEditingReminderDraft = true
+                        val mergedConfig = config?.copy(
+                            persistent = persistent,
+                            strong = strong
+                        )
+                        reminderDraftConfig = mergedConfig
+                        reminderDraftPersistent = persistent
+                        reminderDraftStrong = strong
+                        viewModel.update(
+                            todoItem.withReminderConfig(mergedConfig).copy(
+                                reminderPersistent = persistent,
+                                reminderStrong = strong
+                            )
+                        )
+                    }
+
+                    DetailReminderBottomSheet(
+                        reminderConfig = reminderDraftConfig,
+                        reminderPersistent = reminderDraftPersistent,
+                        reminderStrong = reminderDraftStrong,
+                        isAllDayEnabled = isAllDayEnabled,
+                        onReminderConfigChange = { newConfig ->
+                            updateReminderDraft(config = newConfig)
+                        },
+                        onPersistentChange = { persistent ->
+                            updateReminderDraft(persistent = persistent)
+                        },
+                        onStrongChange = { strong ->
+                            updateReminderDraft(strong = strong)
+                        },
+                        showMenu = showMenu,
+                        onRequestCustomReminder = { bounds ->
+                            reminderButtonBounds = bounds
+                            sheetReminderIsAllDay = isAllDayEnabled
+                            onReminderSelectedCallback = { selectedConfig ->
+                                updateReminderDraft(
+                                    config = selectedConfig.compatibleWithAllDay(isAllDayEnabled)
+                                )
+                            }
+                            isCustomReminderPopupVisible = true
+                        },
+                        onDismissed = {
+                            isEditingReminderDraft = false
+                            isReminderBottomSheetVisible = false
+                        }
                     )
                 }
             }
 
+            key(timePickerRequestKey) {
+                TimePicker(
+                    isVisible = isTimePickerVisible,
+                    anchorBounds = timeButtonBounds,
+                    initialTime = sheetFinalTime,
+                    minTime = sheetMinTime,
+                    maxTime = sheetMaxTime,
+                    onDismiss = { isTimePickerVisible = false },
+                    onTimeSelected = { time ->
+                        onTimeSelectedCallback(time)
+                    },
+                    direction = PopupDirection.Down
+                )
+            }
+
+            CustomReminderPopup(
+                isVisible = isCustomReminderPopupVisible,
+                anchorBounds = reminderButtonBounds,
+                isAllDayEnabled = sheetReminderIsAllDay,
+                onDismiss = { isCustomReminderPopupVisible = false },
+                onConfirm = { config ->
+                    onReminderSelectedCallback(config)
+                    isCustomReminderPopupVisible = false
+                }
+            )
+
+            if (isShareSheetVisible) {
+                currentItem?.let { item ->
+                    TodoShareSheet(
+                        todos = listOf(item),
+                        onDismiss = { isShareSheetVisible = false }
+                    )
+                }
+            }
+            if (isCustomRepeatBottomSheetVisible) {
+                CustomRepeatBottomSheet(
+                    initialDate = currentItem?.todoItem?.dueDate,
+                    initialConfig = repeatRule?.toCustomRepeatConfig(),
+                    showMenu = showMenu,
+                    onConfirm = { config ->
+                        updateRepeat(config.toRepeatRuleConfig())
+                    },
+                    onDismissed = {
+                        isCustomRepeatBottomSheetVisible = false
+                    }
+                )
+            }
         }
         GlasenseDialog(
             dialogState = dialogState,
-            backdrop = backdrop,
+            backdrop = backdrop2,
             onDismiss = { dismissDialog() },
             modifier = Modifier
         )
 
-        DueDatePicker(
-            isVisible = isDatePickerVisible,
-            anchorBounds = dateButtonBounds,
-            initialDate = finalDate,
-            onDismiss = dismissDatePicker,
-            onDateSelected = { date ->
-                finalDate = date
-            },
-            direction = PopupDirection.Down
-        )
-
-        if (isTimeBottomSheetVisible) {
-            DetailTimeBottomSheet(
-                startTime = currentItem?.todoItem?.startTime,
-                endTime = currentItem?.todoItem?.endTime,
-                onTimeChange = { newStartTime, newEndTime ->
-                    currentItem?.let {
-                        val isAllDayEnabled = newStartTime == null && newEndTime == null
-                        val reminderConfig = it.todoItem
-                            .toReminderConfig()
-                            .compatibleWithAllDay(isAllDayEnabled)
-                        viewModel.update(
-                            it.todoItem.copy(
-                                startTime = newStartTime,
-                                endTime = newEndTime
-                            ).withReminderConfig(reminderConfig)
-                        )
-                    }
-                },
-                onDismissed = {
-                    isTimeBottomSheetVisible = false
-                },
-                onRequestCustomTime = { bounds, initialTime, minTime, maxTime, onSelected ->
-                    timePickerRequestKey++
-                    timeButtonBounds = bounds
-                    sheetFinalTime = initialTime
-                    sheetMinTime = minTime
-                    sheetMaxTime = maxTime
-                    onTimeSelectedCallback = onSelected
-                    isTimePickerVisible = true
-                }
-            )
-        }
-
-        if (isReminderBottomSheetVisible) {
-            currentItem?.todoItem?.let { todoItem ->
-                val isAllDayEnabled = todoItem.startTime == null && todoItem.endTime == null
-                if (reminderDraftTodoId != todoItem.id) {
-                    reminderDraftTodoId = todoItem.id
-                    reminderDraftConfig = todoItem.toReminderConfig()
-                    reminderDraftPersistent = todoItem.reminderPersistent
-                    reminderDraftStrong = todoItem.reminderStrong
-                }
-
-                fun updateReminderDraft(
-                    config: TodoReminderConfig? = reminderDraftConfig,
-                    persistent: Boolean = reminderDraftPersistent,
-                    strong: Boolean = reminderDraftStrong
-                ) {
-                    isEditingReminderDraft = true
-                    val mergedConfig = config?.copy(
-                        persistent = persistent,
-                        strong = strong
-                    )
-                    reminderDraftConfig = mergedConfig
-                    reminderDraftPersistent = persistent
-                    reminderDraftStrong = strong
-                    viewModel.update(
-                        todoItem.withReminderConfig(mergedConfig).copy(
-                            reminderPersistent = persistent,
-                            reminderStrong = strong
-                        )
-                    )
-                }
-
-                DetailReminderBottomSheet(
-                    reminderConfig = reminderDraftConfig,
-                    reminderPersistent = reminderDraftPersistent,
-                    reminderStrong = reminderDraftStrong,
-                    isAllDayEnabled = isAllDayEnabled,
-                    onReminderConfigChange = { newConfig ->
-                        updateReminderDraft(config = newConfig)
-                    },
-                    onPersistentChange = { persistent ->
-                        updateReminderDraft(persistent = persistent)
-                    },
-                    onStrongChange = { strong ->
-                        updateReminderDraft(strong = strong)
-                    },
-                    showMenu = showMenu,
-                    onRequestCustomReminder = { bounds ->
-                        reminderButtonBounds = bounds
-                        sheetReminderIsAllDay = isAllDayEnabled
-                        onReminderSelectedCallback = { selectedConfig ->
-                            updateReminderDraft(
-                                config = selectedConfig.compatibleWithAllDay(isAllDayEnabled)
-                            )
-                        }
-                        isCustomReminderPopupVisible = true
-                    },
-                    onDismissed = {
-                        isEditingReminderDraft = false
-                        isReminderBottomSheetVisible = false
-                    }
-                )
-            }
-        }
-
-        key(timePickerRequestKey) {
-            TimePicker(
-                isVisible = isTimePickerVisible,
-                anchorBounds = timeButtonBounds,
-                initialTime = sheetFinalTime,
-                minTime = sheetMinTime,
-                maxTime = sheetMaxTime,
-                onDismiss = { isTimePickerVisible = false },
-                onTimeSelected = { time ->
-                    onTimeSelectedCallback(time)
-                },
-                direction = PopupDirection.Down
-            )
-        }
-
-        CustomReminderPopup(
-            isVisible = isCustomReminderPopupVisible,
-            anchorBounds = reminderButtonBounds,
-            isAllDayEnabled = sheetReminderIsAllDay,
-            onDismiss = { isCustomReminderPopupVisible = false },
-            onConfirm = { config ->
-                onReminderSelectedCallback(config)
-                isCustomReminderPopupVisible = false
-            }
-        )
-        if (isShareSheetVisible) {
-            currentItem?.let { item ->
-                TodoShareSheet(
-                    todos = listOf(item),
-                    onDismiss = { isShareSheetVisible = false }
-                )
-            }
-        }
-        if (isCustomRepeatBottomSheetVisible) {
-            CustomRepeatBottomSheet(
-                initialDate = currentItem?.todoItem?.dueDate,
-                initialConfig = repeatRule?.toCustomRepeatConfig(),
-                showMenu = showMenu,
-                onConfirm = { config ->
-                    updateRepeat(config.toRepeatRuleConfig())
-                },
-                onDismissed = {
-                    isCustomRepeatBottomSheetVisible = false
-                }
-            )
-        }
         GlasenseMenu(
             menuState = menuState,
-            backdrop = backdrop,
+            backdrop = backdrop2,
             onDismiss = dismissMenu
         )
     }
@@ -1046,10 +1071,10 @@ private fun RepeatRule.isSimpleFrequency(frequency: RepeatFrequency): Boolean {
 
 private fun RepeatRule.isCustom(): Boolean {
     return interval != 1 ||
-        weekdays != null ||
-        monthDay != null ||
-        endDate != null ||
-        maxOccurrences != null
+            weekdays != null ||
+            monthDay != null ||
+            endDate != null ||
+            maxOccurrences != null
 }
 
 private fun CustomRepeatConfig.toRepeatRuleConfig(): RepeatRuleConfig {
