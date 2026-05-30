@@ -44,6 +44,9 @@ interface TodoDao {
     @Query("DELETE FROM repeat_rules")
     suspend fun deleteAllRepeatRules()
 
+    @Query("DELETE FROM repeat_rules WHERE id = :id")
+    suspend fun deleteRepeatRuleById(id: String)
+
     // --- New operations for SubTodoItem ---
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertSubTodo(item: SubTodoItem)
@@ -88,6 +91,9 @@ interface TodoDao {
 
     @Query("SELECT * FROM repeat_rules WHERE id = :id")
     suspend fun getRepeatRuleByIdSnapshot(id: String): RepeatRule?
+
+    @Query("SELECT * FROM repeat_rules WHERE id = :id")
+    fun getRepeatRuleById(id: String): Flow<RepeatRule?>
 
     @Query("SELECT * FROM repeat_rules ORDER BY id ASC")
     suspend fun getAllRepeatRulesSnapshot(): List<RepeatRule>

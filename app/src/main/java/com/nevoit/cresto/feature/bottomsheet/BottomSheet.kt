@@ -393,6 +393,7 @@ fun BottomSheet(
                 aiViewModel.cancelRequest()
                 aiViewModel.clearState()
             }
+            totalOffset.stop()
             offset.animateTo(
                 targetValue = bottomSheetHeightPx,
                 animationSpec = tween(

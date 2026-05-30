@@ -18,6 +18,7 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
@@ -103,6 +104,10 @@ class TodoViewModel(
     )
 
     fun getTodoWithSubTodos(id: Int): Flow<TodoItemWithSubTodos?> = repository.getTodoById(id)
+
+    fun getRepeatRule(id: String?): Flow<RepeatRule?> {
+        return id?.let(repository::getRepeatRuleById) ?: flowOf(null)
+    }
 
     private val _calendarSyncEvents =
         MutableSharedFlow<CalendarSyncSummary>(extraBufferCapacity = 1)
@@ -346,6 +351,10 @@ class TodoViewModel(
         if (!itemToPersist.isCompleted) {
             alarmScheduler.schedule(itemToPersist)
         }
+    }
+
+    fun updateRepeatRule(item: TodoItem, config: RepeatRuleConfig?) = viewModelScope.launch {
+        repository.updateRepeatRuleForTodo(item, config)
     }
 
     fun delete(item: TodoItem) = viewModelScope.launch {

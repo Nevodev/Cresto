@@ -62,6 +62,10 @@ class TodoRepository(
         return todoDao.getTodoWithSubTodosById(id)
     }
 
+    fun getRepeatRuleById(id: String): Flow<RepeatRule?> {
+        return todoDao.getRepeatRuleById(id)
+    }
+
     suspend fun getTodoByIdSnapshot(id: Int): TodoItem? {
         return todoDao.getTodoWithSubTodosByIdSnapshot(id)?.todoItem
     }
@@ -123,6 +127,54 @@ class TodoRepository(
         )
         todoDao.updateTodo(itemToPersist)
         syncTodoByIdIfAutoEnabled(itemToPersist.id)
+    }
+
+    suspend fun updateRepeatRuleForTodo(item: TodoItem, config: RepeatRuleConfig?) {
+        val updatedItem = todoDatabase.withTransaction {
+            val existingRuleId = item.repeatRuleId
+            if (config == null) {
+                if (existingRuleId != null) todoDao.deleteRepeatRuleById(existingRuleId)
+                val nextItem = item.copy(
+                    repeatRuleId = null,
+                    seriesId = null,
+                    occurrenceDate = null,
+                    generatedFromTodoId = null,
+                    occurrenceEditedAt = null
+                )
+                todoDao.updateTodo(nextItem)
+                return@withTransaction nextItem
+            }
+
+            val occurrenceDate = item.occurrenceDate ?: item.dueDate ?: LocalDate.now()
+            val seriesId = item.seriesId ?: UUID.randomUUID().toString()
+            val ruleId = existingRuleId ?: UUID.randomUUID().toString()
+            val rule = RepeatRule(
+                id = ruleId,
+                seriesId = seriesId,
+                frequency = config.frequency,
+                interval = config.interval.coerceAtLeast(1),
+                weekdays = config.weekdays
+                    .takeIf { it.isNotEmpty() }
+                    ?.joinToString(",") { it.name },
+                monthDay = config.monthDay,
+                endDate = config.endDate,
+                maxOccurrences = config.maxOccurrences,
+                anchorDate = occurrenceDate
+            )
+            if (existingRuleId == null) {
+                todoDao.insertRepeatRule(rule)
+            } else {
+                todoDao.updateRepeatRule(rule)
+            }
+            val nextItem = item.copy(
+                repeatRuleId = ruleId,
+                seriesId = seriesId,
+                occurrenceDate = occurrenceDate
+            )
+            todoDao.updateTodo(nextItem)
+            nextItem
+        }
+        syncTodoByIdIfAutoEnabled(updatedItem.id)
     }
 
     suspend fun delete(item: TodoItem) {

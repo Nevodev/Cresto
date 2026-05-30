@@ -75,11 +75,17 @@ import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import com.kyant.shapes.Capsule
 import com.nevoit.cresto.R
 import com.nevoit.cresto.data.todo.EXTRA_DELETE_ID
+import com.nevoit.cresto.data.todo.RepeatFrequency
+import com.nevoit.cresto.data.todo.RepeatRule
+import com.nevoit.cresto.data.todo.RepeatRuleConfig
 import com.nevoit.cresto.data.todo.SubTodoItem
 import com.nevoit.cresto.data.todo.TodoItem
 import com.nevoit.cresto.data.todo.TodoViewModel
 import com.nevoit.cresto.data.todo.calendar.TodoCalendarSyncManager
 import com.nevoit.cresto.feature.calendar.toToastMessage
+import com.nevoit.cresto.feature.bottomsheet.CustomRepeatBottomSheet
+import com.nevoit.cresto.feature.bottomsheet.CustomRepeatConfig
+import com.nevoit.cresto.feature.bottomsheet.CustomRepeatEndMode
 import com.nevoit.cresto.feature.main.rememberFlagMenuItems
 import com.nevoit.cresto.feature.settings.util.SettingsViewModel
 import com.nevoit.cresto.feature.sharetodo.TodoShareSheet
@@ -97,7 +103,9 @@ import com.nevoit.cresto.ui.components.glasense.GlasenseDynamicSmallTitle
 import com.nevoit.cresto.ui.components.glasense.GlasenseMenu
 import com.nevoit.cresto.ui.components.glasense.GlasenseMenuItem
 import com.nevoit.cresto.ui.components.glasense.MenuState
+import com.nevoit.cresto.ui.components.glasense.MenuDivider
 import com.nevoit.cresto.ui.components.glasense.PopupDirection
+import com.nevoit.cresto.ui.components.glasense.SelectiveMenuItemData
 import com.nevoit.cresto.ui.components.glasense.extend.overscrollSpacer
 import com.nevoit.cresto.ui.components.glasense.isScrolledPast
 import com.nevoit.cresto.ui.components.glasense.rememberSwipeableListState
@@ -144,6 +152,9 @@ fun DetailScreen(
     val activity = LocalActivity.current
     val itemWithSubTodos by viewModel.getTodoWithSubTodos(todoId).collectAsState(initial = null)
     val currentItem = itemWithSubTodos
+    val repeatRule by viewModel.getRepeatRule(
+        itemWithSubTodos?.todoItem?.repeatRuleId
+    ).collectAsState(initial = null)
 
     val statusBarHeight = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
     val navigationBarHeight = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
@@ -324,6 +335,57 @@ fun DetailScreen(
     var reminderButtonBounds by remember { mutableStateOf(Rect.Zero) }
     var sheetReminderIsAllDay by remember { mutableStateOf(true) }
     var onReminderSelectedCallback by remember { mutableStateOf<(TodoReminderConfig) -> Unit>({}) }
+    var isCustomRepeatBottomSheetVisible by remember { mutableStateOf(false) }
+
+    val noneText = stringResource(R.string.none)
+    val customText = stringResource(R.string.custom)
+    val repeatDailyText = stringResource(R.string.repeat_daily)
+    val repeatWeeklyText = stringResource(R.string.repeat_weekly)
+    val repeatMonthlyText = stringResource(R.string.repeat_monthly)
+    val repeatYearlyText = stringResource(R.string.repeat_yearly)
+
+    fun updateRepeat(config: RepeatRuleConfig?) {
+        currentItem?.todoItem?.let { todoItem ->
+            viewModel.updateRepeatRule(todoItem, config)
+        }
+    }
+
+    val repeatMenuItems = remember(repeatRule, noneText, customText, repeatDailyText, repeatWeeklyText, repeatMonthlyText, repeatYearlyText) {
+        listOf(
+            SelectiveMenuItemData(
+                text = repeatDailyText,
+                isSelected = { repeatRule?.isSimpleFrequency(RepeatFrequency.Daily) == true },
+                onClick = { updateRepeat(RepeatRuleConfig(frequency = RepeatFrequency.Daily)) }
+            ),
+            SelectiveMenuItemData(
+                text = repeatWeeklyText,
+                isSelected = { repeatRule?.isSimpleFrequency(RepeatFrequency.Weekly) == true },
+                onClick = { updateRepeat(RepeatRuleConfig(frequency = RepeatFrequency.Weekly)) }
+            ),
+            SelectiveMenuItemData(
+                text = repeatMonthlyText,
+                isSelected = { repeatRule?.isSimpleFrequency(RepeatFrequency.Monthly) == true },
+                onClick = { updateRepeat(RepeatRuleConfig(frequency = RepeatFrequency.Monthly)) }
+            ),
+            SelectiveMenuItemData(
+                text = repeatYearlyText,
+                isSelected = { repeatRule?.isSimpleFrequency(RepeatFrequency.Yearly) == true },
+                onClick = { updateRepeat(RepeatRuleConfig(frequency = RepeatFrequency.Yearly)) }
+            ),
+            MenuDivider,
+            SelectiveMenuItemData(
+                text = customText,
+                isSelected = { repeatRule?.isCustom() == true },
+                onClick = { isCustomRepeatBottomSheetVisible = true }
+            ),
+            MenuDivider,
+            SelectiveMenuItemData(
+                text = noneText,
+                isSelected = { repeatRule == null },
+                onClick = { updateRepeat(null) }
+            )
+        )
+    }
 
     LaunchedEffect(Unit) {
         while (true) {
@@ -551,6 +613,29 @@ fun DetailScreen(
                                 }
                                 Text(
                                     text = currentItem.todoItem.formatReminderText(),
+                                    fontWeight = FontWeight.Normal,
+                                    color = AppColors.content
+                                )
+                            }
+                            VDivider()
+                            TodoConfigRow(
+                                icon = painterResource(id = R.drawable.ic_repeat),
+                                contentDescription = stringResource(R.string.repeat),
+                                title = stringResource(R.string.repeat),
+                                onButtonClick = { bounds ->
+                                    performPressHaptic()
+                                    showMenu(bounds, repeatMenuItems)
+                                }
+                            ) {
+                                Text(
+                                    text = repeatRule.displayText(
+                                        noneText = noneText,
+                                        customText = customText,
+                                        dailyText = repeatDailyText,
+                                        weeklyText = repeatWeeklyText,
+                                        monthlyText = repeatMonthlyText,
+                                        yearlyText = repeatYearlyText
+                                    ),
                                     fontWeight = FontWeight.Normal,
                                     color = AppColors.content
                                 )
@@ -903,6 +988,19 @@ fun DetailScreen(
                 )
             }
         }
+        if (isCustomRepeatBottomSheetVisible) {
+            CustomRepeatBottomSheet(
+                initialDate = currentItem?.todoItem?.dueDate,
+                initialConfig = repeatRule?.toCustomRepeatConfig(),
+                showMenu = showMenu,
+                onConfirm = { config ->
+                    updateRepeat(config.toRepeatRuleConfig())
+                },
+                onDismissed = {
+                    isCustomRepeatBottomSheetVisible = false
+                }
+            )
+        }
         GlasenseMenu(
             menuState = menuState,
             backdrop = backdrop,
@@ -922,6 +1020,70 @@ private fun TodoItem.formatTimeText(): String? {
         endTime != null -> endTime.format(formatter)
         else -> null
     }
+}
+
+private fun RepeatRule?.displayText(
+    noneText: String,
+    customText: String,
+    dailyText: String,
+    weeklyText: String,
+    monthlyText: String,
+    yearlyText: String
+): String {
+    val rule = this ?: return noneText
+    if (rule.isCustom()) return customText
+    return when (rule.frequency) {
+        RepeatFrequency.Daily -> dailyText
+        RepeatFrequency.Weekly -> weeklyText
+        RepeatFrequency.Monthly -> monthlyText
+        RepeatFrequency.Yearly -> yearlyText
+    }
+}
+
+private fun RepeatRule.isSimpleFrequency(frequency: RepeatFrequency): Boolean {
+    return this.frequency == frequency && !isCustom()
+}
+
+private fun RepeatRule.isCustom(): Boolean {
+    return interval != 1 ||
+        weekdays != null ||
+        monthDay != null ||
+        endDate != null ||
+        maxOccurrences != null
+}
+
+private fun CustomRepeatConfig.toRepeatRuleConfig(): RepeatRuleConfig {
+    return RepeatRuleConfig(
+        frequency = frequency,
+        interval = interval,
+        weekdays = weekdays,
+        monthDay = monthDays.minOrNull(),
+        endDate = if (endMode == CustomRepeatEndMode.OnDate) endDate else null,
+        maxOccurrences = if (endMode == CustomRepeatEndMode.AfterCount) maxOccurrences else null
+    )
+}
+
+private fun RepeatRule.toCustomRepeatConfig(): CustomRepeatConfig {
+    val weekdays = weekdays
+        ?.split(',')
+        ?.mapNotNull { runCatching { java.time.DayOfWeek.valueOf(it) }.getOrNull() }
+        ?.toSet()
+        .orEmpty()
+    val endMode = when {
+        endDate != null -> CustomRepeatEndMode.OnDate
+        maxOccurrences != null -> CustomRepeatEndMode.AfterCount
+        else -> CustomRepeatEndMode.Never
+    }
+    return CustomRepeatConfig(
+        frequency = frequency,
+        interval = interval,
+        weekdays = weekdays,
+        monthDays = monthDay?.let { setOf(it) }.orEmpty(),
+        months = setOf(anchorDate.monthValue),
+        endMode = endMode,
+        endDate = endDate,
+        maxOccurrences = maxOccurrences ?: 10
+    )
 }
 
 @Composable
