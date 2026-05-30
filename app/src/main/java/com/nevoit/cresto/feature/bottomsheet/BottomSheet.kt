@@ -53,6 +53,7 @@ import androidx.compose.ui.unit.Constraints
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.nevoit.cresto.R
 import com.nevoit.cresto.data.todo.RepeatFrequency
+import com.nevoit.cresto.data.todo.RepeatRuleConfig
 import com.nevoit.cresto.data.todo.TodoViewModel
 import com.nevoit.cresto.feature.screenextract.AiExtractSource
 import com.nevoit.cresto.feature.screenextract.ScreenExtractEvents
@@ -106,7 +107,7 @@ private fun defaultRangeEndTime(startTime: LocalTime): LocalTime {
 @Composable
 fun BottomSheet(
     onDismiss: () -> Unit,
-    onAddClick: (String, String, Int, LocalDate?, LocalTime?, LocalTime?, TodoReminderConfig?, RepeatFrequency?) -> Unit,
+    onAddClick: (String, String, Int, LocalDate?, LocalTime?, LocalTime?, TodoReminderConfig?, RepeatFrequency?, RepeatRuleConfig?) -> Unit,
     aiViewModel: AiViewModel = viewModel(),
     showDialog: (items: List<DialogItemData>, title: String, message: String?) -> Unit,
     showMenu: (anchorBounds: Rect, items: List<GlasenseMenuItem>) -> Unit,
@@ -505,7 +506,8 @@ fun BottomSheet(
                                 startTime,
                                 endTime,
                                 reminder,
-                                repeatFrequency
+                                repeatFrequency,
+                                customRepeatConfig?.toRepeatRuleConfig()
                             )
                         }
                     }, onClose = {
@@ -620,6 +622,17 @@ fun BottomSheet(
             )
         }
     }
+}
+
+private fun CustomRepeatConfig.toRepeatRuleConfig(): RepeatRuleConfig {
+    return RepeatRuleConfig(
+        frequency = frequency,
+        interval = interval,
+        weekdays = weekdays,
+        monthDay = monthDays.minOrNull(),
+        endDate = if (endMode == CustomRepeatEndMode.OnDate) endDate else null,
+        maxOccurrences = if (endMode == CustomRepeatEndMode.AfterCount) maxOccurrences else null
+    )
 }
 
 private fun Uri.toImageDataUrl(context: Context): String {

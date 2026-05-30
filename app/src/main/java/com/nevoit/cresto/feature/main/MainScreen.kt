@@ -602,7 +602,7 @@ fun MainScreen() {
             if (bottomSheetState.isVisible) {
                 BottomSheet(
                     onDismiss = { viewModel.hideBottomSheet() },
-                    onAddClick = { title, notes, flagIndex, finalDate, startTime, endTime, reminder, repeatFrequency ->
+                    onAddClick = { title, notes, flagIndex, finalDate, startTime, endTime, reminder, repeatFrequency, repeatRuleConfig ->
                         viewModel.insert(
                             TodoItem(
                                 title = title,
@@ -618,7 +618,8 @@ fun MainScreen() {
                                 reminderPersistent = reminder?.persistent ?: false,
                                 reminderStrong = reminder?.strong ?: false
                             ),
-                            repeatFrequency = repeatFrequency
+                            repeatFrequency = repeatFrequency,
+                            repeatRuleConfig = repeatRuleConfig
                         )
                     },
                     showDialog = showDialog,

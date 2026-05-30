@@ -98,6 +98,9 @@ interface TodoDao {
         occurrenceDate: LocalDate
     ): TodoItem?
 
+    @Query("SELECT COUNT(*) FROM todo_items WHERE seriesId = :seriesId")
+    suspend fun countTodosBySeriesIdSnapshot(seriesId: String): Int
+
     @Query("SELECT * FROM todo_items WHERE generatedFromTodoId = :todoId ORDER BY occurrenceDate ASC LIMIT 1")
     suspend fun getGeneratedTodoFromSnapshot(todoId: Int): TodoItem?
 

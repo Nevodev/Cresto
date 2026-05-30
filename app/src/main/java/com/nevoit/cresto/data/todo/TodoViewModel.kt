@@ -71,11 +71,11 @@ data class InsightsUiState(
 
     val hasAnyData: Boolean
         get() = todayTotal > 0 ||
-            weekDueTotal > 0 ||
-            pendingTotal > 0 ||
-            overdueTotal > 0 ||
-            stalePendingTotal > 0 ||
-            weekCompletedTotal > 0
+                weekDueTotal > 0 ||
+                pendingTotal > 0 ||
+                overdueTotal > 0 ||
+                stalePendingTotal > 0 ||
+                weekCompletedTotal > 0
 }
 
 private data class InsightCoreCounts(
@@ -104,7 +104,8 @@ class TodoViewModel(
 
     fun getTodoWithSubTodos(id: Int): Flow<TodoItemWithSubTodos?> = repository.getTodoById(id)
 
-    private val _calendarSyncEvents = MutableSharedFlow<CalendarSyncSummary>(extraBufferCapacity = 1)
+    private val _calendarSyncEvents =
+        MutableSharedFlow<CalendarSyncSummary>(extraBufferCapacity = 1)
     val calendarSyncEvents = _calendarSyncEvents.asSharedFlow()
 
     /*select*/
@@ -292,8 +293,12 @@ class TodoViewModel(
     )
 
     /*select*/
-    fun insert(item: TodoItem, repeatFrequency: RepeatFrequency? = null) = viewModelScope.launch {
-        val id = repository.insert(item, repeatFrequency).toInt()
+    fun insert(
+        item: TodoItem,
+        repeatFrequency: RepeatFrequency? = null,
+        repeatRuleConfig: RepeatRuleConfig? = null
+    ) = viewModelScope.launch {
+        val id = repository.insert(item, repeatFrequency, repeatRuleConfig).toInt()
         alarmScheduler.schedule(repository.getTodoByIdSnapshot(id) ?: item.copy(id = id))
     }
 
@@ -617,10 +622,6 @@ class TodoViewModel(
         } else {
             closeSearchBox()
         }
-    }
-
-    fun toggleSearchBox() {
-        _isSearchBoxOpen.update { !it }
     }
 
     private val _searchQuery = MutableStateFlow("")

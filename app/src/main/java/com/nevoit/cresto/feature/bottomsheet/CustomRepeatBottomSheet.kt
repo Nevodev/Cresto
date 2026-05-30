@@ -809,7 +809,6 @@ private fun RepeatEndDatePicker(
                 )
                 RepeatEndDayWheel(
                     modifier = Modifier.weight(1f),
-                    minDate = minDate,
                     selectedYear = selectedYear,
                     selectedMonth = selectedMonth,
                     selectedDay = selectedDay
@@ -855,7 +854,6 @@ private fun RepeatEndMonthWheel(
 @Composable
 private fun RepeatEndDayWheel(
     modifier: Modifier,
-    minDate: LocalDate,
     selectedYear: MutableIntState,
     selectedMonth: MutableIntState,
     selectedDay: MutableIntState

@@ -66,9 +66,16 @@ class TodoRepository(
         return todoDao.getTodoWithSubTodosByIdSnapshot(id)?.todoItem
     }
 
-    suspend fun insert(item: TodoItem, repeatFrequency: RepeatFrequency? = null): Long {
+    suspend fun insert(
+        item: TodoItem,
+        repeatFrequency: RepeatFrequency? = null,
+        repeatRuleConfig: RepeatRuleConfig? = null
+    ): Long {
         val id = todoDatabase.withTransaction {
-            if (repeatFrequency == null) {
+            val repeatConfig = repeatRuleConfig ?: repeatFrequency?.let { frequency ->
+                RepeatRuleConfig(frequency = frequency)
+            }
+            if (repeatConfig == null) {
                 return@withTransaction todoDao.insertTodo(item)
             }
 
@@ -78,7 +85,14 @@ class TodoRepository(
             val rule = RepeatRule(
                 id = ruleId,
                 seriesId = seriesId,
-                frequency = repeatFrequency,
+                frequency = repeatConfig.frequency,
+                interval = repeatConfig.interval.coerceAtLeast(1),
+                weekdays = repeatConfig.weekdays
+                    .takeIf { it.isNotEmpty() }
+                    ?.joinToString(",") { it.name },
+                monthDay = repeatConfig.monthDay,
+                endDate = repeatConfig.endDate,
+                maxOccurrences = repeatConfig.maxOccurrences,
                 anchorDate = occurrenceDate
             )
             todoDao.insertRepeatRule(rule)
@@ -94,14 +108,10 @@ class TodoRepository(
         return id
     }
 
-    suspend fun insertAll(items: List<TodoItem>) {
-        todoDao.insertAll(items)
-    }
-
     suspend fun update(item: TodoItem) {
         val existingCalendarState = todoDao.getTodoWithSubTodosByIdSnapshot(item.id)?.todoItem
         val occurrenceWasEdited = existingCalendarState?.generatedFromTodoId != null &&
-            existingCalendarState.userEditableSignature() != item.userEditableSignature()
+                existingCalendarState.userEditableSignature() != item.userEditableSignature()
         val itemToPersist = item.copy(
             calendarEventId = item.calendarEventId ?: existingCalendarState?.calendarEventId,
             calendarSyncedAt = item.calendarSyncedAt ?: existingCalendarState?.calendarSyncedAt,
@@ -212,7 +222,8 @@ class TodoRepository(
     }
 
     suspend fun deleteById(id: Int) {
-        todoDao.getTodoWithSubTodosByIdSnapshot(id)?.let { deleteCalendarEventIfPresent(it.todoItem) }
+        todoDao.getTodoWithSubTodosByIdSnapshot(id)
+            ?.let { deleteCalendarEventIfPresent(it.todoItem) }
         todoDao.deleteById(id)
     }
 
@@ -263,7 +274,10 @@ class TodoRepository(
         todoDao.updateFlagByIds(ids, flag, LocalDateTime.now())
     }
 
-    suspend fun markCompletedById(id: Int, completedDateTime: LocalDateTime): RepeatCompletionResult {
+    suspend fun markCompletedById(
+        id: Int,
+        completedDateTime: LocalDateTime
+    ): RepeatCompletionResult {
         return updateCompletedStatusByIds(listOf(id), true, completedDateTime)
     }
 
@@ -471,7 +485,8 @@ class TodoRepository(
         val seriesId = completedTodo.seriesId ?: return
         val occurrenceDate = completedTodo.occurrenceDate ?: completedTodo.dueDate ?: return
         val rule = todoDao.getRepeatRuleByIdSnapshot(ruleId) ?: return
-        val nextDate = rule.nextOccurrence(occurrenceDate) ?: return
+        val occurrenceCount = todoDao.countTodosBySeriesIdSnapshot(seriesId)
+        val nextDate = rule.nextOccurrence(occurrenceDate, occurrenceCount) ?: return
         if (todoDao.getTodoBySeriesOccurrenceSnapshot(seriesId, nextDate) != null) return
 
         val nextTodo = completedTodo.copy(
@@ -624,7 +639,8 @@ class TodoRepository(
 
         val subTodosByParent = backup.subTodos.groupBy { it.parentId }
         val repeatRuleIdMap = backup.repeatRules.associate { it.id to UUID.randomUUID().toString() }
-        val seriesIdMap = backup.repeatRules.associate { it.seriesId to UUID.randomUUID().toString() }
+        val seriesIdMap =
+            backup.repeatRules.associate { it.seriesId to UUID.randomUUID().toString() }
         val importedRuleIds = mutableSetOf<String>()
         val todoIdMap = mutableMapOf<Int, Int>()
 
@@ -649,7 +665,12 @@ class TodoRepository(
             val mappedSeriesId = todoDto.seriesId?.let(seriesIdMap::get)
             if (todoDto.repeatRuleId != null && mappedRepeatRuleId != null && mappedRepeatRuleId !in importedRuleIds) {
                 backup.repeatRules.firstOrNull { it.id == todoDto.repeatRuleId }?.let { ruleDto ->
-                    todoDao.insertRepeatRuleForImport(ruleDto.toRepeatRule(mappedRepeatRuleId, mappedSeriesId ?: UUID.randomUUID().toString()))
+                    todoDao.insertRepeatRuleForImport(
+                        ruleDto.toRepeatRule(
+                            mappedRepeatRuleId,
+                            mappedSeriesId ?: UUID.randomUUID().toString()
+                        )
+                    )
                     importedRuleIds += mappedRepeatRuleId
                 }
             }
