@@ -29,6 +29,7 @@ import com.nevoit.glasense.overscroll.util.singleRelativeLayoutWithLayer
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.android.awaitFrame
 import kotlinx.coroutines.launch
+import kotlin.coroutines.cancellation.CancellationException
 import kotlin.math.abs
 import kotlin.math.sign
 
@@ -163,11 +164,14 @@ class OffsetOverscrollEffect(
             } else {
                 try {
                     overscrollOffsetAnimation.animateTo(0f, animationSpec, unconsumed) {
-                        if (value <= 0f) {
+                        if (value >= 0f) {
                             unconsumed = this.velocity
-                            animationScope.launch { snapTo(0f) }
+                            throw CancellationException("overscroll_cancel")
                         }
                     }
+                } catch (e: CancellationException) {
+                    if (e.message != "overscroll_cancel") throw e
+                    overscrollOffsetAnimation.snapTo(0f)
                 } finally {
                     unconsumed -= performFling(
                         when (orientation) {
@@ -216,9 +220,12 @@ class OffsetOverscrollEffect(
                     overscrollOffsetAnimation.animateTo(0f, animationSpec, unconsumed) {
                         if (value <= 0f) {
                             unconsumed = this.velocity
-                            animationScope.launch { snapTo(0f) }
+                            throw CancellationException("overscroll_cancel")
                         }
                     }
+                } catch (e: CancellationException) {
+                    if (e.message != "overscroll_cancel") throw e
+                    overscrollOffsetAnimation.snapTo(0f)
                 } finally {
                     unconsumed -= performFling(
                         when (orientation) {
