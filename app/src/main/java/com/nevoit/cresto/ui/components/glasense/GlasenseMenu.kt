@@ -66,6 +66,7 @@ import com.kyant.backdrop.effects.blur
 import com.kyant.backdrop.effects.effect
 import com.nevoit.cresto.R
 import com.nevoit.cresto.theme.AppColors
+import com.nevoit.cresto.theme.LocalGlasenseSettings
 import com.nevoit.cresto.theme.isAppInDarkTheme
 import com.nevoit.cresto.ui.components.glasense.material.MaterialRecipes
 import com.nevoit.cresto.ui.components.glasense.material.rememberMaterialRenderEffect
@@ -74,6 +75,7 @@ import com.nevoit.glasense.core.component.Text
 import com.nevoit.glasense.core.component.VDivider
 import com.nevoit.glasense.core.interaction.DimIndication
 import com.nevoit.glasense.core.modifier.cachedClip
+import com.nevoit.glasense.theme.GlasenseTheme
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlin.math.max
@@ -343,18 +345,23 @@ fun GlasenseMenu(
                 }
                 .cachedClip(shape)
                 // Core of the blur effect, drawing a blurred version of the content behind it.
-                .drawPlainBackdrop(
-                    backdrop = backdrop,
-                    shape = { RectangleShape },
-                    layerBlock = {
-                        alpha = alphaAni.value
-                    },
-                    effects = {
-                        padding = 50.dp.toPx() * 2
-                        effect(renderEffect)
-                        blur(50.dp.toPx())
-                    }
-                )
+                .then(
+                    if (LocalGlasenseSettings.current.liteMode) Modifier
+                        .graphicsLayer {
+                            this.alpha = alphaAni.value
+                        }
+                        .background(GlasenseTheme.colors.cardBackground) else Modifier.drawPlainBackdrop(
+                        backdrop = backdrop,
+                        shape = { RectangleShape },
+                        layerBlock = {
+                            this.alpha = alphaAni.value
+                        },
+                        effects = {
+                            padding = 50.dp.toPx() * 2
+                            effect(renderEffect)
+                            blur(50.dp.toPx())
+                        }
+                    ))
                 .glasenseHighlight(16.dp)
                 .layout { measurable, constraints ->
                     val placeable = measurable.measure(constraints)

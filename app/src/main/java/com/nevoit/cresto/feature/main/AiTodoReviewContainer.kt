@@ -62,6 +62,7 @@ import com.nevoit.cresto.feature.settings.util.SettingsManager
 import com.nevoit.cresto.theme.AppButtonColors
 import com.nevoit.cresto.theme.AppColors
 import com.nevoit.cresto.theme.AppSpecs
+import com.nevoit.cresto.theme.LocalGlasenseSettings
 import com.nevoit.cresto.theme.gradientColorsDark
 import com.nevoit.cresto.theme.isAppInDarkTheme
 import com.nevoit.cresto.ui.components.glasense.GlasenseButton
@@ -71,6 +72,7 @@ import com.nevoit.cresto.ui.components.glasense.rememberSwipeableListState
 import com.nevoit.cresto.ui.components.packed.SwipeableTodoItem
 import com.nevoit.glasense.core.component.Icon
 import com.nevoit.glasense.core.component.Text
+import com.nevoit.glasense.core.modifier.cachedClip
 import com.nevoit.glasense.theme.GlasenseTheme
 import com.nevoit.glasense.theme.tokens.Springs
 import kotlinx.coroutines.launch
@@ -113,6 +115,8 @@ fun AiTodoReviewContainer(
             .calculateBottomPadding()
 
     var isReady by remember { mutableStateOf(false) }
+
+    val liteMode = LocalGlasenseSettings.current.liteMode
 
     val rotationY = remember { Animatable(1f) }
     val blurRadius = remember { Animatable(0f) }
@@ -250,7 +254,11 @@ fun AiTodoReviewContainer(
             .drawPlainBackdrop(
                 backdrop = backdrop,
                 shape = { RectangleShape },
-                effects = { blur(blurRadius.value * 32.dp.toPx()) }, onDrawSurface = {
+                effects = {
+                    if (!liteMode) {
+                        blur(blurRadius.value * 32.dp.toPx())
+                    }
+                }, onDrawSurface = {
                     drawRect(color = Color.Black.copy(alpha = scrimAlpha.value * 0.4f))
                 })
             .clickable(
@@ -281,9 +289,9 @@ fun AiTodoReviewContainer(
                     .height(availableHeight * 0.7f)
                     .graphicsLayer {
                         this.alpha = 0.8f * alpha.value
-                    },
+                    }
+                    .cachedClip(AppSpecs.dialogShape),
                 blurRadius = 32.dp,
-                shape = AppSpecs.dialogShape,
                 colors = gradientColorsDark,
                 timeMillis = 5000
             )

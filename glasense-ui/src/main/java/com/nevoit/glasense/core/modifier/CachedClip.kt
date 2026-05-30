@@ -29,8 +29,8 @@ fun Modifier.cachedClip(
     val drawCacheBlock = remember(shape) {
         val block: CacheDrawScope.() -> DrawResult = {
             val mask = ImageBitmap(
-                width = size.width.toInt().coerceAtLeast(1),
-                height = size.height.toInt().coerceAtLeast(1),
+                width = size.width.toInt() + 2,
+                height = size.height.toInt() + 2,
                 config = ImageBitmapConfig.Alpha8
             )
 
@@ -43,10 +43,13 @@ fun Modifier.cachedClip(
 
             val outline = shape.createOutline(size, layoutDirection, this)
 
+            canvas.save()
+            canvas.translate(1f, 1f)
             canvas.drawOutline(
                 outline = outline,
                 paint = paint
             )
+            canvas.restore()
 
             val layerPaint = Paint()
 
@@ -61,7 +64,7 @@ fun Modifier.cachedClip(
 
                 drawImage(
                     image = mask,
-                    topLeft = Offset.Zero,
+                    topLeft = Offset(-1f,-1f),
                     blendMode = BlendMode.DstIn
                 )
 

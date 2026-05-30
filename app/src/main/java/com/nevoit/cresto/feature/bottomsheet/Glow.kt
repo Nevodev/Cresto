@@ -1,6 +1,7 @@
 package com.nevoit.cresto.feature.bottomsheet
 
 import androidx.activity.compose.ManagedActivityResultLauncher
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -18,11 +19,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.BlurredEdgeTreatment
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.painterResource
@@ -33,6 +32,7 @@ import com.kyant.shapes.Capsule
 import com.nevoit.cresto.R
 import com.nevoit.cresto.theme.AppButtonColors
 import com.nevoit.cresto.theme.AppColors
+import com.nevoit.cresto.theme.LocalGlasenseSettings
 import com.nevoit.cresto.theme.defaultEnterTransition
 import com.nevoit.cresto.theme.defaultExitTransition
 import com.nevoit.cresto.theme.gradientColorsDark
@@ -50,13 +50,13 @@ import com.nevoit.cresto.ui.components.glasense.material.rememberMaterialRenderE
 import com.nevoit.cresto.ui.viewmodel.AiViewModel
 import com.nevoit.glasense.core.component.Icon
 import com.nevoit.glasense.core.component.Text
+import com.nevoit.glasense.core.modifier.cachedClip
 import com.nevoit.glasense.theme.GlasenseTheme
 
 @Composable
 fun GlowContainer(
     modifier: Modifier = Modifier,
     glowColors: List<Color>,
-    strongerHighlight: Boolean = false,
     content: @Composable () -> Unit
 ) {
     val darkTheme = isAppInDarkTheme()
@@ -72,23 +72,31 @@ fun GlowContainer(
         modifier = modifier,
         contentAlignment = Alignment.Center
     ) {
-        RotatingGlow(
-            modifier = Modifier
-                .height(64.dp)
-                .padding(horizontal = 8.dp)
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(28.dp)),
-            blurRadius = 16.dp,
-            shape = RectangleShape,
-            colors = glowColors,
-            timeMillis = 5000
-        )
+        if (!LocalGlasenseSettings.current.liteMode) {
+            RotatingGlow(
+                modifier = Modifier
+                    .height(64.dp)
+                    .padding(horizontal = 8.dp)
+                    .fillMaxWidth()
+                    .cachedClip(RoundedCornerShape(28.dp)),
+                blurRadius = 16.dp,
+                colors = glowColors,
+                timeMillis = 5000
+            )
+        }
         Box(
             modifier = Modifier
                 .height(56.dp)
                 .padding(horizontal = 12.dp)
                 .fillMaxWidth()
-                .clip(Capsule())
+                .cachedClip(Capsule())
+                .then(
+                    if (LocalGlasenseSettings.current.liteMode) {
+                        Modifier.background(color = GlasenseTheme.colors.cardBackground)
+                    } else {
+                        Modifier
+                    }
+                )
                 .glasenseHighlight(56.dp)
         ) {
             RotatingGlow(
@@ -99,28 +107,19 @@ fun GlowContainer(
                     },
                 blurRadius = 32.dp,
                 edgeTreatment = BlurredEdgeTreatment.Rectangle,
-                shape = RectangleShape,
                 colors = glowColors,
                 timeMillis = 5000
             )
-            RotatingGlowBorder(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .drawWithContent {
-                        drawContent()
-                        if (darkTheme) drawContent()
-                    },
-                strokeWidth = 4.dp,
-                blurRadius = 4.dp,
-                shape = Capsule(),
-                colors = highlightColors,
-                timeMillis = 3000
-            )
-            if (strongerHighlight) {
+            if (!LocalGlasenseSettings.current.liteMode) {
                 RotatingGlowBorder(
-                    modifier = Modifier.fillMaxSize(),
-                    strokeWidth = 8.dp,
-                    blurRadius = 8.dp,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .drawWithContent {
+                            drawContent()
+                            if (darkTheme) drawContent()
+                        },
+                    strokeWidth = 4.dp,
+                    blurRadius = 4.dp,
                     shape = Capsule(),
                     colors = highlightColors,
                     timeMillis = 3000
