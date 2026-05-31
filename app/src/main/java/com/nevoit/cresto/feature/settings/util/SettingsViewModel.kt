@@ -19,6 +19,7 @@ class SettingsViewModel : ViewModel() {
     val hasReturnedToTodayByTitle = SettingsManager.hasReturnedToTodayByTitleState
     val isExtractScreenQuickTileEnabled = SettingsManager.isExtractScreenQuickTileEnabledState
     val isAutoAddToSystemCalendar = SettingsManager.isAutoAddToSystemCalendarState
+    val isCheckUpdatesOnStartup = SettingsManager.isCheckUpdatesOnStartupState
     val appIcon = SettingsManager.appIconState
 
     fun onCustomPrimaryColorChanged(isEnabled: Boolean) {
@@ -78,6 +79,10 @@ class SettingsViewModel : ViewModel() {
 
     fun onAutoAddToSystemCalendarChanged(isEnabled: Boolean) {
         SettingsManager.isAutoAddToSystemCalendar = isEnabled
+    }
+
+    fun onCheckUpdatesOnStartupChanged(isEnabled: Boolean) {
+        SettingsManager.isCheckUpdatesOnStartup = isEnabled
     }
 
     fun onAppIconChanged(context: Context, icon: AppIconManager.AppIcon) {

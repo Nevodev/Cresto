@@ -69,6 +69,11 @@ import com.nevoit.cresto.data.todo.calendar.TodoCalendarSyncManager
 import com.nevoit.cresto.feature.bottomsheet.BottomSheet
 import com.nevoit.cresto.feature.calendar.toToastMessage
 import com.nevoit.cresto.feature.screenextract.ScreenExtractEvents
+import com.nevoit.cresto.feature.settings.update.UpdateBottomSheet
+import com.nevoit.cresto.feature.settings.update.UpdateCheckResult
+import com.nevoit.cresto.feature.settings.update.UpdateChecker
+import com.nevoit.cresto.feature.settings.update.UpdateInfo
+import com.nevoit.cresto.feature.settings.util.SettingsManager
 import com.nevoit.cresto.feature.settings.util.SettingsViewModel
 import com.nevoit.cresto.feature.sharetodo.TodoShareSheet
 import com.nevoit.cresto.theme.AppButtonColors
@@ -158,6 +163,7 @@ fun MainScreen() {
     }
 
     var dialogState by remember { mutableStateOf(DialogState()) }
+    var updateInfo by remember { mutableStateOf<UpdateInfo?>(null) }
 
     val showDialog: (items: List<DialogItemData>, title: String, message: String?) -> Unit =
         { items, title, message ->
@@ -170,6 +176,19 @@ fun MainScreen() {
     }
 
     val pendingAiTodos by ScreenExtractEvents.pendingTodos.collectAsState()
+
+    LaunchedEffect(Unit) {
+        val now = System.currentTimeMillis()
+        val oneDayMs = 24L * 60L * 60L * 1000L
+        if (!SettingsManager.isCheckUpdatesOnStartup) return@LaunchedEffect
+        if (now - SettingsManager.lastUpdateCheckAt < oneDayMs) return@LaunchedEffect
+
+        SettingsManager.lastUpdateCheckAt = now
+        when (val result = UpdateChecker.check()) {
+            is UpdateCheckResult.HasUpdate -> updateInfo = result.updateInfo
+            else -> Unit
+        }
+    }
 
     val errorOkText = stringResource(R.string.ok)
     val errorTitleText = stringResource(R.string.extract_screen_failed)
@@ -714,6 +733,15 @@ fun MainScreen() {
                 viewModel.insertAiGeneratedTodos(items)
                 ScreenExtractEvents.clearPendingTodos()
             }
+        }
+
+        updateInfo?.let { info ->
+            UpdateBottomSheet(
+                updateInfo = info,
+                onDismissed = {
+                    if (!info.isRequired) updateInfo = null
+                }
+            )
         }
     }
 }

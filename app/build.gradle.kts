@@ -35,6 +35,11 @@ android {
         targetSdk = 37
         versionCode = vCodeProvider.get()
         versionName = vNameProvider.get()
+        buildConfigField(
+            "String",
+            "UPDATE_MANIFEST_URL",
+            "\"https://nevodev.github.io/cresto/update/latest.json\""
+        )
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         ndk {
@@ -126,6 +131,8 @@ dependencies {
     implementation(libs.aboutlibraries.compose.core)
     implementation(libs.shizuku.api)
     implementation(libs.shizuku.provider)
+    implementation(libs.coil.compose)
+    implementation(libs.coil.network.okhttp)
 
     implementation(platform(libs.koin.bom))
     implementation(libs.koin.androidx.compose)

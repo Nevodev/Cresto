@@ -2,6 +2,7 @@ package com.nevoit.cresto.feature.settings
 
 import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
+import android.widget.Toast
 import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -28,7 +29,9 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -60,6 +63,10 @@ import com.kyant.backdrop.backdrops.layerBackdrop
 import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import com.kyant.shapes.Capsule
 import com.nevoit.cresto.R
+import com.nevoit.cresto.feature.settings.update.UpdateBottomSheet
+import com.nevoit.cresto.feature.settings.update.UpdateCheckResult
+import com.nevoit.cresto.feature.settings.update.UpdateChecker
+import com.nevoit.cresto.feature.settings.update.UpdateInfo
 import com.nevoit.cresto.feature.settings.util.SettingsViewModel
 import com.nevoit.cresto.theme.AppButtonColors
 import com.nevoit.cresto.theme.AppColors
@@ -94,6 +101,7 @@ import io.github.vinceglb.confettikit.core.Party
 import io.github.vinceglb.confettikit.core.Position
 import io.github.vinceglb.confettikit.core.emitter.Emitter
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlin.random.Random
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
@@ -123,6 +131,7 @@ fun AboutScreen(settingsViewModel: SettingsViewModel = viewModel()) {
     val isSmallTitleVisible by lazyListState.isScrolledPast(statusBarHeight + 24.dp)
 
     val context = LocalContext.current
+    val scope = rememberCoroutineScope()
 
     // Retrieve the app's package information to display version name and code
     val packageInfo: PackageInfo? = remember {
@@ -140,6 +149,44 @@ fun AboutScreen(settingsViewModel: SettingsViewModel = viewModel()) {
     val hapticController = LocalHapticFeedback.current
 
     val isSuperGraphicUltraModernGirlEnabled by settingsViewModel.isSuperGraphicUltraModernGirlEnabled
+    val isCheckUpdatesOnStartupEnabled by settingsViewModel.isCheckUpdatesOnStartup
+    var isCheckingForUpdates by remember { mutableStateOf(false) }
+    var updateInfo by remember { mutableStateOf<UpdateInfo?>(null) }
+    val alreadyLatestVersionText = stringResource(R.string.already_latest_version)
+    val checkUpdateFailedText = stringResource(R.string.check_update_failed)
+    val updateManifestUrlNotConfiguredText =
+        stringResource(R.string.update_manifest_url_not_configured)
+
+    fun checkForUpdates() {
+        if (isCheckingForUpdates) return
+        scope.launch {
+            isCheckingForUpdates = true
+            try {
+                when (val result = UpdateChecker.check()) {
+                    is UpdateCheckResult.HasUpdate -> updateInfo = result.updateInfo
+                    UpdateCheckResult.NoUpdate -> Toast.makeText(
+                        context,
+                        alreadyLatestVersionText,
+                        Toast.LENGTH_SHORT
+                    ).show()
+
+                    UpdateCheckResult.NotConfigured -> Toast.makeText(
+                        context,
+                        updateManifestUrlNotConfiguredText,
+                        Toast.LENGTH_SHORT
+                    ).show()
+
+                    is UpdateCheckResult.Failed -> Toast.makeText(
+                        context,
+                        checkUpdateFailedText,
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            } finally {
+                isCheckingForUpdates = false
+            }
+        }
+    }
 
     val backdrop = rememberLayerBackdrop {
         drawRect(
@@ -499,12 +546,30 @@ fun AboutScreen(settingsViewModel: SettingsViewModel = viewModel()) {
             item {
                 VGap()
                 ConfigItemContainer {
-                    ConfigItem(title = stringResource(R.string.check_for_updates_on_startup)) {
-                        GlasenseSwitch(
-                            checked = false,
-                            onCheckedChange = {},
-                            backgroundColor = AppColors.cardBackground
-                        )
+                    Column {
+                        ConfigItem(title = stringResource(R.string.check_for_updates_on_startup)) {
+                            GlasenseSwitch(
+                                checked = isCheckUpdatesOnStartupEnabled,
+                                onCheckedChange = {
+                                    settingsViewModel.onCheckUpdatesOnStartupChanged(it)
+                                },
+                                backgroundColor = AppColors.cardBackground
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(8.dp))
+                        VDivider()
+                        Spacer(modifier = Modifier.height(8.dp))
+                        ConfigItem(
+                            title = if (isCheckingForUpdates) {
+                                stringResource(R.string.checking_for_updates)
+                            } else {
+                                stringResource(R.string.check_for_updates)
+                            },
+                            clickable = !isCheckingForUpdates,
+                            indication = true,
+                            onClick = { checkForUpdates() }
+                        ) {
+                        }
                     }
                 }
             }
@@ -552,6 +617,14 @@ fun AboutScreen(settingsViewModel: SettingsViewModel = viewModel()) {
                     parties = parade()
                 )
             }
+        }
+        updateInfo?.let { info ->
+            UpdateBottomSheet(
+                updateInfo = info,
+                onDismissed = {
+                    if (!info.isRequired) updateInfo = null
+                }
+            )
         }
     }
 }

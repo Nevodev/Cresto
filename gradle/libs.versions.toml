@@ -22,6 +22,7 @@ confettiKit = "0.8.0"
 materialColorUtilities = "4.1.1"
 aboutLibraries = "14.2.1"
 shizuku = "13.1.5"
+coil = "3.4.0"
 
 
 [libraries]
@@ -63,6 +64,8 @@ shapes = { module = "io.github.kyant0:shapes", version.ref = "shapes" }
 mmkv = { module = "com.tencent:mmkv", version.ref = "mmkv" }
 confetti-kit = { module = "io.github.vinceglb:confettikit", version.ref = "confettiKit" }
 material-color-utilities = { module = "com.materialkolor:material-color-utilities", version.ref = "materialColorUtilities" }
+coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coil" }
+coil-network-okhttp = { module = "io.coil-kt.coil3:coil-network-okhttp", version.ref = "coil" }
 
 koin-bom = { module = "io.insert-koin:koin-bom", version.ref = "koin-bom" }
 koin-androidx-compose = { module = "io.insert-koin:koin-androidx-compose" }

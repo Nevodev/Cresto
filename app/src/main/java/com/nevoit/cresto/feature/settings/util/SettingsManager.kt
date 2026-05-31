@@ -37,6 +37,8 @@ object SettingsManager {
     private const val KEY_HAS_RETURNED_TO_TODAY_BY_TITLE = "has_returned_to_today_by_title"
     private const val KEY_EXTRACT_SCREEN_QUICK_TILE_ENABLED = "extract_screen_quick_tile_enabled"
     private const val KEY_AUTO_ADD_TO_SYSTEM_CALENDAR = "auto_add_to_system_calendar"
+    private const val KEY_CHECK_UPDATES_ON_STARTUP = "check_updates_on_startup"
+    private const val KEY_LAST_UPDATE_CHECK_AT = "last_update_check_at"
     private const val DEFAULT_AI_API_URL = "https://open.bigmodel.cn/api/paas/v4/chat/completions"
     private const val DEFAULT_AI_MODEL = "glm-4-flash"
     private const val KEY_APP_ICON = "app_icon"
@@ -80,6 +82,8 @@ object SettingsManager {
         mutableStateOf(mmkv.decodeBool(KEY_EXTRACT_SCREEN_QUICK_TILE_ENABLED, false))
     val isAutoAddToSystemCalendarState =
         mutableStateOf(mmkv.decodeBool(KEY_AUTO_ADD_TO_SYSTEM_CALENDAR, false))
+    val isCheckUpdatesOnStartupState =
+        mutableStateOf(mmkv.decodeBool(KEY_CHECK_UPDATES_ON_STARTUP, true))
     val appIconState = mutableStateOf(
         mmkv.decodeString(KEY_APP_ICON, AppIconManager.AppIcon.DEFAULT.name)
             ?.let { name ->
@@ -245,6 +249,19 @@ object SettingsManager {
         set(value) {
             mmkv.encode(KEY_AUTO_ADD_TO_SYSTEM_CALENDAR, value)
             isAutoAddToSystemCalendarState.value = value
+        }
+
+    var isCheckUpdatesOnStartup: Boolean
+        get() = mmkv.decodeBool(KEY_CHECK_UPDATES_ON_STARTUP, true)
+        set(value) {
+            mmkv.encode(KEY_CHECK_UPDATES_ON_STARTUP, value)
+            isCheckUpdatesOnStartupState.value = value
+        }
+
+    var lastUpdateCheckAt: Long
+        get() = mmkv.decodeLong(KEY_LAST_UPDATE_CHECK_AT, 0L)
+        set(value) {
+            mmkv.encode(KEY_LAST_UPDATE_CHECK_AT, value)
         }
 
     var appIcon: AppIconManager.AppIcon
