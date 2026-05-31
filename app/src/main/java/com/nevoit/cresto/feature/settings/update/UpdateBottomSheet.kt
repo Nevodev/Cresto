@@ -162,6 +162,7 @@ fun UpdateBottomSheet(
                         }
                     }
                 }
+                item { VGap(24.dp) }
                 overscrollSpacer(listState)
             }
 
@@ -339,7 +340,7 @@ private fun UpdateTopBar(
     onClose: () -> Unit
 ) {
     val surfaceColor = GlasenseTheme.colors.elevatedPageBackground
-    val blur = LocalGlasenseSettings.current.liteMode
+    val blur = !LocalGlasenseSettings.current.liteMode
 
     Box(
         modifier = Modifier
@@ -407,7 +408,7 @@ private fun BoxScope.UpdateActions(
     onDownload: () -> Unit
 ) {
     val effect = rememberMaterialRenderEffect(MaterialRecipes.thin())
-    val blur = LocalGlasenseSettings.current.liteMode
+    val blur = !LocalGlasenseSettings.current.liteMode
 
     Row(
         modifier = Modifier
