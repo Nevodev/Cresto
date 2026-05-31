@@ -1,6 +1,6 @@
 [versions]
 agp = "9.2.1"
-backdrop = "1.0.6"
+backdrop = "2.0.0"
 shapes = "1.2.0"
 kotlin = "2.3.21"
 coreKtx = "1.18.0"
@@ -20,7 +20,7 @@ roomRuntime = "2.8.4"
 koin-bom = "4.2.1"
 confettiKit = "0.8.0"
 materialColorUtilities = "4.1.1"
-aboutLibraries = "14.2.0"
+aboutLibraries = "14.2.1"
 shizuku = "13.1.5"
 
 

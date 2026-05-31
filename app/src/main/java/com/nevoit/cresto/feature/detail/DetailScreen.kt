@@ -352,14 +352,16 @@ fun DetailScreen(
     val repeatWeeklyText = stringResource(R.string.repeat_weekly)
     val repeatMonthlyText = stringResource(R.string.repeat_monthly)
     val repeatYearlyText = stringResource(R.string.repeat_yearly)
+    val repeatTodoItem = currentItem?.todoItem
 
     fun updateRepeat(config: RepeatRuleConfig?) {
-        currentItem?.todoItem?.let { todoItem ->
+        repeatTodoItem?.let { todoItem ->
             viewModel.updateRepeatRule(todoItem, config)
         }
     }
 
     val repeatMenuItems = remember(
+        repeatTodoItem,
         repeatRule,
         noneText,
         customText,

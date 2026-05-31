@@ -2,7 +2,6 @@ package com.nevoit.cresto.feature.calendar
 
 import android.app.Activity
 import android.content.Intent
-import android.graphics.RenderEffect
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -51,7 +50,6 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.TileMode
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
@@ -74,7 +72,7 @@ import com.kyant.backdrop.backdrops.layerBackdrop
 import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import com.kyant.backdrop.drawPlainBackdrop
 import com.kyant.backdrop.effects.blur
-import com.kyant.backdrop.effects.effect
+import com.kyant.backdrop.effects.runtimeShaderEffect
 import com.kyant.shapes.Capsule
 import com.nevoit.cresto.R
 import com.nevoit.cresto.data.todo.EXTRA_TODO_ID
@@ -367,11 +365,10 @@ fun CalendarScreen() {
                         shape = { RectangleShape },
                         effects = {
                             if (blur) blur(3f.dp.toPx())
-                            effect(
-                                RenderEffect.createRuntimeShaderEffect(
-                                    obtainRuntimeShader(
-                                        "AlphaMask",
-                                        """
+
+                            runtimeShaderEffect(
+                                "AlphaMask",
+                                """
 uniform shader content;
 
 uniform float2 size;
@@ -382,15 +379,14 @@ half4 main(float2 coord) {
 float blurAlpha = smoothstep(size.y, size.y * 0.7, coord.y);
 float tintAlpha = smoothstep(size.y, size.y * 0.6, coord.y);
 return mix(content.eval(coord) * blurAlpha, tint * tintAlpha, tintIntensity);
-}"""
-                                    ).apply {
-                                        setFloatUniform("size", size.width, size.height)
-                                        setColorUniform("tint", backgroundColor.toArgb())
-                                        setFloatUniform("tintIntensity", 0.7f)
-                                    },
-                                    "content"
-                                )
-                            )
+}""", "content"
+                            ) {
+                                apply {
+                                    setFloatUniform("size", size.width, size.height)
+                                    setColorUniform("tint", backgroundColor)
+                                    setFloatUniform("tintIntensity", 0.7f)
+                                }
+                            }
                         }
                     )
                     .statusBarsPadding()

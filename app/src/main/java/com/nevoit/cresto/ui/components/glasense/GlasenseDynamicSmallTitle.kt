@@ -1,6 +1,5 @@
 package com.nevoit.cresto.ui.components.glasense
 
-import android.graphics.RenderEffect
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Box
@@ -17,7 +16,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
@@ -26,7 +24,7 @@ import androidx.compose.ui.unit.dp
 import com.kyant.backdrop.Backdrop
 import com.kyant.backdrop.drawPlainBackdrop
 import com.kyant.backdrop.effects.blur
-import com.kyant.backdrop.effects.effect
+import com.kyant.backdrop.effects.runtimeShaderEffect
 import com.nevoit.cresto.theme.AppColors
 import com.nevoit.cresto.theme.LocalGlasenseSettings
 import com.nevoit.glasense.core.component.Text
@@ -82,11 +80,8 @@ fun GlasenseDynamicSmallTitle(
                 shape = { RectangleShape },
                 effects = {
                     if (blur) blur(3f.dp.toPx())
-                    effect(
-                        RenderEffect.createRuntimeShaderEffect(
-                            obtainRuntimeShader(
-                                "AlphaMask",
-                                """
+                    runtimeShaderEffect(
+                        "AlphaMask", """
 uniform shader content;
 
 uniform float2 size;
@@ -97,15 +92,14 @@ half4 main(float2 coord) {
 float blurAlpha = smoothstep(size.y, size.y * 0.7, coord.y);
 float tintAlpha = smoothstep(size.y, size.y * 0.6, coord.y);
 return mix(content.eval(coord) * blurAlpha, tint * tintAlpha, tintIntensity);
-}"""
-                            ).apply {
-                                setFloatUniform("size", size.width, size.height)
-                                setColorUniform("tint", surfaceColor.toArgb())
-                                setFloatUniform("tintIntensity", 0.7f)
-                            },
-                            "content"
-                        )
-                    )
+}""", "content"
+                    ) {
+                        apply {
+                            setFloatUniform("size", size.width, size.height)
+                            setColorUniform("tint", surfaceColor)
+                            setFloatUniform("tintIntensity", 0.7f)
+                        }
+                    }
                 }
             )
     ) {}
