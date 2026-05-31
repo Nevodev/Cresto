@@ -36,7 +36,7 @@ import com.nevoit.glasense.theme.GlasenseTheme
 fun ConfigItemContainer(
     modifier: Modifier = Modifier,
     title: String? = null,
-    backgroundColor: Color,
+    backgroundColor: Color = GlasenseTheme.colors.cardBackground,
     compact: Boolean = false,
     content: @Composable () -> Unit
 ) {

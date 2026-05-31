@@ -8,6 +8,8 @@ import androidx.activity.compose.LocalActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -29,8 +31,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.layout.LayoutCoordinates
+import androidx.compose.ui.layout.boundsInWindow
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -38,16 +45,23 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.kyant.backdrop.backdrops.layerBackdrop
 import com.kyant.backdrop.backdrops.rememberLayerBackdrop
+import com.kyant.shapes.Capsule
 import com.nevoit.cresto.R
 import com.nevoit.cresto.data.todo.calendar.TodoCalendarSyncManager
 import com.nevoit.cresto.feature.screenextract.ShizukuScreenshotCapturer
+import com.nevoit.cresto.feature.settings.util.AppLocaleManager
 import com.nevoit.cresto.feature.settings.util.SettingsViewModel
 import com.nevoit.cresto.theme.AppButtonColors
 import com.nevoit.cresto.theme.AppColors
 import com.nevoit.cresto.theme.harmonize
 import com.nevoit.cresto.ui.components.glasense.GlasenseButton
 import com.nevoit.cresto.ui.components.glasense.GlasenseDynamicSmallTitle
+import com.nevoit.cresto.ui.components.glasense.GlasenseMenu
+import com.nevoit.cresto.ui.components.glasense.GlasenseMenuItem
 import com.nevoit.cresto.ui.components.glasense.GlasenseSwitch
+import com.nevoit.cresto.ui.components.glasense.MenuDivider
+import com.nevoit.cresto.ui.components.glasense.MenuState
+import com.nevoit.cresto.ui.components.glasense.SelectiveMenuItemData
 import com.nevoit.cresto.ui.components.glasense.extend.overscrollSpacer
 import com.nevoit.cresto.ui.components.glasense.isScrolledPast
 import com.nevoit.cresto.ui.components.packed.ConfigInfoHeader
@@ -58,6 +72,7 @@ import com.nevoit.glasense.core.component.Icon
 import com.nevoit.glasense.core.component.Text
 import com.nevoit.glasense.core.component.VDivider
 import com.nevoit.glasense.core.component.VGap
+import com.nevoit.glasense.core.interaction.DimIndication
 import com.nevoit.glasense.theme.GlasenseTheme
 import com.nevoit.glasense.theme.tokens.Slate500
 import rikka.shizuku.Shizuku
@@ -131,6 +146,57 @@ fun GeneralScreen(settingsViewModel: SettingsViewModel = viewModel()) {
         drawContent()
     }
 
+    var languageButtonBounds by remember { mutableStateOf<LayoutCoordinates?>(null) }
+    var menuState by remember { mutableStateOf(MenuState()) }
+    val showMenu: (anchorBounds: Rect, items: List<GlasenseMenuItem>) -> Unit =
+        { bounds, items ->
+            menuState = MenuState(isVisible = true, anchorBounds = bounds, items = items)
+        }
+    val dismissMenu = {
+        menuState = menuState.copy(isVisible = false)
+    }
+    val selectedLanguageTag = AppLocaleManager.getLanguageTag(context)
+    val systemLanguageText = stringResource(R.string.system_language)
+    val englishText = stringResource(R.string.english)
+    val simplifiedChineseText = stringResource(R.string.simplified_chinese)
+    val currentLanguageText = when (selectedLanguageTag) {
+        AppLocaleManager.ENGLISH -> englishText
+        AppLocaleManager.SIMPLIFIED_CHINESE -> simplifiedChineseText
+        else -> systemLanguageText
+    }
+    val languageMenuItems = remember(
+        selectedLanguageTag,
+        systemLanguageText,
+        englishText,
+        simplifiedChineseText,
+        context
+    ) {
+        listOf(
+            SelectiveMenuItemData(
+                text = systemLanguageText,
+                isSelected = { selectedLanguageTag == AppLocaleManager.SYSTEM },
+                onClick = {
+                    AppLocaleManager.setLanguageTag(context, AppLocaleManager.SYSTEM)
+                }
+            ),
+            MenuDivider,
+            SelectiveMenuItemData(
+                text = englishText,
+                isSelected = { selectedLanguageTag == AppLocaleManager.ENGLISH },
+                onClick = {
+                    AppLocaleManager.setLanguageTag(context, AppLocaleManager.ENGLISH)
+                }
+            ),
+            SelectiveMenuItemData(
+                text = simplifiedChineseText,
+                isSelected = { selectedLanguageTag == AppLocaleManager.SIMPLIFIED_CHINESE },
+                onClick = {
+                    AppLocaleManager.setLanguageTag(context, AppLocaleManager.SIMPLIFIED_CHINESE)
+                }
+            )
+        )
+    }
+
     // Root container for the screen, filling the entire available space
     Box(
         modifier = Modifier
@@ -158,35 +224,28 @@ fun GeneralScreen(settingsViewModel: SettingsViewModel = viewModel()) {
                 VGap()
             }
             item {
-                ConfigItemContainer(
-                    title = stringResource(R.string.general_section_title),
-                    backgroundColor = AppColors.cardBackground
-                ) {
+                ConfigItemContainer {
                     Column {
-                        ConfigItem(title = stringResource(R.string.check_for_updates_on_startup)) {
-                            GlasenseSwitch(
-                                checked = false,
-                                onCheckedChange = {},
-                                backgroundColor = AppColors.cardBackground
-                            )
-                        }
-                        Spacer(modifier = Modifier.height(8.dp))
-                        VDivider()
-                        Spacer(modifier = Modifier.height(8.dp))
-                        ConfigItem(title = stringResource(R.string.completion_sound)) {
-                            GlasenseSwitch(
-                                checked = isCompletionSoundEnabled,
-                                onCheckedChange = { settingsViewModel.onCompletionSoundChanged(it) },
-                                backgroundColor = AppColors.cardBackground
-                            )
-                        }
-                        Spacer(modifier = Modifier.height(8.dp))
-                        VDivider()
-                        Spacer(modifier = Modifier.height(8.dp))
-                        ConfigItem(title = stringResource(R.string.language)) {
+                        ConfigItem(
+                            title = stringResource(R.string.language)
+                        ) {
                             Text(
-                                text = stringResource(R.string.chinese),
-                                color = AppColors.contentVariant
+                                text = currentLanguageText,
+                                modifier = Modifier
+                                    .onGloballyPositioned { coordinates ->
+                                        languageButtonBounds = coordinates
+                                    }
+                                    .clip(Capsule())
+                                    .background(AppColors.scrimNormal)
+                                    .clickable(
+                                        interactionSource = remember { MutableInteractionSource() },
+                                        indication = DimIndication()
+                                    ) {
+                                        languageButtonBounds?.let {
+                                            showMenu(it.boundsInWindow(), languageMenuItems)
+                                        }
+                                    }
+                                    .padding(horizontal = 8.dp, vertical = 4.dp)
                             )
                         }
                     }
@@ -195,8 +254,7 @@ fun GeneralScreen(settingsViewModel: SettingsViewModel = viewModel()) {
             }
             item {
                 ConfigItemContainer(
-                    title = stringResource(R.string.todos),
-                    backgroundColor = AppColors.cardBackground
+                    title = stringResource(R.string.todos)
                 ) {
                     Column {
                         ConfigItem(title = stringResource(R.string.auto_add_to_system_calendar)) {
@@ -229,9 +287,7 @@ fun GeneralScreen(settingsViewModel: SettingsViewModel = viewModel()) {
                 VGap()
             }
             item {
-                ConfigItemContainer(
-                    backgroundColor = AppColors.cardBackground
-                ) {
+                ConfigItemContainer {
                     Column {
                         ConfigItem(title = stringResource(R.string.due_today_marker)) {
                             GlasenseSwitch(
@@ -252,9 +308,7 @@ fun GeneralScreen(settingsViewModel: SettingsViewModel = viewModel()) {
                 VGap()
             }
             item {
-                ConfigItemContainer(
-                    backgroundColor = AppColors.cardBackground
-                ) {
+                ConfigItemContainer {
                     Column {
                         ConfigItem(title = stringResource(R.string.overdue_marker)) {
                             GlasenseSwitch(
@@ -275,9 +329,20 @@ fun GeneralScreen(settingsViewModel: SettingsViewModel = viewModel()) {
                 VGap()
             }
             item {
+                ConfigItemContainer {
+                    ConfigItem(title = stringResource(R.string.completion_sound)) {
+                        GlasenseSwitch(
+                            checked = isCompletionSoundEnabled,
+                            onCheckedChange = { settingsViewModel.onCompletionSoundChanged(it) },
+                            backgroundColor = AppColors.cardBackground
+                        )
+                    }
+                }
+                VGap()
+            }
+            item {
                 ConfigItemContainer(
-                    title = stringResource(R.string.advanced),
-                    backgroundColor = AppColors.cardBackground
+                    title = stringResource(R.string.advanced)
                 ) {
                     Column {
                         ConfigItem(title = stringResource(R.string.shizuku_permission)) {
@@ -328,8 +393,7 @@ fun GeneralScreen(settingsViewModel: SettingsViewModel = viewModel()) {
             if (isEasterEggEnabled) {
                 item {
                     ConfigItemContainer(
-                        title = "???",
-                        backgroundColor = AppColors.cardBackground
+                        title = "???"
                     ) {
                         Column {
                             ConfigItem(title = "Super Graphic Ultra Modern Girl") {
@@ -384,5 +448,10 @@ fun GeneralScreen(settingsViewModel: SettingsViewModel = viewModel()) {
                 modifier = Modifier.width(32.dp)
             )
         }
+        GlasenseMenu(
+            menuState = menuState,
+            backdrop = backdrop,
+            onDismiss = dismissMenu
+        )
     }
 }

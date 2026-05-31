@@ -40,6 +40,9 @@
     <string name="completion_sound">Play Sound on Completing Todo</string>
     <string name="language">Language</string>
     <string name="chinese">Chinese</string>
+    <string name="system_language">System</string>
+    <string name="english">English</string>
+    <string name="simplified_chinese">Simplified Chinese</string>
     <string name="todos">Todos</string>
     <string name="auto_add_to_system_calendar">Auto-add to System Calendar</string>
     <string name="automatically_add_new_todos_as_events_in_system_calendar">Automatically add new todos as events in the system calendar.</string>

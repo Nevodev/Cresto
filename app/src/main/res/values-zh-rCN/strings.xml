@@ -45,6 +45,9 @@
     <string name="completion_sound">完成待办事项时播放提示音</string>
     <string name="language">语言</string>
     <string name="chinese">中文</string>
+    <string name="system_language">跟随系统</string>
+    <string name="english">English</string>
+    <string name="simplified_chinese">简体中文</string>
     <string name="todos">待办事项</string>
     <string name="auto_add_to_system_calendar">自动添加到系统日历</string>
     <string name="automatically_add_new_todos_as_events_in_system_calendar">新建待办事项时，自动添加为系统日历中的日程。</string>
