@@ -341,31 +341,47 @@ fun GlasenseSwipeable(
                         coroutineScope.launch {
                             val currentOffset = flingOffset.value
                             val isFastSwipe = velocity < -velocityThreshold
-                            if (deepSwipeAction != null && ((isDeepSwipe && initialSwipeState == SwipeState.REVEALED) || (isFastSwipe && initialSwipeState == SwipeState.REVEALED))) {
-                                executeAction(deepSwipeAction)
-                            } else if ((currentOffset < snapThresholdPx || (isFastSwipe && currentOffset < 0)) && velocity <= 0) {
-                                swipeState = SwipeState.REVEALED
-                                val revealInitialVelocity =
-                                    if (currentOffset < -totalActionsWidthPx && velocity < 0f) 0f else velocity
-                                flingOffset.animateTo(
-                                    targetValue = -totalActionsWidthPx,
-                                    animationSpec = Springs.bouncy(400),
-                                    initialVelocity = revealInitialVelocity
-                                )
-                            } else {
-                                if (listState.currentOpenKey == key) {
-                                    listState.close()
+                            val startedRevealed = initialSwipeState == SwipeState.REVEALED
+                            val canDeepSwipe = deepSwipeAction != null && startedRevealed
+
+                            val shouldExecuteDeepSwipe =
+                                canDeepSwipe &&
+                                        velocity <= 0 &&
+                                        (isDeepSwipe || isFastSwipe)
+
+                            val shouldReveal =
+                                (canDeepSwipe && isDeepSwipe && velocity > 0) ||
+                                        ((currentOffset < snapThresholdPx || (isFastSwipe && currentOffset < 0)) && velocity <= 0)
+
+                            when {
+                                shouldExecuteDeepSwipe -> {
+                                    executeAction(deepSwipeAction)
                                 }
-                                swipeState = SwipeState.IDLE
-                                val finalVelocity =
-                                    if (currentOffset == 0f && velocity > 0) 0f else velocity
-                                flingOffset.animateTo(
-                                    targetValue = 0f,
-                                    animationSpec = Springs.bouncy(400),
-                                    initialVelocity = finalVelocity
-                                )
-                                shouldComposeActions = false
-                                resetVisualState()
+
+                                shouldReveal -> {
+                                    swipeState = SwipeState.REVEALED
+                                    flingOffset.animateTo(
+                                        targetValue = -totalActionsWidthPx,
+                                        animationSpec = Springs.bouncy(400),
+                                        initialVelocity = velocity
+                                    )
+                                }
+
+                                else -> {
+                                    if (listState.currentOpenKey == key) {
+                                        listState.close()
+                                    }
+                                    swipeState = SwipeState.IDLE
+                                    val finalVelocity =
+                                        if (currentOffset == 0f && velocity > 0) 0f else velocity
+                                    flingOffset.animateTo(
+                                        targetValue = 0f,
+                                        animationSpec = Springs.bouncy(400),
+                                        initialVelocity = finalVelocity
+                                    )
+                                    shouldComposeActions = false
+                                    resetVisualState()
+                                }
                             }
                         }
                     }

@@ -2,6 +2,8 @@ package com.nevoit.cresto.feature.bottomsheet
 
 import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -16,6 +18,7 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.BlurredEdgeTreatment
@@ -144,6 +147,8 @@ fun AiInputBox(
     } else {
         gradientColorsLight
     }
+    val inputInteractionSource = remember { MutableInteractionSource() }
+
     GlowContainer(
         modifier = modifier
             .fillMaxWidth()
@@ -160,8 +165,13 @@ fun AiInputBox(
                         modifier = Modifier
                             .fillMaxSize()
                             .padding(start = 16.dp)
+                            .clickable(
+                                interactionSource = inputInteractionSource,
+                                indication = null
+                            ) {}
                     ) {
                         BasicTextField(
+                            interactionSource = inputInteractionSource,
                             state = textFieldState,
                             modifier = Modifier
                                 .align(Alignment.CenterStart)
