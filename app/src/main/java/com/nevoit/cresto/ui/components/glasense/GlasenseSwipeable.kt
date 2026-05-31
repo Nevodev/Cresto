@@ -41,16 +41,10 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.unit.dp
 import com.nevoit.cresto.theme.AppButtonColors
-import com.nevoit.cresto.ui.components.CustomAnimatedVisibility
-import com.nevoit.cresto.ui.components.myFadeIn
-import com.nevoit.cresto.ui.components.myFadeOut
-import com.nevoit.cresto.ui.components.myScaleIn
-import com.nevoit.cresto.ui.components.myScaleOut
 import com.nevoit.glasense.core.component.Icon
 import com.nevoit.glasense.theme.tokens.Springs
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 import kotlin.math.abs
 import kotlin.random.Random
@@ -146,12 +140,10 @@ fun GlasenseSwipeable(
         derivedStateOf { revealedThresholds.count { abs(flingOffset.value) >= it } }
     }
 
-    val scale = remember(key) { Animatable(1f) }
-    val alphaAni = remember(key) { Animatable(1f) }
+    var isFlyingOut by remember { mutableStateOf(false) }
 
     suspend fun resetVisualState() {
-        scale.snapTo(1f)
-        alphaAni.snapTo(1f)
+        isFlyingOut = false
         deleteFlingOffset.snapTo(0f)
     }
 
@@ -165,25 +157,19 @@ fun GlasenseSwipeable(
             }
             coroutineScope.launch {
                 val flyOutExtraPx = totalActionsWidthPx + with(density) { 8.dp.toPx() }
-                val jobs = listOf(
-                    launch { scale.animateTo(0.8f, tween(100)) },
-                    launch { alphaAni.animateTo(0f, tween(100)) },
-                    launch {
-                        deleteFlingOffset.animateTo(
-                            targetValue = -(screenWidthPx + flyOutExtraPx) - flingOffset.value,
-                            animationSpec = tween(
-                                100,
-                                easing = CubicBezierEasing(
-                                    0.2f,
-                                    0f,
-                                    0.56f,
-                                    0.48f
-                                )
-                            )
+                isFlyingOut = true
+                deleteFlingOffset.animateTo(
+                    targetValue = -(screenWidthPx + flyOutExtraPx) - flingOffset.value,
+                    animationSpec = tween(
+                        100,
+                        easing = CubicBezierEasing(
+                            0.2f,
+                            0f,
+                            0.56f,
+                            0.48f
                         )
-                    }
+                    )
                 )
-                jobs.joinAll()
                 swipeState = SwipeState.IDLE
                 listState.close()
                 onAction(action.index)
@@ -243,57 +229,66 @@ fun GlasenseSwipeable(
                         contentAlignment = Alignment.Center,
                     ) {
                         val trueIndex = actions.size - index - 1
-                        val isVisible = trueIndex < revealedCount
+                        val isVisible = trueIndex < revealedCount && !isFlyingOut
 
-                        CustomAnimatedVisibility(
-                            visible = isVisible,
-                            modifier = Modifier
-                                .graphicsLayer {
-                                    scaleX = scale.value
-                                    scaleY = scale.value
-                                    alpha = alphaAni.value
-                                }
-                                .width(48.dp)
-                                .height(48.dp),
-                            enter = myScaleIn(
-                                tween(300, 0, LinearOutSlowInEasing),
-                                0.6f
-                            ) + myFadeIn(tween(200)),
-                            exit = myScaleOut(
-                                tween(200, 0, LinearOutSlowInEasing),
-                                0.6f
-                            ) + myFadeOut(tween(100))
-                        ) {
-                            GlasenseButton(
-                                enabled = true,
-                                shape = CircleShape,
-                                onClick = {
-                                    coroutineScope.launch {
-                                        executeAction(action)
-                                    }
-                                },
-                                modifier = Modifier
-                                    .size(48.dp),
-                                colors = AppButtonColors.solid(
-                                    color = action.color,
-                                    contentColor = Color.White
-                                ),
-                                animated = true
-                            ) {
-                                Box(
-                                    modifier = Modifier
-                                        .glasenseHighlight(100.dp)
-                                        .fillMaxSize(), contentAlignment = Alignment.Center
-                                ) {
-                                    Icon(
-                                        painter = action.icon,
-                                        contentDescription = action.contentDescription,
-                                        tint = action.iconColor,
-                                        modifier = Modifier
-                                            .width(28.dp)
-                                            .height(28.dp)
+                        val animation = remember { Animatable(0.6f) }
+                        val alphaAnimation = remember { Animatable(0f) }
+                        LaunchedEffect(isVisible) {
+                            if (isVisible) {
+                                launch {
+                                    alphaAnimation.animateTo(
+                                        1f,
+                                        tween(300, easing = LinearOutSlowInEasing)
                                     )
                                 }
+                                animation.animateTo(1f, tween(300, easing = LinearOutSlowInEasing))
+                            } else {
+                                launch {
+                                    alphaAnimation.animateTo(
+                                        0f,
+                                        tween(100, easing = LinearOutSlowInEasing)
+                                    )
+                                }
+                                animation.animateTo(
+                                    0.6f,
+                                    tween(200, easing = LinearOutSlowInEasing)
+                                )
+                            }
+                        }
+                        GlasenseButton(
+                            enabled = true,
+                            shape = CircleShape,
+                            onClick = {
+                                coroutineScope.launch {
+                                    executeAction(action)
+                                }
+                            },
+                            modifier = Modifier
+                                .graphicsLayer {
+                                    scaleX = animation.value
+                                    scaleY = animation.value
+                                    alpha = alphaAnimation.value
+                                }
+                                .size(48.dp),
+                            colors = AppButtonColors.solid(
+                                color = action.color,
+                                contentColor = Color.White
+                            ),
+                            animated = true
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .glasenseHighlight(100.dp)
+                                    .fillMaxSize(), contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    painter = action.icon,
+                                    contentDescription = action.contentDescription,
+                                    tint = action.iconColor,
+                                    modifier = Modifier
+                                        .width(28.dp)
+                                        .height(28.dp)
+                                )
                             }
                         }
                     }
