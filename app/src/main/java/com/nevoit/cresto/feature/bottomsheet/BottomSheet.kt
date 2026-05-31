@@ -611,11 +611,18 @@ fun BottomSheet(
         if (isCustomRepeatBottomSheetVisible) {
             CustomRepeatBottomSheet(
                 initialDate = finalDate,
-                initialConfig = customRepeatConfig,
+                initialConfig = customRepeatConfig
+                    ?: repeatFrequency?.toCustomRepeatConfig(finalDate ?: LocalDate.now()),
                 showMenu = showMenu,
                 onConfirm = { config ->
-                    customRepeatConfig = config
-                    repeatFrequency = null
+                    val presetFrequency = config.toPresetFrequency(anchorDate = finalDate ?: LocalDate.now())
+                    if (presetFrequency != null) {
+                        repeatFrequency = presetFrequency
+                        customRepeatConfig = null
+                    } else {
+                        customRepeatConfig = config
+                        repeatFrequency = null
+                    }
                 },
                 onDismissed = {
                     isCustomRepeatBottomSheetVisible = false
@@ -623,17 +630,6 @@ fun BottomSheet(
             )
         }
     }
-}
-
-private fun CustomRepeatConfig.toRepeatRuleConfig(): RepeatRuleConfig {
-    return RepeatRuleConfig(
-        frequency = frequency,
-        interval = interval,
-        weekdays = weekdays,
-        monthDay = monthDays.minOrNull(),
-        endDate = if (endMode == CustomRepeatEndMode.OnDate) endDate else null,
-        maxOccurrences = if (endMode == CustomRepeatEndMode.AfterCount) maxOccurrences else null
-    )
 }
 
 private fun Uri.toImageDataUrl(context: Context): String {

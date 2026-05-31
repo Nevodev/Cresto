@@ -83,8 +83,11 @@ import com.nevoit.cresto.data.todo.TodoItem
 import com.nevoit.cresto.data.todo.TodoViewModel
 import com.nevoit.cresto.data.todo.calendar.TodoCalendarSyncManager
 import com.nevoit.cresto.feature.bottomsheet.CustomRepeatBottomSheet
-import com.nevoit.cresto.feature.bottomsheet.CustomRepeatConfig
-import com.nevoit.cresto.feature.bottomsheet.CustomRepeatEndMode
+import com.nevoit.cresto.feature.bottomsheet.isCustomRepeatRule
+import com.nevoit.cresto.feature.bottomsheet.isSimpleFrequency
+import com.nevoit.cresto.feature.bottomsheet.toCustomRepeatConfig
+import com.nevoit.cresto.feature.bottomsheet.toPresetFrequency
+import com.nevoit.cresto.feature.bottomsheet.toRepeatRuleConfig
 import com.nevoit.cresto.feature.calendar.toToastMessage
 import com.nevoit.cresto.feature.main.rememberFlagMenuItems
 import com.nevoit.cresto.feature.settings.util.SettingsViewModel
@@ -379,7 +382,7 @@ fun DetailScreen(
             MenuDivider,
             SelectiveMenuItemData(
                 text = customText,
-                isSelected = { repeatRule?.isCustom() == true },
+                isSelected = { repeatRule?.isCustomRepeatRule() == true },
                 onClick = { isCustomRepeatBottomSheetVisible = true }
             ),
             MenuDivider,
@@ -1013,7 +1016,12 @@ fun DetailScreen(
                     initialConfig = repeatRule?.toCustomRepeatConfig(),
                     showMenu = showMenu,
                     onConfirm = { config ->
-                        updateRepeat(config.toRepeatRuleConfig())
+                        val anchorDate = currentItem?.todoItem?.dueDate ?: LocalDate.now()
+                        val presetFrequency = config.toPresetFrequency(anchorDate)
+                        updateRepeat(
+                            presetFrequency?.let { RepeatRuleConfig(frequency = it) }
+                                ?: config.toRepeatRuleConfig()
+                        )
                     },
                     onDismissed = {
                         isCustomRepeatBottomSheetVisible = false
@@ -1058,59 +1066,13 @@ private fun RepeatRule?.displayText(
     yearlyText: String
 ): String {
     val rule = this ?: return noneText
-    if (rule.isCustom()) return customText
+    if (rule.isCustomRepeatRule()) return customText
     return when (rule.frequency) {
         RepeatFrequency.Daily -> dailyText
         RepeatFrequency.Weekly -> weeklyText
         RepeatFrequency.Monthly -> monthlyText
         RepeatFrequency.Yearly -> yearlyText
     }
-}
-
-private fun RepeatRule.isSimpleFrequency(frequency: RepeatFrequency): Boolean {
-    return this.frequency == frequency && !isCustom()
-}
-
-private fun RepeatRule.isCustom(): Boolean {
-    return interval != 1 ||
-            weekdays != null ||
-            monthDay != null ||
-            endDate != null ||
-            maxOccurrences != null
-}
-
-private fun CustomRepeatConfig.toRepeatRuleConfig(): RepeatRuleConfig {
-    return RepeatRuleConfig(
-        frequency = frequency,
-        interval = interval,
-        weekdays = weekdays,
-        monthDay = monthDays.minOrNull(),
-        endDate = if (endMode == CustomRepeatEndMode.OnDate) endDate else null,
-        maxOccurrences = if (endMode == CustomRepeatEndMode.AfterCount) maxOccurrences else null
-    )
-}
-
-private fun RepeatRule.toCustomRepeatConfig(): CustomRepeatConfig {
-    val weekdays = weekdays
-        ?.split(',')
-        ?.mapNotNull { runCatching { java.time.DayOfWeek.valueOf(it) }.getOrNull() }
-        ?.toSet()
-        .orEmpty()
-    val endMode = when {
-        endDate != null -> CustomRepeatEndMode.OnDate
-        maxOccurrences != null -> CustomRepeatEndMode.AfterCount
-        else -> CustomRepeatEndMode.Never
-    }
-    return CustomRepeatConfig(
-        frequency = frequency,
-        interval = interval,
-        weekdays = weekdays,
-        monthDays = monthDay?.let { setOf(it) }.orEmpty(),
-        months = setOf(anchorDate.monthValue),
-        endMode = endMode,
-        endDate = endDate,
-        maxOccurrences = maxOccurrences ?: 10
-    )
 }
 
 @Composable
