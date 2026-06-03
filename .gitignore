@@ -17,3 +17,4 @@ local.properties
 /app/release/
 /gradle/gradle-daemon-jvm.properties
 /app/src/main/java/com/nevoit/cresto/secrets/
+/glasense-ui-demo/build/

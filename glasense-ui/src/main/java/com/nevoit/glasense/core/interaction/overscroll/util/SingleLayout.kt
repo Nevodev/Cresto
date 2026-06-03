@@ -1,4 +1,4 @@
-package com.nevoit.glasense.overscroll.util
+package com.nevoit.glasense.core.interaction.overscroll.util
 
 import androidx.compose.ui.graphics.GraphicsLayerScope
 import androidx.compose.ui.layout.AlignmentLine

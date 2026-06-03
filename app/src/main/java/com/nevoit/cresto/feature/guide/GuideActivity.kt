@@ -13,7 +13,7 @@ import com.nevoit.cresto.MainActivity
 import com.nevoit.cresto.feature.settings.util.SettingsManager
 import com.nevoit.cresto.theme.AppColors
 import com.nevoit.cresto.theme.GlasenseTheme
-import com.nevoit.glasense.overscroll.rememberOffsetOverscrollFactory
+import com.nevoit.glasense.core.interaction.overscroll.rememberOffsetOverscrollFactory
 import com.nevoit.glasense.theme.LocalGlasenseContentColor
 
 class GuideActivity : ComponentActivity() {

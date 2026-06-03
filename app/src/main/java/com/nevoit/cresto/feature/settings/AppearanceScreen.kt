@@ -91,7 +91,7 @@ import com.nevoit.glasense.core.component.Text
 import com.nevoit.glasense.core.component.VDivider
 import com.nevoit.glasense.core.component.VGap
 import com.nevoit.glasense.core.interaction.DimIndication
-import com.nevoit.glasense.overscroll.rememberOffsetOverscrollFactory
+import com.nevoit.glasense.core.interaction.overscroll.rememberOffsetOverscrollFactory
 import com.nevoit.glasense.theme.GlasenseTheme
 import com.nevoit.glasense.theme.tokens.Amber500
 import com.nevoit.glasense.theme.tokens.Blue500
@@ -258,7 +258,7 @@ fun AppearanceScreen(settingsViewModel: SettingsViewModel = viewModel()) {
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
                     text = stringResource(R.string.when_use_dynamic_color_scheme_is_enabled_custom_primary_color_is_automatically_turned_off),
-                    style = GlasenseTheme.type.callout,
+                    style = GlasenseTheme.type.subHeadline,
                     modifier = Modifier.padding(horizontal = 12.dp),
                     color = AppColors.contentVariant.copy(alpha = .3f)
                 )
@@ -280,7 +280,7 @@ fun AppearanceScreen(settingsViewModel: SettingsViewModel = viewModel()) {
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
                     text = stringResource(R.string.enabling_lite_mode_will_disable_some_blur_effects),
-                    style = GlasenseTheme.type.callout,
+                    style = GlasenseTheme.type.subHeadline,
                     modifier = Modifier.padding(horizontal = 12.dp),
                     color = AppColors.contentVariant.copy(alpha = .3f)
                 )
@@ -306,7 +306,7 @@ fun AppearanceScreen(settingsViewModel: SettingsViewModel = viewModel()) {
                     text = stringResource(
                         R.string.enabling_liquid_glass_can_significantly_impact_performance
                     ),
-                    style = GlasenseTheme.type.callout,
+                    style = GlasenseTheme.type.subHeadline,
                     modifier = Modifier.padding(horizontal = 12.dp),
                     color = AppColors.contentVariant.copy(alpha = .3f)
                 )

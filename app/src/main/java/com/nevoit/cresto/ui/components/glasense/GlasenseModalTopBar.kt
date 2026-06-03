@@ -99,7 +99,7 @@ fun GlasenseModalTopBar(
                     text = title,
                     modifier = Modifier.layoutId("title"),
                     color = AppColors.content,
-                    style = GlasenseTheme.type.smallTitle,
+                    style = GlasenseTheme.type.headline,
                     textAlign = TextAlign.Center,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis

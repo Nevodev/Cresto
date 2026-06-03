@@ -281,7 +281,7 @@ fun TodoShareCard(
                 )
                 Text(
                     text = DateTimeFormatter.ofPattern("yyyy/MM/dd").format(today),
-                    style = GlasenseTheme.type.callout,
+                    style = GlasenseTheme.type.subHeadline,
                     color = AppColors.contentVariant
                 )
             }
@@ -335,7 +335,7 @@ fun TodoShareCard(
         ) {
             Text(
                 text = footer,
-                style = GlasenseTheme.type.callout,
+                style = GlasenseTheme.type.subHeadline,
                 color = AppColors.contentVariant
             )
         }

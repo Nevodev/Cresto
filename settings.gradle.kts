@@ -25,3 +25,4 @@ dependencyResolutionManagement {
 rootProject.name = "Cresto"
 include(":app")
 include(":glasense-ui")
+include(":glasense-ui-demo")

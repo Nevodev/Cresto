@@ -294,7 +294,7 @@ fun GlasenseDialog(
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
                         text = dialogState.title,
-                        style = GlasenseTheme.type.smallTitle,
+                        style = GlasenseTheme.type.headline,
                         modifier = Modifier.fillMaxWidth(),
                         textAlign = TextAlign.Center
                     )

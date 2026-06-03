@@ -280,7 +280,7 @@ fun GeneralScreen(settingsViewModel: SettingsViewModel = viewModel()) {
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
                     text = stringResource(R.string.automatically_add_new_todos_as_events_in_system_calendar),
-                    style = GlasenseTheme.type.callout,
+                    style = GlasenseTheme.type.subHeadline,
                     modifier = Modifier.padding(horizontal = 12.dp),
                     color = AppColors.contentVariant.copy(alpha = .3f)
                 )
@@ -301,7 +301,7 @@ fun GeneralScreen(settingsViewModel: SettingsViewModel = viewModel()) {
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
                     text = stringResource(R.string.add_a_marker_to_todos_due_today),
-                    style = GlasenseTheme.type.callout,
+                    style = GlasenseTheme.type.subHeadline,
                     modifier = Modifier.padding(horizontal = 12.dp),
                     color = AppColors.contentVariant.copy(alpha = .3f)
                 )
@@ -322,7 +322,7 @@ fun GeneralScreen(settingsViewModel: SettingsViewModel = viewModel()) {
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
                     text = stringResource(R.string.add_a_marker_to_overdue_todos_on_the_next_day),
-                    style = GlasenseTheme.type.callout,
+                    style = GlasenseTheme.type.subHeadline,
                     modifier = Modifier.padding(horizontal = 12.dp),
                     color = AppColors.contentVariant.copy(alpha = .3f)
                 )
@@ -384,7 +384,7 @@ fun GeneralScreen(settingsViewModel: SettingsViewModel = viewModel()) {
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
                     text = stringResource(R.string.add_a_quick_toggle_to_control_center_for_one_tap_ai_screen_extraction_shizuku_required),
-                    style = GlasenseTheme.type.callout,
+                    style = GlasenseTheme.type.subHeadline,
                     modifier = Modifier.padding(horizontal = 12.dp),
                     color = AppColors.contentVariant.copy(alpha = .3f)
                 )
@@ -412,7 +412,7 @@ fun GeneralScreen(settingsViewModel: SettingsViewModel = viewModel()) {
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
                         text = "We're leaving the planet and you can't come.",
-                        style = GlasenseTheme.type.callout,
+                        style = GlasenseTheme.type.subHeadline,
                         modifier = Modifier.padding(horizontal = 12.dp),
                         color = AppColors.contentVariant.copy(alpha = .3f)
                     )

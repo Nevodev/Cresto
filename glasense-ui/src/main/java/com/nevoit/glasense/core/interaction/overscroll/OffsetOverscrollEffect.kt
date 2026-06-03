@@ -1,4 +1,4 @@
-package com.nevoit.glasense.overscroll
+package com.nevoit.glasense.core.interaction.overscroll
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.AnimationSpec
@@ -22,10 +22,11 @@ import androidx.compose.ui.node.DelegatableNode
 import androidx.compose.ui.node.LayoutModifierNode
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Velocity
-import com.nevoit.glasense.overscroll.util.NoOpShape
-import com.nevoit.glasense.overscroll.util.ProgressConverter
-import com.nevoit.glasense.overscroll.util.SpaceVectorConverter
-import com.nevoit.glasense.overscroll.util.singleRelativeLayoutWithLayer
+import androidx.compose.ui.util.fastRoundToInt
+import com.nevoit.glasense.core.interaction.overscroll.util.NoOpShape
+import com.nevoit.glasense.core.interaction.overscroll.util.ProgressConverter
+import com.nevoit.glasense.core.interaction.overscroll.util.SpaceVectorConverter
+import com.nevoit.glasense.core.interaction.overscroll.util.singleRelativeLayoutWithLayer
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.android.awaitFrame
 import kotlinx.coroutines.launch
@@ -263,10 +264,10 @@ class OffsetOverscrollEffect(
                 shape = NoOpShape
                 val overscrollDistance = overscrollOffsetAnimation.value
                 if (overscrollDistance != 0f) {
-                    val offsetPx = computeOffset(overscrollDistance, maxDistance)
+                    val offsetPx = computeOffset(overscrollDistance, maxDistance).fastRoundToInt()
                     when (orientation) {
-                        Orientation.Horizontal -> translationX = offsetPx
-                        Orientation.Vertical -> translationY = offsetPx
+                        Orientation.Horizontal -> translationX = offsetPx.toFloat()
+                        Orientation.Vertical -> translationY = offsetPx.toFloat()
                     }
                 }
             }

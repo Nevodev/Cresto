@@ -65,7 +65,7 @@ fun CardWithTitle(
             }
             Text(
                 text = title,
-                style = GlasenseTheme.type.callout,
+                style = GlasenseTheme.type.subHeadline,
                 color = AppColors.contentVariant,
                 modifier = Modifier
                     .weight(1f)

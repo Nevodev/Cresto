@@ -204,7 +204,7 @@ private fun UpdateHeader(
     publishedDate?.let {
         Text(
             text = it,
-            style = GlasenseTheme.type.callout,
+            style = GlasenseTheme.type.subHeadline,
             color = GlasenseTheme.colors.contentVariant,
             modifier = Modifier.padding(horizontal = 12.dp)
         )
@@ -303,7 +303,7 @@ private fun ReleaseNoteSectionTitle(title: String, type: String?) {
         HGap(4.dp)
         Text(
             text = title,
-            style = GlasenseTheme.type.mediumTitle.copy(fontWeight = FontWeight.Normal),
+            style = GlasenseTheme.type.title3Emphasized.copy(fontWeight = FontWeight.Normal),
             color = GlasenseTheme.colors.content
         )
     }

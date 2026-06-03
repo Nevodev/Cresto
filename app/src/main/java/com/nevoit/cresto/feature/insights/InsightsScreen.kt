@@ -531,7 +531,7 @@ private fun WeeklyTrendBars(
             Text(
                 text = stringResource(R.string.insights_empty_trend),
                 color = AppColors.contentVariant,
-                style = GlasenseTheme.type.callout,
+                style = GlasenseTheme.type.subHeadline,
                 modifier = Modifier.align(Alignment.Center)
             )
         }

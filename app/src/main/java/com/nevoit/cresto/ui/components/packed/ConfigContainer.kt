@@ -35,7 +35,7 @@ fun ConfigContainer(
         if (title != null) {
             Text(
                 text = title,
-                style = GlasenseTheme.type.callout.copy(lineHeight = 14.sp),
+                style = GlasenseTheme.type.subHeadline.copy(lineHeight = 14.sp),
                 color = AppColors.contentVariant,
                 modifier = Modifier
                     .padding(

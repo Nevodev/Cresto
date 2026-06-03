@@ -719,7 +719,7 @@ fun AdvancedPage(
             Text(
                 text = stringResource(R.string.advanced),
                 modifier = Modifier.align(Alignment.Center),
-                style = GlasenseTheme.type.smallTitle
+                style = GlasenseTheme.type.headline
             )
         }
     }

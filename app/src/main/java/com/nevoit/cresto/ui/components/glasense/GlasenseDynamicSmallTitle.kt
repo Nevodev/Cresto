@@ -113,7 +113,7 @@ return mix(content.eval(coord) * blurAlpha, tint * tintAlpha, tintIntensity);
 
         Text(
             title,
-            style = GlasenseTheme.type.smallTitle.merge(textStyle),
+            style = GlasenseTheme.type.headline.merge(textStyle),
             maxLines = 1,
             modifier = Modifier
                 .padding(horizontal = titleHorizontalPadding)

@@ -1,4 +1,4 @@
-package com.nevoit.glasense.overscroll.util
+package com.nevoit.glasense.core.interaction.overscroll.util
 
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.ui.geometry.Offset
@@ -6,7 +6,7 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.Velocity
 
 /**
- * A factory that returns a [SpaceVectorConverter] for a given [androidx.compose.foundation.gestures.Orientation].
+ * A factory that returns a [SpaceVectorConverter] for a given [Orientation].
  * This allows for generic handling of 1D values in a 2D space, depending on the orientation.
  */
 fun SpaceVectorConverter(orientation: Orientation): SpaceVectorConverter =

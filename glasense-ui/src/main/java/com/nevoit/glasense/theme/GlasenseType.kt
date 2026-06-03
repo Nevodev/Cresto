@@ -11,10 +11,17 @@ import androidx.compose.ui.unit.sp
 data class GlasenseType(
     val largeTitle: TextStyle,
     val largeTitleEmphasized: TextStyle,
-    val mediumTitle: TextStyle,
-    val smallTitle: TextStyle,
+    val title1: TextStyle,
+    val title1Emphasized: TextStyle,
+    val title2: TextStyle,
+    val title2Emphasized: TextStyle,
+    val title3: TextStyle,
+    val title3Emphasized: TextStyle,
+    val headline: TextStyle,
     val body: TextStyle,
-    val callout: TextStyle,
+    val bodyEmphasized: TextStyle,
+    val subHeadline: TextStyle,
+    val subHeadlineEmphasized: TextStyle,
     val footnote: TextStyle
 )
 
@@ -33,14 +40,49 @@ val GlasenseTypeStandard = GlasenseType(
         lineHeight = 32.sp,
         letterSpacing = 0.38.sp,
     ),
-    mediumTitle = TextStyle(
+    title1 = TextStyle(
+        fontFamily = FontFamily.Default,
+        fontWeight = FontWeight.Normal,
+        fontSize = 28.sp,
+        lineHeight = 28.sp,
+        letterSpacing = 0.38.sp
+    ),
+    title1Emphasized = TextStyle(
+        fontFamily = FontFamily.Default,
+        fontWeight = FontWeight.SemiBold,
+        fontSize = 28.sp,
+        lineHeight = 28.sp,
+        letterSpacing = 0.38.sp
+    ),
+    title2 = TextStyle(
+        fontFamily = FontFamily.Default,
+        fontWeight = FontWeight.Normal,
+        fontSize = 24.sp,
+        lineHeight = 24.sp,
+        letterSpacing = (-0.28).sp
+    ),
+    title2Emphasized = TextStyle(
+        fontFamily = FontFamily.Default,
+        fontWeight = FontWeight.SemiBold,
+        fontSize = 24.sp,
+        lineHeight = 24.sp,
+        letterSpacing = (-0.28).sp
+    ),
+    title3 = TextStyle(
+        fontFamily = FontFamily.Default,
+        fontWeight = FontWeight.Normal,
+        fontSize = 20.sp,
+        lineHeight = 20.sp,
+        letterSpacing = (-0.3).sp
+    ),
+    title3Emphasized = TextStyle(
         fontFamily = FontFamily.Default,
         fontWeight = FontWeight.SemiBold,
         fontSize = 20.sp,
         lineHeight = 20.sp,
-        letterSpacing = 0.sp
+        letterSpacing = (-0.3).sp
     ),
-    smallTitle = TextStyle(
+    headline = TextStyle(
         fontFamily = FontFamily.Default,
         fontWeight = FontWeight.Medium,
         fontSize = 16.sp,
@@ -52,21 +94,35 @@ val GlasenseTypeStandard = GlasenseType(
         fontWeight = FontWeight.Normal,
         fontSize = 16.sp,
         lineHeight = 20.sp,
-        letterSpacing = 0.25.sp
+        letterSpacing = 0.sp
     ),
-    callout = TextStyle(
+    bodyEmphasized = TextStyle(
+        fontFamily = FontFamily.Default,
+        fontWeight = FontWeight.SemiBold,
+        fontSize = 16.sp,
+        lineHeight = 20.sp,
+        letterSpacing = 0.sp
+    ),
+    subHeadline = TextStyle(
         fontFamily = FontFamily.Default,
         fontWeight = FontWeight.Normal,
         fontSize = 14.sp,
         lineHeight = 18.sp,
-        letterSpacing = 0.25.sp
+        letterSpacing = 0.sp
+    ),
+    subHeadlineEmphasized = TextStyle(
+        fontFamily = FontFamily.Default,
+        fontWeight = FontWeight.SemiBold,
+        fontSize = 14.sp,
+        lineHeight = 18.sp,
+        letterSpacing = 0.sp
     ),
     footnote = TextStyle(
         fontFamily = FontFamily.Default,
-        fontWeight = FontWeight.Normal,
+        fontWeight = FontWeight.Medium,
         fontSize = 12.sp,
         lineHeight = 14.sp,
-        letterSpacing = 0.sp
+        letterSpacing = 0.5.sp
     )
 )
 

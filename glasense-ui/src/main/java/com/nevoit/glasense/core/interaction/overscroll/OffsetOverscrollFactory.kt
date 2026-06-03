@@ -1,4 +1,4 @@
-package com.nevoit.glasense.overscroll
+package com.nevoit.glasense.core.interaction.overscroll
 
 import androidx.compose.animation.core.AnimationSpec
 import androidx.compose.foundation.OverscrollEffect

@@ -17,6 +17,8 @@ import kotlin.math.sin
 
 @Immutable
 data class GlasenseColors(
+    val background: Color,
+
     // for switches
     val activeTrack: Color,
     val inactiveTrack: Color,
@@ -58,6 +60,7 @@ data class GlasenseColors(
 )
 
 val GlasenseLightPalette = GlasenseColors(
+    background = Color.White,
     activeTrack = Green500,
     inactiveTrack = Color(0xFF787880).copy(.25f),
     activeThumb = Color.White,
@@ -81,6 +84,7 @@ val GlasenseLightPalette = GlasenseColors(
 )
 
 val GlasenseDarkPalette = GlasenseColors(
+    background = Color.Black,
     activeTrack = Green500,
     inactiveTrack = Color(0xFF787880).copy(.25f),
     activeThumb = Color.White,

@@ -674,7 +674,7 @@ fun DetailScreen(
                     item(key = "small_title") {
                         Text(
                             text = stringResource(R.string.task),
-                            style = GlasenseTheme.type.callout.copy(lineHeight = 14.sp),
+                            style = GlasenseTheme.type.subHeadline.copy(lineHeight = 14.sp),
                             fontWeight = FontWeight.Normal,
                             color = AppColors.contentVariant,
                             modifier = Modifier
@@ -823,7 +823,7 @@ fun DetailScreen(
                         modifier = Modifier
                             .padding(start = 12.dp)
                             .weight(1f),
-                        style = GlasenseTheme.type.callout.copy(
+                        style = GlasenseTheme.type.subHeadline.copy(
                             lineHeight = 14.sp, shadow = Shadow(
                                 color = surfaceColor.copy(alpha = 1f),
                                 offset = Offset(x = 0f, y = 0f),

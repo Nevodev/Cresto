@@ -543,7 +543,7 @@ fun InformationPage() {
                     )
                     Text(
                         text = stringResource(R.string.introduction_1),
-                        style = GlasenseTheme.type.callout,
+                        style = GlasenseTheme.type.subHeadline,
                         modifier = Modifier.alpha(.5f)
                     )
                 }
@@ -600,7 +600,7 @@ fun InformationPage() {
                     )
                     Text(
                         text = stringResource(R.string.introduction_2),
-                        style = GlasenseTheme.type.callout,
+                        style = GlasenseTheme.type.subHeadline,
                         modifier = Modifier.alpha(.5f)
                     )
                 }
@@ -637,7 +637,7 @@ fun InformationPage() {
                     )
                     Text(
                         text = stringResource(R.string.introduction_3),
-                        style = GlasenseTheme.type.callout,
+                        style = GlasenseTheme.type.subHeadline,
                         modifier = Modifier.alpha(.5f)
                     )
                 }
@@ -681,7 +681,7 @@ fun NotificationPage() {
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 48.dp),
-                style = GlasenseTheme.type.callout,
+                style = GlasenseTheme.type.subHeadline,
                 textAlign = TextAlign.Center,
                 color = AppColors.contentVariant
             )

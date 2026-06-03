@@ -450,7 +450,7 @@ fun AboutScreen(settingsViewModel: SettingsViewModel = viewModel()) {
                 Column(modifier = Modifier.fillMaxWidth()) {
                     Text(
                         text = stringResource(R.string.version_info),
-                        style = GlasenseTheme.type.callout.copy(lineHeight = 14.sp),
+                        style = GlasenseTheme.type.subHeadline.copy(lineHeight = 14.sp),
                         color = AppColors.contentVariant,
                         modifier = Modifier
                             .padding(

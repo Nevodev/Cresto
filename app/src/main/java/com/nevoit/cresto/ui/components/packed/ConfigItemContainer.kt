@@ -45,7 +45,7 @@ fun ConfigItemContainer(
         if (title != null) {
             Text(
                 text = title,
-                style = GlasenseTheme.type.callout.copy(lineHeight = 14.sp),
+                style = GlasenseTheme.type.subHeadline.copy(lineHeight = 14.sp),
                 color = GlasenseTheme.colors.contentVariant,
                 modifier = Modifier
                     .padding(
@@ -97,7 +97,7 @@ fun ConfigTextField(
         if (title != null) {
             Text(
                 text = title,
-                style = GlasenseTheme.type.callout.copy(lineHeight = 14.sp),
+                style = GlasenseTheme.type.subHeadline.copy(lineHeight = 14.sp),
                 color = GlasenseTheme.colors.contentVariant,
                 modifier = Modifier
                     .padding(
@@ -164,7 +164,7 @@ fun PlainConfigItemContainer(
         if (title != null) {
             Text(
                 text = title,
-                style = GlasenseTheme.type.callout.copy(lineHeight = 14.sp),
+                style = GlasenseTheme.type.subHeadline.copy(lineHeight = 14.sp),
                 color = GlasenseTheme.colors.contentVariant,
                 modifier = Modifier
                     .padding(

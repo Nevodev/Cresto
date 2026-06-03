@@ -311,7 +311,7 @@ fun CalendarScreen() {
                                 text = stringResource(id = R.string.take_a_break),
                                 color = AppColors.contentVariant.copy(.4f),
                                 modifier = Modifier.padding(top = 4.dp),
-                                style = GlasenseTheme.type.callout
+                                style = GlasenseTheme.type.subHeadline
                             )
                         }
 
@@ -581,7 +581,7 @@ return mix(content.eval(coord) * blurAlpha, tint * tintAlpha, tintIntensity);
                             R.string.selected_todos,
                             lastNonZeroSelected
                         ),
-                        style = GlasenseTheme.type.smallTitle.copy(fontFeatureSettings = "tnum"),
+                        style = GlasenseTheme.type.headline.copy(fontFeatureSettings = "tnum"),
                         maxLines = 1,
                         modifier = Modifier.padding(horizontal = 80.dp),
                         overflow = TextOverflow.Ellipsis,
@@ -638,7 +638,7 @@ return mix(content.eval(coord) * blurAlpha, tint * tintAlpha, tintIntensity);
         Text(
             text = stringResource(R.string.quick_return_to_today),
             color = AppColors.content,
-            style = GlasenseTheme.type.callout.copy(lineHeight = 14.sp),
+            style = GlasenseTheme.type.subHeadline.copy(lineHeight = 14.sp),
             fontWeight = FontWeight.Medium,
             textAlign = TextAlign.Center,
             modifier = Modifier.padding(horizontal = 4.dp)

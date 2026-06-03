@@ -97,7 +97,7 @@ fun ConfigInfoHeader(
         // The main title text.
         Text(
             text = title,
-            style = GlasenseTheme.type.mediumTitle,
+            style = GlasenseTheme.type.title3Emphasized,
             modifier = Modifier
                 .padding(horizontal = 12.dp, vertical = 8.dp)
                 .fillMaxWidth(),
@@ -108,7 +108,7 @@ fun ConfigInfoHeader(
         Text(
             text = info,
             fontWeight = FontWeight.Normal,
-            style = GlasenseTheme.type.callout,
+            style = GlasenseTheme.type.subHeadline,
             textAlign = TextAlign.Center,
             modifier = Modifier
                 .padding(start = 24.dp, top = 0.dp, end = 24.dp, bottom = 20.dp)

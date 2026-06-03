@@ -454,7 +454,7 @@ fun DataStorageScreen() {
                 Column(modifier = Modifier.fillMaxWidth()) {
                     Text(
                         text = stringResource(R.string.storage_usage),
-                        style = GlasenseTheme.type.callout.copy(lineHeight = 14.sp),
+                        style = GlasenseTheme.type.subHeadline.copy(lineHeight = 14.sp),
                         color = AppColors.contentVariant,
                         modifier = Modifier
                             .padding(
