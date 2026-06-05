@@ -10,6 +10,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
@@ -18,6 +19,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
@@ -65,12 +67,9 @@ import com.nevoit.cresto.ui.components.glasense.GlasenseDynamicSmallTitle
 import com.nevoit.cresto.ui.components.glasense.extend.overscrollSpacer
 import com.nevoit.cresto.ui.components.glasense.isScrolledPast
 import com.nevoit.cresto.ui.components.packed.ConfigInfoHeader
-import com.nevoit.cresto.ui.components.packed.ConfigItem
-import com.nevoit.cresto.ui.components.packed.ConfigItemContainer
-import com.nevoit.cresto.ui.components.packed.PageContent
+import com.nevoit.glasense.component.ListStack
 import com.nevoit.glasense.core.component.Icon
 import com.nevoit.glasense.core.component.Text
-import com.nevoit.glasense.core.component.VDivider
 import com.nevoit.glasense.core.component.VGap
 import com.nevoit.glasense.theme.GlasenseTheme
 import com.nevoit.glasense.theme.tokens.Amber400
@@ -147,6 +146,7 @@ fun DataStorageScreen() {
 
     // Calculate the height of the status bar to adjust layout
     val statusBarHeight = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
+    val navigationBarHeight = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
 
     val surfaceColor = AppColors.pageBackground
     val hierarchicalSurfaceColor = AppColors.cardBackground
@@ -423,170 +423,131 @@ fun DataStorageScreen() {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(AppColors.pageBackground)
             .layerBackdrop(backdrop)
     ) {
-        // A vertically scrolling list that only composes and lays out the currently visible items
-        PageContent(
+        ListStack(
             state = lazyListState,
-            modifier = Modifier,
-            tabPadding = false
+            modifier = Modifier.fillMaxSize(),
+            cornerRadius = AppSpecs.cardCorner,
+            contentPadding = PaddingValues(bottom = navigationBarHeight)
         ) {
-            // Spacer item at the top of the list to push content below the top bar and back button
             item {
                 Box(modifier = Modifier.padding(top = 48.dp + statusBarHeight + 12.dp))
             }
-            // Header item for the Data & Storage section
             item {
-                ConfigInfoHeader(
-                    color = harmonize(Slate500),
-                    backgroundColor = hierarchicalSurfaceColor,
-                    icon = painterResource(R.drawable.ic_twotone_storage),
-                    title = stringResource(R.string.data_storage),
-                    enableGlow = false,
-                    info = stringResource(R.string.manage_your_application_s_storage_footprint)
-                )
-                VGap()
-            }
-
-            // Item to display storage usage details
-            item {
-                Column(modifier = Modifier.fillMaxWidth()) {
-                    Text(
-                        text = stringResource(R.string.storage_usage),
-                        style = GlasenseTheme.type.subHeadline.copy(lineHeight = 14.sp),
-                        color = AppColors.contentVariant,
-                        modifier = Modifier
-                            .padding(
-                                start = 12.dp,
-                                top = 0.dp,
-                                end = 12.dp,
-                                bottom = 12.dp
-                            )
-                            .fillMaxWidth()
+                Box(modifier = Modifier.padding(horizontal = 12.dp)) {
+                    ConfigInfoHeader(
+                        color = harmonize(Slate500),
+                        backgroundColor = hierarchicalSurfaceColor,
+                        icon = painterResource(R.drawable.ic_twotone_storage),
+                        title = stringResource(R.string.data_storage),
+                        enableGlow = false,
+                        info = stringResource(R.string.manage_your_application_s_storage_footprint)
                     )
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .background(
-                                color = hierarchicalSurfaceColor,
-                                shape = AppSpecs.cardShape
-                            )
-                    ) {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .padding(horizontal = 12.dp, vertical = 8.dp)
-                        ) {
-                            Spacer(modifier = Modifier.height(8.dp))
-                            StorageChart(
-                                appSize = appSizeLong,
-                                dataSize = dataSizeLong,
-                                cacheSize = cacheSizeLong
-                            )
-                            Spacer(modifier = Modifier.height(8.dp))
-                            StorageInfoRow(
-                                label = stringResource(R.string.app_size),
-                                value = appSize,
-                                icon = painterResource(R.drawable.ic_mini_parcel)
-                            )
-                            StorageInfoRow(
-                                label = stringResource(R.string.user_data),
-                                value = dataSize,
-                                icon = painterResource(R.drawable.ic_mini_user)
-                            )
-                            StorageInfoRow(
-                                label = stringResource(R.string.cache),
-                                value = cacheSize,
-                                icon = painterResource(R.drawable.ic_mini_cache)
-                            )
-                            StorageInfoRow(
-                                label = stringResource(R.string.total),
-                                value = totalSize,
-                                isTotal = true,
-                                icon = painterResource(R.drawable.ic_mini_drive)
-                            )
-                        }
-                    }
                 }
-                VGap()
             }
-            // Item containing database import/export options
-            item {
-                ConfigItemContainer(
-                    backgroundColor = hierarchicalSurfaceColor
-                ) {
-                    Column {
-                        ConfigItem(
-                            title = stringResource(R.string.export_database),
-                            clickable = true,
-                            indication = true,
-                            onClick = {
-                                viewModel.exportBackupToJson()
-                            }
-                        ) {}
-                        Spacer(modifier = Modifier.height(8.dp))
-                        // Visual divider line
-                        VDivider()
-                        Spacer(modifier = Modifier.height(8.dp))
-                        ConfigItem(
-                            title = stringResource(R.string.import_database),
-                            clickable = true,
-                            indication = true,
-                            onClick = {
-                                viewModel.clearImportPreview()
-                                openBackupFileLauncher.launch(
-                                    arrayOf(
-                                        "application/json"
-                                    )
-                                )
-                            }
-                        ) {
-                        }
-                    }
-                }
-                VGap()
-            }
-            // Item containing data reset and clearing options
-            item {
-                ConfigItemContainer(
-                    title = stringResource(R.string.reset),
-                    backgroundColor = hierarchicalSurfaceColor
-                ) {
-                    Column {
-                        ConfigItem(
-                            title = stringResource(R.string.reset_all_settings),
-                            color = AppColors.error,
-                            clickable = true,
-                            indication = true,
-                            onClick = {
-                                showDialog(
-                                    dialogItems2,
-                                    String.format(confirmActionTitle, resetAllSettingsText),
-                                    resetContentText
-                                )
-                            }
-                        ) {}
-                        Spacer(modifier = Modifier.height(8.dp))
-                        VDivider()
-                        Spacer(modifier = Modifier.height(8.dp))
-                        ConfigItem(
-                            title = stringResource(R.string.clear_all_data),
-                            color = AppColors.error,
-                            clickable = true,
-                            indication = true,
-                            onClick = {
-                                showDialog(
-                                    dialogItems,
-                                    String.format(confirmActionTitle, clearAllDataText),
-                                    clearContentText
-                                )
-                            }
-                        ) {}
-                    }
+            item { VGap(24.dp) }
 
+            NoPaddingSection(header = { stringResource(R.string.storage_usage) }) {
+                Row {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(horizontal = 12.dp, vertical = 8.dp)
+                    ) {
+                        Spacer(modifier = Modifier.height(8.dp))
+                        StorageChart(
+                            appSize = appSizeLong,
+                            dataSize = dataSizeLong,
+                            cacheSize = cacheSizeLong
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        StorageInfoRow(
+                            label = stringResource(R.string.app_size),
+                            value = appSize,
+                            icon = painterResource(R.drawable.ic_mini_parcel)
+                        )
+                        StorageInfoRow(
+                            label = stringResource(R.string.user_data),
+                            value = dataSize,
+                            icon = painterResource(R.drawable.ic_mini_user)
+                        )
+                        StorageInfoRow(
+                            label = stringResource(R.string.cache),
+                            value = cacheSize,
+                            icon = painterResource(R.drawable.ic_mini_cache)
+                        )
+                        StorageInfoRow(
+                            label = stringResource(R.string.total),
+                            value = totalSize,
+                            isTotal = true,
+                            icon = painterResource(R.drawable.ic_mini_drive)
+                        )
+                    }
                 }
             }
+
+            Section {
+                Row(
+                    onClick = {
+                        viewModel.exportBackupToJson()
+                    }
+                ) {
+                    Text(
+                        text = stringResource(R.string.export_database),
+                        style = GlasenseTheme.type.body
+                    )
+                }
+                Row(
+                    onClick = {
+                        viewModel.clearImportPreview()
+                        openBackupFileLauncher.launch(
+                            arrayOf(
+                                "application/json"
+                            )
+                        )
+                    }
+                ) {
+                    Text(
+                        text = stringResource(R.string.import_database),
+                        style = GlasenseTheme.type.body
+                    )
+                }
+            }
+
+            Section(header = { stringResource(R.string.reset) }) {
+                Row(
+                    destructive = true,
+                    onClick = {
+                        showDialog(
+                            dialogItems2,
+                            String.format(confirmActionTitle, resetAllSettingsText),
+                            resetContentText
+                        )
+                    }
+                ) {
+                    Text(
+                        text = stringResource(R.string.reset_all_settings),
+                        style = GlasenseTheme.type.body
+                    )
+                }
+                Row(
+                    destructive = true,
+                    onClick = {
+                        showDialog(
+                            dialogItems,
+                            String.format(confirmActionTitle, clearAllDataText),
+                            clearContentText
+                        )
+                    }
+                ) {
+                    Text(
+                        text = stringResource(R.string.clear_all_data),
+                        style = GlasenseTheme.type.body
+                    )
+                }
+            }
+
             item { VGap() }
             overscrollSpacer(lazyListState)
         }

@@ -19,6 +19,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.retain.retain
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -89,16 +90,26 @@ private fun DemoScreen() {
         "Card Background" to GlasenseTheme.colors.cardBackground
     )
 
-    var checked by remember { mutableStateOf(false) }
+    var checked by retain { mutableStateOf(false) }
+    var style by retain { mutableStateOf<ListStyle>(ListStyle.InsetGrouped) }
 
     ListStack(
         modifier = Modifier.fillMaxSize(),
-        style = ListStyle.InsetGrouped,
+        style = style,
         contentPadding = PaddingValues(bottom = 28.dp)
     ) {
         PageHeader(title = "Gallery")
 
-        Section(header = "Trailing") {
+
+        Section(header = { "Settings" }) {
+            SwitchRow(
+                checked = style == ListStyle.Plain,
+                onCheckedChange = { style = if (it) ListStyle.Plain else ListStyle.InsetGrouped }
+            ) {
+                Text("Plain Style")
+            }
+        }
+        Section(header = { "Trailing" }) {
             SwitchRow(
                 checked = checked,
                 onCheckedChange = { checked = it }
@@ -111,6 +122,13 @@ private fun DemoScreen() {
                 onCheckedChange = { checked = it }
             ) {
                 Text("Disabled")
+            }
+            SwitchRow(
+                checked = checked,
+                onCheckedChange = { checked = it },
+                trailing = { Text("Trailing") }
+            ) {
+                Text("SwitchRow with")
             }
             Row(
                 onClick = { },
@@ -127,13 +145,12 @@ private fun DemoScreen() {
             Row(
                 onClick = {},
                 trailing = { Text("Danger") },
-                chevron = true,
                 destructive = true
             ) {
                 Text("Delete")
             }
         }
-        Section(header = "Progress") {
+        Section(header = { "Progress" }) {
             Row {
                 ProgressView()
             }
@@ -146,7 +163,10 @@ private fun DemoScreen() {
             Row { ProgressView(value = progress, modifier = Modifier.fillMaxWidth()) }
         }
 
-        Section(header = "Colors", footer = "Colors from Tailwind CSS Color Palette.") {
+        Section(
+            header = { "Colors" },
+            footer = { "Colors from Tailwind CSS Color Palette." }
+        ) {
             for (color in colors) {
                 Row(onClick = {}, leading = { ColorBox(color.value) }) {
                     Text(color.key)
@@ -154,7 +174,10 @@ private fun DemoScreen() {
             }
         }
 
-        Section(header = "Typography", footer = "Default typography.") {
+        Section(
+            header = { "Typography" },
+            footer = { "Default typography." }
+        ) {
             Row(onClick = {}) {
                 Text("Large title", style = GlasenseTheme.type.largeTitleEmphasized)
             }

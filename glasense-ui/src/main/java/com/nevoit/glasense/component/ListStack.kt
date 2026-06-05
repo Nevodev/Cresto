@@ -26,6 +26,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawWithCache
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.Layout
@@ -40,10 +42,10 @@ import com.kyant.shapes.UnevenRoundedRectangle
 import com.nevoit.glasense.R
 import com.nevoit.glasense.core.component.Icon
 import com.nevoit.glasense.core.component.Text
-import com.nevoit.glasense.core.component.VDivider
 import com.nevoit.glasense.core.interaction.DimIndication
 import com.nevoit.glasense.core.interaction.rememberFlingBehavior
 import com.nevoit.glasense.theme.GlasenseTheme
+import com.nevoit.glasense.theme.LocalGlasenseColors
 import com.nevoit.glasense.theme.LocalGlasenseContentColor
 import com.nevoit.glasense.theme.tokens.Red500
 
@@ -65,7 +67,8 @@ sealed interface ListStyle {
 class ListScope internal constructor(
     private val lazyListScope: LazyListScope,
     private val style: ListStyle,
-    private val colors: ListColors
+    private val colors: ListColors,
+    private val cornerRadius: Dp
 ) {
     internal val horizontalPadding: Dp
         get() = ListDefaults.horizontalPadding(style)
@@ -87,9 +90,46 @@ class ListScope internal constructor(
     }
 
     fun Section(
-        header: String? = null,
-        footer: String? = null,
+        header: (@Composable () -> String?)? = null,
+        footer: (@Composable () -> String?)? = null,
         key: Any? = null,
+        content: SectionScope.() -> Unit
+    ) {
+        renderSection(
+            header = header,
+            footer = footer,
+            key = key,
+            rowPadding = null,
+            separatorHorizontalPadding = DefaultSeparatorPadding,
+            separatorPaddingStart = null,
+            content = content
+        )
+    }
+
+    fun NoPaddingSection(
+        header: (@Composable () -> String?)? = null,
+        footer: (@Composable () -> String?)? = null,
+        key: Any? = null,
+        content: SectionScope.() -> Unit
+    ) {
+        renderSection(
+            header = header,
+            footer = footer,
+            key = key,
+            rowPadding = NoRowPadding,
+            separatorHorizontalPadding = 0.dp,
+            separatorPaddingStart = 0.dp,
+            content = content
+        )
+    }
+
+    private fun renderSection(
+        header: (@Composable () -> String?)?,
+        footer: (@Composable () -> String?)?,
+        key: Any?,
+        rowPadding: PaddingValues?,
+        separatorHorizontalPadding: Dp,
+        separatorPaddingStart: Dp?,
         content: SectionScope.() -> Unit
     ) {
         val currentSectionIndex = sectionIndex
@@ -107,7 +147,11 @@ class ListScope internal constructor(
             lazyListScope = lazyListScope,
             sectionIndex = currentSectionIndex,
             style = style,
-            colors = colors
+            colors = colors,
+            cornerRadius = cornerRadius,
+            rowPadding = rowPadding,
+            separatorHorizontalPadding = separatorHorizontalPadding,
+            separatorPaddingStart = separatorPaddingStart
         )
         scope.content()
         scope.flushLastRow()
@@ -157,7 +201,8 @@ class ListScope internal constructor(
                 isFirst = true,
                 isLast = true,
                 style = style,
-                colors = colors
+                colors = colors,
+                cornerRadius = cornerRadius
             )
         }
     }
@@ -171,23 +216,33 @@ class ListScope internal constructor(
         onCheckedChange: (Boolean) -> Unit,
         leading: (@Composable ListRowScope.() -> Unit)? = null,
         destructive: Boolean = false,
+        trailing: (@Composable ListRowScope.() -> Unit)? = null,
         content: @Composable ListRowScope.() -> Unit
     ) {
         Row(
             key = key,
-            contentType = contentType
-                ?: if (leading != null) "leading-switch-row" else "switch-row",
+            contentType = contentType ?: switchRowContentType(
+                leading = leading,
+                trailing = trailing
+            ),
             separator = separator,
             enabled = enabled,
             onClick = { onCheckedChange(!checked) },
             leading = leading,
             trailing = {
-                Switch(
-                    enabled = enabled,
-                    interactionSource = interactionSource,
-                    checked = checked,
-                    onCheckedChange = onCheckedChange,
-                    disabledAlpha = 1f
+                SwitchRowTrailingLayout(
+                    trailing = trailing?.let { trailingContent ->
+                        { trailingContent(this) }
+                    },
+                    switch = {
+                        Switch(
+                            enabled = enabled,
+                            interactionSource = remember { MutableInteractionSource() },
+                            checked = checked,
+                            onCheckedChange = onCheckedChange,
+                            disabledAlpha = 1f
+                        )
+                    }
                 )
             },
             destructive = destructive,
@@ -221,7 +276,11 @@ class SectionScope internal constructor(
     private val lazyListScope: LazyListScope,
     private val sectionIndex: Int,
     private val style: ListStyle,
-    private val colors: ListColors
+    private val colors: ListColors,
+    private val cornerRadius: Dp,
+    private val rowPadding: PaddingValues?,
+    private val separatorHorizontalPadding: Dp,
+    private val separatorPaddingStart: Dp?
 ) {
     private var pendingKey: Any? = null
     private var pendingContentType: Any? = null
@@ -296,7 +355,11 @@ class SectionScope internal constructor(
                 isFirst = pendingRowIndex == 0,
                 isLast = isLast,
                 style = style,
-                colors = colors
+                colors = colors,
+                cornerRadius = cornerRadius,
+                rowPadding = rowPadding,
+                separatorHorizontalPadding = separatorHorizontalPadding,
+                separatorPaddingStart = separatorPaddingStart
             )
         }
     }
@@ -310,23 +373,33 @@ class SectionScope internal constructor(
         onCheckedChange: (Boolean) -> Unit,
         leading: (@Composable ListRowScope.() -> Unit)? = null,
         destructive: Boolean = false,
+        trailing: (@Composable ListRowScope.() -> Unit)? = null,
         content: @Composable ListRowScope.() -> Unit
     ) {
         Row(
             key = key,
-            contentType = contentType
-                ?: if (leading != null) "leading-switch-row" else "switch-row",
+            contentType = contentType ?: switchRowContentType(
+                leading = leading,
+                trailing = trailing
+            ),
             separator = separator,
             enabled = enabled,
             onClick = { onCheckedChange(!checked) },
             leading = leading,
             trailing = {
-                Switch(
-                    enabled = enabled,
-                    interactionSource = interactionSource,
-                    checked = checked,
-                    onCheckedChange = onCheckedChange,
-                    disabledAlpha = 1f
+                SwitchRowTrailingLayout(
+                    trailing = trailing?.let { trailingContent ->
+                        { trailingContent(this) }
+                    },
+                    switch = {
+                        Switch(
+                            enabled = enabled,
+                            interactionSource = remember { MutableInteractionSource() }, // don't use rowscope.interactionsource
+                            checked = checked,
+                            onCheckedChange = onCheckedChange,
+                            disabledAlpha = 1f
+                        )
+                    }
                 )
             },
             destructive = destructive,
@@ -361,6 +434,7 @@ fun ListStack(
     state: LazyListState = rememberLazyListState(),
     style: ListStyle = ListStyle.InsetGrouped,
     contentPadding: PaddingValues = PaddingValues(),
+    cornerRadius: Dp = ListDefaults.cornerRadius(style),
     content: ListScope.() -> Unit
 ) {
     val colors = ListDefaults.colors(style)
@@ -374,14 +448,15 @@ fun ListStack(
         ListScope(
             lazyListScope = this,
             style = style,
-            colors = colors
+            colors = colors,
+            cornerRadius = cornerRadius
         ).content()
     }
 }
 
 private fun LazyListScope.renderSectionHeader(
     key: Any?,
-    header: String?,
+    header: (@Composable () -> String?)?,
     sectionIndex: Int,
     style: ListStyle,
     colors: ListColors
@@ -395,11 +470,11 @@ private fun LazyListScope.renderSectionHeader(
         Column {
             Spacer(
                 Modifier.height(
-                    if (sectionIndex == 0) 0.dp else ListDefaults.sectionSpacing(style)
+                    if (sectionIndex == 0) 0.dp else DefaultSectionSpacing
                 )
             )
 
-            header?.let { header ->
+            header?.invoke()?.let { header ->
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -439,7 +514,11 @@ private fun LazyListScope.renderSectionRow(
     isFirst: Boolean,
     isLast: Boolean,
     style: ListStyle,
-    colors: ListColors
+    colors: ListColors,
+    cornerRadius: Dp,
+    rowPadding: PaddingValues? = null,
+    separatorHorizontalPadding: Dp = DefaultSeparatorPadding,
+    separatorPaddingStart: Dp? = null
 ) {
     item(
         key = key ?: "section-$sectionIndex-row-$rowIndex",
@@ -462,40 +541,46 @@ private fun LazyListScope.renderSectionRow(
             isFirst = isFirst,
             isLast = isLast,
             style = style,
-            colors = colors
+            colors = colors,
+            cornerRadius = cornerRadius,
+            rowPadding = rowPadding,
+            separatorHorizontalPadding = separatorHorizontalPadding,
+            separatorPaddingStart = separatorPaddingStart
         )
     }
 }
 
 private fun LazyListScope.renderSectionFooter(
     key: Any?,
-    footer: String?,
+    footer: (@Composable () -> String?)?,
     sectionIndex: Int,
     style: ListStyle,
     colors: ListColors
 ) {
-    footer?.let { footer ->
+    if (footer != null) {
         item(
             key = key?.let { "$it-footer" } ?: "section-$sectionIndex-footer",
             contentType = "section-footer"
         ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = ListDefaults.horizontalPadding(style))
-            ) {
-                Text(
-                    text = footer,
-                    style = GlasenseTheme.type.subHeadline,
-                    color = colors.footerText,
+            footer()?.let { footerText ->
+                Box(
                     modifier = Modifier
-                        .padding(
-                            start = 12.dp,
-                            top = 8.dp,
-                            end = 12.dp,
-                            bottom = 0.dp
-                        )
-                )
+                        .fillMaxWidth()
+                        .padding(horizontal = ListDefaults.horizontalPadding(style))
+                ) {
+                    Text(
+                        text = footerText,
+                        style = GlasenseTheme.type.subHeadline,
+                        color = colors.footerText,
+                        modifier = Modifier
+                            .padding(
+                                start = 12.dp,
+                                top = 8.dp,
+                                end = 12.dp,
+                                bottom = 0.dp
+                            )
+                    )
+                }
             }
         }
     }
@@ -515,7 +600,11 @@ private fun ListRowFrame(
     isFirst: Boolean,
     isLast: Boolean,
     style: ListStyle,
-    colors: ListColors
+    colors: ListColors,
+    cornerRadius: Dp,
+    rowPadding: PaddingValues? = null,
+    separatorHorizontalPadding: Dp = DefaultSeparatorPadding,
+    separatorPaddingStart: Dp? = null
 ) {
     val hasLeading = leading != null
     val hasTrailing = trailing != null
@@ -534,12 +623,13 @@ private fun ListRowFrame(
     }
 
     ListRowContainer(
-        rowPadding = when {
+        rowPadding = rowPadding ?: when {
             hasLeading -> RichRowPadding
             else -> DefaultRowPadding
         },
         separator = separator,
-        separatorPaddingStart = if (hasLeading) {
+        separatorHorizontalPadding = separatorHorizontalPadding,
+        separatorPaddingStart = separatorPaddingStart ?: if (hasLeading) {
             DefaultLeadingSize + DefaultLeadingSpacing - 4.dp
         } else {
             0.dp
@@ -551,7 +641,8 @@ private fun ListRowFrame(
         isFirst = isFirst,
         isLast = isLast,
         style = style,
-        colors = colors
+        colors = colors,
+        cornerRadius = cornerRadius
     ) {
         if (!hasLeading && !hasAccessory) {
             CompositionLocalProvider(
@@ -662,53 +753,58 @@ private fun ListRowLayout(
             null
         }
 
-        val trailingPlaceable = if (trailing != null) {
-            measurables[measurables.lastIndex - if (chevron) 1 else 0].measure(
-                constraints.copy(
-                    minWidth = 0,
-                    minHeight = 0
-                )
-            )
-        } else {
-            null
-        }
-
         val leadingSpacing = if (leadingPlaceable != null) {
             DefaultLeadingSpacing.roundToPx()
         } else {
             0
         }
 
-        val accessorySpacing = if (trailingPlaceable != null || chevronPlaceable != null) {
+        val accessorySpacing = if (trailing != null || chevronPlaceable != null) {
             DefaultTrailingSpacing.roundToPx()
         } else {
             0
         }
 
-        val chevronSpacing = if (trailingPlaceable != null && chevronPlaceable != null) {
+        val chevronSpacing = if (trailing != null && chevronPlaceable != null) {
             DefaultChevronSpacing.roundToPx()
         } else {
             0
         }
 
-        val occupiedWidth =
-            (leadingPlaceable?.width ?: 0) +
-                    leadingSpacing +
-                    accessorySpacing +
-                    (trailingPlaceable?.width ?: 0) +
-                    chevronSpacing +
-                    (chevronPlaceable?.width ?: 0)
-
         val contentIndex = if (leading != null) 1 else 0
+        val dynamicWidth = (
+                constraints.maxWidth -
+                        (leadingPlaceable?.width ?: 0) -
+                        leadingSpacing -
+                        accessorySpacing -
+                        chevronSpacing -
+                        (chevronPlaceable?.width ?: 0)
+                ).coerceAtLeast(0)
+        val maxContentWidth = if (trailing != null) {
+            dynamicWidth / 2
+        } else {
+            dynamicWidth
+        }
 
         val contentPlaceable = measurables[contentIndex].measure(
             constraints.copy(
                 minWidth = 0,
                 minHeight = 0,
-                maxWidth = (constraints.maxWidth - occupiedWidth)
-                    .coerceAtLeast(0)
+                maxWidth = maxContentWidth
             )
         )
+
+        val trailingPlaceable = if (trailing != null) {
+            measurables[measurables.lastIndex - if (chevron) 1 else 0].measure(
+                constraints.copy(
+                    minWidth = 0,
+                    minHeight = 0,
+                    maxWidth = dynamicWidth / 2
+                )
+            )
+        } else {
+            null
+        }
 
         val minContentHeight =
             DefaultRowMinHeight.roundToPx() -
@@ -763,9 +859,81 @@ private fun ListRowLayout(
 }
 
 @Composable
+private fun SwitchRowTrailingLayout(
+    trailing: (@Composable () -> Unit)?,
+    switch: @Composable () -> Unit
+) {
+    Layout(
+        content = {
+            if (trailing != null) {
+                Box(contentAlignment = Alignment.CenterEnd) {
+                    trailing()
+                }
+            }
+
+            Box(contentAlignment = Alignment.CenterEnd) {
+                switch()
+            }
+        }
+    ) { measurables, constraints ->
+        val switchPlaceable = measurables.last().measure(
+            constraints.copy(
+                minWidth = 0,
+                minHeight = 0
+            )
+        )
+
+        val spacing = if (trailing != null) {
+            DefaultSwitchTrailingSpacing.roundToPx()
+        } else {
+            0
+        }
+
+        val trailingPlaceable = if (trailing != null) {
+            measurables[0].measure(
+                constraints.copy(
+                    minWidth = 0,
+                    minHeight = 0,
+                    maxWidth = (constraints.maxWidth - switchPlaceable.width - spacing)
+                        .coerceAtLeast(0)
+                )
+            )
+        } else {
+            null
+        }
+
+        val contentWidth = (trailingPlaceable?.width ?: 0) + spacing + switchPlaceable.width
+        val width = contentWidth.coerceIn(constraints.minWidth, constraints.maxWidth)
+        val height = maxOf(
+            constraints.minHeight,
+            trailingPlaceable?.height ?: 0,
+            switchPlaceable.height
+        )
+
+        layout(
+            width = width,
+            height = height
+        ) {
+            val contentStartX = width - contentWidth
+
+            trailingPlaceable?.placeRelative(
+                x = contentStartX,
+                y = (height - trailingPlaceable.height) / 2
+            )
+
+            switchPlaceable.placeRelative(
+                x = width - switchPlaceable.width,
+                y = (height - switchPlaceable.height) / 2
+            )
+        }
+    }
+}
+
+@Composable
 private fun ListRowContainer(
     rowPadding: PaddingValues,
     separator: Boolean,
+    separatorHorizontalPadding: Dp,
     separatorPaddingStart: Dp,
     onClick: (() -> Unit)?,
     enabled: Boolean,
@@ -775,9 +943,12 @@ private fun ListRowContainer(
     isLast: Boolean,
     style: ListStyle,
     colors: ListColors,
+    cornerRadius: Dp,
     content: @Composable () -> Unit
 ) {
-    val corner = ListDefaults.cornerRadius(style)
+    val corner = cornerRadius
+    val separatorColor =
+        if (style == ListStyle.InsetGrouped) LocalGlasenseContentColor.current.copy(.1f) else LocalGlasenseColors.current.scrimMedium
     val shape = when (style) {
         ListStyle.Plain -> RectangleShape
 
@@ -802,6 +973,30 @@ private fun ListRowContainer(
             .fillMaxWidth()
             .padding(horizontal = ListDefaults.horizontalPadding(style))
             .zIndex(-rowIndex.toFloat())
+            .then(
+                if (separator && !isLast) {
+                    Modifier.drawWithCache {
+                        val strokeWidth = DefaultSeparatorWidth.toPx()
+                        val horizontalPadding = separatorHorizontalPadding.toPx()
+                        val startX = horizontalPadding + separatorPaddingStart.toPx()
+                        val endX = (size.width - horizontalPadding)
+                            .coerceAtLeast(startX)
+                        val y = size.height - strokeWidth / 2f
+
+                        onDrawWithContent {
+                            drawContent()
+                            drawLine(
+                                color = separatorColor,
+                                start = Offset(x = startX, y = y),
+                                end = Offset(x = endX, y = y),
+                                strokeWidth = strokeWidth
+                            )
+                        }
+                    }
+                } else {
+                    Modifier
+                }
+            )
     ) {
         Box(
             modifier = Modifier
@@ -813,7 +1008,7 @@ private fun ListRowContainer(
                         Modifier.clickable(
                             enabled = enabled,
                             interactionSource = interactionSource,
-                            indication = DimIndication(),
+                            indication = DefaultDimIndication,
                             onClick = onClick
                         )
                     } else {
@@ -831,15 +1026,6 @@ private fun ListRowContainer(
                 content()
             }
         }
-
-        if (separator && !isLast) {
-            VDivider(
-                modifier = Modifier
-                    .align(Alignment.BottomStart)
-                    .padding(horizontal = DefaultSeparatorPadding)
-                    .padding(start = separatorPaddingStart)
-            )
-        }
     }
 }
 
@@ -851,18 +1037,23 @@ data class ListColors(
     val footerText: Color
 )
 
+private val DefaultSectionSpacing = 24.dp
 private val DefaultRowPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
 private val DefaultRowMinHeight = 52.dp
 private val DefaultSeparatorPadding = 16.dp
+private val DefaultSeparatorWidth = 1.dp
 private val DefaultLeadingSize = 32.dp
 private val DefaultLeadingSpacing = 12.dp
 private val DefaultTrailingSpacing = 12.dp
+private val DefaultSwitchTrailingSpacing = 8.dp
 private val DefaultChevronSpacing = 8.dp
 private val DefaultChevronWidth = 14.dp
 private val DefaultChevronHeight = 20.dp
 private const val DisabledContentAlpha = 0.5f
 private val RichRowPadding =
     PaddingValues(start = 12.dp, top = 8.dp, end = 16.dp, bottom = 8.dp)
+private val NoRowPadding = PaddingValues(0.dp)
+private val DefaultDimIndication = DimIndication()
 
 private fun rowContentType(
     leading: Any?,
@@ -878,6 +1069,18 @@ private fun rowContentType(
         trailing != null -> "trailing-row"
         chevron -> "chevron-row"
         else -> "row"
+    }
+}
+
+private fun switchRowContentType(
+    leading: Any?,
+    trailing: Any?
+): String {
+    return when {
+        leading != null && trailing != null -> "leading-trailing-switch-row"
+        leading != null -> "leading-switch-row"
+        trailing != null -> "trailing-switch-row"
+        else -> "switch-row"
     }
 }
 
@@ -902,13 +1105,6 @@ object ListDefaults {
         return when (style) {
             ListStyle.Plain -> 0.dp
             ListStyle.InsetGrouped -> 12.dp
-        }
-    }
-
-    fun sectionSpacing(style: ListStyle): Dp {
-        return when (style) {
-            ListStyle.Plain -> 0.dp
-            ListStyle.InsetGrouped -> 24.dp
         }
     }
 
