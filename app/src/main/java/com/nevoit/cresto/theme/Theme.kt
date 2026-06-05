@@ -39,6 +39,7 @@ private fun systemDynamicSeedColor(context: Context): Color =
 private fun glasenseColorsFromScheme(scheme: ColorScheme, isDark: Boolean): GlasenseColors {
     val pageBackground = if (isDark) Color.Black else scheme.surfaceContainer
     val cardBackground = if (isDark) scheme.surfaceContainer else scheme.surface
+    val background = if (isDark) pageBackground else cardBackground
 
     val pageBackgroundElevated = if (isDark) scheme.surfaceContainer else pageBackground
     val cardBackgroundElevated = if (isDark) scheme.surfaceContainerHigh else cardBackground
@@ -51,6 +52,7 @@ private fun glasenseColorsFromScheme(scheme: ColorScheme, isDark: Boolean): Glas
     val scrimBold = contentColor.copy(alpha = if (isDark) 0.4f else 0.2f)
 
     return GlasenseColors(
+        background = background,
         activeTrack = scheme.primary,
         inactiveTrack = scheme.surfaceContainerHighest,
         activeThumb = scheme.onPrimary,

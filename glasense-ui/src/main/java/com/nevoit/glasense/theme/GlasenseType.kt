@@ -94,14 +94,14 @@ val GlasenseTypeStandard = GlasenseType(
         fontWeight = FontWeight.Normal,
         fontSize = 16.sp,
         lineHeight = 20.sp,
-        letterSpacing = 0.sp
+        letterSpacing = 0.1.sp
     ),
     bodyEmphasized = TextStyle(
         fontFamily = FontFamily.Default,
         fontWeight = FontWeight.SemiBold,
         fontSize = 16.sp,
         lineHeight = 20.sp,
-        letterSpacing = 0.sp
+        letterSpacing = 0.1.sp
     ),
     subHeadline = TextStyle(
         fontFamily = FontFamily.Default,

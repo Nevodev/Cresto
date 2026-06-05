@@ -110,9 +110,8 @@ internal fun IndeterminateProgressView(
     }
 
     Canvas(
-        modifier = Modifier
+        modifier = modifier
             .size(32.dp)
-            .then(modifier)
     ) {
         val radius = this.size.minDimension / 2
 
@@ -160,7 +159,7 @@ internal fun LinearDeterminateProgressView(
 
     Canvas(
         modifier = Modifier
-            .height(8.dp)
+            .height(6.dp)
             .defaultMinSize(minWidth = 64.dp)
             .then(modifier)
     ) {
@@ -192,9 +191,8 @@ internal fun CircularDeterminateProgressView(
     )
 
     Canvas(
-        modifier = Modifier
+        modifier = modifier
             .size(32.dp)
-            .then(modifier)
     ) {
         val strokeWidth = size.minDimension * 0.125f
 
