@@ -3,12 +3,13 @@ package com.nevoit.cresto.feature.settings
 
 // Import necessary libraries and components
 import androidx.activity.compose.LocalActivity
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
@@ -36,17 +37,18 @@ import com.nevoit.cresto.R
 import com.nevoit.cresto.feature.settings.util.AISettingsViewModel
 import com.nevoit.cresto.theme.AppButtonColors
 import com.nevoit.cresto.theme.AppColors
+import com.nevoit.cresto.theme.AppSpecs
 import com.nevoit.cresto.theme.harmonize
 import com.nevoit.cresto.ui.components.glasense.GlasenseButton
 import com.nevoit.cresto.ui.components.glasense.GlasenseDynamicSmallTitle
 import com.nevoit.cresto.ui.components.glasense.extend.overscrollSpacer
 import com.nevoit.cresto.ui.components.glasense.isScrolledPast
 import com.nevoit.cresto.ui.components.packed.ConfigInfoHeader
-import com.nevoit.cresto.ui.components.packed.ConfigItem
-import com.nevoit.cresto.ui.components.packed.ConfigItemContainer
 import com.nevoit.cresto.ui.components.packed.ConfigTextField
-import com.nevoit.cresto.ui.components.packed.PageContent
+import com.nevoit.cresto.ui.components.packed.TopBarSpacer
+import com.nevoit.glasense.component.ListStack
 import com.nevoit.glasense.core.component.Icon
+import com.nevoit.glasense.core.component.Text
 import com.nevoit.glasense.core.component.VGap
 import com.nevoit.glasense.theme.tokens.Blue500
 import com.nevoit.glasense.theme.tokens.Pink400
@@ -83,26 +85,27 @@ fun AIScreen(aiSettingsViewModel: AISettingsViewModel = viewModel()) {
     val textModel by aiSettingsViewModel.textModel
     val multimodalModel by aiSettingsViewModel.multimodalModel
 
+    val navigationBarHeight = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+
     // Root container for the screen, filling the entire available space
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(backgroundColor)
     ) {
-        // A vertically scrolling list that only composes and lays out the currently visible items
-        PageContent(
+        ListStack(
             state = lazyListState,
             modifier = Modifier
-                .layerBackdrop(backdrop),
-            tabPadding = false
+                .fillMaxSize()
+                .layerBackdrop(backdrop)
+                .imePadding(),
+            cornerRadius = AppSpecs.cardCorner,
+            contentPadding = PaddingValues(bottom = navigationBarHeight)
         ) {
-            // Spacer item at the top of the list to push content below the top bar and back button
-            item {
-                Box(modifier = Modifier.padding(top = 48.dp + statusBarHeight + 12.dp))
-            }
+            TopBarSpacer()
             // Header item for the AI section with a gradient brush and glow effect
             item {
                 ConfigInfoHeader(
+                    modifier = Modifier.padding(horizontal = 12.dp),
                     brush = sweepGradient(
                         colorStops = arrayOf(
                             0f to harmonize(Pink400),
@@ -117,11 +120,12 @@ fun AIScreen(aiSettingsViewModel: AISettingsViewModel = viewModel()) {
                     enableGlow = true,
                     info = stringResource(R.string.boost_your_experience_with_intelligent_cresto_function_calling)
                 )
-                VGap()
             }
+            item { VGap(24.dp) }
             // Item container for API-related settings
             item {
                 ConfigTextField(
+                    modifier = Modifier.padding(horizontal = 12.dp),
                     title = stringResource(R.string.url),
                     value = apiUrl,
                     onValueChange = aiSettingsViewModel::onApiUrlChanged,
@@ -133,10 +137,11 @@ fun AIScreen(aiSettingsViewModel: AISettingsViewModel = viewModel()) {
                         imeAction = ImeAction.Done
                     )
                 )
-                VGap()
+                VGap(24.dp)
             }
             item {
                 ConfigTextField(
+                    modifier = Modifier.padding(horizontal = 12.dp),
                     title = stringResource(R.string.api_key),
                     value = apiKey,
                     onValueChange = aiSettingsViewModel::onApiKeyChanged,
@@ -149,11 +154,12 @@ fun AIScreen(aiSettingsViewModel: AISettingsViewModel = viewModel()) {
                         imeAction = ImeAction.Done
                     ),
                 )
-                VGap()
+                VGap(24.dp)
             }
             // Item container for testing the AI functionality
             item {
                 ConfigTextField(
+                    modifier = Modifier.padding(horizontal = 12.dp),
                     title = stringResource(R.string.text_processing_model),
                     value = textModel,
                     onValueChange = aiSettingsViewModel::onTextModelChanged,
@@ -165,10 +171,11 @@ fun AIScreen(aiSettingsViewModel: AISettingsViewModel = viewModel()) {
                         imeAction = ImeAction.Done
                     )
                 )
-                VGap()
+                VGap(24.dp)
             }
             item {
                 ConfigTextField(
+                    modifier = Modifier.padding(horizontal = 12.dp),
                     title = stringResource(R.string.multimodal_model),
                     value = multimodalModel,
                     onValueChange = aiSettingsViewModel::onMultimodalModelChanged,
@@ -180,24 +187,14 @@ fun AIScreen(aiSettingsViewModel: AISettingsViewModel = viewModel()) {
                         imeAction = ImeAction.Done
                     )
                 )
-                VGap()
+                VGap(24.dp)
             }
-            item {
-                ConfigItemContainer(
-                    backgroundColor = hierarchicalSurfaceColor
+            Section() {
+                Row(
+                    destructive = true,
+                    onClick = aiSettingsViewModel::restoreDefaults
                 ) {
-                    Column {
-                        ConfigItem(
-                            title = stringResource(R.string.reset),
-                            color = AppColors.error,
-                            clickable = true,
-                            indication = true,
-                            onClick = {
-                                aiSettingsViewModel.restoreDefaults()
-                            }
-                        ) {}
-                    }
-
+                    Text(stringResource(R.string.reset))
                 }
             }
             item { VGap() }

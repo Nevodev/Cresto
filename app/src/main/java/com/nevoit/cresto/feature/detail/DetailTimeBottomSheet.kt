@@ -5,15 +5,14 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -33,15 +32,16 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.nevoit.cresto.R
+import com.nevoit.cresto.feature.settings.CustomSwitchRow
 import com.nevoit.cresto.theme.AppColors
 import com.nevoit.cresto.theme.AppSpecs
 import com.nevoit.cresto.ui.components.glasense.GlasenseModalTopBar
-import com.nevoit.cresto.ui.components.glasense.GlasenseSwitch
-import com.nevoit.cresto.ui.components.packed.ConfigItem
-import com.nevoit.cresto.ui.components.packed.ConfigItemContainer
+import com.nevoit.cresto.ui.components.glasense.extend.overscrollSpacer
 import com.nevoit.glasense.component.BottomSheet
+import com.nevoit.glasense.component.ListColors
+import com.nevoit.glasense.component.ListStack
 import com.nevoit.glasense.core.component.Text
-import com.nevoit.glasense.core.component.VDivider
+import com.nevoit.glasense.core.component.VGap
 import com.nevoit.glasense.core.interaction.DimIndication
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
@@ -55,157 +55,141 @@ fun DetailTimeBottomSheet(
     onRequestCustomTime: (Rect, LocalTime?, LocalTime?, LocalTime?, (LocalTime?) -> Unit) -> Unit
 ) {
     val navigationBarHeight = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+    val listState = rememberLazyListState()
+    val elevatedPageBackground = AppColors.elevatedPageBackground
+    val elevatedCardBackground = AppColors.elevatedCardBackground
+    val contentVariant = AppColors.contentVariant
+
     val isAllDayEnabled = startTime == null && endTime == null
     val isTimeRangeEnabled = startTime != null && endTime != null
     val rangeStartTime = startTime ?: LocalTime.of(9, 0)
     val rangeEndTime = endTime ?: defaultRangeEndTime(rangeStartTime)
+    var rangeStartTimeButtonBounds by remember { mutableStateOf(Rect.Zero) }
+    var rangeEndTimeButtonBounds by remember { mutableStateOf(Rect.Zero) }
 
     BottomSheet(
         onDismissed = onDismissed
     ) { slideOut ->
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 12.dp)
-                .padding(top = 12.dp, bottom = navigationBarHeight + 12.dp)
+        ListStack(
+            state = listState,
+            modifier = Modifier.fillMaxWidth(),
+            colors = ListColors(
+                background = elevatedPageBackground,
+                rowBackground = elevatedCardBackground,
+                headerText = contentVariant,
+                footerText = contentVariant.copy(alpha = .3f)
+            ),
+            cornerRadius = AppSpecs.cardCorner,
+            contentPadding = PaddingValues(bottom = navigationBarHeight)
         ) {
-            GlasenseModalTopBar(
-                leading = {
-                    Action(
-                        icon = painterResource(id = R.drawable.ic_forward_nav),
-                        contentDescription = stringResource(R.string.back),
-                        onClick = slideOut,
-                        iconSize = 32.dp
-                    )
-                },
-                title = stringResource(R.string.time)
-            )
-            Spacer(modifier = Modifier.height(12.dp))
-            TimeConfigSection(
-                isAllDayEnabled = isAllDayEnabled,
-                isTimeRangeEnabled = isTimeRangeEnabled,
-                rangeStartTime = rangeStartTime,
-                rangeEndTime = rangeEndTime,
-                onAllDayEnabledChange = { checked ->
-                    if (checked) {
-                        onTimeChange(null, null)
-                    } else {
-                        onTimeChange(rangeStartTime, null)
-                    }
-                },
-                onTimeRangeEnabledChange = { checked ->
-                    if (checked) {
-                        onTimeChange(rangeStartTime, defaultRangeEndTime(rangeStartTime))
-                    } else {
-                        onTimeChange(rangeStartTime, null)
-                    }
-                },
-                onRangeStartTimeChange = { newTime ->
-                    if (newTime != null) {
-                        onTimeChange(newTime, if (isTimeRangeEnabled) rangeEndTime else null)
-                    }
-                },
-                onRangeEndTimeChange = { newTime ->
-                    if (newTime != null) {
-                        onTimeChange(rangeStartTime, newTime)
-                    }
-                },
-                onRequestCustomTime = onRequestCustomTime
-            )
-        }
-    }
-}
-
-@Composable
-private fun TimeConfigSection(
-    isAllDayEnabled: Boolean,
-    isTimeRangeEnabled: Boolean,
-    rangeStartTime: LocalTime,
-    rangeEndTime: LocalTime,
-    onAllDayEnabledChange: (Boolean) -> Unit,
-    onTimeRangeEnabledChange: (Boolean) -> Unit,
-    onRangeStartTimeChange: (LocalTime?) -> Unit,
-    onRangeEndTimeChange: (LocalTime?) -> Unit,
-    onRequestCustomTime: (Rect, LocalTime?, LocalTime?, LocalTime?, (LocalTime?) -> Unit) -> Unit
-) {
-    var rangeStartTimeButtonBounds by remember { mutableStateOf(Rect.Zero) }
-    var rangeEndTimeButtonBounds by remember { mutableStateOf(Rect.Zero) }
-
-    ConfigItemContainer(
-        backgroundColor = AppColors.elevatedCardBackground
-    ) {
-        Column {
-            ConfigItem(title = stringResource(R.string.all_day)) {
-                GlasenseSwitch(
-                    backgroundColor = AppColors.elevatedCardBackground,
+            item { VGap(72.dp) }
+            Section(topSpacing = 0.dp) {
+                CustomSwitchRow(
                     checked = isAllDayEnabled,
-                    onCheckedChange = onAllDayEnabledChange
-                )
-            }
-            Spacer(modifier = Modifier.height(8.dp))
-            VDivider()
-            Spacer(modifier = Modifier.height(8.dp))
-            ConfigItem(title = stringResource(R.string.time_range)) {
-                GlasenseSwitch(
-                    backgroundColor = AppColors.elevatedCardBackground,
+                    onCheckedChange = { checked ->
+                        if (checked) {
+                            onTimeChange(null, null)
+                        } else {
+                            onTimeChange(rangeStartTime, null)
+                        }
+                    },
+                    backgroundColor = elevatedCardBackground
+                ) {
+                    Text(stringResource(R.string.all_day))
+                }
+                CustomSwitchRow(
                     checked = isTimeRangeEnabled,
-                    onCheckedChange = onTimeRangeEnabledChange
-                )
-            }
-            val timeTextStyle = TextStyle(
-                fontFeatureSettings = "tnum",
-                fontWeight = FontWeight.Medium,
-                fontSize = 24.sp,
-                lineHeight = 24.sp,
-                color = AppColors.content
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            Row(
-                modifier = Modifier
-                    .graphicsLayer {
-                        alpha = if (isAllDayEnabled) 0.5f else 1f
-                    }
-                    .fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(
-                    12.dp,
-                    Alignment.CenterHorizontally
-                )
-            ) {
-                TimeButton(
-                    time = rangeStartTime,
-                    textStyle = timeTextStyle,
-                    enabled = !isAllDayEnabled,
-                    onPositioned = { rangeStartTimeButtonBounds = it },
-                    onClick = {
-                        onRequestCustomTime(
-                            rangeStartTimeButtonBounds,
-                            rangeStartTime,
-                            null,
-                            if (isTimeRangeEnabled) rangeEndTime else null,
-                            onRangeStartTimeChange
+                    onCheckedChange = { checked ->
+                        if (checked) {
+                            onTimeChange(rangeStartTime, defaultRangeEndTime(rangeStartTime))
+                        } else {
+                            onTimeChange(rangeStartTime, null)
+                        }
+                    },
+                    backgroundColor = elevatedCardBackground
+                ) {
+                    Text(stringResource(R.string.time_range))
+                }
+                Row(separator = false) {
+                    val timeTextStyle = TextStyle(
+                        fontFeatureSettings = "tnum",
+                        fontWeight = FontWeight.Medium,
+                        fontSize = 24.sp,
+                        lineHeight = 24.sp,
+                        color = AppColors.content
+                    )
+                    Row(
+                        modifier = Modifier
+                            .padding(vertical = 8.dp)
+                            .graphicsLayer {
+                                alpha = if (isAllDayEnabled) 0.5f else 1f
+                            }
+                            .fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(
+                            12.dp,
+                            Alignment.CenterHorizontally
                         )
-                    }
-                )
-                if (isTimeRangeEnabled) {
-                    TimeButton(
-                        time = rangeEndTime,
-                        textStyle = timeTextStyle,
-                        enabled = !isAllDayEnabled,
-                        onPositioned = { rangeEndTimeButtonBounds = it },
-                        onClick = {
-                            onRequestCustomTime(
-                                rangeEndTimeButtonBounds,
-                                rangeEndTime,
-                                rangeStartTime,
-                                null,
-                                onRangeEndTimeChange
+                    ) {
+                        TimeButton(
+                            time = rangeStartTime,
+                            textStyle = timeTextStyle,
+                            enabled = !isAllDayEnabled,
+                            onPositioned = { rangeStartTimeButtonBounds = it },
+                            onClick = {
+                                onRequestCustomTime(
+                                    rangeStartTimeButtonBounds,
+                                    rangeStartTime,
+                                    null,
+                                    if (isTimeRangeEnabled) rangeEndTime else null
+                                ) { newTime ->
+                                    if (newTime != null) {
+                                        onTimeChange(
+                                            newTime,
+                                            if (isTimeRangeEnabled) rangeEndTime else null
+                                        )
+                                    }
+                                }
+                            }
+                        )
+                        if (isTimeRangeEnabled) {
+                            TimeButton(
+                                time = rangeEndTime,
+                                textStyle = timeTextStyle,
+                                enabled = !isAllDayEnabled,
+                                onPositioned = { rangeEndTimeButtonBounds = it },
+                                onClick = {
+                                    onRequestCustomTime(
+                                        rangeEndTimeButtonBounds,
+                                        rangeEndTime,
+                                        rangeStartTime,
+                                        null
+                                    ) { newTime ->
+                                        if (newTime != null) {
+                                            onTimeChange(rangeStartTime, newTime)
+                                        }
+                                    }
+                                }
                             )
                         }
-                    )
+                    }
                 }
             }
-            Spacer(modifier = Modifier.height(8.dp))
+            item { VGap() }
+            overscrollSpacer(listState)
         }
+
+        GlasenseModalTopBar(
+            leading = {
+                Action(
+                    icon = painterResource(id = R.drawable.ic_forward_nav),
+                    contentDescription = stringResource(R.string.back),
+                    onClick = slideOut,
+                    iconSize = 32.dp
+                )
+            },
+            title = stringResource(R.string.time),
+            modifier = Modifier.padding(12.dp)
+        )
     }
 }
 

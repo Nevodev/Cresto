@@ -67,6 +67,7 @@ import com.nevoit.cresto.ui.components.glasense.GlasenseDynamicSmallTitle
 import com.nevoit.cresto.ui.components.glasense.extend.overscrollSpacer
 import com.nevoit.cresto.ui.components.glasense.isScrolledPast
 import com.nevoit.cresto.ui.components.packed.ConfigInfoHeader
+import com.nevoit.cresto.ui.components.packed.TopBarSpacer
 import com.nevoit.glasense.component.ListStack
 import com.nevoit.glasense.core.component.Icon
 import com.nevoit.glasense.core.component.Text
@@ -431,24 +432,23 @@ fun DataStorageScreen() {
             cornerRadius = AppSpecs.cardCorner,
             contentPadding = PaddingValues(bottom = navigationBarHeight)
         ) {
+            TopBarSpacer()
             item {
-                Box(modifier = Modifier.padding(top = 48.dp + statusBarHeight + 12.dp))
+                ConfigInfoHeader(
+                    modifier = Modifier.padding(horizontal = 12.dp),
+                    color = harmonize(Slate500),
+                    backgroundColor = hierarchicalSurfaceColor,
+                    icon = painterResource(R.drawable.ic_twotone_storage),
+                    title = stringResource(R.string.data_storage),
+                    enableGlow = false,
+                    info = stringResource(R.string.manage_your_application_s_storage_footprint)
+                )
             }
-            item {
-                Box(modifier = Modifier.padding(horizontal = 12.dp)) {
-                    ConfigInfoHeader(
-                        color = harmonize(Slate500),
-                        backgroundColor = hierarchicalSurfaceColor,
-                        icon = painterResource(R.drawable.ic_twotone_storage),
-                        title = stringResource(R.string.data_storage),
-                        enableGlow = false,
-                        info = stringResource(R.string.manage_your_application_s_storage_footprint)
-                    )
-                }
-            }
-            item { VGap(24.dp) }
 
-            NoPaddingSection(header = { stringResource(R.string.storage_usage) }) {
+            NoPaddingSection(
+                header = { stringResource(R.string.storage_usage) },
+                topSpacing = 24.dp
+            ) {
                 Row {
                     Column(
                         modifier = Modifier

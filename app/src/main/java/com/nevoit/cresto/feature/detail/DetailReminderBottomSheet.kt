@@ -1,51 +1,42 @@
 package com.nevoit.cresto.feature.detail
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.kyant.shapes.Capsule
 import com.nevoit.cresto.R
 import com.nevoit.cresto.data.todo.TodoReminderMode
+import com.nevoit.cresto.feature.settings.CustomSwitchRow
 import com.nevoit.cresto.theme.AppColors
+import com.nevoit.cresto.theme.AppSpecs
 import com.nevoit.cresto.ui.components.glasense.GlasenseMenuItem
 import com.nevoit.cresto.ui.components.glasense.GlasenseModalTopBar
-import com.nevoit.cresto.ui.components.glasense.GlasenseSwitch
 import com.nevoit.cresto.ui.components.glasense.MenuDivider
-import com.nevoit.cresto.ui.components.glasense.MenuItemData
 import com.nevoit.cresto.ui.components.glasense.SelectiveMenuItemData
-import com.nevoit.cresto.ui.components.packed.ConfigItem
-import com.nevoit.cresto.ui.components.packed.ConfigItemContainer
+import com.nevoit.cresto.ui.components.glasense.extend.overscrollSpacer
 import com.nevoit.cresto.ui.components.packed.TodoReminderConfig
 import com.nevoit.cresto.ui.components.packed.displayText
 import com.nevoit.glasense.component.BottomSheet
+import com.nevoit.glasense.component.ListColors
+import com.nevoit.glasense.component.ListRowAccessory
+import com.nevoit.glasense.component.ListStack
 import com.nevoit.glasense.core.component.Text
-import com.nevoit.glasense.core.component.VDivider
-import com.nevoit.glasense.core.interaction.DimIndication
+import com.nevoit.glasense.core.component.VGap
 import java.time.LocalTime
 
 @Composable
@@ -62,6 +53,11 @@ fun DetailReminderBottomSheet(
     onDismissed: () -> Unit
 ) {
     val navigationBarHeight = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+    val listState = rememberLazyListState()
+    val elevatedPageBackground = AppColors.elevatedPageBackground
+    val elevatedCardBackground = AppColors.elevatedCardBackground
+    val contentVariant = AppColors.contentVariant
+
     var reminderButtonBounds by remember { mutableStateOf(Rect.Zero) }
 
     val noneText = stringResource(R.string.none)
@@ -176,7 +172,6 @@ fun DetailReminderBottomSheet(
             add(
                 SelectiveMenuItemData(
                     text = customText,
-                    icon = reminderIcon,
                     isSelected = { reminderConfig.isCustomReminder(isAllDayEnabled) },
                     onClick = { onRequestCustomReminder(reminderButtonBounds) }
                 )
@@ -185,7 +180,6 @@ fun DetailReminderBottomSheet(
             add(
                 SelectiveMenuItemData(
                     text = noneText,
-                    icon = noneReminderIcon,
                     isSelected = { reminderConfig == null },
                     onClick = { onReminderConfigChange(null) }
                 )
@@ -194,83 +188,72 @@ fun DetailReminderBottomSheet(
     }
 
     BottomSheet(onDismissed = onDismissed) { slideOut ->
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 12.dp)
-                .padding(top = 12.dp, bottom = navigationBarHeight + 12.dp)
+        ListStack(
+            state = listState,
+            modifier = Modifier.fillMaxWidth(),
+            colors = ListColors(
+                background = elevatedPageBackground,
+                rowBackground = elevatedCardBackground,
+                headerText = contentVariant,
+                footerText = contentVariant.copy(alpha = .3f)
+            ),
+            cornerRadius = AppSpecs.cardCorner,
+            contentPadding = PaddingValues(bottom = navigationBarHeight)
         ) {
-            GlasenseModalTopBar(
-                leading = {
-                    Action(
-                        icon = painterResource(id = R.drawable.ic_forward_nav),
-                        contentDescription = stringResource(R.string.back),
-                        onClick = slideOut,
-                        iconSize = 32.dp
-                    )
-                },
-                title = stringResource(R.string.reminder)
-            )
-            Spacer(modifier = Modifier.height(12.dp))
-            ConfigItemContainer(
-                backgroundColor = AppColors.elevatedCardBackground
-            ) {
-                Column {
-                    ConfigItem(title = stringResource(R.string.reminder_timing)) {
-                        Row(
-                            modifier = Modifier
-                                .onGloballyPositioned { coordinates ->
-                                    reminderButtonBounds = coordinates.boundsInWindow()
-                                }
-                                .wrapContentSize()
-                                .clip(Capsule())
-                                .background(color = AppColors.scrimNormal)
-                                .clickable(
-                                    interactionSource = remember { MutableInteractionSource() },
-                                    indication = DimIndication()
-                                ) {
-                                    showMenu(reminderButtonBounds, reminderMenuItems)
-                                }
-                                .padding(horizontal = 8.dp, vertical = 4.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = reminderTimingText,
-                                fontWeight = FontWeight.Normal,
-                                color = AppColors.content
-                            )
-                        }
-                    }
-                    Spacer(modifier = Modifier.height(8.dp))
-                    VDivider()
-                    Spacer(modifier = Modifier.height(8.dp))
-                    ConfigItem(title = stringResource(R.string.persistent_reminder)) {
-                        GlasenseSwitch(
-                            backgroundColor = AppColors.elevatedCardBackground,
-                            checked = reminderPersistent,
-                            onCheckedChange = onPersistentChange
+            item { VGap(72.dp) }
+            Section(topSpacing = 0.dp) {
+                Row(
+                    onClick = { showMenu(reminderButtonBounds, reminderMenuItems) },
+                    trailing = {
+                        Text(
+                            text = reminderTimingText,
+                            modifier = Modifier.onGloballyPositioned { coordinates ->
+                                reminderButtonBounds = coordinates.boundsInWindow()
+                            }
                         )
-                    }
-                    Spacer(modifier = Modifier.height(8.dp))
-                    VDivider()
-                    Spacer(modifier = Modifier.height(8.dp))
-                    ConfigItem(title = stringResource(R.string.strong_reminder)) {
-                        GlasenseSwitch(
-                            backgroundColor = AppColors.elevatedCardBackground,
-                            checked = reminderStrong,
-                            onCheckedChange = onStrongChange
-                        )
-                    }
+                    },
+                    accessory = ListRowAccessory.SelectIndicator
+                ) {
+                    Text(stringResource(R.string.reminder_timing))
+                }
+                CustomSwitchRow(
+                    checked = reminderPersistent,
+                    onCheckedChange = onPersistentChange,
+                    backgroundColor = elevatedCardBackground
+                ) {
+                    Text(stringResource(R.string.persistent_reminder))
+                }
+                CustomSwitchRow(
+                    checked = reminderStrong,
+                    onCheckedChange = onStrongChange,
+                    backgroundColor = elevatedCardBackground
+                ) {
+                    Text(stringResource(R.string.strong_reminder))
                 }
             }
+            item { VGap() }
+            overscrollSpacer(listState)
         }
+
+        GlasenseModalTopBar(
+            leading = {
+                Action(
+                    icon = painterResource(id = R.drawable.ic_forward_nav),
+                    contentDescription = stringResource(R.string.back),
+                    onClick = slideOut,
+                    iconSize = 32.dp
+                )
+            },
+            title = stringResource(R.string.reminder),
+            modifier = Modifier.padding(12.dp)
+        )
     }
 }
 
 private fun TodoReminderConfig?.isAllDayMorningReminder(): Boolean {
     return this?.mode == TodoReminderMode.BeforeDueDate &&
-        dayOffset == 0 &&
-        time == LocalTime.of(8, 0)
+            dayOffset == 0 &&
+            time == LocalTime.of(8, 0)
 }
 
 private fun TodoReminderConfig?.isStartOffsetReminder(offsetMinutes: Int): Boolean {

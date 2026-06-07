@@ -7,16 +7,12 @@ import android.widget.Toast
 import androidx.activity.compose.LocalActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
@@ -31,7 +27,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
@@ -45,7 +40,6 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.kyant.backdrop.backdrops.layerBackdrop
 import com.kyant.backdrop.backdrops.rememberLayerBackdrop
-import com.kyant.shapes.Capsule
 import com.nevoit.cresto.R
 import com.nevoit.cresto.data.todo.calendar.TodoCalendarSyncManager
 import com.nevoit.cresto.feature.screenextract.ShizukuScreenshotCapturer
@@ -53,27 +47,24 @@ import com.nevoit.cresto.feature.settings.util.AppLocaleManager
 import com.nevoit.cresto.feature.settings.util.SettingsViewModel
 import com.nevoit.cresto.theme.AppButtonColors
 import com.nevoit.cresto.theme.AppColors
+import com.nevoit.cresto.theme.AppSpecs
 import com.nevoit.cresto.theme.harmonize
 import com.nevoit.cresto.ui.components.glasense.GlasenseButton
 import com.nevoit.cresto.ui.components.glasense.GlasenseDynamicSmallTitle
 import com.nevoit.cresto.ui.components.glasense.GlasenseMenu
 import com.nevoit.cresto.ui.components.glasense.GlasenseMenuItem
-import com.nevoit.cresto.ui.components.glasense.GlasenseSwitch
 import com.nevoit.cresto.ui.components.glasense.MenuDivider
 import com.nevoit.cresto.ui.components.glasense.MenuState
 import com.nevoit.cresto.ui.components.glasense.SelectiveMenuItemData
 import com.nevoit.cresto.ui.components.glasense.extend.overscrollSpacer
 import com.nevoit.cresto.ui.components.glasense.isScrolledPast
 import com.nevoit.cresto.ui.components.packed.ConfigInfoHeader
-import com.nevoit.cresto.ui.components.packed.ConfigItem
-import com.nevoit.cresto.ui.components.packed.ConfigItemContainer
-import com.nevoit.cresto.ui.components.packed.PageContent
+import com.nevoit.cresto.ui.components.packed.TopBarSpacer
+import com.nevoit.glasense.component.ListRowAccessory
+import com.nevoit.glasense.component.ListStack
 import com.nevoit.glasense.core.component.Icon
 import com.nevoit.glasense.core.component.Text
-import com.nevoit.glasense.core.component.VDivider
 import com.nevoit.glasense.core.component.VGap
-import com.nevoit.glasense.core.interaction.DimIndication
-import com.nevoit.glasense.theme.GlasenseTheme
 import com.nevoit.glasense.theme.tokens.Slate500
 import rikka.shizuku.Shizuku
 
@@ -197,225 +188,139 @@ fun GeneralScreen(settingsViewModel: SettingsViewModel = viewModel()) {
         )
     }
 
+    val navigationBarHeight = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+
     // Root container for the screen, filling the entire available space
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(AppColors.pageBackground)
     ) {
-        // A vertically scrolling list that only composes and lays out the currently visible items
-        PageContent(
+        ListStack(
             state = lazyListState,
             modifier = Modifier
+                .fillMaxSize()
                 .layerBackdrop(backdrop),
-            tabPadding = false
+            cornerRadius = AppSpecs.cardCorner,
+            contentPadding = PaddingValues(bottom = navigationBarHeight)
         ) {
-            item {
-                Box(modifier = Modifier.padding(top = 48.dp + statusBarHeight + 12.dp))
-            }
+            TopBarSpacer()
             item {
                 ConfigInfoHeader(
+                    modifier = Modifier.padding(horizontal = 12.dp),
                     color = harmonize(Slate500),
                     backgroundColor = AppColors.cardBackground,
                     icon = painterResource(R.drawable.ic_twotone_gear),
                     title = stringResource(R.string.general),
                     info = stringResource(R.string.manage_startup_behavior_todo_marking_and_advanced_shortcuts)
                 )
-                VGap()
             }
-            item {
-                ConfigItemContainer {
-                    Column {
-                        ConfigItem(
-                            title = stringResource(R.string.language)
-                        ) {
-                            Text(
-                                text = currentLanguageText,
-                                modifier = Modifier
-                                    .onGloballyPositioned { coordinates ->
-                                        languageButtonBounds = coordinates
-                                    }
-                                    .clip(Capsule())
-                                    .background(AppColors.scrimNormal)
-                                    .clickable(
-                                        interactionSource = remember { MutableInteractionSource() },
-                                        indication = DimIndication()
-                                    ) {
-                                        languageButtonBounds?.let {
-                                            showMenu(it.boundsInWindow(), languageMenuItems)
-                                        }
-                                    }
-                                    .padding(horizontal = 8.dp, vertical = 4.dp)
-                            )
-                        }
+            Section(topSpacing = 24.dp) {
+                Row(onClick = {
+                    languageButtonBounds?.let {
+                        showMenu(it.boundsInWindow(), languageMenuItems)
                     }
-                }
-                VGap()
-            }
-            item {
-                ConfigItemContainer(
-                    title = stringResource(R.string.todos)
-                ) {
-                    Column {
-                        ConfigItem(title = stringResource(R.string.auto_add_to_system_calendar)) {
-                            GlasenseSwitch(
-                                checked = isAutoAddToSystemCalendarEnabled,
-                                onCheckedChange = { enabled ->
-                                    if (!enabled) {
-                                        settingsViewModel.onAutoAddToSystemCalendarChanged(false)
-                                    } else if (TodoCalendarSyncManager.hasCalendarPermissions(
-                                            context
-                                        )
-                                    ) {
-                                        settingsViewModel.onAutoAddToSystemCalendarChanged(true)
-                                    } else {
-                                        calendarPermissionLauncher.launch(TodoCalendarSyncManager.REQUIRED_PERMISSIONS)
-                                    }
-                                },
-                                backgroundColor = AppColors.cardBackground
-                            )
-                        }
-                    }
-                }
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = stringResource(R.string.automatically_add_new_todos_as_events_in_system_calendar),
-                    style = GlasenseTheme.type.subHeadline,
-                    modifier = Modifier.padding(horizontal = 12.dp),
-                    color = AppColors.contentVariant.copy(alpha = .3f)
-                )
-                VGap()
-            }
-            item {
-                ConfigItemContainer {
-                    Column {
-                        ConfigItem(title = stringResource(R.string.due_today_marker)) {
-                            GlasenseSwitch(
-                                checked = isDueTodayMarkerEnabled,
-                                onCheckedChange = { settingsViewModel.onDueTodayMarkerChanged(it) },
-                                backgroundColor = AppColors.cardBackground
-                            )
-                        }
-                    }
-                }
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = stringResource(R.string.add_a_marker_to_todos_due_today),
-                    style = GlasenseTheme.type.subHeadline,
-                    modifier = Modifier.padding(horizontal = 12.dp),
-                    color = AppColors.contentVariant.copy(alpha = .3f)
-                )
-                VGap()
-            }
-            item {
-                ConfigItemContainer {
-                    Column {
-                        ConfigItem(title = stringResource(R.string.overdue_marker)) {
-                            GlasenseSwitch(
-                                checked = isOverdueMarkerEnabled,
-                                onCheckedChange = { settingsViewModel.onOverdueMarkerChanged(it) },
-                                backgroundColor = AppColors.cardBackground
-                            )
-                        }
-                    }
-                }
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = stringResource(R.string.add_a_marker_to_overdue_todos_on_the_next_day),
-                    style = GlasenseTheme.type.subHeadline,
-                    modifier = Modifier.padding(horizontal = 12.dp),
-                    color = AppColors.contentVariant.copy(alpha = .3f)
-                )
-                VGap()
-            }
-            item {
-                ConfigItemContainer {
-                    ConfigItem(title = stringResource(R.string.completion_sound)) {
-                        GlasenseSwitch(
-                            checked = isCompletionSoundEnabled,
-                            onCheckedChange = { settingsViewModel.onCompletionSoundChanged(it) },
-                            backgroundColor = AppColors.cardBackground
-                        )
-                    }
-                }
-                VGap()
-            }
-            item {
-                ConfigItemContainer(
-                    title = stringResource(R.string.advanced)
-                ) {
-                    Column {
-                        ConfigItem(title = stringResource(R.string.shizuku_permission)) {
-                            GlasenseSwitch(
-                                checked = isShizukuPermissionGranted,
-                                onCheckedChange = {
-                                    runCatching {
-                                        screenshotCapturer.requestPermission()
-                                    }.onFailure { error ->
-                                        isShizukuPermissionGranted =
-                                            screenshotCapturer.hasPermission()
-                                        Toast.makeText(
-                                            context,
-                                            error.localizedMessage ?: "Shizuku 未运行",
-                                            Toast.LENGTH_SHORT
-                                        ).show()
-                                    }
-                                },
-                                backgroundColor = AppColors.cardBackground
-                            )
-                        }
-                        Spacer(modifier = Modifier.height(8.dp))
-                        VDivider()
-                        Spacer(modifier = Modifier.height(8.dp))
-                        ConfigItem(title = stringResource(R.string.enable_extract_screen_quick_toggle)) {
-                            GlasenseSwitch(
-                                checked = isExtractScreenQuickTileEnabled,
-                                onCheckedChange = { enabled ->
-                                    settingsViewModel.onExtractScreenQuickTileChanged(enabled)
-                                    if (enabled) {
-                                        requestAddExtractScreenTile(context)
-                                    }
-                                },
-                                backgroundColor = AppColors.cardBackground
-                            )
-                        }
-                    }
-                }
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = stringResource(R.string.add_a_quick_toggle_to_control_center_for_one_tap_ai_screen_extraction_shizuku_required),
-                    style = GlasenseTheme.type.subHeadline,
-                    modifier = Modifier.padding(horizontal = 12.dp),
-                    color = AppColors.contentVariant.copy(alpha = .3f)
-                )
-                VGap()
-            }
-            if (isEasterEggEnabled) {
-                item {
-                    ConfigItemContainer(
-                        title = "???"
-                    ) {
-                        Column {
-                            ConfigItem(title = "Super Graphic Ultra Modern Girl") {
-                                GlasenseSwitch(
-                                    checked = isSuperGraphicUltraModernGirlEnabled,
-                                    onCheckedChange = {
-                                        settingsViewModel.onSuperGraphicUltraModernGirlChanged(
-                                            it
-                                        )
-                                    },
-                                    backgroundColor = AppColors.cardBackground
-                                )
-                            }
-                        }
-                    }
-                    Spacer(modifier = Modifier.height(8.dp))
+                }, trailing = {
                     Text(
-                        text = "We're leaving the planet and you can't come.",
-                        style = GlasenseTheme.type.subHeadline,
-                        modifier = Modifier.padding(horizontal = 12.dp),
-                        color = AppColors.contentVariant.copy(alpha = .3f)
+                        text = currentLanguageText,
+                        modifier = Modifier
+                            .onGloballyPositioned { coordinates ->
+                                languageButtonBounds = coordinates
+                            }
                     )
+                }, accessory = ListRowAccessory.SelectIndicator) {
+                    Text(text = stringResource(R.string.language))
+                }
+            }
+            Section(
+                header = { stringResource(R.string.todos) },
+                footer = { stringResource(R.string.automatically_add_new_todos_as_events_in_system_calendar) }
+            ) {
+                CustomSwitchRow(
+                    checked = isCompletionSoundEnabled,
+                    onCheckedChange = { settingsViewModel.onCompletionSoundChanged(it) }) {
+                    Text(stringResource(R.string.completion_sound))
+                }
+                CustomSwitchRow(
+                    checked = isAutoAddToSystemCalendarEnabled,
+                    onCheckedChange = { enabled ->
+                        if (!enabled) {
+                            settingsViewModel.onAutoAddToSystemCalendarChanged(false)
+                        } else if (TodoCalendarSyncManager.hasCalendarPermissions(
+                                context
+                            )
+                        ) {
+                            settingsViewModel.onAutoAddToSystemCalendarChanged(true)
+                        } else {
+                            calendarPermissionLauncher.launch(TodoCalendarSyncManager.REQUIRED_PERMISSIONS)
+                        }
+                    },
+                ) { Text(stringResource(R.string.auto_add_to_system_calendar)) }
+            }
+            Section(
+                topSpacing = 12.dp,
+                footer = { stringResource(R.string.add_a_marker_to_todos_due_today) }) {
+                CustomSwitchRow(
+                    checked = isDueTodayMarkerEnabled,
+                    onCheckedChange = { settingsViewModel.onDueTodayMarkerChanged(it) }) {
+                    Text(stringResource(R.string.due_today_marker))
+                }
+            }
+            Section(
+                topSpacing = 12.dp,
+                footer = { stringResource(R.string.add_a_marker_to_overdue_todos_on_the_next_day) }) {
+                CustomSwitchRow(
+                    checked = isOverdueMarkerEnabled,
+                    onCheckedChange = { settingsViewModel.onOverdueMarkerChanged(it) }) {
+                    Text(stringResource(R.string.overdue_marker))
+                }
+            }
+            Section(
+                header = { stringResource(R.string.advanced) },
+                footer = { stringResource(R.string.add_a_quick_toggle_to_control_center_for_one_tap_ai_screen_extraction_shizuku_required) }) {
+                CustomSwitchRow(
+                    checked = isShizukuPermissionGranted,
+                    onCheckedChange = {
+                        runCatching {
+                            screenshotCapturer.requestPermission()
+                        }.onFailure { error ->
+                            isShizukuPermissionGranted =
+                                screenshotCapturer.hasPermission()
+                            Toast.makeText(
+                                context,
+                                error.localizedMessage ?: "Shizuku 未运行",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
+                    }) {
+                    Text(stringResource(R.string.shizuku_permission))
+                }
+                CustomSwitchRow(
+                    checked = isExtractScreenQuickTileEnabled,
+                    onCheckedChange = { enabled ->
+                        settingsViewModel.onExtractScreenQuickTileChanged(enabled)
+                        if (enabled) {
+                            requestAddExtractScreenTile(context)
+                        }
+                    }) {
+                    Text(stringResource(R.string.enable_extract_screen_quick_toggle))
+                }
+            }
+
+            if (isEasterEggEnabled) {
+                Section(
+                    header = { "???" },
+                    footer = { "We're leaving the planet and you can't come." })
+                {
+                    CustomSwitchRow(
+                        checked = isSuperGraphicUltraModernGirlEnabled,
+                        onCheckedChange = {
+                            settingsViewModel.onSuperGraphicUltraModernGirlChanged(
+                                it
+                            )
+                        },
+                    ) {
+                        Text("Super Graphic Ultra Modern Girl")
+                    }
                 }
             }
             item { VGap() }

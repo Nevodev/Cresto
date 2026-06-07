@@ -10,17 +10,17 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
@@ -69,30 +69,25 @@ import com.nevoit.cresto.feature.settings.util.AppIconManager
 import com.nevoit.cresto.feature.settings.util.SettingsViewModel
 import com.nevoit.cresto.theme.AppButtonColors
 import com.nevoit.cresto.theme.AppColors
-import com.nevoit.cresto.theme.LocalGlasenseSettings
+import com.nevoit.cresto.theme.AppSpecs
 import com.nevoit.cresto.theme.harmonize
 import com.nevoit.cresto.ui.components.glasense.GlasenseButton
 import com.nevoit.cresto.ui.components.glasense.GlasenseDynamicSmallTitle
 import com.nevoit.cresto.ui.components.glasense.GlasenseModalTopBar
 import com.nevoit.cresto.ui.components.glasense.GlasensePopup
-import com.nevoit.cresto.ui.components.glasense.GlasenseSwitch
 import com.nevoit.cresto.ui.components.glasense.PopupDirection
 import com.nevoit.cresto.ui.components.glasense.PopupState
 import com.nevoit.cresto.ui.components.glasense.extend.overscrollSpacer
 import com.nevoit.cresto.ui.components.glasense.isScrolledPast
 import com.nevoit.cresto.ui.components.packed.ColorModeSelector
 import com.nevoit.cresto.ui.components.packed.ConfigInfoHeader
-import com.nevoit.cresto.ui.components.packed.ConfigItem
-import com.nevoit.cresto.ui.components.packed.ConfigItemContainer
-import com.nevoit.cresto.ui.components.packed.PageContent
-import com.nevoit.cresto.ui.components.packed.PlainConfigItemContainer
+import com.nevoit.cresto.ui.components.packed.TopBarSpacer
+import com.nevoit.glasense.component.ListStack
 import com.nevoit.glasense.core.component.Icon
 import com.nevoit.glasense.core.component.Text
-import com.nevoit.glasense.core.component.VDivider
 import com.nevoit.glasense.core.component.VGap
 import com.nevoit.glasense.core.interaction.DimIndication
 import com.nevoit.glasense.core.interaction.overscroll.rememberOffsetOverscrollFactory
-import com.nevoit.glasense.theme.GlasenseTheme
 import com.nevoit.glasense.theme.tokens.Amber500
 import com.nevoit.glasense.theme.tokens.Blue500
 import com.nevoit.glasense.theme.tokens.Cyan500
@@ -140,6 +135,7 @@ fun AppearanceScreen(settingsViewModel: SettingsViewModel = viewModel()) {
     val currentMode by settingsViewModel.colorMode
     val currentThemePrimaryColor by settingsViewModel.themePrimaryColor
     val currentAppIcon by settingsViewModel.appIcon
+    val systemInDarkTheme = isSystemInDarkTheme()
     val appIconEntries = AppIconManager.AppIcon.entries
 
     var showColorPicker by remember { mutableStateOf(false) }
@@ -160,162 +156,115 @@ fun AppearanceScreen(settingsViewModel: SettingsViewModel = viewModel()) {
         drawContent()
     }
 
+    val navigationBarHeight = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+    val scrim = AppColors.scrimMedium
+    val stroke = with(density) { 2.dp.toPx() }
+
     // Root container for the screen, filling the entire available space
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(backgroundColor)
     ) {
         // A vertically scrolling list that only composes and lays out the currently visible items
-        PageContent(
+        ListStack(
             state = lazyListState,
-            modifier = Modifier.layerBackdrop(backdrop),
-            tabPadding = false
+            modifier = Modifier
+                .fillMaxSize()
+                .layerBackdrop(backdrop),
+            cornerRadius = AppSpecs.cardCorner,
+            contentPadding = PaddingValues(bottom = navigationBarHeight)
         ) {
-            // Spacer item at the top of the list to push content below the top bar and back button
-            item {
-                Box(modifier = Modifier.padding(top = 48.dp + statusBarHeight + 12.dp))
-            }
+            TopBarSpacer()
             // Header item for the Appearance section
             item {
                 ConfigInfoHeader(
+                    modifier = Modifier.padding(horizontal = 12.dp),
                     color = harmonize(Blue500),
                     backgroundColor = AppColors.cardBackground,
                     icon = painterResource(R.drawable.ic_twotone_image),
                     title = stringResource(R.string.appearance),
                     info = stringResource(R.string.craft_your_unique_style_with_a_few_adorable_tweaks)
                 )
-                VGap()
             }
+            item { VGap(24.dp) }
             // Item for selecting the color mode (light/dark/system)
-            item {
-                ColorModeSelector(
-                    backgroundColor = AppColors.cardBackground,
-                    onChange = { settingsViewModel.colorMode(it) },
-                    currentMode = currentMode
-                )
-                VGap()
-            }
+            ColorModeSelector(
+                onChange = { settingsViewModel.colorMode(it) },
+                currentMode = currentMode,
+                systemInDarkTheme = systemInDarkTheme
+            )
             // Item container for color-related settings
-            item {
-                val scrim = AppColors.scrimMedium
-                val stroke = with(density) { 2.dp.toPx() }
-
-                ConfigItemContainer(
-                    title = stringResource(R.string.color),
-                    backgroundColor = AppColors.cardBackground
-                ) {
-                    Column {
-                        ConfigItem(title = stringResource(R.string.custom_primary_color)) {
-                            Box(
-                                modifier = Modifier
-                                    .size(28.dp)
-                                    .onGloballyPositioned {
-                                        latestColorPickerTriggerBounds = it.boundsInWindow()
-                                    }
-                                    .drawBehind {
-                                        drawCircle(
-                                            color = scrim,
-                                            style = Stroke(width = stroke),
-                                            radius = (size.minDimension - stroke) / 2
-                                        )
-                                        drawCircle(
-                                            color = Color(currentThemePrimaryColor),
-                                            radius = (size.minDimension - stroke * 4) / 2
-                                        )
-                                    }
-                                    .clickable(
-                                        enabled = !isUseDynamicColorScheme,
-                                        interactionSource = remember { MutableInteractionSource() },
-                                        indication = DimIndication(shape = CircleShape)
-                                    ) {
-                                        // Snapshot clicked trigger bounds to anchor popup animation/placement.
-                                        popupAnchorBounds =
-                                            latestColorPickerTriggerBounds ?: Rect.Zero
-                                        pendingThemePrimaryColor = currentThemePrimaryColor
-                                        showColorPicker = !showColorPicker
-                                    }
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            GlasenseSwitch(
-                                backgroundColor = AppColors.cardBackground,
-                                enabled = !isUseDynamicColorScheme,
-                                checked = isCustomPrimaryColor,
-                                onCheckedChange = { settingsViewModel.onCustomPrimaryColorChanged(it) })
-                        }
-                        Spacer(modifier = Modifier.height(8.dp))
-                        // Visual divider line
-                        VDivider()
-                        Spacer(modifier = Modifier.height(8.dp))
-                        ConfigItem(title = stringResource(R.string.use_dynamic_color_scheme)) {
-                            GlasenseSwitch(
-                                backgroundColor = AppColors.cardBackground,
-                                checked = isUseDynamicColorScheme,
-                                onCheckedChange = { settingsViewModel.onUseDynamicColorChanged(it) })
-                        }
-                    }
-                }
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = stringResource(R.string.when_use_dynamic_color_scheme_is_enabled_custom_primary_color_is_automatically_turned_off),
-                    style = GlasenseTheme.type.subHeadline,
-                    modifier = Modifier.padding(horizontal = 12.dp),
-                    color = AppColors.contentVariant.copy(alpha = .3f)
+            Section(
+                header = { stringResource(R.string.color) },
+                footer = { stringResource(R.string.when_use_dynamic_color_scheme_is_enabled_custom_primary_color_is_automatically_turned_off) }) {
+                CustomSwitchRow(
+                    trailing = {
+                        Box(
+                            modifier = Modifier
+                                .size(28.dp)
+                                .onGloballyPositioned {
+                                    latestColorPickerTriggerBounds = it.boundsInWindow()
+                                }
+                                .drawBehind {
+                                    drawCircle(
+                                        color = scrim,
+                                        style = Stroke(width = stroke),
+                                        radius = (size.minDimension - stroke) / 2
+                                    )
+                                    drawCircle(
+                                        color = Color(currentThemePrimaryColor),
+                                        radius = (size.minDimension - stroke * 4) / 2
+                                    )
+                                }
+                                .clickable(
+                                    enabled = !isUseDynamicColorScheme,
+                                    interactionSource = remember { MutableInteractionSource() },
+                                    indication = DimIndication(shape = CircleShape)
+                                ) {
+                                    // Snapshot clicked trigger bounds to anchor popup animation/placement.
+                                    popupAnchorBounds =
+                                        latestColorPickerTriggerBounds ?: Rect.Zero
+                                    pendingThemePrimaryColor = currentThemePrimaryColor
+                                    showColorPicker = !showColorPicker
+                                }
+                        )
+                    },
+                    checked = isCustomPrimaryColor,
+                    onCheckedChange = { settingsViewModel.onCustomPrimaryColorChanged(it) },
+                    enabled = !isUseDynamicColorScheme
                 )
-                VGap()
-            }
-            // Item container for design-related settings
-            item {
-                ConfigItemContainer(
-                    title = stringResource(R.string.design),
-                    backgroundColor = AppColors.cardBackground
-                ) {
-                    ConfigItem(title = stringResource(R.string.lite_mode)) {
-                        GlasenseSwitch(
-                            backgroundColor = AppColors.cardBackground,
-                            checked = isLiteMode,
-                            onCheckedChange = { settingsViewModel.onLiteModeChanged(it) })
-                    }
+                {
+                    Text(stringResource(R.string.custom_primary_color))
                 }
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = stringResource(R.string.enabling_lite_mode_will_disable_some_blur_effects),
-                    style = GlasenseTheme.type.subHeadline,
-                    modifier = Modifier.padding(horizontal = 12.dp),
-                    color = AppColors.contentVariant.copy(alpha = .3f)
-                )
-                VGap()
-            }
-            item {
-                ConfigItemContainer(backgroundColor = AppColors.cardBackground) {
-                    ConfigItem(title = stringResource(R.string.liquid_glass)) {
-                        CompositionLocalProvider(
-                            LocalGlasenseSettings provides LocalGlasenseSettings.current.copy(
-                                liquidGlass = true
-                            )
-                        ) {
-                            GlasenseSwitch(
-                                backgroundColor = AppColors.cardBackground,
-                                checked = isLiquidGlass,
-                                onCheckedChange = { settingsViewModel.onLiquidGlassChanged(it) })
-                        }
-                    }
+                CustomSwitchRow(
+                    checked = isUseDynamicColorScheme,
+                    onCheckedChange = { settingsViewModel.onUseDynamicColorChanged(it) }) {
+                    Text(stringResource(R.string.use_dynamic_color_scheme))
                 }
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = stringResource(
-                        R.string.enabling_liquid_glass_can_significantly_impact_performance
-                    ),
-                    style = GlasenseTheme.type.subHeadline,
-                    modifier = Modifier.padding(horizontal = 12.dp),
-                    color = AppColors.contentVariant.copy(alpha = .3f)
-                )
-                VGap()
             }
-            item {
-                PlainConfigItemContainer(
-                    title = stringResource(R.string.app_icon)
-                ) {
+            Section(
+                header = { stringResource(R.string.design) },
+                footer = { stringResource(R.string.enabling_lite_mode_will_disable_some_blur_effects) }) {
+                CustomSwitchRow(
+                    checked = isLiteMode,
+                    onCheckedChange = { settingsViewModel.onLiteModeChanged(it) }) {
+                    Text(stringResource(R.string.lite_mode))
+                }
+            }
+            Section(topSpacing = 12.dp, footer = {
+                stringResource(
+                    R.string.enabling_liquid_glass_can_significantly_impact_performance
+                )
+            }) {
+                CustomSwitchRow(
+                    glass = true,
+                    checked = isLiquidGlass,
+                    onCheckedChange = { settingsViewModel.onLiquidGlassChanged(it) }) {
+                    Text(stringResource(R.string.liquid_glass))
+                }
+            }
+            NoPaddingSection(header = { stringResource(R.string.app_icon) }) {
+                Row {
                     CompositionLocalProvider(LocalOverscrollFactory provides overscrollFactory) {
                         LazyRow(
                             modifier = Modifier.fillMaxWidth(),

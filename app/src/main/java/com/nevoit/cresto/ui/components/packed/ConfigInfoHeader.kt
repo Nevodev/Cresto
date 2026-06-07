@@ -40,6 +40,7 @@ import com.nevoit.glasense.theme.GlasenseTheme
  */
 @Composable
 fun ConfigInfoHeader(
+    modifier: Modifier = Modifier,
     brush: Brush? = null,
     color: Color? = null,
     backgroundColor: Color,
@@ -50,7 +51,7 @@ fun ConfigInfoHeader(
 ) {
     // The main container column.
     Column(
-        modifier = Modifier
+        modifier = modifier
             .background(color = backgroundColor, shape = AppSpecs.cardShape)
             .fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally

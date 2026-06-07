@@ -26,6 +26,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.nevoit.glasense.component.ListStack
+import com.nevoit.glasense.component.ListRowAccessory
 import com.nevoit.glasense.component.ListStyle
 import com.nevoit.glasense.component.PageHeader
 import com.nevoit.glasense.component.ProgressView
@@ -138,7 +139,7 @@ private fun DemoScreen() {
             Row(
                 onClick = {},
                 trailing = { Text("and Label") },
-                chevron = true
+                accessory = ListRowAccessory.Chevron
             ) {
                 Text("Chevron")
             }

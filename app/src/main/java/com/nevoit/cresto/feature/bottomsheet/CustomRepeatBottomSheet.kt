@@ -22,7 +22,6 @@ import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.BasicTextField
@@ -50,23 +49,18 @@ import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalLocale
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
-import com.kyant.shapes.Capsule
 import com.nevoit.cresto.R
 import com.nevoit.cresto.data.todo.RepeatFrequency
-import com.nevoit.cresto.feature.detail.shrinkBounds
 import com.nevoit.cresto.theme.AppButtonColors
 import com.nevoit.cresto.theme.AppColors
 import com.nevoit.cresto.theme.AppSpecs
@@ -79,20 +73,18 @@ import com.nevoit.cresto.ui.components.glasense.PopupDirection
 import com.nevoit.cresto.ui.components.glasense.PopupState
 import com.nevoit.cresto.ui.components.glasense.SelectiveMenuItemData
 import com.nevoit.cresto.ui.components.glasense.extend.overscrollSpacer
-import com.nevoit.cresto.ui.components.packed.ConfigItem
-import com.nevoit.cresto.ui.components.packed.ConfigItemContainer
-import com.nevoit.cresto.ui.components.packed.PlainConfigItemContainer
 import com.nevoit.glasense.component.BottomSheet
+import com.nevoit.glasense.component.ListColors
+import com.nevoit.glasense.component.ListRowAccessory
+import com.nevoit.glasense.component.ListStack
+import com.nevoit.glasense.component.SectionScope
 import com.nevoit.glasense.core.component.HDivider
 import com.nevoit.glasense.core.component.Icon
 import com.nevoit.glasense.core.component.Text
 import com.nevoit.glasense.core.component.VDivider
 import com.nevoit.glasense.core.component.VGap
-import com.nevoit.glasense.core.interaction.DimIndication
 import com.nevoit.glasense.theme.GlasenseTheme
 import com.nevoit.glasense.theme.LocalGlasenseContentColor
-import com.nevoit.glasense.theme.LocalGlasenseTextStyle
-import com.nevoit.glasense.theme.tokens.Springs
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.Month
@@ -130,6 +122,9 @@ fun CustomRepeatBottomSheet(
 
     val anchorDate = initialDate ?: LocalDate.now()
     val navigationBarHeight = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+    val elevatedPageBackground = AppColors.elevatedPageBackground
+    val elevatedCardBackground = AppColors.elevatedCardBackground
+    val contentVariant = AppColors.contentVariant
 
     var frequency by remember(initialConfig, anchorDate) {
         mutableStateOf(initialConfig?.frequency ?: RepeatFrequency.Weekly)
@@ -234,7 +229,7 @@ fun CustomRepeatBottomSheet(
             saveAndClose(slideOut)
         }
 
-        LazyColumn(
+        ListStack(
             state = listState,
             modifier = Modifier
                 .fillMaxWidth()
@@ -265,71 +260,69 @@ fun CustomRepeatBottomSheet(
                         }
                     }
                 },
-            contentPadding = PaddingValues(
-                bottom = navigationBarHeight,
-                start = 12.dp,
-                end = 12.dp
-            )
+            colors = ListColors(
+                background = elevatedPageBackground,
+                rowBackground = elevatedCardBackground,
+                headerText = contentVariant,
+                footerText = contentVariant.copy(alpha = .3f)
+            ),
+            cornerRadius = AppSpecs.cardCorner,
+            contentPadding = PaddingValues(bottom = navigationBarHeight)
         ) {
             item { VGap(72.dp) }
-            item(key = "frequency") {
-                ConfigItemContainer(
-                    modifier = Modifier.animateItem(placementSpec = Springs.crisp()),
-                    backgroundColor = AppColors.elevatedCardBackground
+            Section(key = "frequency", topSpacing = 0.dp) {
+                Row(
+                    onClick = {
+                        showMenu(
+                            frequencyButtonBounds,
+                            frequencyMenuItems
+                        )
+                    },
+                    trailing = {
+                        Text(
+                            text = frequencyLabels.getValue(frequency),
+                            modifier = Modifier.onGloballyPositioned { coordinates ->
+                                frequencyButtonBounds = coordinates.boundsInWindow()
+                            }
+                        )
+                    },
+                    accessory = ListRowAccessory.SelectIndicator
                 ) {
-                    Column {
-                        ConfigItem(title = stringResource(R.string.repeat_frequency)) {
-                            MenuValueButton(
-                                text = frequencyLabels.getValue(frequency),
-                                onPositioned = { frequencyButtonBounds = it },
-                                onClick = {
-                                    showMenu(
-                                        frequencyButtonBounds,
-                                        frequencyMenuItems
-                                    )
-                                }
-                            )
-                        }
-                        VGap(8.dp)
-                        VDivider()
-                        VGap(8.dp)
-                        ConfigItem(title = stringResource(R.string.repeat_every)) {
-                            NumberStepper(
-                                value = interval,
-                                minValue = 1,
-                                maxValue = 99,
-                                onPositioned = { intervalNumberInputBounds = it },
-                                onValueChange = { interval = it }
-                            )
-                        }
+                    Text(stringResource(R.string.repeat_frequency))
+                }
+                Row(
+                    trailing = {
+                        NumberStepper(
+                            value = interval,
+                            minValue = 1,
+                            maxValue = 99,
+                            onPositioned = { intervalNumberInputBounds = it },
+                            onValueChange = { interval = it }
+                        )
                     }
+                ) {
+                    Text(stringResource(R.string.repeat_every))
                 }
             }
             when (frequency) {
                 RepeatFrequency.Weekly -> {
-                    item { VGap() }
-                    item(key = "weekly") {
-                        ConfigItemContainer(
-                            modifier = Modifier.animateItem(placementSpec = Springs.crisp()),
-                            backgroundColor = AppColors.elevatedCardBackground,
-                            title = stringResource(R.string.repeat_weekdays)
-                        ) {
-                            WeekdayPicker(
-                                selected = weekdays,
-                                onSelectedChange = { weekdays = it }
-                            )
-                        }
+                    Section(
+                        key = "weekly",
+                        header = { stringResource(R.string.repeat_weekdays) }
+                    ) {
+                        WeekdayRows(
+                            selected = weekdays,
+                            onSelectedChange = { weekdays = it }
+                        )
                     }
                 }
 
                 RepeatFrequency.Monthly -> {
-                    item { VGap() }
-                    item(key = "monthly") {
-                        PlainConfigItemContainer(
-                            modifier = Modifier.animateItem(placementSpec = Springs.crisp()),
-                            title = stringResource(R.string.repeat_month_days),
-                            elevated = true
-                        ) {
+                    NoPaddingSection(
+                        key = "monthly",
+                        header = { stringResource(R.string.repeat_month_days) }
+                    ) {
+                        Row {
                             NumberGrid(
                                 values = (1..31).toList(),
                                 selected = monthDays,
@@ -341,13 +334,11 @@ fun CustomRepeatBottomSheet(
                 }
 
                 RepeatFrequency.Yearly -> {
-                    item { VGap() }
-                    item(key = "yearly") {
-                        PlainConfigItemContainer(
-                            modifier = Modifier.animateItem(placementSpec = Springs.crisp()),
-                            title = stringResource(R.string.repeat_months),
-                            elevated = true
-                        ) {
+                    NoPaddingSection(
+                        key = "yearly",
+                        header = { stringResource(R.string.repeat_months) }
+                    ) {
+                        Row {
                             NumberGrid(
                                 values = (1..12).toList(),
                                 selected = months,
@@ -361,54 +352,59 @@ fun CustomRepeatBottomSheet(
 
                 RepeatFrequency.Daily -> Unit
             }
-            item { VGap() }
-            item(key = "end_mode") {
-                ConfigItemContainer(
-                    modifier = Modifier.animateItem(placementSpec = Springs.crisp()),
-                    backgroundColor = AppColors.elevatedCardBackground
+            Section(key = "end_mode") {
+                Row(
+                    onClick = {
+                        showMenu(
+                            endModeButtonBounds,
+                            endModeMenuItems
+                        )
+                    },
+                    trailing = {
+                        Text(
+                            text = endModeLabels.getValue(endMode),
+                            modifier = Modifier.onGloballyPositioned { coordinates ->
+                                endModeButtonBounds = coordinates.boundsInWindow()
+                            }
+                        )
+                    },
+                    accessory = ListRowAccessory.SelectIndicator
                 ) {
-                    Column {
-                        ConfigItem(title = stringResource(R.string.repeat_end)) {
-                            MenuValueButton(
-                                text = endModeLabels.getValue(endMode),
-                                onPositioned = { endModeButtonBounds = it },
-                                onClick = {
-                                    showMenu(
-                                        endModeButtonBounds,
-                                        endModeMenuItems
-                                    )
+                    Text(stringResource(R.string.repeat_end))
+                }
+                if (endMode == CustomRepeatEndMode.OnDate) {
+                    Row(
+                        onClick = { isEndDatePickerVisible = true },
+                        trailing = {
+                            Text(
+                                text = endDate.format(endDateFormatter),
+                                modifier = Modifier.onGloballyPositioned { coordinates ->
+                                    endDateButtonBounds = coordinates.boundsInWindow()
                                 }
                             )
+                        },
+                        accessory = ListRowAccessory.SelectIndicator
+                    ) {
+                        Text(stringResource(R.string.repeat_until_date))
+                    }
+                }
+                if (endMode == CustomRepeatEndMode.AfterCount) {
+                    Row(
+                        trailing = {
+                            NumberStepper(
+                                value = maxOccurrences,
+                                minValue = 1,
+                                maxValue = 999,
+                                onPositioned = { occurrencesNumberInputBounds = it },
+                                onValueChange = { maxOccurrences = it }
+                            )
                         }
-                        if (endMode == CustomRepeatEndMode.OnDate) {
-                            VGap(8.dp)
-                            VDivider()
-                            VGap(8.dp)
-                            ConfigItem(title = stringResource(R.string.repeat_until_date)) {
-                                MenuValueButton(
-                                    text = endDate.format(endDateFormatter),
-                                    onPositioned = { endDateButtonBounds = it },
-                                    onClick = { isEndDatePickerVisible = true }
-                                )
-                            }
-                        }
-                        if (endMode == CustomRepeatEndMode.AfterCount) {
-                            VGap(8.dp)
-                            VDivider()
-                            VGap(8.dp)
-                            ConfigItem(title = stringResource(R.string.repeat_occurrences)) {
-                                NumberStepper(
-                                    value = maxOccurrences,
-                                    minValue = 1,
-                                    maxValue = 999,
-                                    onPositioned = { occurrencesNumberInputBounds = it },
-                                    onValueChange = { maxOccurrences = it }
-                                )
-                            }
-                        }
+                    ) {
+                        Text(stringResource(R.string.repeat_occurrences))
                     }
                 }
             }
+            item { VGap() }
             overscrollSpacer(listState)
         }
 
@@ -437,93 +433,33 @@ fun CustomRepeatBottomSheet(
     )
 }
 
-@Composable
-private fun MenuValueButton(
-    text: String,
-    onPositioned: (Rect) -> Unit,
-    onClick: () -> Unit
-) {
-    Text(
-        text = text,
-        fontWeight = FontWeight.Normal,
-        modifier = Modifier
-            .onGloballyPositioned { coordinates ->
-                onPositioned(coordinates.boundsInWindow())
-            }
-            .clip(Capsule())
-            .background(AppColors.scrimNormal)
-            .clickable(
-                interactionSource = remember { MutableInteractionSource() },
-                indication = DimIndication(),
-                onClick = onClick
-            )
-            .padding(horizontal = 8.dp, vertical = 4.dp)
-    )
-}
-
-@Composable
-private fun WeekdayPicker(
+private fun SectionScope.WeekdayRows(
     selected: Set<DayOfWeek>,
     onSelectedChange: (Set<DayOfWeek>) -> Unit
 ) {
-    Column {
-        DayOfWeek.entries.forEachIndexed { index, day ->
-            val isSelected = day in selected
-            WeekdayRow(
-                day = day,
-                selected = isSelected,
-                onClick = {
-                    val next = if (isSelected) selected - day else selected + day
-                    onSelectedChange(next.ifEmpty { setOf(day) })
-                }
-            )
-            if (index < DayOfWeek.entries.lastIndex) {
-                VGap(8.dp)
-                VDivider()
-                VGap(8.dp)
+    DayOfWeek.entries.forEach { day ->
+        val isSelected = day in selected
+        Row(
+            onClick = {
+                val next = if (isSelected) selected - day else selected + day
+                onSelectedChange(next.ifEmpty { setOf(day) })
+            },
+            trailing = {
+                Icon(
+                    painter = painterResource(R.drawable.ic_checkmark),
+                    contentDescription = stringResource(R.string.done),
+                    modifier = Modifier.size(24.dp),
+                    tint = if (isSelected) AppColors.primary else Color.Transparent
+                )
             }
+        ) {
+            Text(
+                text = day.getDisplayName(
+                    DateTextStyle.FULL_STANDALONE,
+                    LocalLocale.current.platformLocale
+                )
+            )
         }
-    }
-}
-
-@Composable
-private fun WeekdayRow(
-    day: DayOfWeek,
-    selected: Boolean,
-    onClick: () -> Unit
-) {
-    val lineHeight = with(LocalDensity.current) {
-        LocalGlasenseTextStyle.current.lineHeight.toDp()
-    }
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(32.dp)
-            .clickable(
-                interactionSource = remember { MutableInteractionSource() },
-                indication = DimIndication(
-                    color = GlasenseTheme.colors.elevatedCardBackground,
-                    maxAlpha = 0.75f
-                ),
-                onClick = onClick
-            ),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text(
-            text = day.getDisplayName(
-                DateTextStyle.FULL_STANDALONE,
-                LocalLocale.current.platformLocale
-            ),
-            modifier = Modifier.weight(1f)
-        )
-        Icon(
-            painter = painterResource(R.drawable.ic_checkmark),
-            contentDescription = stringResource(R.string.done),
-            modifier = Modifier
-                .shrinkBounds(DpSize(lineHeight, lineHeight))
-                .size(24.dp),
-            tint = if (selected) AppColors.primary else Color.Transparent
-        )
     }
 }
 

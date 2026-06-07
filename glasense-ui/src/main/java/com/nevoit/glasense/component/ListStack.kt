@@ -63,6 +63,12 @@ sealed interface ListStyle {
     data object InsetGrouped : ListStyle
 }
 
+enum class ListRowAccessory {
+    None,
+    Chevron,
+    SelectIndicator
+}
+
 @GlasenseListDsl
 class ListScope internal constructor(
     private val lazyListScope: LazyListScope,
@@ -93,12 +99,14 @@ class ListScope internal constructor(
         header: (@Composable () -> String?)? = null,
         footer: (@Composable () -> String?)? = null,
         key: Any? = null,
+        topSpacing: Dp? = null,
         content: SectionScope.() -> Unit
     ) {
         renderSection(
             header = header,
             footer = footer,
             key = key,
+            topSpacing = topSpacing,
             rowPadding = null,
             separatorHorizontalPadding = DefaultSeparatorPadding,
             separatorPaddingStart = null,
@@ -110,12 +118,14 @@ class ListScope internal constructor(
         header: (@Composable () -> String?)? = null,
         footer: (@Composable () -> String?)? = null,
         key: Any? = null,
+        topSpacing: Dp? = null,
         content: SectionScope.() -> Unit
     ) {
         renderSection(
             header = header,
             footer = footer,
             key = key,
+            topSpacing = topSpacing,
             rowPadding = NoRowPadding,
             separatorHorizontalPadding = 0.dp,
             separatorPaddingStart = 0.dp,
@@ -127,6 +137,7 @@ class ListScope internal constructor(
         header: (@Composable () -> String?)?,
         footer: (@Composable () -> String?)?,
         key: Any?,
+        topSpacing: Dp?,
         rowPadding: PaddingValues?,
         separatorHorizontalPadding: Dp,
         separatorPaddingStart: Dp?,
@@ -139,6 +150,7 @@ class ListScope internal constructor(
             key = key,
             header = header,
             sectionIndex = currentSectionIndex,
+            topSpacing = topSpacing,
             style = style,
             colors = colors
         )
@@ -173,7 +185,7 @@ class ListScope internal constructor(
         onClick: (() -> Unit)? = null,
         leading: (@Composable ListRowScope.() -> Unit)? = null,
         trailing: (@Composable ListRowScope.() -> Unit)? = null,
-        chevron: Boolean = false,
+        accessory: ListRowAccessory = ListRowAccessory.None,
         destructive: Boolean = false,
         content: @Composable ListRowScope.() -> Unit
     ) {
@@ -185,7 +197,7 @@ class ListScope internal constructor(
             contentType = contentType ?: rowContentType(
                 leading = leading,
                 trailing = trailing,
-                chevron = chevron
+                accessory = accessory
             )
         ) {
             ListRowFrame(
@@ -194,7 +206,7 @@ class ListScope internal constructor(
                 onClick = onClick,
                 leading = leading,
                 trailing = trailing,
-                chevron = chevron,
+                accessory = accessory,
                 destructive = destructive,
                 content = content,
                 rowIndex = currentRowIndex,
@@ -290,7 +302,7 @@ class SectionScope internal constructor(
     private var pendingContent: (@Composable ListRowScope.() -> Unit)? = null
     private var pendingLeading: (@Composable ListRowScope.() -> Unit)? = null
     private var pendingTrailing: (@Composable ListRowScope.() -> Unit)? = null
-    private var pendingChevron = false
+    private var pendingAccessory = ListRowAccessory.None
     private var pendingDestructive = false
     private var pendingRowIndex = 0
     private var rowIndex = 0
@@ -303,7 +315,7 @@ class SectionScope internal constructor(
         onClick: (() -> Unit)? = null,
         leading: (@Composable ListRowScope.() -> Unit)? = null,
         trailing: (@Composable ListRowScope.() -> Unit)? = null,
-        chevron: Boolean = false,
+        accessory: ListRowAccessory = ListRowAccessory.None,
         destructive: Boolean = false,
         content: @Composable ListRowScope.() -> Unit
     ) {
@@ -316,7 +328,7 @@ class SectionScope internal constructor(
         pendingOnClick = onClick
         pendingLeading = leading
         pendingTrailing = trailing
-        pendingChevron = chevron
+        pendingAccessory = accessory
         pendingDestructive = destructive
         pendingContent = content
         pendingRowIndex = rowIndex
@@ -333,7 +345,7 @@ class SectionScope internal constructor(
         pendingContent = null
         pendingLeading = null
         pendingTrailing = null
-        pendingChevron = false
+        pendingAccessory = ListRowAccessory.None
         pendingDestructive = false
     }
 
@@ -347,7 +359,7 @@ class SectionScope internal constructor(
                 onClick = pendingOnClick,
                 leading = pendingLeading,
                 trailing = pendingTrailing,
-                chevron = pendingChevron,
+                accessory = pendingAccessory,
                 destructive = pendingDestructive,
                 content = rowContent,
                 sectionIndex = sectionIndex,
@@ -433,14 +445,15 @@ fun ListStack(
     modifier: Modifier = Modifier,
     state: LazyListState = rememberLazyListState(),
     style: ListStyle = ListStyle.InsetGrouped,
+    colors: ListColors? = null,
     contentPadding: PaddingValues = PaddingValues(),
     cornerRadius: Dp = ListDefaults.cornerRadius(style),
     content: ListScope.() -> Unit
 ) {
-    val colors = ListDefaults.colors(style)
+    val resolvedColors = colors ?: ListDefaults.colors(style)
 
     LazyColumn(
-        modifier = modifier.background(colors.background),
+        modifier = modifier.background(resolvedColors.background),
         state = state,
         contentPadding = contentPadding,
         flingBehavior = rememberFlingBehavior()
@@ -448,7 +461,7 @@ fun ListStack(
         ListScope(
             lazyListScope = this,
             style = style,
-            colors = colors,
+            colors = resolvedColors,
             cornerRadius = cornerRadius
         ).content()
     }
@@ -458,21 +471,19 @@ private fun LazyListScope.renderSectionHeader(
     key: Any?,
     header: (@Composable () -> String?)?,
     sectionIndex: Int,
+    topSpacing: Dp?,
     style: ListStyle,
     colors: ListColors
 ) {
-    if (sectionIndex == 0 && header == null) return
+    val resolvedTopSpacing = topSpacing ?: if (sectionIndex == 0) 0.dp else DefaultSectionSpacing
+    if (resolvedTopSpacing == 0.dp && header == null) return
 
     item(
         key = key?.let { "$it-header" } ?: "section-$sectionIndex-header",
         contentType = "section-header"
     ) {
         Column {
-            Spacer(
-                Modifier.height(
-                    if (sectionIndex == 0) 0.dp else DefaultSectionSpacing
-                )
-            )
+            Spacer(Modifier.height(resolvedTopSpacing))
 
             header?.invoke()?.let { header ->
                 Box(
@@ -506,7 +517,7 @@ private fun LazyListScope.renderSectionRow(
     onClick: (() -> Unit)?,
     leading: (@Composable ListRowScope.() -> Unit)? = null,
     trailing: (@Composable ListRowScope.() -> Unit)? = null,
-    chevron: Boolean,
+    accessory: ListRowAccessory,
     destructive: Boolean,
     content: @Composable ListRowScope.() -> Unit,
     sectionIndex: Int,
@@ -525,7 +536,7 @@ private fun LazyListScope.renderSectionRow(
         contentType = contentType ?: rowContentType(
             leading = leading,
             trailing = trailing,
-            chevron = chevron
+            accessory = accessory
         )
     ) {
         ListRowFrame(
@@ -534,7 +545,7 @@ private fun LazyListScope.renderSectionRow(
             onClick = onClick,
             leading = leading,
             trailing = trailing,
-            chevron = chevron,
+            accessory = accessory,
             destructive = destructive,
             content = content,
             rowIndex = rowIndex,
@@ -593,7 +604,7 @@ private fun ListRowFrame(
     onClick: (() -> Unit)?,
     leading: (@Composable ListRowScope.() -> Unit)? = null,
     trailing: (@Composable ListRowScope.() -> Unit)? = null,
-    chevron: Boolean = false,
+    accessory: ListRowAccessory = ListRowAccessory.None,
     destructive: Boolean = false,
     content: @Composable ListRowScope.() -> Unit,
     rowIndex: Int,
@@ -608,7 +619,7 @@ private fun ListRowFrame(
 ) {
     val hasLeading = leading != null
     val hasTrailing = trailing != null
-    val hasAccessory = hasTrailing || chevron
+    val hasAccessory = hasTrailing || accessory != ListRowAccessory.None
     val interactionSource = remember { MutableInteractionSource() }
     val rowScope = remember(interactionSource, enabled) {
         ListRowScope(
@@ -655,7 +666,7 @@ private fun ListRowFrame(
                 rowScope = rowScope,
                 leading = leading,
                 trailing = trailing,
-                chevron = chevron,
+                accessory = accessory,
                 destructive = destructive,
                 contentColor = contentColor,
                 content = content
@@ -669,7 +680,7 @@ private fun ListRowLayout(
     rowScope: ListRowScope,
     leading: (@Composable ListRowScope.() -> Unit)?,
     trailing: (@Composable ListRowScope.() -> Unit)?,
-    chevron: Boolean,
+    accessory: ListRowAccessory,
     destructive: Boolean,
     contentColor: Color,
     content: @Composable ListRowScope.() -> Unit
@@ -679,7 +690,6 @@ private fun ListRowLayout(
     } else {
         GlasenseTheme.colors.contentVariant
     }
-
     Layout(
         content = {
             if (leading != null) {
@@ -717,16 +727,32 @@ private fun ListRowLayout(
                 }
             }
 
-            if (chevron) {
-                Icon(
-                    painter = painterResource(R.drawable.ic_chevron_right_compact),
-                    contentDescription = null,
-                    tint = GlasenseTheme.colors.contentVariant.copy(alpha = .4f),
-                    modifier = Modifier.size(
-                        width = DefaultChevronWidth,
-                        height = DefaultChevronHeight
+            when (accessory) {
+                ListRowAccessory.Chevron -> {
+                    Icon(
+                        painter = painterResource(R.drawable.ic_chevron_right_compact),
+                        contentDescription = null,
+                        tint = GlasenseTheme.colors.contentVariant.copy(alpha = .2f),
+                        modifier = Modifier.size(
+                            width = DefaultAccessoryWidth,
+                            height = DefaultAccessoryHeight
+                        )
                     )
-                )
+                }
+
+                ListRowAccessory.SelectIndicator -> {
+                    Icon(
+                        painter = painterResource(R.drawable.ic_select_indicator),
+                        contentDescription = null,
+                        tint = GlasenseTheme.colors.contentVariant.copy(alpha = .2f),
+                        modifier = Modifier.size(
+                            width = DefaultAccessoryWidth,
+                            height = DefaultAccessoryHeight
+                        )
+                    )
+                }
+
+                ListRowAccessory.None -> Unit
             }
         }
     ) { measurables, constraints ->
@@ -742,7 +768,7 @@ private fun ListRowLayout(
             null
         }
 
-        val chevronPlaceable = if (chevron) {
+        val accessoryPlaceable = if (accessory != ListRowAccessory.None) {
             measurables.last().measure(
                 constraints.copy(
                     minWidth = 0,
@@ -759,14 +785,14 @@ private fun ListRowLayout(
             0
         }
 
-        val accessorySpacing = if (trailing != null || chevronPlaceable != null) {
+        val trailingSpacing = if (trailing != null || accessoryPlaceable != null) {
             DefaultTrailingSpacing.roundToPx()
         } else {
             0
         }
 
-        val chevronSpacing = if (trailing != null && chevronPlaceable != null) {
-            DefaultChevronSpacing.roundToPx()
+        val accessorySpacing = if (trailing != null && accessoryPlaceable != null) {
+            DefaultAccessorySpacing.roundToPx()
         } else {
             0
         }
@@ -776,26 +802,14 @@ private fun ListRowLayout(
                 constraints.maxWidth -
                         (leadingPlaceable?.width ?: 0) -
                         leadingSpacing -
+                        trailingSpacing -
                         accessorySpacing -
-                        chevronSpacing -
-                        (chevronPlaceable?.width ?: 0)
+                        (accessoryPlaceable?.width ?: 0)
                 ).coerceAtLeast(0)
-        val maxContentWidth = if (trailing != null) {
-            dynamicWidth / 2
-        } else {
-            dynamicWidth
-        }
-
-        val contentPlaceable = measurables[contentIndex].measure(
-            constraints.copy(
-                minWidth = 0,
-                minHeight = 0,
-                maxWidth = maxContentWidth
-            )
-        )
-
         val trailingPlaceable = if (trailing != null) {
-            measurables[measurables.lastIndex - if (chevron) 1 else 0].measure(
+            measurables[
+                measurables.lastIndex - if (accessory != ListRowAccessory.None) 1 else 0
+            ].measure(
                 constraints.copy(
                     minWidth = 0,
                     minHeight = 0,
@@ -805,6 +819,14 @@ private fun ListRowLayout(
         } else {
             null
         }
+
+        val contentPlaceable = measurables[contentIndex].measure(
+            constraints.copy(
+                minWidth = 0,
+                minHeight = 0,
+                maxWidth = dynamicWidth - (trailingPlaceable?.width ?: 0)
+            )
+        )
 
         val minContentHeight =
             DefaultRowMinHeight.roundToPx() -
@@ -816,7 +838,8 @@ private fun ListRowLayout(
             minContentHeight,
             leadingPlaceable?.height ?: 0,
             contentPlaceable.height,
-            trailingPlaceable?.height ?: 0
+            trailingPlaceable?.height ?: 0,
+            accessoryPlaceable?.height ?: 0
         )
 
         layout(
@@ -842,13 +865,13 @@ private fun ListRowLayout(
                 it.placeRelative(
                     x = constraints.maxWidth -
                             it.width -
-                            chevronSpacing -
-                            (chevronPlaceable?.width ?: 0),
+                            accessorySpacing -
+                            (accessoryPlaceable?.width ?: 0),
                     y = (height - it.height) / 2
                 )
             }
 
-            chevronPlaceable?.let {
+            accessoryPlaceable?.let {
                 it.placeRelative(
                     x = constraints.maxWidth - it.width,
                     y = (height - it.height) / 2
@@ -946,22 +969,21 @@ private fun ListRowContainer(
     cornerRadius: Dp,
     content: @Composable () -> Unit
 ) {
-    val corner = cornerRadius
     val separatorColor =
         if (style == ListStyle.InsetGrouped) LocalGlasenseContentColor.current.copy(.1f) else LocalGlasenseColors.current.scrimMedium
     val shape = when (style) {
         ListStyle.Plain -> RectangleShape
 
         ListStyle.InsetGrouped -> when {
-            isFirst && isLast -> RoundedRectangle(corner)
+            isFirst && isLast -> RoundedRectangle(cornerRadius)
             isFirst -> UnevenRoundedRectangle(
-                topStart = corner,
-                topEnd = corner
+                topStart = cornerRadius,
+                topEnd = cornerRadius
             )
 
             isLast -> UnevenRoundedRectangle(
-                bottomStart = corner,
-                bottomEnd = corner
+                bottomStart = cornerRadius,
+                bottomEnd = cornerRadius
             )
 
             else -> RectangleShape
@@ -1046,9 +1068,9 @@ private val DefaultLeadingSize = 32.dp
 private val DefaultLeadingSpacing = 12.dp
 private val DefaultTrailingSpacing = 12.dp
 private val DefaultSwitchTrailingSpacing = 8.dp
-private val DefaultChevronSpacing = 8.dp
-private val DefaultChevronWidth = 14.dp
-private val DefaultChevronHeight = 20.dp
+private val DefaultAccessorySpacing = 8.dp
+private val DefaultAccessoryWidth = 14.dp
+private val DefaultAccessoryHeight = 20.dp
 private const val DisabledContentAlpha = 0.5f
 private val RichRowPadding =
     PaddingValues(start = 12.dp, top = 8.dp, end = 16.dp, bottom = 8.dp)
@@ -1058,16 +1080,18 @@ private val DefaultDimIndication = DimIndication()
 private fun rowContentType(
     leading: Any?,
     trailing: Any?,
-    chevron: Boolean
+    accessory: ListRowAccessory
 ): String {
+    val hasAccessory = accessory != ListRowAccessory.None
+
     return when {
-        leading != null && trailing != null && chevron -> "leading-trailing-chevron-row"
+        leading != null && trailing != null && hasAccessory -> "leading-trailing-accessory-row"
         leading != null && trailing != null -> "leading-trailing-row"
-        leading != null && chevron -> "leading-chevron-row"
-        trailing != null && chevron -> "trailing-chevron-row"
+        leading != null && hasAccessory -> "leading-accessory-row"
+        trailing != null && hasAccessory -> "trailing-accessory-row"
         leading != null -> "leading-row"
         trailing != null -> "trailing-row"
-        chevron -> "chevron-row"
+        hasAccessory -> "accessory-row"
         else -> "row"
     }
 }

@@ -8,15 +8,16 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -51,6 +52,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -74,18 +76,16 @@ import com.nevoit.cresto.theme.AppSpecs
 import com.nevoit.cresto.theme.isAppInDarkTheme
 import com.nevoit.cresto.ui.components.glasense.GlasenseButton
 import com.nevoit.cresto.ui.components.glasense.GlasenseDynamicSmallTitle
-import com.nevoit.cresto.ui.components.glasense.GlasenseSwitch
 import com.nevoit.cresto.ui.components.glasense.extend.overscrollSpacer
 import com.nevoit.cresto.ui.components.glasense.isScrolledPast
-import com.nevoit.cresto.ui.components.packed.ConfigItem
-import com.nevoit.cresto.ui.components.packed.ConfigItemContainer
-import com.nevoit.cresto.ui.components.packed.PageContent
+import com.nevoit.cresto.ui.components.packed.TopBarSpacer
 import com.nevoit.cresto.ui.modifier.pressIndentShaderEffect
 import com.nevoit.cresto.ui.modifier.shaderRipple
 import com.nevoit.cresto.ui.modifier.tiltOnPress
+import com.nevoit.glasense.component.ListRowAccessory
+import com.nevoit.glasense.component.ListStack
 import com.nevoit.glasense.core.component.Icon
 import com.nevoit.glasense.core.component.Text
-import com.nevoit.glasense.core.component.VDivider
 import com.nevoit.glasense.core.component.VGap
 import com.nevoit.glasense.theme.GlasenseTheme
 import com.nevoit.glasense.theme.tokens.Amber400
@@ -131,6 +131,7 @@ fun AboutScreen(settingsViewModel: SettingsViewModel = viewModel()) {
     val isSmallTitleVisible by lazyListState.isScrolledPast(statusBarHeight + 24.dp)
 
     val context = LocalContext.current
+    val uriHandler = LocalUriHandler.current
     val scope = rememberCoroutineScope()
 
     // Retrieve the app's package information to display version name and code
@@ -197,28 +198,28 @@ fun AboutScreen(settingsViewModel: SettingsViewModel = viewModel()) {
         drawContent()
     }
 
+    val navigationBarHeight = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+
     // Root container for the screen, filling the entire available space
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(backgroundColor)
     ) {
-        // A vertically scrolling list that only composes and lays out the currently visible items
-        PageContent(
+        ListStack(
             state = lazyListState,
             modifier = Modifier
+                .fillMaxSize()
                 .layerBackdrop(backdrop),
-            tabPadding = false
+            cornerRadius = AppSpecs.cardCorner,
+            contentPadding = PaddingValues(bottom = navigationBarHeight)
         ) {
-            // Spacer item at the top of the list to push content below the top bar and back button
-            item {
-                Box(modifier = Modifier.padding(top = 48.dp + statusBarHeight + 12.dp))
-            }
+            TopBarSpacer()
             // An item that displays a background image for the About screen
             item {
                 val shape = AppSpecs.cardShape
                 Box(
                     modifier = Modifier
+                        .padding(horizontal = 12.dp)
                         .aspectRatio(3f / 4f)
                         .fillMaxWidth()
                 ) {
@@ -267,187 +268,59 @@ fun AboutScreen(settingsViewModel: SettingsViewModel = viewModel()) {
                             }
                     )
                 }
-
-                VGap()
             }
             // Item container for displaying developer information
-            item {
-                ConfigItemContainer(
-                    backgroundColor = hierarchicalSurfaceColor,
-                    title = stringResource(R.string.developer)
+            Section(header = { stringResource(R.string.developer) }, topSpacing = 24.dp) {
+                Row(
+                    onClick = { uriHandler.openUri("https://github.com/nevodev") },
+                    leading = {
+                        Image(
+                            painter = painterResource(R.drawable.avatar),
+                            contentDescription = stringResource(R.string.developer_avatar),
+                            modifier = Modifier
+                                .clip(CircleShape)
+                                .size(48.dp)
+                        )
+                    },
+                    accessory = ListRowAccessory.Chevron
                 ) {
-                    Column {
-                        // Row for the main developer's information
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Image(
-                                painter = painterResource(R.drawable.avatar),
-                                contentDescription = stringResource(R.string.developer_avatar),
-                                modifier = Modifier
-                                    .clip(CircleShape)
-                                    .size(48.dp)
-                            )
-                            Spacer(modifier = Modifier.width(12.dp))
-                            Column(
-                                modifier = Modifier
-                                    .fillMaxHeight()
-                                    .padding(vertical = 4.dp)
-                                    .weight(1f)
-                            ) {
-                                Text(
-                                    text = "Nevoit",
-                                    fontSize = 20.sp,
-                                    lineHeight = 20.sp,
-                                    fontWeight = FontWeight.W500,
-                                    color = AppColors.content,
-                                )
-                                Text(
-                                    text = "Create awesome.",
-                                    fontSize = 12.sp,
-                                    lineHeight = 12.sp,
-                                    fontWeight = FontWeight.W400,
-                                    color = AppColors.contentVariant,
-                                )
-                                // Row for displaying developer roles/tags
-                                Row(
-                                    modifier = Modifier
-                                        .offset((-4).dp)
-                                        .padding(top = 4.dp)
-                                ) {
-                                    Box(
-                                        modifier = Modifier
-                                            .padding(end = 4.dp)
-                                            .background(
-                                                AppColors.content.copy(.1f),
-                                                Capsule()
-                                            )
-                                    ) {
-                                        Text(
-                                            text = stringResource(R.string.main_developer),
-                                            fontSize = 10.sp,
-                                            lineHeight = 10.sp,
-                                            fontWeight = FontWeight.W400,
-                                            color = AppColors.contentVariant,
-                                            modifier = Modifier
-                                                .padding(vertical = 2.dp, horizontal = 8.dp)
-                                        )
-                                    }
-                                    Box(
-                                        modifier = Modifier
-                                            .background(
-                                                AppColors.content.copy(.1f),
-                                                Capsule()
-                                            )
-                                    ) {
-                                        Text(
-                                            text = stringResource(R.string.designer),
-                                            fontSize = 10.sp,
-                                            lineHeight = 10.sp,
-                                            fontWeight = FontWeight.W400,
-                                            color = AppColors.contentVariant,
-                                            modifier = Modifier
-                                                .padding(vertical = 2.dp, horizontal = 8.dp)
-                                        )
-                                    }
-                                }
-                                Spacer(modifier = Modifier.height(4.dp))
-                            }
-                            Spacer(modifier = Modifier.width(12.dp))
-                            Icon(
-                                painter = painterResource(R.drawable.ic_forward),
-                                tint = AppColors.content.copy(.2f),
-                                contentDescription = stringResource(R.string.enter_icon),
-                                modifier = Modifier
-                                    .align(Alignment.CenterVertically)
-                                    .offset(4.dp)
-                                    .height(40.dp)
-                                    .width(20.dp)
-                            )
-                        }
-                        Spacer(modifier = Modifier.height(8.dp))
-                        // Visual divider line
-                        VDivider()
-                        Spacer(modifier = Modifier.height(8.dp))
-                        // Row for the overscroll animation developer's information
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Image(
-                                painter = painterResource(R.drawable.kyant_avatar),
-                                contentDescription = stringResource(R.string.developer_avatar),
-                                modifier = Modifier
-                                    .clip(CircleShape)
-                                    .size(48.dp)
-                            )
-                            Spacer(modifier = Modifier.width(12.dp))
-                            Column(
-                                modifier = Modifier
-                                    .fillMaxHeight()
-                                    .padding(vertical = 4.dp)
-                                    .weight(1f)
-                            ) {
-                                Text(
-                                    text = "Kyant0",
-                                    fontSize = 20.sp,
-                                    lineHeight = 20.sp,
-                                    fontWeight = FontWeight.W500,
-                                    color = AppColors.content,
-                                )
-                                Text(
-                                    text = "Create rubbish.",
-                                    fontSize = 12.sp,
-                                    lineHeight = 12.sp,
-                                    fontWeight = FontWeight.W400,
-                                    color = AppColors.contentVariant,
-                                )
-                                Row(
-                                    modifier = Modifier
-                                        .offset((-4).dp)
-                                        .padding(top = 4.dp)
-                                ) {
-                                    Box(
-                                        modifier = Modifier
-                                            .padding(end = 6.dp)
-                                            .background(
-                                                AppColors.content.copy(.1f),
-                                                Capsule()
-                                            )
-                                    ) {
-                                        Text(
-                                            text = stringResource(R.string.overscroll_animation_developer),
-                                            fontSize = 10.sp,
-                                            lineHeight = 10.sp,
-                                            fontWeight = FontWeight.W400,
-                                            color = AppColors.contentVariant,
-                                            modifier = Modifier
-                                                .padding(vertical = 2.dp, horizontal = 8.dp)
-
-                                        )
-                                    }
-                                }
-                            }
-                            Spacer(modifier = Modifier.width(12.dp))
-                            Icon(
-                                painter = painterResource(R.drawable.ic_forward),
-                                tint = AppColors.content.copy(.2f),
-                                contentDescription = stringResource(R.string.enter_icon),
-                                modifier = Modifier
-                                    .align(Alignment.CenterVertically)
-                                    .offset(4.dp)
-                                    .height(40.dp)
-                                    .width(20.dp)
-                            )
-                        }
+                    DeveloperContent(
+                        name = "Nevoit",
+                        tagline = "Create awesome."
+                    ) {
+                        DeveloperBadge(stringResource(R.string.main_developer))
+                        DeveloperBadge(stringResource(R.string.designer))
                     }
                 }
-                VGap()
+                Row(
+                    onClick = { uriHandler.openUri("https://github.com/kyant0") },
+                    leading = {
+                        Image(
+                            painter = painterResource(R.drawable.kyant_avatar),
+                            contentDescription = stringResource(R.string.developer_avatar),
+                            modifier = Modifier
+                                .clip(CircleShape)
+                                .size(48.dp)
+                        )
+                    },
+                    accessory = ListRowAccessory.Chevron
+                ) {
+                    DeveloperContent(
+                        name = "Kyant0",
+                        tagline = "Create rubbish."
+                    ) {
+                        DeveloperBadge(stringResource(R.string.overscroll_animation_developer))
+                    }
+                }
             }
             // Item for displaying version information
             item {
-                Column(modifier = Modifier.fillMaxWidth()) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 12.dp)
+                        .padding(top = 24.dp)
+                ) {
                     Text(
                         text = stringResource(R.string.version_info),
                         style = GlasenseTheme.type.subHeadline.copy(lineHeight = 14.sp),
@@ -543,34 +416,26 @@ fun AboutScreen(settingsViewModel: SettingsViewModel = viewModel()) {
                     }
                 }
             }
-            item {
-                VGap()
-                ConfigItemContainer {
-                    Column {
-                        ConfigItem(title = stringResource(R.string.check_for_updates_on_startup)) {
-                            GlasenseSwitch(
-                                checked = isCheckUpdatesOnStartupEnabled,
-                                onCheckedChange = {
-                                    settingsViewModel.onCheckUpdatesOnStartupChanged(it)
-                                },
-                                backgroundColor = AppColors.cardBackground
-                            )
-                        }
-                        Spacer(modifier = Modifier.height(8.dp))
-                        VDivider()
-                        Spacer(modifier = Modifier.height(8.dp))
-                        ConfigItem(
-                            title = if (isCheckingForUpdates) {
-                                stringResource(R.string.checking_for_updates)
-                            } else {
-                                stringResource(R.string.check_for_updates)
-                            },
-                            clickable = !isCheckingForUpdates,
-                            indication = true,
-                            onClick = { checkForUpdates() }
-                        ) {
-                        }
+            Section {
+                CustomSwitchRow(
+                    checked = isCheckUpdatesOnStartupEnabled,
+                    onCheckedChange = {
+                        settingsViewModel.onCheckUpdatesOnStartupChanged(it)
                     }
+                ) {
+                    Text(stringResource(R.string.check_for_updates_on_startup))
+                }
+                Row(
+                    enabled = !isCheckingForUpdates,
+                    onClick = { checkForUpdates() }
+                ) {
+                    Text(
+                        if (isCheckingForUpdates) {
+                            stringResource(R.string.checking_for_updates)
+                        } else {
+                            stringResource(R.string.check_for_updates)
+                        }
+                    )
                 }
             }
             item { VGap() }
@@ -626,6 +491,61 @@ fun AboutScreen(settingsViewModel: SettingsViewModel = viewModel()) {
                 }
             )
         }
+    }
+}
+
+@Composable
+private fun DeveloperContent(
+    name: String,
+    tagline: String,
+    badges: @Composable () -> Unit
+) {
+    Column(
+        modifier = Modifier.padding(vertical = 4.dp)
+    ) {
+        Text(
+            text = name,
+            fontSize = 20.sp,
+            lineHeight = 20.sp,
+            fontWeight = FontWeight.W500,
+            color = AppColors.content,
+        )
+        Text(
+            text = tagline,
+            fontSize = 12.sp,
+            lineHeight = 12.sp,
+            fontWeight = FontWeight.W400,
+            color = AppColors.contentVariant,
+        )
+        Row(
+            modifier = Modifier
+                .offset((-2).dp)
+                .padding(top = 4.dp)
+        ) {
+            badges()
+        }
+        Spacer(modifier = Modifier.height(4.dp))
+    }
+}
+
+@Composable
+private fun DeveloperBadge(text: String) {
+    Box(
+        modifier = Modifier
+            .padding(end = 4.dp)
+            .background(
+                AppColors.scrimMedium,
+                Capsule()
+            )
+    ) {
+        Text(
+            text = text,
+            fontSize = 10.sp,
+            lineHeight = 10.sp,
+            fontWeight = FontWeight.W400,
+            color = AppColors.contentVariant,
+            modifier = Modifier.padding(vertical = 2.dp, horizontal = 8.dp)
+        )
     }
 }
 

@@ -18,7 +18,6 @@ import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardOptions
@@ -47,23 +46,23 @@ import com.kyant.shapes.Capsule
 import com.nevoit.cresto.R
 import com.nevoit.cresto.data.todo.RepeatFrequency
 import com.nevoit.cresto.data.todo.TodoReminderMode
+import com.nevoit.cresto.feature.settings.CustomSwitchRow
 import com.nevoit.cresto.theme.AppButtonColors
 import com.nevoit.cresto.theme.AppColors
 import com.nevoit.cresto.theme.AppSpecs
 import com.nevoit.cresto.ui.components.glasense.GlasenseButton
 import com.nevoit.cresto.ui.components.glasense.GlasenseMenuItem
-import com.nevoit.cresto.ui.components.glasense.GlasenseSwitch
 import com.nevoit.cresto.ui.components.glasense.MenuDivider
 import com.nevoit.cresto.ui.components.glasense.SelectiveMenuItemData
 import com.nevoit.cresto.ui.components.glasense.extend.overscrollSpacer
-import com.nevoit.cresto.ui.components.packed.ConfigItem
-import com.nevoit.cresto.ui.components.packed.ConfigItemContainer
 import com.nevoit.cresto.ui.components.packed.ConfigTextField
 import com.nevoit.cresto.ui.components.packed.TodoReminderConfig
 import com.nevoit.cresto.ui.components.packed.displayText
+import com.nevoit.glasense.component.ListColors
+import com.nevoit.glasense.component.ListRowAccessory
+import com.nevoit.glasense.component.ListStack
 import com.nevoit.glasense.core.component.Icon
 import com.nevoit.glasense.core.component.Text
-import com.nevoit.glasense.core.component.VDivider
 import com.nevoit.glasense.core.component.VGap
 import com.nevoit.glasense.core.interaction.DimIndication
 import com.nevoit.glasense.theme.GlasenseTheme
@@ -104,6 +103,9 @@ fun AdvancedPage(
     navigateToBasic: () -> Unit
 ) {
     val navigationBarHeight = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+    val elevatedPageBackground = AppColors.elevatedPageBackground
+    val elevatedCardBackground = AppColors.elevatedCardBackground
+    val contentVariant = AppColors.contentVariant
 
     var dateButtonBounds by remember { mutableStateOf(Rect.Zero) }
     var rangeStartTimeButtonBounds by remember { mutableStateOf(Rect.Zero) }
@@ -348,22 +350,29 @@ fun AdvancedPage(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(AppColors.elevatedPageBackground)
-            .padding(horizontal = 12.dp)
+            .background(elevatedPageBackground)
     ) {
         val lazyListState = rememberLazyListState()
 
-        LazyColumn(
+        ListStack(
             state = lazyListState,
             modifier = Modifier.fillMaxSize(),
+            colors = ListColors(
+                background = elevatedPageBackground,
+                rowBackground = elevatedCardBackground,
+                headerText = contentVariant,
+                footerText = contentVariant.copy(alpha = .3f)
+            ),
+            cornerRadius = AppSpecs.cardCorner,
             contentPadding = PaddingValues(bottom = navigationBarHeight)
         ) {
             item { Spacer(Modifier.height(48.dp + 12.dp + 12.dp)) }
             item {
                 ConfigTextField(
+                    modifier = Modifier.padding(horizontal = 12.dp),
                     value = notesText,
                     onValueChange = onNotesChange,
-                    backgroundColor = AppColors.elevatedCardBackground,
+                    backgroundColor = elevatedCardBackground,
                     singleLine = false,
                     decorateText = stringResource(R.string.notes),
                     keyboardOptions = KeyboardOptions(
@@ -371,21 +380,21 @@ fun AdvancedPage(
                         imeAction = ImeAction.Default
                     )
                 )
-                VGap()
+                VGap(24.dp)
             }
             item {
                 CompositionLocalProvider(
-                    LocalGlasenseContentColor provides AppColors.contentVariant
+                    LocalGlasenseContentColor provides contentVariant
                 ) {
                     Column(
                         modifier = Modifier
+                            .padding(horizontal = 12.dp)
                             .fillMaxWidth()
                             .background(
-                                color = AppColors.elevatedCardBackground,
+                                color = elevatedCardBackground,
                                 shape = AppSpecs.cardShape
                             )
                             .padding(horizontal = 12.dp)
-
                     ) {
                         Row(
                             modifier = Modifier.padding(vertical = 12.dp),
@@ -443,262 +452,208 @@ fun AdvancedPage(
                         }
                     }
                 }
-                VGap()
             }
-            item {
-                ConfigItemContainer(
-                    backgroundColor = AppColors.elevatedCardBackground,
-                    title = stringResource(R.string.time)
+            Section(
+                header = { stringResource(R.string.time) },
+                topSpacing = 24.dp
+            ) {
+                CustomSwitchRow(
+                    checked = isAllDayEnabled,
+                    onCheckedChange = { checked ->
+                        onAllDayEnabledChange(checked)
+                        if (checked) onTimeRangeEnabledChange(false)
+                    },
+                    backgroundColor = elevatedCardBackground
                 ) {
-                    Column {
-                        ConfigItem(title = stringResource(R.string.all_day)) {
-                            GlasenseSwitch(
-                                backgroundColor = AppColors.elevatedCardBackground,
-                                checked = isAllDayEnabled,
-                                onCheckedChange = { checked ->
-                                    onAllDayEnabledChange(checked)
-                                    if (checked) onTimeRangeEnabledChange(false)
-                                })
-                        }
-                        Spacer(modifier = Modifier.height(8.dp))
-                        VDivider()
-                        Spacer(modifier = Modifier.height(8.dp))
-                        ConfigItem(title = stringResource(R.string.time_range)) {
-                            GlasenseSwitch(
-                                backgroundColor = AppColors.elevatedCardBackground,
-                                checked = isTimeRangeEnabled,
-                                onCheckedChange = { checked ->
-                                    onTimeRangeEnabledChange(checked)
-                                    if (checked) onAllDayEnabledChange(false)
-                                }
-                            )
-                        }
-                        val timeTextStyle = TextStyle(
-                            fontFeatureSettings = "tnum",
-                            fontWeight = FontWeight.Medium,
-                            fontSize = 24.sp,
-                            lineHeight = 24.sp,
-                            color = AppColors.content
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Row(
-                            modifier = Modifier
-                                .graphicsLayer {
-                                    alpha = if (isAllDayEnabled) 0.5f else 1f
-                                }
-                                .fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(
-                                12.dp,
-                                Alignment.CenterHorizontally
-                            )
-                        ) {
-                            if (isTimeRangeEnabled) {
-                                Box(
-                                    modifier = Modifier
-                                        .onGloballyPositioned { coordinates ->
-                                            rangeStartTimeButtonBounds =
-                                                coordinates.boundsInWindow()
-                                        }
-                                        .clip(AppSpecs.cardShape)
-                                        .background(color = AppColors.scrimNormal)
-                                        .clickable(
-                                            interactionSource = remember { MutableInteractionSource() },
-                                            indication = DimIndication(),
-                                            enabled = !isAllDayEnabled
-                                        ) {
-                                            onRequestCustomTime(
-                                                rangeStartTimeButtonBounds,
-                                                rangeStartTime,
-                                                null,
-                                                rangeEndTime
-                                            ) { newTime ->
-                                                onRangeStartTimeChange(newTime)
-                                            }
-                                        }
-                                        .padding(horizontal = 16.dp, vertical = 8.dp)
-                                ) {
-                                    Text(
-                                        text = rangeStartTime.format(
-                                            DateTimeFormatter.ofPattern(
-                                                "HH:mm"
-                                            )
-                                        ),
-                                        modifier = Modifier.align(Alignment.Center),
-                                        style = timeTextStyle
-                                    )
-                                }
-                                Box(
-                                    modifier = Modifier
-                                        .onGloballyPositioned { coordinates ->
-                                            rangeEndTimeButtonBounds =
-                                                coordinates.boundsInWindow()
-                                        }
-                                        .clip(AppSpecs.cardShape)
-                                        .background(color = AppColors.scrimNormal)
-                                        .clickable(
-                                            interactionSource = remember { MutableInteractionSource() },
-                                            indication = DimIndication(),
-                                            enabled = !isAllDayEnabled
-                                        ) {
-                                            onRequestCustomTime(
-                                                rangeEndTimeButtonBounds,
-                                                rangeEndTime,
-                                                rangeStartTime,
-                                                null
-                                            ) { newTime ->
-                                                onRangeEndTimeChange(newTime)
-                                            }
-                                        }
-                                        .padding(horizontal = 16.dp, vertical = 8.dp)
-                                ) {
-                                    Text(
-                                        text = rangeEndTime.format(DateTimeFormatter.ofPattern("HH:mm")),
-                                        modifier = Modifier.align(Alignment.Center),
-                                        style = timeTextStyle
-                                    )
-                                }
-                            } else {
-                                Box(
-                                    modifier = Modifier
-                                        .onGloballyPositioned { coordinates ->
-                                            rangeStartTimeButtonBounds =
-                                                coordinates.boundsInWindow()
-                                        }
-                                        .clip(AppSpecs.cardShape)
-                                        .background(color = AppColors.scrimNormal)
-                                        .clickable(
-                                            interactionSource = remember { MutableInteractionSource() },
-                                            indication = DimIndication(),
-                                            enabled = !isAllDayEnabled
-                                        ) {
-                                            onRequestCustomTime(
-                                                rangeStartTimeButtonBounds,
-                                                rangeStartTime,
-                                                null,
-                                                null
-                                            ) { newTime ->
-                                                onRangeStartTimeChange(newTime)
-                                            }
-                                        }
-                                        .padding(horizontal = 16.dp, vertical = 8.dp)
-                                ) {
-                                    Text(
-                                        text = rangeStartTime.format(DateTimeFormatter.ofPattern("HH:mm")),
-                                        modifier = Modifier.align(Alignment.Center),
-                                        style = timeTextStyle
-                                    )
-                                }
-                            }
-                        }
-                        Spacer(modifier = Modifier.height(8.dp))
-                    }
+                    Text(stringResource(R.string.all_day))
                 }
-                VGap()
-            }
-            item {
-                ConfigItemContainer(
-                    backgroundColor = AppColors.elevatedCardBackground,
-                    title = stringResource(R.string.reminder)
+                CustomSwitchRow(
+                    checked = isTimeRangeEnabled,
+                    onCheckedChange = { checked ->
+                        onTimeRangeEnabledChange(checked)
+                        if (checked) onAllDayEnabledChange(false)
+                    },
+                    backgroundColor = elevatedCardBackground
                 ) {
-                    Column {
-                        ConfigItem(title = stringResource(R.string.reminder_timing)) {
-                            Row(
+                    Text(stringResource(R.string.time_range))
+                }
+                Row {
+                    val timeTextStyle = TextStyle(
+                        fontFeatureSettings = "tnum",
+                        fontWeight = FontWeight.Medium,
+                        fontSize = 24.sp,
+                        lineHeight = 24.sp,
+                        color = AppColors.content
+                    )
+                    Row(
+                        modifier = Modifier
+                            .padding(vertical = 8.dp)
+                            .graphicsLayer {
+                                alpha = if (isAllDayEnabled) 0.5f else 1f
+                            }
+                            .fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(
+                            12.dp,
+                            Alignment.CenterHorizontally
+                        )
+                    ) {
+                        if (isTimeRangeEnabled) {
+                            Box(
                                 modifier = Modifier
                                     .onGloballyPositioned { coordinates ->
-                                        reminderButtonBounds = coordinates.boundsInWindow()
+                                        rangeStartTimeButtonBounds =
+                                            coordinates.boundsInWindow()
                                     }
-                                    .wrapContentSize()
-                                    .clip(Capsule())
-                                    .background(
-                                        color = AppColors.scrimNormal
-                                    )
+                                    .clip(AppSpecs.cardShape)
+                                    .background(color = AppColors.scrimNormal)
                                     .clickable(
                                         interactionSource = remember { MutableInteractionSource() },
-                                        indication = DimIndication()
+                                        indication = DimIndication(),
+                                        enabled = !isAllDayEnabled
                                     ) {
-                                        showMenu(reminderButtonBounds, reminderMenuItems)
+                                        onRequestCustomTime(
+                                            rangeStartTimeButtonBounds,
+                                            rangeStartTime,
+                                            null,
+                                            rangeEndTime
+                                        ) { newTime ->
+                                            onRangeStartTimeChange(newTime)
+                                        }
                                     }
-                                    .padding(
-                                        horizontal = 8.dp,
-                                        vertical = 4.dp
-                                    ),
-                                verticalAlignment = Alignment.CenterVertically
+                                    .padding(horizontal = 16.dp, vertical = 8.dp)
                             ) {
                                 Text(
-                                    text = reminderTimingText,
-                                    fontWeight = FontWeight.Normal,
-                                    color = AppColors.content
+                                    text = rangeStartTime.format(
+                                        DateTimeFormatter.ofPattern(
+                                            "HH:mm"
+                                        )
+                                    ),
+                                    modifier = Modifier.align(Alignment.Center),
+                                    style = timeTextStyle
+                                )
+                            }
+                            Box(
+                                modifier = Modifier
+                                    .onGloballyPositioned { coordinates ->
+                                        rangeEndTimeButtonBounds =
+                                            coordinates.boundsInWindow()
+                                    }
+                                    .clip(AppSpecs.cardShape)
+                                    .background(color = AppColors.scrimNormal)
+                                    .clickable(
+                                        interactionSource = remember { MutableInteractionSource() },
+                                        indication = DimIndication(),
+                                        enabled = !isAllDayEnabled
+                                    ) {
+                                        onRequestCustomTime(
+                                            rangeEndTimeButtonBounds,
+                                            rangeEndTime,
+                                            rangeStartTime,
+                                            null
+                                        ) { newTime ->
+                                            onRangeEndTimeChange(newTime)
+                                        }
+                                    }
+                                    .padding(horizontal = 16.dp, vertical = 8.dp)
+                            ) {
+                                Text(
+                                    text = rangeEndTime.format(DateTimeFormatter.ofPattern("HH:mm")),
+                                    modifier = Modifier.align(Alignment.Center),
+                                    style = timeTextStyle
+                                )
+                            }
+                        } else {
+                            Box(
+                                modifier = Modifier
+                                    .onGloballyPositioned { coordinates ->
+                                        rangeStartTimeButtonBounds =
+                                            coordinates.boundsInWindow()
+                                    }
+                                    .clip(AppSpecs.cardShape)
+                                    .background(color = AppColors.scrimNormal)
+                                    .clickable(
+                                        interactionSource = remember { MutableInteractionSource() },
+                                        indication = DimIndication(),
+                                        enabled = !isAllDayEnabled
+                                    ) {
+                                        onRequestCustomTime(
+                                            rangeStartTimeButtonBounds,
+                                            rangeStartTime,
+                                            null,
+                                            null
+                                        ) { newTime ->
+                                            onRangeStartTimeChange(newTime)
+                                        }
+                                    }
+                                    .padding(horizontal = 16.dp, vertical = 8.dp)
+                            ) {
+                                Text(
+                                    text = rangeStartTime.format(DateTimeFormatter.ofPattern("HH:mm")),
+                                    modifier = Modifier.align(Alignment.Center),
+                                    style = timeTextStyle
                                 )
                             }
                         }
-                        Spacer(modifier = Modifier.height(8.dp))
-                        VDivider()
-                        Spacer(modifier = Modifier.height(8.dp))
-                        ConfigItem(title = stringResource(R.string.persistent_reminder)) {
-                            GlasenseSwitch(
-                                backgroundColor = AppColors.elevatedCardBackground,
-                                checked = reminderPersistent,
-                                onCheckedChange = onReminderPersistentChange
-                            )
-                        }
-                        Spacer(modifier = Modifier.height(8.dp))
-                        VDivider()
-                        Spacer(modifier = Modifier.height(8.dp))
-                        ConfigItem(title = stringResource(R.string.strong_reminder)) {
-                            GlasenseSwitch(
-                                backgroundColor = AppColors.elevatedCardBackground,
-                                checked = reminderStrong,
-                                onCheckedChange = onReminderStrongChange
-                            )
-                        }
                     }
                 }
-                VGap()
             }
-            item {
-                ConfigItemContainer(
-                    backgroundColor = AppColors.elevatedCardBackground,
-                    title = stringResource(R.string.repeat)
+            Section(
+                header = { stringResource(R.string.reminder) }
+            ) {
+                Row(
+                    onClick = { showMenu(reminderButtonBounds, reminderMenuItems) },
+                    trailing = {
+                        Text(
+                            text = reminderTimingText,
+                            modifier = Modifier.onGloballyPositioned { coordinates ->
+                                reminderButtonBounds = coordinates.boundsInWindow()
+                            }
+                        )
+                    },
+                    accessory = ListRowAccessory.SelectIndicator
                 ) {
-                    ConfigItem(title = stringResource(R.string.repeat_cycle)) {
-                        Row(
-                            modifier = Modifier
-                                .onGloballyPositioned { coordinates ->
-                                    repeatButtonBounds = coordinates.boundsInWindow()
-                                }
-                                .wrapContentSize()
-                                .clip(Capsule())
-                                .background(
-                                    color = AppColors.scrimNormal
-                                )
-                                .clickable(
-                                    interactionSource = remember { MutableInteractionSource() },
-                                    indication = DimIndication()
-                                ) {
-                                    showMenu(repeatButtonBounds, repeatMenuItems)
-                                }
-                                .padding(
-                                    horizontal = 8.dp,
-                                    vertical = 4.dp
-                                ),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = repeatText,
-                                fontWeight = FontWeight.Normal,
-                                color = AppColors.content
-                            )
-                        }
-                    }
+                    Text(stringResource(R.string.reminder_timing))
                 }
-                VGap()
+                CustomSwitchRow(
+                    checked = reminderPersistent,
+                    onCheckedChange = onReminderPersistentChange,
+                    backgroundColor = elevatedCardBackground
+                ) {
+                    Text(stringResource(R.string.persistent_reminder))
+                }
+                CustomSwitchRow(
+                    checked = reminderStrong,
+                    onCheckedChange = onReminderStrongChange,
+                    backgroundColor = elevatedCardBackground
+                ) {
+                    Text(stringResource(R.string.strong_reminder))
+                }
             }
+            Section(
+                header = { stringResource(R.string.repeat) }
+            ) {
+                Row(
+                    onClick = { showMenu(repeatButtonBounds, repeatMenuItems) },
+                    trailing = {
+                        Text(
+                            text = repeatText,
+                            modifier = Modifier.onGloballyPositioned { coordinates ->
+                                repeatButtonBounds = coordinates.boundsInWindow()
+                            }
+                        )
+                    },
+                    accessory = ListRowAccessory.SelectIndicator
+                ) {
+                    Text(stringResource(R.string.repeat_cycle))
+                }
+            }
+            item { VGap() }
             overscrollSpacer(lazyListState)
         }
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = 12.dp)
+                .padding(top = 12.dp, start = 12.dp, end = 12.dp)
                 .height(48.dp)
         ) {
             GlasenseButton(
