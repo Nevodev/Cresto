@@ -36,7 +36,6 @@ import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.zIndex
 import com.kyant.shapes.RoundedRectangle
 import com.kyant.shapes.UnevenRoundedRectangle
 import com.nevoit.glasense.R
@@ -994,7 +993,6 @@ private fun ListRowContainer(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = ListDefaults.horizontalPadding(style))
-            .zIndex(-rowIndex.toFloat())
             .then(
                 if (separator && !isLast) {
                     Modifier.drawWithCache {
