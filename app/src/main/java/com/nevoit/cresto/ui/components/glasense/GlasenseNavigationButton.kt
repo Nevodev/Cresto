@@ -6,11 +6,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.dropShadow
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.TileMode
-import androidx.compose.ui.graphics.shadow.Shadow
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import com.kyant.backdrop.backdrops.LayerBackdrop
@@ -19,6 +17,8 @@ import com.kyant.backdrop.effects.blur
 import com.kyant.backdrop.effects.effect
 import com.kyant.backdrop.effects.lens
 import com.kyant.backdrop.highlight.Highlight
+import com.kyant.backdrop.highlight.HighlightStyle
+import com.kyant.backdrop.shadow.Shadow
 import com.kyant.shapes.Capsule
 import com.nevoit.cresto.theme.AppColors
 import com.nevoit.cresto.theme.NavigationButtonActiveColors
@@ -46,52 +46,62 @@ fun GlasenseNavigationButton(
 ) {
     val tint = AppColors.primary
 
-    val renderEffect = rememberMaterialRenderEffect(MaterialRecipes.appBar())
+    val renderEffect =
+        rememberMaterialRenderEffect(if (liquidGlass) MaterialRecipes.thin() else MaterialRecipes.appBar())
 
-    val finalModifier = if (isActive && !liquidGlass) {
-        Modifier
-            .fillMaxSize()
-            .glasenseHighlight(100.dp)
-    } else {
+    val finalModifier =
         Modifier
             .fillMaxSize()
             .drawBackdrop(
                 backdrop = backdrop,
                 shape = { Capsule() },
-                shadow = null,
+                shadow = {
+                    Shadow(
+                        radius = 24.dp,
+                        color = Color.Black.copy(alpha = 0.08f),
+                        offset = DpOffset(0.dp, 8.dp)
+                    )
+                },
                 innerShadow = null,
-                highlight = { if (liquidGlass) Highlight.Default else null },
+                highlight = {
+                    if (liquidGlass) Highlight.Default.copy(
+                        style = HighlightStyle.Default(
+                            angle = 90f
+                        )
+                    ) else null
+                },
                 effects = {
                     padding = if (liquidGlass) 8f.dp.toPx() * 2 else 32f.dp.toPx() * 2
-                    if (!isActive) effect(renderEffect)
-                    blur(if (liquidGlass) 8f.dp.toPx() else 32f.dp.toPx(), TileMode.Clamp)
-                    if (liquidGlass) lens(16f.dp.toPx(), 48f.dp.toPx())
+                    if (!isActive) {
+                        effect(renderEffect)
+                        blur(if (liquidGlass) 8f.dp.toPx() else 32f.dp.toPx(), TileMode.Clamp)
+                        if (liquidGlass) lens(16f.dp.toPx(), 48f.dp.toPx())
+                    }
+                    if (isActive) {
+                        if (liquidGlass) {
+                            blur(8f.dp.toPx(), TileMode.Clamp)
+                            lens(16f.dp.toPx(), 48f.dp.toPx())
+                        }
+                    }
                 },
                 onDrawSurface = {
                     if (liquidGlass && isActive) {
                         drawRect(tint, blendMode = BlendMode.Hue, alpha = .8f)
                         drawRect(tint.copy(alpha = 0.7f))
                     }
+                    if (isActive && !liquidGlass) {
+                        drawRect(tint)
+                    }
                 }
             )
             .then(if (!liquidGlass) Modifier.glasenseHighlight(100.dp) else Modifier)
-    }
 
     // The base button with shape, click handling, shadow, and colors.
     GlasenseButton(
         shape = Capsule(),
         onClick = onClick,
         modifier = modifier
-            .fillMaxHeight()
-            .dropShadow(
-                Capsule(),
-                Shadow(
-                    radius = 24.dp,
-                    color = Color.Black.copy(alpha = 0.08f),
-                    spread = 0.dp,
-                    offset = DpOffset(0.dp, 8.dp)
-                )
-            ),
+            .fillMaxHeight(),
         colors = if (isActive) NavigationButtonActiveColors.primary() else NavigationButtonNormalColors.primary(),
         animated = false
     ) {

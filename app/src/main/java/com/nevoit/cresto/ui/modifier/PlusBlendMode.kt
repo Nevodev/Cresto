@@ -33,9 +33,12 @@ private val PlusDarkerPaint =
             xfermode = RuntimeXfermode(
                 """
 half4 main(half4 src, half4 dst) {
-    half3 Co = max(half3(0.0), src.rgb + dst.rgb - src.a);
-    half Ao = saturate(src.a + dst.a);
-    return half4(Co, 1.0) * Ao;
+    half sa = src.a;
+    half da = dst.a;
+    half sad = sa * da;
+    half3 rgb = src.rgb + dst.rgb - min(src.rgb * da + dst.rgb * sa, half3(sad));
+    half a = sa + da - sad;
+    return half4(rgb, a);
 }"""
             )
         }

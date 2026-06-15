@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -51,11 +52,21 @@ import com.nevoit.glasense.theme.tokens.Red500
 @DslMarker
 annotation class GlasenseListDsl
 
+enum class ListRowPosition {
+    Single,
+    First,
+    Middle,
+    Last
+}
+
 @GlasenseListDsl
 class ListRowScope internal constructor(
     val interactionSource: MutableInteractionSource,
-    val enabled: Boolean
-)
+    val enabled: Boolean,
+    val indexInSection: Int,
+    val position: ListRowPosition,
+    private val lazyItemScope: LazyItemScope
+) : LazyItemScope by lazyItemScope
 
 sealed interface ListStyle {
     data object Plain : ListStyle
@@ -79,7 +90,6 @@ class ListScope internal constructor(
         get() = ListDefaults.horizontalPadding(style)
 
     private var sectionIndex = 0
-    private var rowIndex = 0
 
     fun item(
         key: Any? = null,
@@ -165,7 +175,6 @@ class ListScope internal constructor(
             separatorPaddingStart = separatorPaddingStart
         )
         scope.content()
-        scope.flushLastRow()
 
         lazyListScope.renderSectionFooter(
             key = key,
@@ -188,9 +197,6 @@ class ListScope internal constructor(
         destructive: Boolean = false,
         content: @Composable ListRowScope.() -> Unit
     ) {
-        val currentRowIndex = rowIndex
-        rowIndex += 1
-
         lazyListScope.item(
             key = key,
             contentType = contentType ?: rowContentType(
@@ -208,9 +214,9 @@ class ListScope internal constructor(
                 accessory = accessory,
                 destructive = destructive,
                 content = content,
-                rowIndex = currentRowIndex,
-                isFirst = true,
-                isLast = true,
+                lazyItemScope = this,
+                indexInSection = 0,
+                position = ListRowPosition.Single,
                 style = style,
                 colors = colors,
                 cornerRadius = cornerRadius
@@ -242,9 +248,8 @@ class ListScope internal constructor(
             leading = leading,
             trailing = {
                 SwitchRowTrailingLayout(
-                    trailing = trailing?.let { trailingContent ->
-                        { trailingContent(this) }
-                    },
+                    rowScope = this,
+                    trailing = trailing,
                     switch = {
                         Switch(
                             enabled = enabled,
@@ -260,26 +265,6 @@ class ListScope internal constructor(
             content = content
         )
     }
-
-    fun <T> ForEachRow(
-        data: List<T>,
-        id: ((T) -> Any)? = null,
-        contentType: ((T) -> Any?)? = null,
-        enabled: ((T) -> Boolean)? = null,
-        onClick: ((T) -> Unit)? = null,
-        content: @Composable ListRowScope.(T) -> Unit
-    ) {
-        data.forEachIndexed { index, item ->
-            Row(
-                key = id?.invoke(item) ?: index,
-                contentType = contentType?.invoke(item),
-                enabled = enabled?.invoke(item) ?: true,
-                onClick = onClick?.let { { it(item) } }
-            ) {
-                content(item)
-            }
-        }
-    }
 }
 
 @GlasenseListDsl
@@ -293,18 +278,7 @@ class SectionScope internal constructor(
     private val separatorHorizontalPadding: Dp,
     private val separatorPaddingStart: Dp?
 ) {
-    private var pendingKey: Any? = null
-    private var pendingContentType: Any? = null
-    private var pendingSeparator = true
-    private var pendingEnabled = true
-    private var pendingOnClick: (() -> Unit)? = null
-    private var pendingContent: (@Composable ListRowScope.() -> Unit)? = null
-    private var pendingLeading: (@Composable ListRowScope.() -> Unit)? = null
-    private var pendingTrailing: (@Composable ListRowScope.() -> Unit)? = null
-    private var pendingAccessory = ListRowAccessory.None
-    private var pendingDestructive = false
-    private var pendingRowIndex = 0
-    private var rowIndex = 0
+    private val rows = SectionRows()
 
     fun Row(
         key: Any? = null,
@@ -318,61 +292,30 @@ class SectionScope internal constructor(
         destructive: Boolean = false,
         content: @Composable ListRowScope.() -> Unit
     ) {
-        flushPendingRow(isLast = false)
+        val currentRowIndex = rows.count
+        rows.count += 1
 
-        pendingKey = key
-        pendingContentType = contentType
-        pendingSeparator = separator
-        pendingEnabled = enabled
-        pendingOnClick = onClick
-        pendingLeading = leading
-        pendingTrailing = trailing
-        pendingAccessory = accessory
-        pendingDestructive = destructive
-        pendingContent = content
-        pendingRowIndex = rowIndex
-        rowIndex += 1
-    }
-
-    internal fun flushLastRow() {
-        flushPendingRow(isLast = true)
-        pendingKey = null
-        pendingContentType = null
-        pendingSeparator = true
-        pendingEnabled = true
-        pendingOnClick = null
-        pendingContent = null
-        pendingLeading = null
-        pendingTrailing = null
-        pendingAccessory = ListRowAccessory.None
-        pendingDestructive = false
-    }
-
-    private fun flushPendingRow(isLast: Boolean) {
-        pendingContent?.let { rowContent ->
-            lazyListScope.renderSectionRow(
-                key = pendingKey,
-                contentType = pendingContentType,
-                separator = pendingSeparator,
-                enabled = pendingEnabled,
-                onClick = pendingOnClick,
-                leading = pendingLeading,
-                trailing = pendingTrailing,
-                accessory = pendingAccessory,
-                destructive = pendingDestructive,
-                content = rowContent,
-                sectionIndex = sectionIndex,
-                rowIndex = pendingRowIndex,
-                isFirst = pendingRowIndex == 0,
-                isLast = isLast,
-                style = style,
-                colors = colors,
-                cornerRadius = cornerRadius,
-                rowPadding = rowPadding,
-                separatorHorizontalPadding = separatorHorizontalPadding,
-                separatorPaddingStart = separatorPaddingStart
-            )
-        }
+        lazyListScope.renderSectionRow(
+            key = key,
+            contentType = contentType,
+            separator = separator,
+            enabled = enabled,
+            onClick = onClick,
+            leading = leading,
+            trailing = trailing,
+            accessory = accessory,
+            destructive = destructive,
+            content = content,
+            rows = rows,
+            sectionIndex = sectionIndex,
+            rowIndex = currentRowIndex,
+            style = style,
+            colors = colors,
+            cornerRadius = cornerRadius,
+            rowPadding = rowPadding,
+            separatorHorizontalPadding = separatorHorizontalPadding,
+            separatorPaddingStart = separatorPaddingStart
+        )
     }
 
     fun SwitchRow(
@@ -399,9 +342,8 @@ class SectionScope internal constructor(
             leading = leading,
             trailing = {
                 SwitchRowTrailingLayout(
-                    trailing = trailing?.let { trailingContent ->
-                        { trailingContent(this) }
-                    },
+                    rowScope = this,
+                    trailing = trailing,
                     switch = {
                         Switch(
                             enabled = enabled,
@@ -416,26 +358,6 @@ class SectionScope internal constructor(
             destructive = destructive,
             content = content
         )
-    }
-
-    fun <T> ForEachRow(
-        data: List<T>,
-        id: ((T) -> Any)? = null,
-        contentType: ((T) -> Any?)? = null,
-        enabled: ((T) -> Boolean)? = null,
-        onClick: ((T) -> Unit)? = null,
-        content: @Composable ListRowScope.(T) -> Unit
-    ) {
-        data.forEachIndexed { index, item ->
-            Row(
-                key = id?.invoke(item) ?: index,
-                contentType = contentType?.invoke(item),
-                enabled = enabled?.invoke(item) ?: true,
-                onClick = onClick?.let { { it(item) } }
-            ) {
-                content(item)
-            }
-        }
     }
 }
 
@@ -519,10 +441,9 @@ private fun LazyListScope.renderSectionRow(
     accessory: ListRowAccessory,
     destructive: Boolean,
     content: @Composable ListRowScope.() -> Unit,
+    rows: SectionRows,
     sectionIndex: Int,
     rowIndex: Int,
-    isFirst: Boolean,
-    isLast: Boolean,
     style: ListStyle,
     colors: ListColors,
     cornerRadius: Dp,
@@ -538,6 +459,11 @@ private fun LazyListScope.renderSectionRow(
             accessory = accessory
         )
     ) {
+        val position = sectionRowPosition(
+            rowCount = rows.count,
+            indexInSection = rowIndex
+        )
+
         ListRowFrame(
             separator = separator,
             enabled = enabled,
@@ -547,9 +473,9 @@ private fun LazyListScope.renderSectionRow(
             accessory = accessory,
             destructive = destructive,
             content = content,
-            rowIndex = rowIndex,
-            isFirst = isFirst,
-            isLast = isLast,
+            lazyItemScope = this,
+            indexInSection = rowIndex,
+            position = position,
             style = style,
             colors = colors,
             cornerRadius = cornerRadius,
@@ -606,9 +532,9 @@ private fun ListRowFrame(
     accessory: ListRowAccessory = ListRowAccessory.None,
     destructive: Boolean = false,
     content: @Composable ListRowScope.() -> Unit,
-    rowIndex: Int,
-    isFirst: Boolean,
-    isLast: Boolean,
+    lazyItemScope: LazyItemScope,
+    indexInSection: Int,
+    position: ListRowPosition,
     style: ListStyle,
     colors: ListColors,
     cornerRadius: Dp,
@@ -620,10 +546,19 @@ private fun ListRowFrame(
     val hasTrailing = trailing != null
     val hasAccessory = hasTrailing || accessory != ListRowAccessory.None
     val interactionSource = remember { MutableInteractionSource() }
-    val rowScope = remember(interactionSource, enabled) {
+    val rowScope = remember(
+        interactionSource,
+        enabled,
+        lazyItemScope,
+        indexInSection,
+        position
+    ) {
         ListRowScope(
             interactionSource = interactionSource,
-            enabled = enabled
+            enabled = enabled,
+            indexInSection = indexInSection,
+            position = position,
+            lazyItemScope = lazyItemScope
         )
     }
     val contentColor = if (destructive) {
@@ -647,9 +582,8 @@ private fun ListRowFrame(
         onClick = onClick,
         enabled = enabled,
         interactionSource = interactionSource,
-        rowIndex = rowIndex,
-        isFirst = isFirst,
-        isLast = isLast,
+        isFirst = position == ListRowPosition.Single || position == ListRowPosition.First,
+        isLast = position == ListRowPosition.Single || position == ListRowPosition.Last,
         style = style,
         colors = colors,
         cornerRadius = cornerRadius
@@ -882,14 +816,15 @@ private fun ListRowLayout(
 
 @Composable
 private fun SwitchRowTrailingLayout(
-    trailing: (@Composable () -> Unit)?,
+    rowScope: ListRowScope,
+    trailing: (@Composable ListRowScope.() -> Unit)?,
     switch: @Composable () -> Unit
 ) {
     Layout(
         content = {
             if (trailing != null) {
                 Box(contentAlignment = Alignment.CenterEnd) {
-                    trailing()
+                    rowScope.trailing()
                 }
             }
 
@@ -960,7 +895,6 @@ private fun ListRowContainer(
     onClick: (() -> Unit)?,
     enabled: Boolean,
     interactionSource: MutableInteractionSource,
-    rowIndex: Int,
     isFirst: Boolean,
     isLast: Boolean,
     style: ListStyle,
@@ -1046,6 +980,22 @@ private fun ListRowContainer(
                 content()
             }
         }
+    }
+}
+
+private class SectionRows {
+    var count: Int = 0
+}
+
+private fun sectionRowPosition(
+    rowCount: Int,
+    indexInSection: Int
+): ListRowPosition {
+    return when {
+        rowCount <= 1 -> ListRowPosition.Single
+        indexInSection == 0 -> ListRowPosition.First
+        indexInSection == rowCount - 1 -> ListRowPosition.Last
+        else -> ListRowPosition.Middle
     }
 }
 

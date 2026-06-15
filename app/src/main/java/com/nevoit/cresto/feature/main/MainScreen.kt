@@ -400,7 +400,7 @@ fun MainScreen() {
                     .smoothGradientMask(
                         surfaceColor.copy(alpha = 0f),
                         surfaceColor.copy(alpha = 1f),
-                        -0.1f,
+                        0f,
                         0.8f,
                         0.7f
                     )
