@@ -25,6 +25,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import com.nevoit.glasense.component.Button
+import com.nevoit.glasense.component.ButtonDefaults
+import com.nevoit.glasense.component.ButtonPressEffect
+import com.nevoit.glasense.component.ButtonRole
 import com.nevoit.glasense.component.ListStack
 import com.nevoit.glasense.component.ListRowAccessory
 import com.nevoit.glasense.component.ListStyle
@@ -108,6 +112,60 @@ private fun DemoScreen() {
                 onCheckedChange = { style = if (it) ListStyle.Plain else ListStyle.InsetGrouped }
             ) {
                 Text("Plain Style")
+            }
+        }
+        Section(
+            header = { "Buttons" },
+            footer = { "Button uses a label-builder API and style-driven press feedback." }
+        ) {
+            Row {
+                Button(
+                    action = {},
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("Filled Scale")
+                }
+            }
+            Row {
+                Button(
+                    action = {},
+                    modifier = Modifier.fillMaxWidth(),
+                    style = ButtonDefaults.filledStyle(
+                        pressEffect = ButtonPressEffect.Dim
+                    )
+                ) {
+                    Text("Filled Dim")
+                }
+            }
+            Row {
+                Button(
+                    action = {},
+                    modifier = Modifier.fillMaxWidth(),
+                    style = ButtonDefaults.plainStyle()
+                ) {
+                    Text("Plain Scale")
+                }
+            }
+            Row {
+                Button(
+                    action = {},
+                    modifier = Modifier.fillMaxWidth(),
+                    role = ButtonRole.Destructive,
+                    style = ButtonDefaults.plainStyle(
+                        pressEffect = ButtonPressEffect.Dim
+                    )
+                ) {
+                    Text("Destructive Dim")
+                }
+            }
+            Row {
+                Button(
+                    action = {},
+                    modifier = Modifier.fillMaxWidth(),
+                    enabled = false
+                ) {
+                    Text("Disabled")
+                }
             }
         }
         Section(header = { "Trailing" }) {
