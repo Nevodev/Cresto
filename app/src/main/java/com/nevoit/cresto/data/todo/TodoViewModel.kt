@@ -7,7 +7,10 @@ import com.nevoit.cresto.data.statistics.TodoStat
 import com.nevoit.cresto.data.todo.calendar.CalendarSyncSummary
 import com.nevoit.cresto.data.todo.reminder.TodoAlarmScheduler
 import com.nevoit.cresto.data.utils.EventItem
+import com.nevoit.cresto.feature.settings.util.SortOption
+import com.nevoit.cresto.feature.settings.util.SortOrder
 import com.tencent.mmkv.MMKV
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -23,6 +26,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
@@ -91,6 +95,24 @@ private data class InsightWeekStats(
     val dueTotal: Int,
     val dueCompleted: Int,
     val completedTrend: List<DailyStat>
+)
+
+private const val HOME_TODO_PAGE_SIZE = 30
+
+data class HomeTodoListState(
+    val todos: List<TodoItemWithSubTodos> = emptyList(),
+    val totalCount: Int = 0,
+    val loadedLimit: Int = HOME_TODO_PAGE_SIZE
+) {
+    val hasMore: Boolean
+        get() = todos.size < totalCount
+}
+
+private data class HomeTodoQuery(
+    val searchQuery: String,
+    val sortOption: SortOption,
+    val sortOrder: SortOrder,
+    val limit: Int
 )
 
 class TodoViewModel(
@@ -168,12 +190,7 @@ class TodoViewModel(
     }
 
     private fun getVisibleTodoIds(): Set<Int> {
-        val visibleTodos = if (_searchQuery.value.isBlank()) {
-            allTodos.value
-        } else {
-            searchedTodos.value
-        }
-        return visibleTodos.map { it.todoItem.id }.toSet()
+        return homeTodos.value.todos.map { it.todoItem.id }.toSet()
     }
 
 
@@ -206,29 +223,35 @@ class TodoViewModel(
         _calendarSyncEvents.emit(summary)
     }
 
-    fun completeSelectedItems() = viewModelScope.launch {
+    fun completeSelectedItems() {
         val selectedIds = _selectedItemIds.value.toList()
-        if (selectedIds.isEmpty()) return@launch
-
-        val completedCount = repository.getCompletedCountByIds(selectedIds)
-        val allSelectedCompleted = completedCount == selectedIds.size
-        val targetCompletedState = !allSelectedCompleted
-
-        val result = repository.updateCompletedStatusByIds(
-            ids = selectedIds,
-            isCompleted = targetCompletedState,
-            completedDateTime = if (targetCompletedState) LocalDateTime.now() else null
-        )
-
-        if (targetCompletedState) {
-            alarmScheduler.cancelAll(selectedIds)
-            result.insertedTodos.forEach(alarmScheduler::schedule)
-        } else {
-            result.updatedTodos.forEach(alarmScheduler::schedule)
-            alarmScheduler.cancelAll(result.deletedTodos.map { it.id })
-        }
+        if (selectedIds.isEmpty()) return
 
         clearSelections()
+
+        viewModelScope.launch {
+            withContext(Dispatchers.IO) {
+                val completedCount = repository.getCompletedCountByIds(selectedIds)
+                val allSelectedCompleted = completedCount == selectedIds.size
+                val targetCompletedState = !allSelectedCompleted
+
+                val result = repository.updateCompletedStatusByIds(
+                    ids = selectedIds,
+                    isCompleted = targetCompletedState,
+                    completedDateTime = if (targetCompletedState) LocalDateTime.now() else null
+                )
+
+                if (targetCompletedState) {
+                    alarmScheduler.cancelAll(result.updatedTodos.reminderTodoIds())
+                    result.insertedTodos.forEach(alarmScheduler::schedule)
+                } else {
+                    result.updatedTodos
+                        .filter { it.hasReminderConfig() }
+                        .forEach(alarmScheduler::schedule)
+                    alarmScheduler.cancelAll(result.deletedTodos.reminderTodoIds())
+                }
+            }
+        }
     }
 
     fun flagSelectedItems(flag: Int) = viewModelScope.launch {
@@ -264,9 +287,10 @@ class TodoViewModel(
         val selectedIds = _selectedItemIds.value
         if (selectedIds.size < 2) return@launch
 
-        val orderedSelectedIds = allTodos.value
+        val orderedSelectedIds = homeTodos.value.todos
             .map { it.todoItem.id }
             .filter(selectedIds::contains)
+            .ifEmpty { selectedIds.toList() }
 
         if (orderedSelectedIds.isEmpty()) return@launch
 
@@ -282,16 +306,20 @@ class TodoViewModel(
             initialValue = 0
         )
 
-    val selectedTodos: StateFlow<List<TodoItemWithSubTodos>> = combine(
-        allTodos,
-        selectedItemIds
-    ) { todos, selectedIds ->
-        if (selectedIds.isEmpty()) {
-            emptyList()
-        } else {
-            todos.filter { it.todoItem.id in selectedIds }
-        }
-    }.stateIn(
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val selectedTodos: StateFlow<List<TodoItemWithSubTodos>> = selectedItemIds
+        .flatMapLatest { selectedIds ->
+            if (selectedIds.isEmpty()) {
+                flowOf(emptyList())
+            } else {
+                repository.getTodosByIds(selectedIds.toList())
+                    .map { todos ->
+                        val selectedOrder = selectedIds.withIndex()
+                            .associate { (index, id) -> id to index }
+                        todos.sortedBy { selectedOrder[it.todoItem.id] ?: Int.MAX_VALUE }
+                    }
+            }
+        }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
         initialValue = emptyList()
@@ -309,9 +337,7 @@ class TodoViewModel(
 
     fun update(item: TodoItem) = viewModelScope.launch {
         alarmScheduler.cancel(item)
-        val existingItem = allTodos.value
-            .firstOrNull { it.todoItem.id == item.id }
-            ?.todoItem
+        val existingItem = repository.getTodoByIdSnapshot(item.id)
         val completionChanged = existingItem != null && existingItem.isCompleted != item.isCompleted
 
         if (completionChanged) {
@@ -627,7 +653,7 @@ class TodoViewModel(
 
     fun onSearchCloseIconClick() {
         if (_searchQuery.value.isNotEmpty()) {
-            _searchQuery.value = ""
+            updateSearchQuery("")
         } else {
             closeSearchBox()
         }
@@ -635,6 +661,44 @@ class TodoViewModel(
 
     private val _searchQuery = MutableStateFlow("")
     val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
+    private val _homeTodoLimit = MutableStateFlow(HOME_TODO_PAGE_SIZE)
+    private val _homeSortOption = MutableStateFlow(SortOption.DEFAULT)
+    private val _homeSortOrder = MutableStateFlow(SortOrder.DESCENDING)
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val homeTodos: StateFlow<HomeTodoListState> = combine(
+        _searchQuery,
+        _homeSortOption,
+        _homeSortOrder,
+        _homeTodoLimit
+    ) { query, sortOption, sortOrder, limit ->
+        HomeTodoQuery(
+            searchQuery = query,
+            sortOption = sortOption,
+            sortOrder = sortOrder,
+            limit = limit
+        )
+    }.flatMapLatest { request ->
+        combine(
+            repository.getHomeTodos(
+                query = request.searchQuery,
+                sortOption = request.sortOption,
+                sortOrder = request.sortOrder,
+                limit = request.limit
+            ),
+            repository.getHomeTodoCount(request.searchQuery)
+        ) { todos, totalCount ->
+            HomeTodoListState(
+                todos = todos,
+                totalCount = totalCount,
+                loadedLimit = request.limit
+            )
+        }
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = HomeTodoListState()
+    )
 
     @OptIn(ExperimentalCoroutinesApi::class)
     val searchedTodos: StateFlow<List<TodoItemWithSubTodos>> = _searchQuery
@@ -646,7 +710,33 @@ class TodoViewModel(
         )
 
     fun updateSearchQuery(query: String) {
+        if (_searchQuery.value != query) {
+            _homeTodoLimit.value = HOME_TODO_PAGE_SIZE
+        }
         _searchQuery.value = query
+    }
+
+    fun updateHomeSort(sortOption: SortOption, sortOrder: SortOrder) {
+        val isSortChanged = _homeSortOption.value != sortOption ||
+                _homeSortOrder.value != sortOrder
+        if (!isSortChanged) return
+
+        _homeSortOption.value = sortOption
+        _homeSortOrder.value = sortOrder
+        _homeTodoLimit.value = HOME_TODO_PAGE_SIZE
+    }
+
+    fun loadNextHomeTodoPage() {
+        if (!homeTodos.value.hasMore) return
+        _homeTodoLimit.update { it + HOME_TODO_PAGE_SIZE }
+    }
+
+    private fun List<TodoItem>.reminderTodoIds(): List<Int> {
+        return filter { it.hasReminderConfig() }.map { it.id }
+    }
+
+    private fun TodoItem.hasReminderConfig(): Boolean {
+        return reminderMode != null
     }
 
     fun getTodosByDate(date: LocalDate): Flow<List<TodoItemWithSubTodos>> {

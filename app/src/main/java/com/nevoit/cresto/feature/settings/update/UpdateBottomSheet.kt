@@ -62,7 +62,6 @@ import com.nevoit.cresto.theme.AppSpecs
 import com.nevoit.cresto.theme.LocalGlasenseSettings
 import com.nevoit.cresto.ui.components.glasense.GlasenseButtonAlt
 import com.nevoit.cresto.ui.components.glasense.GlasenseModalTopBar
-import com.nevoit.cresto.ui.components.glasense.extend.overscrollSpacer
 import com.nevoit.cresto.ui.components.glasense.glasenseHighlight
 import com.nevoit.cresto.ui.components.glasense.isScrolledPast
 import com.nevoit.cresto.ui.components.glasense.material.MaterialRecipes
@@ -71,6 +70,7 @@ import com.nevoit.cresto.ui.components.packed.ConfigItemContainer
 import com.nevoit.cresto.ui.modifier.shaderRipple
 import com.nevoit.cresto.ui.modifier.tiltOnPress
 import com.nevoit.glasense.component.BottomSheet
+import com.nevoit.glasense.component.paddingItem
 import com.nevoit.glasense.core.component.HGap
 import com.nevoit.glasense.core.component.Icon
 import com.nevoit.glasense.core.component.Text
@@ -163,7 +163,7 @@ fun UpdateBottomSheet(
                     }
                 }
                 item { VGap(24.dp) }
-                overscrollSpacer(listState)
+                paddingItem(listState)
             }
 
             UpdateTopBar(

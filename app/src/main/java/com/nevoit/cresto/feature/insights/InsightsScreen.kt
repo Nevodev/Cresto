@@ -71,10 +71,10 @@ import com.nevoit.cresto.theme.AppColors
 import com.nevoit.cresto.ui.components.glasense.GlasenseButtonToolBar
 import com.nevoit.cresto.ui.components.glasense.GlasenseDynamicSmallTitle
 import com.nevoit.cresto.ui.components.glasense.GlasensePageHeader
-import com.nevoit.cresto.ui.components.glasense.extend.overscrollSpacer
 import com.nevoit.cresto.ui.components.glasense.isScrolledPast
 import com.nevoit.cresto.ui.components.packed.CardWithTitle
 import com.nevoit.cresto.ui.components.packed.PageContent
+import com.nevoit.glasense.component.paddingItem
 import com.nevoit.glasense.core.component.HGap
 import com.nevoit.glasense.core.component.Icon
 import com.nevoit.glasense.core.component.Text
@@ -139,7 +139,7 @@ fun BoxScope.InsightsScreen(viewModel: TodoViewModel) {
         item {
             WeeklyTrendCard(insights = insights)
         }
-        overscrollSpacer(lazyListState)
+        paddingItem(lazyListState)
     }
     GlasenseDynamicSmallTitle(
         modifier = Modifier.align(Alignment.TopCenter),

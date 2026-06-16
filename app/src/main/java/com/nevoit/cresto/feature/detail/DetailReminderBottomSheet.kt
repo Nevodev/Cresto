@@ -28,7 +28,6 @@ import com.nevoit.cresto.ui.components.glasense.GlasenseMenuItem
 import com.nevoit.cresto.ui.components.glasense.GlasenseModalTopBar
 import com.nevoit.cresto.ui.components.glasense.MenuDivider
 import com.nevoit.cresto.ui.components.glasense.SelectiveMenuItemData
-import com.nevoit.cresto.ui.components.glasense.extend.overscrollSpacer
 import com.nevoit.cresto.ui.components.packed.TodoReminderConfig
 import com.nevoit.cresto.ui.components.packed.displayText
 import com.nevoit.glasense.component.BottomSheet
@@ -232,7 +231,6 @@ fun DetailReminderBottomSheet(
                 }
             }
             item { VGap() }
-            overscrollSpacer(listState)
         }
 
         GlasenseModalTopBar(

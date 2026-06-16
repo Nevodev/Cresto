@@ -38,12 +38,12 @@ import com.nevoit.cresto.theme.harmonize
 import com.nevoit.cresto.ui.components.glasense.GlasenseButtonToolBar
 import com.nevoit.cresto.ui.components.glasense.GlasenseDynamicSmallTitle
 import com.nevoit.cresto.ui.components.glasense.GlasensePageHeader
-import com.nevoit.cresto.ui.components.glasense.extend.overscrollSpacer
 import com.nevoit.cresto.ui.components.glasense.isScrolledPast
 import com.nevoit.cresto.ui.components.packed.AboutEntryItem
 import com.nevoit.cresto.ui.components.packed.ConfigContainer
 import com.nevoit.cresto.ui.components.packed.ConfigEntryItem
 import com.nevoit.cresto.ui.components.packed.PageContent
+import com.nevoit.glasense.component.paddingItem
 import com.nevoit.glasense.core.component.Icon
 import com.nevoit.glasense.core.component.VGap
 import com.nevoit.glasense.theme.tokens.Blue500
@@ -185,7 +185,7 @@ fun SettingsScreen() {
                     )
                 }
             }
-            overscrollSpacer(lazyListState)
+            paddingItem(lazyListState)
         }
         GlasenseDynamicSmallTitle(
             modifier = Modifier.align(Alignment.TopCenter),

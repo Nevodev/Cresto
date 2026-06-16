@@ -28,6 +28,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -51,10 +52,10 @@ import com.nevoit.cresto.feature.settings.util.SortOrder
 import com.nevoit.cresto.theme.AppColors
 import com.nevoit.cresto.ui.components.glasense.GlasenseMenuItem
 import com.nevoit.cresto.ui.components.glasense.GlasensePageHeader
-import com.nevoit.cresto.ui.components.glasense.extend.overscrollSpacer
 import com.nevoit.cresto.ui.components.glasense.isScrolledPast
 import com.nevoit.cresto.ui.components.glasense.rememberSwipeableListState
 import com.nevoit.cresto.ui.components.packed.PageContent
+import com.nevoit.glasense.component.paddingItem
 import com.nevoit.glasense.core.component.VGap
 import com.nevoit.glasense.theme.tokens.Springs
 import kotlinx.coroutines.Job
@@ -79,8 +80,7 @@ fun BoxScope.HomeScreen(
         onDispose { completionSoundPlayer.release() }
     }
 
-    val allTodos by viewModel.allTodos.collectAsStateWithLifecycle()
-    val searchedTodos by viewModel.searchedTodos.collectAsStateWithLifecycle()
+    val homeTodosState by viewModel.homeTodos.collectAsStateWithLifecycle()
     val selectedItemIds by viewModel.selectedItemIds.collectAsState()
     val isSelectionModeActive by viewModel.isSelectionModeActive.collectAsState()
     val isSearchBoxOpen by viewModel.isSearchBoxOpen.collectAsState()
@@ -118,29 +118,13 @@ fun BoxScope.HomeScreen(
     val currentSortOrder = remember(sortOrderOrdinal) {
         SortOrder.entries.getOrElse(sortOrderOrdinal) { SortOrder.DESCENDING }
     }
-
-    val todoList = remember(isSearchBoxOpen, allTodos, searchedTodos) {
-        if (isSearchBoxOpen) searchedTodos else allTodos
+    LaunchedEffect(currentSortOption, currentSortOrder) {
+        viewModel.updateHomeSort(currentSortOption, currentSortOrder)
     }
 
-    val (rawIncompleteTodos, rawCompleteTodos) = remember(todoList) {
+    val todoList = homeTodosState.todos
+    val (incompleteTodos, completeTodos) = remember(todoList) {
         todoList.partition { !it.todoItem.isCompleted }
-    }
-    val incompleteTodos = remember(rawIncompleteTodos, currentSortOption, currentSortOrder) {
-        sortTodos(
-            list = rawIncompleteTodos,
-            option = currentSortOption,
-            order = currentSortOrder,
-            type = TodoListType.INCOMPLETED
-        )
-    }
-    val completeTodos = remember(rawCompleteTodos, currentSortOption, currentSortOrder) {
-        sortTodos(
-            list = rawCompleteTodos,
-            option = currentSortOption,
-            order = currentSortOrder,
-            type = TodoListType.COMPLETED
-        )
     }
     var completedVisible by rememberSaveable { mutableStateOf(true) }
 
@@ -151,6 +135,20 @@ fun BoxScope.HomeScreen(
     val pendingUpdateJobs = remember { mutableStateMapOf<Int, Job>() }
 
     val incompleteCount = incompleteTodos.size
+    LaunchedEffect(lazyListState, homeTodosState.loadedLimit, homeTodosState.hasMore) {
+        if (!homeTodosState.hasMore) return@LaunchedEffect
+
+        snapshotFlow {
+            val layoutInfo = lazyListState.layoutInfo
+            val lastVisibleIndex = layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: -1
+            val totalItemsCount = layoutInfo.totalItemsCount
+            totalItemsCount > 0 && lastVisibleIndex >= totalItemsCount - 6
+        }.collect { shouldLoadMore ->
+            if (shouldLoadMore) {
+                viewModel.loadNextHomeTodoPage()
+            }
+        }
+    }
 
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()
@@ -259,7 +257,7 @@ fun BoxScope.HomeScreen(
                         }
                     }
 
-                    if (checked && incompleteCount == 1) {
+                    if (checked && incompleteCount == 1 && !homeTodosState.hasMore) {
                         confettiTriggerPosition = latestCheckboxTapPosition
                         confettiHideJob?.cancel()
                         scope.launch {
@@ -339,7 +337,7 @@ fun BoxScope.HomeScreen(
                 }
             }
         }
-        overscrollSpacer(lazyListState)
+        paddingItem(lazyListState)
     }
     CompleteConfettiOverlay(visible = showConfetti, position = confettiTriggerPosition)
     HomeTopAppBar(

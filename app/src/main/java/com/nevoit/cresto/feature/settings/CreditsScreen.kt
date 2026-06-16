@@ -37,7 +37,6 @@ import com.nevoit.cresto.theme.AppSpecs
 import com.nevoit.cresto.theme.harmonize
 import com.nevoit.cresto.ui.components.glasense.GlasenseButton
 import com.nevoit.cresto.ui.components.glasense.GlasenseDynamicSmallTitle
-import com.nevoit.cresto.ui.components.glasense.extend.overscrollSpacer
 import com.nevoit.cresto.ui.components.glasense.isScrolledPast
 import com.nevoit.cresto.ui.components.packed.ConfigInfoHeader
 import com.nevoit.cresto.ui.components.packed.TopBarSpacer
@@ -112,10 +111,7 @@ fun CreditsScreen() {
                     }
                 }
             }
-            item {
-                VGap()
-            }
-            overscrollSpacer(lazyListState)
+            item { VGap() }
         }
         GlasenseDynamicSmallTitle(
             modifier = Modifier.align(Alignment.TopCenter),

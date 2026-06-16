@@ -76,7 +76,6 @@ import com.nevoit.cresto.theme.AppSpecs
 import com.nevoit.cresto.theme.isAppInDarkTheme
 import com.nevoit.cresto.ui.components.glasense.GlasenseButton
 import com.nevoit.cresto.ui.components.glasense.GlasenseDynamicSmallTitle
-import com.nevoit.cresto.ui.components.glasense.extend.overscrollSpacer
 import com.nevoit.cresto.ui.components.glasense.isScrolledPast
 import com.nevoit.cresto.ui.components.packed.TopBarSpacer
 import com.nevoit.cresto.ui.modifier.pressIndentShaderEffect
@@ -439,7 +438,6 @@ fun AboutScreen(settingsViewModel: SettingsViewModel = viewModel()) {
                 }
             }
             item { VGap() }
-            overscrollSpacer(lazyListState)
         }
         // A small title that dynamically appears at the top when the user scrolls down
         GlasenseDynamicSmallTitle(

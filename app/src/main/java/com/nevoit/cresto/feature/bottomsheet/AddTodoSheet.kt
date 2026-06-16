@@ -5,7 +5,6 @@ import androidx.compose.animation.core.spring
 import androidx.compose.foundation.LocalOverscrollFactory
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -116,9 +115,7 @@ fun AddTodoSheet(
     val hapticController = LocalHapticFeedback.current
     val scope = rememberCoroutineScope()
 
-    val overscrollFactory = rememberOffsetOverscrollFactory(
-        orientation = Orientation.Horizontal
-    )
+    val overscrollFactory = rememberOffsetOverscrollFactory()
     // Main layout
     Column(
         modifier = modifier

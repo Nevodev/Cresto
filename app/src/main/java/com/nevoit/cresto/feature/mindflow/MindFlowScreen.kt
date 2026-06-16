@@ -66,7 +66,6 @@ import com.nevoit.cresto.ui.components.CustomAnimatedVisibility
 import com.nevoit.cresto.ui.components.glasense.GlasenseButtonAlt
 import com.nevoit.cresto.ui.components.glasense.GlasenseDynamicSmallTitle
 import com.nevoit.cresto.ui.components.glasense.GlasensePageHeader
-import com.nevoit.cresto.ui.components.glasense.extend.overscrollSpacer
 import com.nevoit.cresto.ui.components.glasense.glasenseHighlight
 import com.nevoit.cresto.ui.components.glasense.isScrolledPast
 import com.nevoit.cresto.ui.components.packed.CardWithTitle
@@ -77,6 +76,7 @@ import com.nevoit.cresto.ui.components.packed.StrictText
 import com.nevoit.cresto.ui.components.packed.ZenCirclesBreathing
 import com.nevoit.cresto.ui.viewmodel.ModeTimerViewModel
 import com.nevoit.glasense.component.ProgressView
+import com.nevoit.glasense.component.paddingItem
 import com.nevoit.glasense.core.component.Icon
 import com.nevoit.glasense.core.component.Text
 import com.nevoit.glasense.theme.GlasenseTheme
@@ -578,7 +578,7 @@ fun BoxScope.MindFlowScreen(
                 }
             }
         }
-        overscrollSpacer(lazyListState)
+        paddingItem(lazyListState)
     }
     GlasenseDynamicSmallTitle(
         modifier = Modifier.align(Alignment.TopCenter),

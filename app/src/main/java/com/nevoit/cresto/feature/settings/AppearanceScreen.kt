@@ -8,7 +8,6 @@ import androidx.compose.foundation.LocalOverscrollFactory
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
@@ -77,7 +76,6 @@ import com.nevoit.cresto.ui.components.glasense.GlasenseModalTopBar
 import com.nevoit.cresto.ui.components.glasense.GlasensePopup
 import com.nevoit.cresto.ui.components.glasense.PopupDirection
 import com.nevoit.cresto.ui.components.glasense.PopupState
-import com.nevoit.cresto.ui.components.glasense.extend.overscrollSpacer
 import com.nevoit.cresto.ui.components.glasense.isScrolledPast
 import com.nevoit.cresto.ui.components.packed.ColorModeSelector
 import com.nevoit.cresto.ui.components.packed.ConfigInfoHeader
@@ -143,9 +141,7 @@ fun AppearanceScreen(settingsViewModel: SettingsViewModel = viewModel()) {
     var latestColorPickerTriggerBounds by remember { mutableStateOf<Rect?>(null) }
     var popupAnchorBounds by remember { mutableStateOf(Rect.Zero) }
 
-    val overscrollFactory = rememberOffsetOverscrollFactory(
-        orientation = Orientation.Horizontal
-    )
+    val overscrollFactory = rememberOffsetOverscrollFactory()
 
     val backdrop = rememberLayerBackdrop {
         drawRect(
@@ -289,7 +285,6 @@ fun AppearanceScreen(settingsViewModel: SettingsViewModel = viewModel()) {
                 }
             }
             item { VGap() }
-            overscrollSpacer(lazyListState)
         }
         // A small title that dynamically appears at the top when the user scrolls down
         GlasenseDynamicSmallTitle(

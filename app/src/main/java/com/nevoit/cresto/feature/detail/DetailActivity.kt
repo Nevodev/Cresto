@@ -5,7 +5,6 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.LocalOverscrollFactory
-import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.core.view.WindowCompat
 import com.nevoit.cresto.data.todo.EXTRA_TODO_ID
@@ -29,9 +28,7 @@ class DetailActivity : ComponentActivity() {
 
         setContent {
             GlasenseTheme {
-                val overscrollFactory = rememberOffsetOverscrollFactory(
-                    orientation = Orientation.Vertical
-                )
+                val overscrollFactory = rememberOffsetOverscrollFactory()
                 CompositionLocalProvider(
                     LocalOverscrollFactory provides overscrollFactory,
                     LocalGlasenseContentColor provides AppColors.content

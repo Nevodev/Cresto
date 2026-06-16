@@ -5,7 +5,6 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.LocalOverscrollFactory
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -38,9 +37,7 @@ fun GlasenseChipGroup(
     selectedItem: String,
     onItemSelected: (String) -> Unit
 ) {
-    val overscrollFactory = rememberOffsetOverscrollFactory(
-        orientation = Orientation.Horizontal
-    )
+    val overscrollFactory = rememberOffsetOverscrollFactory()
 
     CompositionLocalProvider(
         LocalOverscrollFactory provides overscrollFactory

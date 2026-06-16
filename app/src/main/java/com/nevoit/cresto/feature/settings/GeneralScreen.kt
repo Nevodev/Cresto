@@ -56,7 +56,6 @@ import com.nevoit.cresto.ui.components.glasense.GlasenseMenuItem
 import com.nevoit.cresto.ui.components.glasense.MenuDivider
 import com.nevoit.cresto.ui.components.glasense.MenuState
 import com.nevoit.cresto.ui.components.glasense.SelectiveMenuItemData
-import com.nevoit.cresto.ui.components.glasense.extend.overscrollSpacer
 import com.nevoit.cresto.ui.components.glasense.isScrolledPast
 import com.nevoit.cresto.ui.components.packed.ConfigInfoHeader
 import com.nevoit.cresto.ui.components.packed.TopBarSpacer
@@ -324,7 +323,6 @@ fun GeneralScreen(settingsViewModel: SettingsViewModel = viewModel()) {
                 }
             }
             item { VGap() }
-            overscrollSpacer(lazyListState)
         }
         // A small title that dynamically appears at the top when the user scrolls down
         GlasenseDynamicSmallTitle(

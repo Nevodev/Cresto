@@ -1,6 +1,7 @@
 package com.nevoit.cresto.data.todo
 
 import androidx.room.withTransaction
+import androidx.sqlite.db.SimpleSQLiteQuery
 import com.nevoit.cresto.data.statistics.DailyStat
 import com.nevoit.cresto.data.todo.backup.RepeatRuleBackupDto
 import com.nevoit.cresto.data.todo.backup.SubTodoBackupDto
@@ -11,6 +12,8 @@ import com.nevoit.cresto.data.todo.calendar.CalendarSyncStatus
 import com.nevoit.cresto.data.todo.calendar.CalendarSyncSummary
 import com.nevoit.cresto.data.todo.calendar.TodoCalendarSyncManager
 import com.nevoit.cresto.feature.settings.util.SettingsManager
+import com.nevoit.cresto.feature.settings.util.SortOption
+import com.nevoit.cresto.feature.settings.util.SortOrder
 import kotlinx.coroutines.flow.Flow
 import kotlinx.serialization.json.Json
 import java.time.LocalDate
@@ -50,6 +53,35 @@ class TodoRepository(
 
     val allTodos: Flow<List<TodoItemWithSubTodos>> = todoDao.getAllTodosWithSubTodos()
 
+    fun getHomeTodos(
+        query: String,
+        sortOption: SortOption,
+        sortOrder: SortOrder,
+        limit: Int
+    ): Flow<List<TodoItemWithSubTodos>> {
+        val searchQuery = query.trim()
+        return todoDao.getHomeTodosWithSubTodos(
+            SimpleSQLiteQuery(
+                buildHomeTodosSql(sortOption, sortOrder),
+                arrayOf<Any>(
+                    searchQuery,
+                    searchQuery,
+                    limit.coerceAtLeast(1)
+                )
+            )
+        )
+    }
+
+    fun getHomeTodoCount(query: String): Flow<Int> {
+        val searchQuery = query.trim()
+        return todoDao.getHomeTodoCount(
+            SimpleSQLiteQuery(
+                HOME_TODO_COUNT_SQL,
+                arrayOf<Any>(searchQuery, searchQuery)
+            )
+        )
+    }
+
     fun getTodosByDate(date: LocalDate): Flow<List<TodoItemWithSubTodos>> {
         return todoDao.getTodosByDate(date)
     }
@@ -68,6 +100,10 @@ class TodoRepository(
 
     suspend fun getTodoByIdSnapshot(id: Int): TodoItem? {
         return todoDao.getTodoWithSubTodosByIdSnapshot(id)?.todoItem
+    }
+
+    fun getTodosByIds(ids: List<Int>): Flow<List<TodoItemWithSubTodos>> {
+        return todoDao.getTodosWithSubTodosByIdsFlow(ids)
     }
 
     suspend fun insert(
@@ -293,21 +329,49 @@ class TodoRepository(
     ): RepeatCompletionResult {
         if (ids.isEmpty()) return RepeatCompletionResult()
 
+        val resolvedCompletedDateTime = if (isCompleted) {
+            completedDateTime ?: LocalDateTime.now()
+        } else {
+            null
+        }
         val result = todoDatabase.withTransaction {
             val todosById = todoDao.getTodosWithSubTodosByIds(ids)
                 .associateBy { it.todoItem.id }
             val orderedTodos = ids.mapNotNull(todosById::get)
             val result = RepeatCompletionResultBuilder()
+            val simpleTodos = orderedTodos
+                .filterNot { it.todoItem.requiresRepeatCompletionHandling() }
+            val simpleIds = simpleTodos.map { it.todoItem.id }
+
+            if (simpleIds.isNotEmpty()) {
+                todoDao.updateCompletedStatusByIds(
+                    ids = simpleIds,
+                    isCompleted = isCompleted,
+                    completedDateTime = resolvedCompletedDateTime
+                )
+            }
 
             orderedTodos.forEach { itemWithSubTodos ->
-                if (isCompleted) {
-                    completeTodoInTransaction(
-                        itemWithSubTodos = itemWithSubTodos,
-                        completedDateTime = completedDateTime ?: LocalDateTime.now(),
-                        result = result
+                val todo = itemWithSubTodos.todoItem
+                if (!todo.requiresRepeatCompletionHandling()) {
+                    result.updatedTodos += todo.copy(
+                        isCompleted = isCompleted,
+                        completedDateTime = if (isCompleted) {
+                            todo.completedDateTime ?: resolvedCompletedDateTime
+                        } else {
+                            null
+                        }
                     )
                 } else {
-                    reopenTodoInTransaction(itemWithSubTodos.todoItem, result)
+                    if (isCompleted) {
+                        completeTodoInTransaction(
+                            itemWithSubTodos = itemWithSubTodos,
+                            completedDateTime = resolvedCompletedDateTime ?: LocalDateTime.now(),
+                            result = result
+                        )
+                    } else {
+                        reopenTodoInTransaction(todo, result)
+                    }
                 }
             }
 
@@ -585,6 +649,10 @@ class TodoRepository(
 
     private fun TodoItem.canDeleteOnReopen(): Boolean {
         return !isCompleted && occurrenceEditedAt == null
+    }
+
+    private fun TodoItem.requiresRepeatCompletionHandling(): Boolean {
+        return repeatRuleId != null || seriesId != null
     }
 
     suspend fun getReminderTodosSnapshot(): List<TodoItem> {
@@ -948,6 +1016,46 @@ class TodoRepository(
         }
     }
 
+    private fun buildHomeTodosSql(
+        sortOption: SortOption,
+        sortOrder: SortOrder
+    ): String {
+        val direction = if (sortOrder == SortOrder.ASCENDING) "ASC" else "DESC"
+        val baseDateExpr =
+            "CASE WHEN isCompleted = 0 THEN creationDateTime ELSE completedDateTime END"
+        val baseDateFallbackClauses = listOf(
+            "CASE WHEN $baseDateExpr IS NULL THEN 1 ELSE 0 END ASC",
+            "$baseDateExpr $direction",
+            "id $direction"
+        )
+        val orderClauses = when (sortOption) {
+            SortOption.DEFAULT -> baseDateFallbackClauses
+            SortOption.DUE_DATE -> listOf(
+                "CASE WHEN dueDate IS NULL THEN 1 ELSE 0 END ASC",
+                "dueDate $direction"
+            ) + baseDateFallbackClauses
+
+            SortOption.FLAG -> {
+                val flagDirection = if (sortOrder == SortOrder.ASCENDING) "DESC" else "ASC"
+                listOf(
+                    "CASE WHEN flag = 0 THEN 1 ELSE 0 END ASC",
+                    "flag $flagDirection"
+                ) + baseDateFallbackClauses
+            }
+
+            SortOption.TITLE -> listOf(
+                "title COLLATE NOCASE $direction"
+            ) + baseDateFallbackClauses
+        }
+
+        return """
+            SELECT * FROM todo_items
+            WHERE (? = '' OR title LIKE '%' || ? || '%' COLLATE NOCASE)
+            ORDER BY isCompleted ASC, ${orderClauses.joinToString(", ")}
+            LIMIT ?
+        """.trimIndent()
+    }
+
     private fun RepeatRuleBackupDto.toRepeatRule(newId: String, newSeriesId: String): RepeatRule {
         return RepeatRule(
             id = newId,
@@ -993,5 +1101,12 @@ class TodoRepository(
             reminderPersistent = reminderPersistent,
             reminderStrong = reminderStrong
         )
+    }
+
+    private companion object {
+        private val HOME_TODO_COUNT_SQL = """
+            SELECT COUNT(*) FROM todo_items
+            WHERE (? = '' OR title LIKE '%' || ? || '%' COLLATE NOCASE)
+        """.trimIndent()
     }
 }

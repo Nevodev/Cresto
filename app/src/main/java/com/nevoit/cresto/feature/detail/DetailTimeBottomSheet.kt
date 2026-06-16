@@ -36,7 +36,6 @@ import com.nevoit.cresto.feature.settings.CustomSwitchRow
 import com.nevoit.cresto.theme.AppColors
 import com.nevoit.cresto.theme.AppSpecs
 import com.nevoit.cresto.ui.components.glasense.GlasenseModalTopBar
-import com.nevoit.cresto.ui.components.glasense.extend.overscrollSpacer
 import com.nevoit.glasense.component.BottomSheet
 import com.nevoit.glasense.component.ListColors
 import com.nevoit.glasense.component.ListStack
@@ -155,7 +154,7 @@ fun DetailTimeBottomSheet(
                             TimeButton(
                                 time = rangeEndTime,
                                 textStyle = timeTextStyle,
-                                enabled = !isAllDayEnabled,
+                                enabled = true,
                                 onPositioned = { rangeEndTimeButtonBounds = it },
                                 onClick = {
                                     onRequestCustomTime(
@@ -175,7 +174,6 @@ fun DetailTimeBottomSheet(
                 }
             }
             item { VGap() }
-            overscrollSpacer(listState)
         }
 
         GlasenseModalTopBar(

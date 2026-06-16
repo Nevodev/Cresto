@@ -6,7 +6,6 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.LocalOverscrollFactory
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
@@ -61,7 +60,7 @@ class MainActivity : ComponentActivity() {
 @Composable
 private fun GlasenseDemoApp() {
     val darkTheme = isSystemInDarkTheme()
-    val overscrollFactory = rememberOffsetOverscrollFactory(Orientation.Vertical)
+    val overscrollFactory = rememberOffsetOverscrollFactory()
     CompositionLocalProvider(LocalOverscrollFactory provides overscrollFactory) {
         GlasenseTheme(darkTheme = darkTheme) {
             DemoScreen()

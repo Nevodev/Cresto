@@ -5,8 +5,10 @@ import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.RawQuery
 import androidx.room.Transaction
 import androidx.room.Update
+import androidx.sqlite.db.SupportSQLiteQuery
 import com.nevoit.cresto.data.statistics.DailyStat
 import kotlinx.coroutines.flow.Flow
 import java.time.LocalDate
@@ -70,6 +72,13 @@ interface TodoDao {
     fun getAllTodosWithSubTodosSortedByDueDate(): Flow<List<TodoItemWithSubTodos>>
 
     @Transaction
+    @RawQuery(observedEntities = [TodoItem::class, SubTodoItem::class])
+    fun getHomeTodosWithSubTodos(query: SupportSQLiteQuery): Flow<List<TodoItemWithSubTodos>>
+
+    @RawQuery(observedEntities = [TodoItem::class])
+    fun getHomeTodoCount(query: SupportSQLiteQuery): Flow<Int>
+
+    @Transaction
     @Query("SELECT * FROM todo_items WHERE dueDate = :date ORDER BY creationDateTime DESC")
     fun getTodosByDate(date: LocalDate): Flow<List<TodoItemWithSubTodos>>
 
@@ -88,6 +97,10 @@ interface TodoDao {
     @Transaction
     @Query("SELECT * FROM todo_items WHERE id IN (:ids)")
     suspend fun getTodosWithSubTodosByIds(ids: List<Int>): List<TodoItemWithSubTodos>
+
+    @Transaction
+    @Query("SELECT * FROM todo_items WHERE id IN (:ids)")
+    fun getTodosWithSubTodosByIdsFlow(ids: List<Int>): Flow<List<TodoItemWithSubTodos>>
 
     @Query("SELECT * FROM repeat_rules WHERE id = :id")
     suspend fun getRepeatRuleByIdSnapshot(id: String): RepeatRule?

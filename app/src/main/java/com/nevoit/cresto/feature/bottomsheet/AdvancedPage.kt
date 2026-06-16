@@ -54,7 +54,6 @@ import com.nevoit.cresto.ui.components.glasense.GlasenseButton
 import com.nevoit.cresto.ui.components.glasense.GlasenseMenuItem
 import com.nevoit.cresto.ui.components.glasense.MenuDivider
 import com.nevoit.cresto.ui.components.glasense.SelectiveMenuItemData
-import com.nevoit.cresto.ui.components.glasense.extend.overscrollSpacer
 import com.nevoit.cresto.ui.components.packed.ConfigTextField
 import com.nevoit.cresto.ui.components.packed.TodoReminderConfig
 import com.nevoit.cresto.ui.components.packed.displayText
@@ -648,7 +647,6 @@ fun AdvancedPage(
                 }
             }
             item { VGap() }
-            overscrollSpacer(lazyListState)
         }
         Box(
             modifier = Modifier

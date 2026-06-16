@@ -109,7 +109,6 @@ import com.nevoit.cresto.ui.components.glasense.MenuDivider
 import com.nevoit.cresto.ui.components.glasense.MenuState
 import com.nevoit.cresto.ui.components.glasense.PopupDirection
 import com.nevoit.cresto.ui.components.glasense.SelectiveMenuItemData
-import com.nevoit.cresto.ui.components.glasense.extend.overscrollSpacer
 import com.nevoit.cresto.ui.components.glasense.isScrolledPast
 import com.nevoit.cresto.ui.components.glasense.rememberSwipeableListState
 import com.nevoit.cresto.ui.components.packed.ConfigTextField
@@ -129,6 +128,7 @@ import com.nevoit.cresto.ui.modifier.pressIndentShaderEffect
 import com.nevoit.cresto.ui.modifier.shaderRipple
 import com.nevoit.cresto.util.formatRelativeTime
 import com.nevoit.glasense.component.ProgressView
+import com.nevoit.glasense.component.paddingItem
 import com.nevoit.glasense.core.component.Icon
 import com.nevoit.glasense.core.component.Text
 import com.nevoit.glasense.core.component.VDivider
@@ -727,7 +727,7 @@ fun DetailScreen(
                             }
                         )
                     }
-                    overscrollSpacer(lazyListState)
+                    paddingItem(lazyListState)
                 }
             }
             // A small title that dynamically appears at the top when the user scrolls down

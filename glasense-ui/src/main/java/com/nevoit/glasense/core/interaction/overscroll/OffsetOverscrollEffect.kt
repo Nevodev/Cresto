@@ -1,17 +1,18 @@
 package com.nevoit.glasense.core.interaction.overscroll
 
-import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.AnimationSpec
+import androidx.compose.animation.core.AnimationState
 import androidx.compose.animation.core.AnimationVector
 import androidx.compose.animation.core.VectorConverter
+import androidx.compose.animation.core.animateTo
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.OverscrollEffect
-import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
@@ -25,26 +26,24 @@ import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.util.fastRoundToInt
 import com.nevoit.glasense.core.interaction.overscroll.util.NoOpShape
 import com.nevoit.glasense.core.interaction.overscroll.util.ProgressConverter
-import com.nevoit.glasense.core.interaction.overscroll.util.SpaceVectorConverter
 import com.nevoit.glasense.core.interaction.overscroll.util.singleRelativeLayoutWithLayer
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.android.awaitFrame
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.launch
-import kotlin.coroutines.cancellation.CancellationException
 import kotlin.math.abs
 import kotlin.math.sign
 
 // thanks kyant0 for provide these codes <3
 @Composable
 internal fun rememberOffsetOverscrollEffect(
-    orientation: Orientation,
     animationSpec: AnimationSpec<Float> = OffsetOverscrollEffect.DefaultAnimationSpec,
     maxFraction: Float = 0.65f
 ): OffsetOverscrollEffect {
     val animationScope = rememberCoroutineScope()
-    return remember(orientation, animationScope, animationSpec, maxFraction) {
+    return remember(animationScope, animationSpec, maxFraction) {
         OffsetOverscrollEffect(
-            orientation = orientation,
             animationScope = animationScope,
             animationSpec = animationSpec,
             maxFraction = maxFraction
@@ -53,23 +52,21 @@ internal fun rememberOffsetOverscrollEffect(
 }
 
 class OffsetOverscrollEffect(
-    private val orientation: Orientation,
     private val animationScope: CoroutineScope,
     private val animationSpec: AnimationSpec<Float>,
     private val maxFraction: Float,
-) : OverscrollEffect, SpaceVectorConverter by SpaceVectorConverter(orientation) {
+) : OverscrollEffect {
 
-    private val overscrollOffsetAnimation =
-        Animatable(0f, 0.5f)
+    private var offset by mutableStateOf(Offset.Zero)
+    private var axis = Axis.None
+    private var springJob: Job? = null
+    private var flingToScrollOffset = Offset.Zero
 
-    val isInOverscroll: Boolean by derivedStateOf {
-
-        overscrollOffsetAnimation.isRunning || overscrollOffsetAnimation.value != 0f
-
-    }
+    val isInOverscroll: Boolean
+        get() = springJob?.isActive == true || offset != Offset.Zero
 
     val overScrollOffset: Float
-        get() = overscrollOffsetAnimation.value
+        get() = offset.toFloat()
 
     override val isInProgress: Boolean = false
 
@@ -78,172 +75,90 @@ class OffsetOverscrollEffect(
         source: NestedScrollSource,
         performScroll: (Offset) -> Offset
     ): Offset {
-        val deltaForAxis = delta.toFloat()
-
-        // If we're currently overscrolled, and the user scrolls in the opposite direction, we need
-        // to "relax" the overscroll by consuming some of the scroll delta to bring it back towards
-        // zero.
-        val currentOffset = overscrollOffsetAnimation.value
-        val sameDirection = deltaForAxis.sign == currentOffset.sign
-        val consumedByPreScroll =
-            if (abs(currentOffset) > 0.5f && !sameDirection) {
-                // The user has scrolled in the opposite direction.
-                val prevOverscrollValue = currentOffset
-                val newOverscrollValue = currentOffset + deltaForAxis
-                if (sign(prevOverscrollValue) != sign(newOverscrollValue)) {
-                    // Enough to completely cancel the overscroll. We snap the overscroll value
-                    // back to zero and consume the corresponding amount of the scroll delta.
-                    animationScope.launch {
-                        overscrollOffsetAnimation.snapTo(0f)
-                    }
-                    -prevOverscrollValue
-                } else {
-                    // Not enough to cancel the overscroll. We update the overscroll value
-                    // accordingly and consume the entire scroll delta.
-                    animationScope.launch {
-                        overscrollOffsetAnimation.snapTo(newOverscrollValue)
-                    }
-                    deltaForAxis
-                }
-            } else {
-                0f
-            }.toOffset()
-
-        // After handling any overscroll relaxation, we pass the remaining scroll delta to the
-        // standard scrolling logic.
-        val leftForScroll = delta - consumedByPreScroll
-        val consumedByScroll = performScroll(leftForScroll)
-        val overscrollDelta = leftForScroll - consumedByScroll
-
-        // If the user is dragging (not flinging), and there's any remaining scroll delta after the
-        // standard scrolling logic has been applied, we add it to the overscroll.
-        if (source == NestedScrollSource.UserInput && abs(overscrollDelta.toFloat()) > 0.5f) {
-            animationScope.launch {
-                overscrollOffsetAnimation.snapTo(currentOffset + overscrollDelta.toFloat())
-            }
+        if (axis == Axis.None) {
+            axis = if (abs(delta.y) >= abs(delta.x)) Axis.Vertical else Axis.Horizontal
         }
 
-        return consumedByPreScroll + consumedByScroll
+        val isUserInput = source == NestedScrollSource.UserInput
+        if (isUserInput) {
+            springJob?.cancel()
+            springJob = null
+        }
+
+        var unconsumed = delta + flingToScrollOffset
+        flingToScrollOffset = Offset.Zero
+
+        if (offset != Offset.Zero) {
+            unconsumed -= consumeOffset(unconsumed)
+            if (unconsumed == Offset.Zero) return delta
+        }
+
+        unconsumed -= performScroll(unconsumed)
+        if (unconsumed == Offset.Zero) return delta
+
+        if (source == NestedScrollSource.UserInput) {
+            unconsumed -= consumeOffset(unconsumed)
+        } else {
+            consumeOffset(unconsumed)
+        }
+
+        return delta - unconsumed
     }
 
     override suspend fun applyToFling(
         velocity: Velocity,
         performFling: suspend (Velocity) -> Velocity
     ) {
-        var unconsumed = velocity.toFloat()
-        if (unconsumed > 0f) {
-            if (overscrollOffsetAnimation.value == 0f) {
-                var frameTimeNanos = 1000L / 60L * 1_000_000L
-                animationScope.launch {
-                    var start = System.currentTimeMillis()
-                    awaitFrame()
-                    frameTimeNanos = (System.currentTimeMillis() - start) * 1_000_000L
-                    start = System.currentTimeMillis()
-                    awaitFrame()
-                    frameTimeNanos = (System.currentTimeMillis() - start) * 1_000_000L
-                }
+        var unconsumed = velocity
 
-                unconsumed -= performFling(
-                    when (orientation) {
-                        Orientation.Horizontal -> Velocity(unconsumed, velocity.y)
-                        Orientation.Vertical -> Velocity(velocity.x, unconsumed)
-                    }
-                ).toFloat()
-                if (unconsumed != 0f) {
-                    overscrollOffsetAnimation.snapTo(
-                        animationSpec.vectorize(Float.VectorConverter).getValueFromNanos(
-                            frameTimeNanos,
-                            AnimationVector(0f),
-                            AnimationVector(0f),
-                            AnimationVector(unconsumed)
-                        ).value
-                    )
-                    overscrollOffsetAnimation.animateTo(0f, animationSpec, unconsumed)
-                }
-            } else if (overscrollOffsetAnimation.value > 0f) {
-                overscrollOffsetAnimation.animateTo(0f, animationSpec, unconsumed)
-            } else {
-                try {
-                    overscrollOffsetAnimation.animateTo(0f, animationSpec, unconsumed) {
-                        if (value >= 0f) {
-                            unconsumed = this.velocity
-                            throw CancellationException("overscroll_cancel")
+        if (offset != Offset.Zero) {
+            springJob = CoroutineScope(currentCoroutineContext()).launch {
+                AnimationState(offset.toFloat(), unconsumed.toFloat())
+                    .animateTo(0f, animationSpec) {
+                        unconsumed = unconsumed.copyWith(this.velocity)
+                        var unconsumedOffset = value.toOffset() - offset
+                        unconsumedOffset -= consumeOffset(unconsumedOffset)
+                        if (offset.toFloat() == 0f) {
+                            flingToScrollOffset = unconsumedOffset
+                            cancelAnimation()
                         }
                     }
-                } catch (e: CancellationException) {
-                    if (e.message != "overscroll_cancel") throw e
-                    overscrollOffsetAnimation.snapTo(0f)
-                } finally {
-                    unconsumed -= performFling(
-                        when (orientation) {
-                            Orientation.Horizontal -> Velocity(unconsumed, velocity.y)
-                            Orientation.Vertical -> Velocity(velocity.x, unconsumed)
-                        }
-                    ).toFloat()
-                    if (unconsumed != 0f) {
-                        overscrollOffsetAnimation.animateTo(0f, animationSpec, unconsumed)
-                    }
-                }
             }
-        } else if (unconsumed < 0f) {
-            if (overscrollOffsetAnimation.value == 0f) {
-                var frameTimeNanos = 1000L / 60L * 1_000_000L
-                animationScope.launch {
-                    var start = System.currentTimeMillis()
-                    awaitFrame()
-                    frameTimeNanos = (System.currentTimeMillis() - start) * 1_000_000L
-                    start = System.currentTimeMillis()
-                    awaitFrame()
-                    frameTimeNanos = (System.currentTimeMillis() - start) * 1_000_000L
-                }
+            springJob?.join()
+            springJob = null
+        }
 
-                unconsumed -= performFling(
-                    when (orientation) {
-                        Orientation.Horizontal -> Velocity(unconsumed, velocity.y)
-                        Orientation.Vertical -> Velocity(velocity.x, unconsumed)
-                    }
-                ).toFloat()
-                if (unconsumed != 0f) {
-                    overscrollOffsetAnimation.snapTo(
-                        animationSpec.vectorize(Float.VectorConverter).getValueFromNanos(
-                            frameTimeNanos,
-                            AnimationVector(0f),
-                            AnimationVector(0f),
-                            AnimationVector(unconsumed)
-                        ).value
-                    )
-                    overscrollOffsetAnimation.animateTo(0f, animationSpec, unconsumed)
-                }
-            } else if (overscrollOffsetAnimation.value < 0f) {
-                overscrollOffsetAnimation.animateTo(0f, animationSpec, unconsumed)
-            } else {
-                try {
-                    overscrollOffsetAnimation.animateTo(0f, animationSpec, unconsumed) {
-                        if (value <= 0f) {
-                            unconsumed = this.velocity
-                            throw CancellationException("overscroll_cancel")
-                        }
-                    }
-                } catch (e: CancellationException) {
-                    if (e.message != "overscroll_cancel") throw e
-                    overscrollOffsetAnimation.snapTo(0f)
-                } finally {
-                    unconsumed -= performFling(
-                        when (orientation) {
-                            Orientation.Horizontal -> Velocity(unconsumed, velocity.y)
-                            Orientation.Vertical -> Velocity(velocity.x, unconsumed)
-                        }
-                    ).toFloat()
-                    if (unconsumed != 0f) {
-                        overscrollOffsetAnimation.animateTo(0f, animationSpec, unconsumed)
-                    }
-                }
+        var frameTimeNanos = 1000L / 60L * 1_000_000L
+        if (offset.toFloat() == 0f && unconsumed.toFloat() != 0f) {
+            animationScope.launch {
+                var start = System.currentTimeMillis()
+                awaitFrame()
+                frameTimeNanos = (System.currentTimeMillis() - start) * 1_000_000L
+                start = System.currentTimeMillis()
+                awaitFrame()
+                frameTimeNanos = (System.currentTimeMillis() - start) * 1_000_000L
             }
-        } else {
-            performFling(velocity)
-            if (overscrollOffsetAnimation.value != 0f) {
-                overscrollOffsetAnimation.animateTo(0f, animationSpec)
+        }
+
+        unconsumed -= performFling(unconsumed)
+
+        if (unconsumed.toFloat() != 0f) {
+            springJob = CoroutineScope(currentCoroutineContext()).launch {
+                if (offset.toFloat() == 0f) {
+                    offset = animationSpec.vectorize(Float.VectorConverter).getValueFromNanos(
+                        frameTimeNanos,
+                        AnimationVector(0f),
+                        AnimationVector(0f),
+                        AnimationVector(unconsumed.toFloat())
+                    ).value.toOffset()
+                }
+                AnimationState(offset.toFloat(), unconsumed.toFloat())
+                    .animateTo(0f, animationSpec) {
+                        offset = offset.copyWith(value)
+                    }
             }
+            springJob?.join()
+            springJob = null
         }
     }
 
@@ -256,18 +171,25 @@ class OffsetOverscrollEffect(
             constraints: Constraints
         ): MeasureResult {
             val placeable = measurable.measure(constraints)
-            val maxDistance = when (orientation) {
-                Orientation.Horizontal -> constraints.maxWidth.toFloat()
-                Orientation.Vertical -> constraints.maxHeight.toFloat()
-            }
+            val maxWidth = constraints.maxWidth.toFloat()
+            val maxHeight = constraints.maxHeight.toFloat()
+
             return singleRelativeLayoutWithLayer(placeable) {
                 shape = NoOpShape
-                val overscrollDistance = overscrollOffsetAnimation.value
-                if (overscrollDistance != 0f) {
+
+                val currentAxis = axis
+                val maxDistance = when (currentAxis) {
+                    Axis.Horizontal -> maxWidth
+                    Axis.Vertical -> maxHeight
+                    Axis.None -> 0f
+                }
+
+                val overscrollDistance = offset.toFloat()
+                if (currentAxis != Axis.None && maxDistance > 0f && overscrollDistance != 0f) {
                     val offsetPx = computeOffset(overscrollDistance, maxDistance).fastRoundToInt()
-                    when (orientation) {
-                        Orientation.Horizontal -> translationX = offsetPx.toFloat()
-                        Orientation.Vertical -> translationY = offsetPx.toFloat()
+                    when (currentAxis) {
+                        Axis.Horizontal -> translationX = offsetPx.toFloat()
+                        Axis.Vertical -> translationY = offsetPx.toFloat()
                     }
                 }
             }
@@ -277,6 +199,65 @@ class OffsetOverscrollEffect(
     private fun computeOffset(overscrollDistance: Float, maxDistance: Float): Float {
         val progress = ProgressConverter.convert(overscrollDistance / maxDistance, maxFraction)
         return progress * maxDistance
+    }
+
+    private fun consumeOffset(delta: Offset): Offset {
+        val oldOffset = offset.toFloat()
+        val delta = delta.toFloat()
+        val consumed =
+            if (oldOffset == 0f || (oldOffset + delta).sign == oldOffset.sign) {
+                delta
+            } else {
+                -oldOffset
+            }
+        offset = offset.copyWith(oldOffset + consumed)
+        return consumed.toOffset()
+    }
+
+    private fun Offset.toFloat(): Float {
+        return when (axis) {
+            Axis.Vertical -> y
+            Axis.Horizontal -> x
+            Axis.None -> 0f
+        }
+    }
+
+    private fun Velocity.toFloat(): Float {
+        return when (axis) {
+            Axis.Vertical -> y
+            Axis.Horizontal -> x
+            Axis.None -> 0f
+        }
+    }
+
+    private fun Float.toOffset(): Offset {
+        return when (axis) {
+            Axis.Vertical -> Offset(0f, this)
+            Axis.Horizontal -> Offset(this, 0f)
+            Axis.None -> Offset.Zero
+        }
+    }
+
+    private fun Offset.copyWith(value: Float): Offset {
+        return when (axis) {
+            Axis.Vertical -> copy(y = value)
+            Axis.Horizontal -> copy(x = value)
+            Axis.None -> this
+        }
+    }
+
+    private fun Velocity.copyWith(value: Float): Velocity {
+        return when (axis) {
+            Axis.Vertical -> copy(y = value)
+            Axis.Horizontal -> copy(x = value)
+            Axis.None -> this
+        }
+    }
+
+    private enum class Axis {
+        None,
+        Vertical,
+        Horizontal
     }
 
     internal companion object {

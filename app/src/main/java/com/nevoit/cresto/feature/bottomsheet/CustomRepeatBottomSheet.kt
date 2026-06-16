@@ -72,7 +72,6 @@ import com.nevoit.cresto.ui.components.glasense.GlasenseWheelPicker
 import com.nevoit.cresto.ui.components.glasense.PopupDirection
 import com.nevoit.cresto.ui.components.glasense.PopupState
 import com.nevoit.cresto.ui.components.glasense.SelectiveMenuItemData
-import com.nevoit.cresto.ui.components.glasense.extend.overscrollSpacer
 import com.nevoit.glasense.component.BottomSheet
 import com.nevoit.glasense.component.ListColors
 import com.nevoit.glasense.component.ListRowAccessory
@@ -405,7 +404,6 @@ fun CustomRepeatBottomSheet(
                 }
             }
             item { VGap() }
-            overscrollSpacer(listState)
         }
 
         GlasenseModalTopBar(
