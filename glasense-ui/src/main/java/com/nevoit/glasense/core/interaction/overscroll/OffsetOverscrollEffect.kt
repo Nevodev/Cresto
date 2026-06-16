@@ -7,11 +7,8 @@ import androidx.compose.animation.core.VectorConverter
 import androidx.compose.animation.core.animateTo
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.OverscrollEffect
-import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -35,22 +32,6 @@ import kotlinx.coroutines.launch
 import kotlin.math.abs
 import kotlin.math.sign
 
-// thanks kyant0 for provide these codes <3
-@Composable
-internal fun rememberOffsetOverscrollEffect(
-    animationSpec: AnimationSpec<Float> = OffsetOverscrollEffect.DefaultAnimationSpec,
-    maxFraction: Float = 0.65f
-): OffsetOverscrollEffect {
-    val animationScope = rememberCoroutineScope()
-    return remember(animationScope, animationSpec, maxFraction) {
-        OffsetOverscrollEffect(
-            animationScope = animationScope,
-            animationSpec = animationSpec,
-            maxFraction = maxFraction
-        )
-    }
-}
-
 class OffsetOverscrollEffect(
     private val animationScope: CoroutineScope,
     private val animationSpec: AnimationSpec<Float>,
@@ -61,12 +42,6 @@ class OffsetOverscrollEffect(
     private var axis = Axis.None
     private var springJob: Job? = null
     private var flingToScrollOffset = Offset.Zero
-
-    val isInOverscroll: Boolean
-        get() = springJob?.isActive == true || offset != Offset.Zero
-
-    val overScrollOffset: Float
-        get() = offset.toFloat()
 
     override val isInProgress: Boolean = false
 
@@ -98,9 +73,10 @@ class OffsetOverscrollEffect(
 
         if (source == NestedScrollSource.UserInput) {
             unconsumed -= consumeOffset(unconsumed)
-        } else {
-            consumeOffset(unconsumed)
         }
+//        else {
+//            consumeOffset(unconsumed)
+//        }
 
         return delta - unconsumed
     }
