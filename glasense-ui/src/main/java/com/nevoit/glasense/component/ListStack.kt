@@ -32,11 +32,13 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.Layout
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.util.fastCoerceAtLeast
 import com.kyant.shapes.RoundedRectangle
 import com.kyant.shapes.UnevenRoundedRectangle
 import com.nevoit.glasense.R
@@ -1089,3 +1091,21 @@ object ListDefaults {
     }
 
 }
+
+fun LazyListScope.paddingItem(state: LazyListState) {
+    item(contentType = LazyListPaddingItem) {
+        Box(
+            Modifier.layout { _, constraints ->
+                val layoutInfo = state.layoutInfo
+                val viewportBottom = layoutInfo.viewportEndOffset - layoutInfo.afterContentPadding
+                val lastContentItem =
+                    layoutInfo.visibleItemsInfo.lastOrNull { it.contentType !== LazyListPaddingItem }
+                val contentBottom = lastContentItem?.let { it.offset + it.size } ?: 0
+                val height = (viewportBottom - contentBottom + 1).fastCoerceAtLeast(0)
+                layout(constraints.maxWidth, height) {}
+            }
+        )
+    }
+}
+
+private data object LazyListPaddingItem
