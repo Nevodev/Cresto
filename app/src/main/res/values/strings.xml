@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name">Cresto</string>
-    <string name="all_todos">All Todos</string>
+    <string name="all">All</string>
+    <string name="ungrouped_todos">Ungrouped</string>
     <string name="mind_flow">Mind Flow</string>
     <string name="settings">Settings</string>
     <string name="cancel">Cancel</string>

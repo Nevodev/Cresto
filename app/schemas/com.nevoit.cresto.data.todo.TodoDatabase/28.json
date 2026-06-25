@@ -1,0 +1,436 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 28,
+    "identityHash": "f59e2c72a82923c6685a538c0194e5d7",
+    "entities": [
+      {
+        "tableName": "todo_items",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `title` TEXT NOT NULL, `dueDate` TEXT, `creationDateTime` TEXT NOT NULL, `isCompleted` INTEGER NOT NULL, `flag` INTEGER NOT NULL, `groupId` INTEGER, `completedDateTime` TEXT, `notes` TEXT NOT NULL, `startTime` TEXT, `endTime` TEXT, `reminderMode` TEXT, `reminderOffsetMinutes` INTEGER, `reminderDayOffset` INTEGER, `reminderTime` TEXT, `reminderPersistent` INTEGER NOT NULL, `reminderStrong` INTEGER NOT NULL, `calendarEventId` INTEGER, `calendarSyncedAt` TEXT, `repeatRuleId` TEXT, `seriesId` TEXT, `occurrenceDate` TEXT, `generatedFromTodoId` INTEGER, `occurrenceEditedAt` TEXT)",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "title",
+            "columnName": "title",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "dueDate",
+            "columnName": "dueDate",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "creationDateTime",
+            "columnName": "creationDateTime",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "isCompleted",
+            "columnName": "isCompleted",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "flag",
+            "columnName": "flag",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "groupId",
+            "columnName": "groupId",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "completedDateTime",
+            "columnName": "completedDateTime",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "notes",
+            "columnName": "notes",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "startTime",
+            "columnName": "startTime",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "endTime",
+            "columnName": "endTime",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "reminderMode",
+            "columnName": "reminderMode",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "reminderOffsetMinutes",
+            "columnName": "reminderOffsetMinutes",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "reminderDayOffset",
+            "columnName": "reminderDayOffset",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "reminderTime",
+            "columnName": "reminderTime",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "reminderPersistent",
+            "columnName": "reminderPersistent",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "reminderStrong",
+            "columnName": "reminderStrong",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "calendarEventId",
+            "columnName": "calendarEventId",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "calendarSyncedAt",
+            "columnName": "calendarSyncedAt",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "repeatRuleId",
+            "columnName": "repeatRuleId",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "seriesId",
+            "columnName": "seriesId",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "occurrenceDate",
+            "columnName": "occurrenceDate",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "generatedFromTodoId",
+            "columnName": "generatedFromTodoId",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "occurrenceEditedAt",
+            "columnName": "occurrenceEditedAt",
+            "affinity": "TEXT"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_todo_items_isCompleted_completedDateTime",
+            "unique": false,
+            "columnNames": [
+              "isCompleted",
+              "completedDateTime"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_todo_items_isCompleted_completedDateTime` ON `${TABLE_NAME}` (`isCompleted`, `completedDateTime`)"
+          },
+          {
+            "name": "index_todo_items_dueDate",
+            "unique": false,
+            "columnNames": [
+              "dueDate"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_todo_items_dueDate` ON `${TABLE_NAME}` (`dueDate`)"
+          },
+          {
+            "name": "index_todo_items_isCompleted_dueDate",
+            "unique": false,
+            "columnNames": [
+              "isCompleted",
+              "dueDate"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_todo_items_isCompleted_dueDate` ON `${TABLE_NAME}` (`isCompleted`, `dueDate`)"
+          },
+          {
+            "name": "index_todo_items_creationDateTime",
+            "unique": false,
+            "columnNames": [
+              "creationDateTime"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_todo_items_creationDateTime` ON `${TABLE_NAME}` (`creationDateTime`)"
+          },
+          {
+            "name": "index_todo_items_groupId_isCompleted",
+            "unique": false,
+            "columnNames": [
+              "groupId",
+              "isCompleted"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_todo_items_groupId_isCompleted` ON `${TABLE_NAME}` (`groupId`, `isCompleted`)"
+          },
+          {
+            "name": "index_todo_items_repeatRuleId",
+            "unique": false,
+            "columnNames": [
+              "repeatRuleId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_todo_items_repeatRuleId` ON `${TABLE_NAME}` (`repeatRuleId`)"
+          },
+          {
+            "name": "index_todo_items_seriesId_occurrenceDate",
+            "unique": true,
+            "columnNames": [
+              "seriesId",
+              "occurrenceDate"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_todo_items_seriesId_occurrenceDate` ON `${TABLE_NAME}` (`seriesId`, `occurrenceDate`)"
+          },
+          {
+            "name": "index_todo_items_generatedFromTodoId",
+            "unique": false,
+            "columnNames": [
+              "generatedFromTodoId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_todo_items_generatedFromTodoId` ON `${TABLE_NAME}` (`generatedFromTodoId`)"
+          }
+        ]
+      },
+      {
+        "tableName": "sub_todo_items",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `parentId` INTEGER NOT NULL, `description` TEXT NOT NULL, `isCompleted` INTEGER NOT NULL, FOREIGN KEY(`parentId`) REFERENCES `todo_items`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "parentId",
+            "columnName": "parentId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "description",
+            "columnName": "description",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "isCompleted",
+            "columnName": "isCompleted",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_sub_todo_items_parentId",
+            "unique": false,
+            "columnNames": [
+              "parentId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_sub_todo_items_parentId` ON `${TABLE_NAME}` (`parentId`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "todo_items",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "parentId"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "repeat_rules",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `seriesId` TEXT NOT NULL, `frequency` TEXT NOT NULL, `interval` INTEGER NOT NULL, `weekdays` TEXT, `monthDay` INTEGER, `monthDays` TEXT, `months` TEXT, `endDate` TEXT, `maxOccurrences` INTEGER, `anchorDate` TEXT NOT NULL, `createNextOnCompletion` INTEGER NOT NULL, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "seriesId",
+            "columnName": "seriesId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "frequency",
+            "columnName": "frequency",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "interval",
+            "columnName": "interval",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "weekdays",
+            "columnName": "weekdays",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "monthDay",
+            "columnName": "monthDay",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "monthDays",
+            "columnName": "monthDays",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "months",
+            "columnName": "months",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "endDate",
+            "columnName": "endDate",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "maxOccurrences",
+            "columnName": "maxOccurrences",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "anchorDate",
+            "columnName": "anchorDate",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "createNextOnCompletion",
+            "columnName": "createNextOnCompletion",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_repeat_rules_seriesId",
+            "unique": false,
+            "columnNames": [
+              "seriesId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_repeat_rules_seriesId` ON `${TABLE_NAME}` (`seriesId`)"
+          }
+        ]
+      },
+      {
+        "tableName": "todo_groups",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `name` TEXT NOT NULL, `color` INTEGER NOT NULL, `sortOrder` INTEGER NOT NULL)",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "color",
+            "columnName": "color",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sortOrder",
+            "columnName": "sortOrder",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_todo_groups_name",
+            "unique": true,
+            "columnNames": [
+              "name"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_todo_groups_name` ON `${TABLE_NAME}` (`name`)"
+          },
+          {
+            "name": "index_todo_groups_sortOrder",
+            "unique": false,
+            "columnNames": [
+              "sortOrder"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_todo_groups_sortOrder` ON `${TABLE_NAME}` (`sortOrder`)"
+          }
+        ]
+      }
+    ],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'f59e2c72a82923c6685a538c0194e5d7')"
+    ]
+  }
+}

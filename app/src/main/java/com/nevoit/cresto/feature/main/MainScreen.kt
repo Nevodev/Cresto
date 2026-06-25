@@ -635,7 +635,8 @@ fun MainScreen() {
                                 reminderDayOffset = reminder?.dayOffset,
                                 reminderTime = reminder?.time,
                                 reminderPersistent = reminder?.persistent ?: false,
-                                reminderStrong = reminder?.strong ?: false
+                                reminderStrong = reminder?.strong ?: false,
+                                groupId = bottomSheetState.initialGroupId
                             ),
                             repeatFrequency = repeatFrequency,
                             repeatRuleConfig = repeatRuleConfig

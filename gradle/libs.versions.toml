@@ -17,7 +17,6 @@ composeBom = "2026.05.02"
 mmkv = "2.4.0"
 navigationCompose = "2.9.8"
 roomRuntime = "2.8.4"
-paging = "3.4.0"
 koin-bom = "4.2.2"
 confettiKit = "0.8.0"
 materialColorUtilities = "4.1.1"
@@ -37,9 +36,6 @@ androidx-navigation-compose = { module = "androidx.navigation:navigation-compose
 androidx-room-ktx = { module = "androidx.room:room-ktx", version.ref = "roomRuntime" }
 androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref = "roomRuntime" }
 androidx-room-runtime = { module = "androidx.room:room-runtime", version.ref = "roomRuntime" }
-androidx-room-paging = { module = "androidx.room:room-paging", version.ref = "roomRuntime" }
-androidx-paging-compose = { module = "androidx.paging:paging-compose", version.ref = "paging" }
-androidx-paging-runtime = { module = "androidx.paging:paging-runtime", version.ref = "paging" }
 
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }

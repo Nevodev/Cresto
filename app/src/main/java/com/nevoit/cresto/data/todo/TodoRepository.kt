@@ -1,22 +1,17 @@
 package com.nevoit.cresto.data.todo
 
 import androidx.room.withTransaction
-import androidx.paging.Pager
-import androidx.paging.PagingConfig
-import androidx.paging.PagingData
-import androidx.sqlite.db.SimpleSQLiteQuery
 import com.nevoit.cresto.data.statistics.DailyStat
 import com.nevoit.cresto.data.todo.backup.RepeatRuleBackupDto
 import com.nevoit.cresto.data.todo.backup.SubTodoBackupDto
 import com.nevoit.cresto.data.todo.backup.TodoBackupDto
 import com.nevoit.cresto.data.todo.backup.TodoBackupFile
+import com.nevoit.cresto.data.todo.backup.TodoGroupBackupDto
 import com.nevoit.cresto.data.todo.calendar.CalendarSyncResult
 import com.nevoit.cresto.data.todo.calendar.CalendarSyncStatus
 import com.nevoit.cresto.data.todo.calendar.CalendarSyncSummary
 import com.nevoit.cresto.data.todo.calendar.TodoCalendarSyncManager
 import com.nevoit.cresto.feature.settings.util.SettingsManager
-import com.nevoit.cresto.feature.settings.util.SortOption
-import com.nevoit.cresto.feature.settings.util.SortOrder
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.serialization.json.Json
@@ -57,55 +52,31 @@ class TodoRepository(
 
     val allTodos: Flow<List<TodoItemWithSubTodos>> = todoDao.getAllTodosWithSubTodos()
 
-    fun getHomeTodosPaged(
-        query: String,
-        sortOption: SortOption,
-        sortOrder: SortOrder,
-        isCompleted: Boolean,
-        pageSize: Int
-    ): Flow<PagingData<TodoItemWithSubTodos>> {
-        val searchQuery = query.trim()
-        val args = homeTodoArgs(searchQuery, isCompleted)
-        return Pager(
-            config = PagingConfig(
-                pageSize = pageSize,
-                initialLoadSize = pageSize,
-                prefetchDistance = 6,
-                enablePlaceholders = false
-            ),
-            pagingSourceFactory = {
-                todoDao.getHomeTodosPagingSource(
-                    SimpleSQLiteQuery(
-                        buildHomeTodosPagingSql(sortOption, sortOrder, isCompleted),
-                        args
-                    )
-                )
-            }
-        ).flow
-    }
+    val todoGroups: Flow<List<TodoGroup>> = todoDao.getTodoGroups()
 
-    suspend fun getHomeTodoIds(
-        query: String,
-        sortOption: SortOption,
-        sortOrder: SortOrder
-    ): List<Int> {
-        val searchQuery = query.trim()
-        return todoDao.getHomeTodoIds(
-            SimpleSQLiteQuery(
-                buildHomeTodoIdsSql(sortOption, sortOrder),
-                homeTodoArgs(searchQuery)
+    suspend fun createTodoGroup(name: String, color: Int = 0): Long {
+        val normalizedName = name.trim()
+        require(normalizedName.isNotEmpty()) { "Group name must not be blank" }
+        return todoDao.insertTodoGroup(
+            TodoGroup(
+                name = normalizedName,
+                color = color,
+                sortOrder = todoDao.getNextTodoGroupSortOrder()
             )
         )
     }
 
-    fun getHomeTodoCount(query: String, isCompleted: Boolean? = null): Flow<Int> {
-        val searchQuery = query.trim()
-        return todoDao.getHomeTodoCount(
-            SimpleSQLiteQuery(
-                buildHomeTodoCountSql(isCompleted),
-                homeTodoArgs(searchQuery, isCompleted)
-            )
-        )
+    suspend fun updateTodoGroup(group: TodoGroup) {
+        val normalizedName = group.name.trim()
+        require(normalizedName.isNotEmpty()) { "Group name must not be blank" }
+        todoDao.updateTodoGroup(group.copy(name = normalizedName))
+    }
+
+    suspend fun deleteTodoGroup(group: TodoGroup) {
+        todoDatabase.withTransaction {
+            todoDao.clearTodoGroupId(group.id)
+            todoDao.deleteTodoGroup(group)
+        }
     }
 
     fun getTodosByDate(date: LocalDate): Flow<List<TodoItemWithSubTodos>> {
@@ -155,19 +126,7 @@ class TodoRepository(
             val occurrenceDate = item.dueDate ?: LocalDate.now()
             val seriesId = UUID.randomUUID().toString()
             val ruleId = UUID.randomUUID().toString()
-            val rule = RepeatRule(
-                id = ruleId,
-                seriesId = seriesId,
-                frequency = repeatConfig.frequency,
-                interval = repeatConfig.interval.coerceAtLeast(1),
-                weekdays = repeatConfig.weekdays
-                    .takeIf { it.isNotEmpty() }
-                    ?.joinToString(",") { it.name },
-                monthDay = repeatConfig.monthDay,
-                endDate = repeatConfig.endDate,
-                maxOccurrences = repeatConfig.maxOccurrences,
-                anchorDate = occurrenceDate
-            )
+            val rule = repeatConfig.toRepeatRule(ruleId, seriesId, occurrenceDate)
             todoDao.insertRepeatRule(rule)
             todoDao.insertTodo(
                 item.copy(
@@ -217,19 +176,7 @@ class TodoRepository(
             val occurrenceDate = item.occurrenceDate ?: item.dueDate ?: LocalDate.now()
             val seriesId = item.seriesId ?: UUID.randomUUID().toString()
             val ruleId = existingRuleId ?: UUID.randomUUID().toString()
-            val rule = RepeatRule(
-                id = ruleId,
-                seriesId = seriesId,
-                frequency = config.frequency,
-                interval = config.interval.coerceAtLeast(1),
-                weekdays = config.weekdays
-                    .takeIf { it.isNotEmpty() }
-                    ?.joinToString(",") { it.name },
-                monthDay = config.monthDay,
-                endDate = config.endDate,
-                maxOccurrences = config.maxOccurrences,
-                anchorDate = occurrenceDate
-            )
+            val rule = config.toRepeatRule(ruleId, seriesId, occurrenceDate)
             if (existingRuleId == null) {
                 todoDao.insertRepeatRule(rule)
             } else {
@@ -244,6 +191,58 @@ class TodoRepository(
             nextItem
         }
         syncTodoByIdIfAutoEnabled(updatedItem.id)
+    }
+
+    private fun RepeatRuleConfig.toRepeatRule(
+        ruleId: String,
+        seriesId: String,
+        anchorDate: LocalDate
+    ): RepeatRule {
+        val selectedWeekdays = when (frequency) {
+            RepeatFrequency.Weekly -> weekdays
+            else -> emptySet()
+        }
+        val selectedMonthDays = when (frequency) {
+            RepeatFrequency.Monthly -> persistedMonthDays()
+            else -> emptySet()
+        }
+        val selectedMonths = when (frequency) {
+            RepeatFrequency.Yearly -> months
+            else -> emptySet()
+        }
+
+        return RepeatRule(
+            id = ruleId,
+            seriesId = seriesId,
+            frequency = frequency,
+            interval = interval.coerceAtLeast(1),
+            weekdays = selectedWeekdays
+                .takeIf { it.isNotEmpty() }
+                ?.joinToString(",") { it.name },
+            monthDay = selectedMonthDays.singleOrNull(),
+            monthDays = selectedMonthDays.toPersistedIntList(1..31),
+            months = selectedMonths.toPersistedIntList(1..12),
+            endDate = endDate,
+            maxOccurrences = maxOccurrences,
+            anchorDate = anchorDate
+        )
+    }
+
+    private fun RepeatRuleConfig.persistedMonthDays(): Set<Int> {
+        return monthDays
+            .filter { it in 1..31 }
+            .toSet()
+            .ifEmpty {
+                monthDay?.takeIf { it in 1..31 }?.let { setOf(it) }.orEmpty()
+            }
+    }
+
+    private fun Set<Int>.toPersistedIntList(range: IntRange): String? {
+        return filter { it in range }
+            .distinct()
+            .sorted()
+            .takeIf { it.isNotEmpty() }
+            ?.joinToString(",")
     }
 
     suspend fun delete(item: TodoItem) {
@@ -737,9 +736,10 @@ class TodoRepository(
         val todos = todoDao.getAllTodosSnapshot()
         val subTodos = todoDao.getAllSubTodosSnapshot()
         val repeatRules = todoDao.getAllRepeatRulesSnapshot()
+        val groups = todoDao.getAllTodoGroupsSnapshot()
 
         val backup = TodoBackupFile(
-            schemaVersion = 2,
+            schemaVersion = 4,
             exportedAt = LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME),
             todos = todos.map {
                 TodoBackupDto(
@@ -762,7 +762,8 @@ class TodoRepository(
                     seriesId = it.seriesId,
                     occurrenceDate = it.occurrenceDate?.toString(),
                     generatedFromTodoId = it.generatedFromTodoId,
-                    occurrenceEditedAt = it.occurrenceEditedAt?.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)
+                    occurrenceEditedAt = it.occurrenceEditedAt?.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME),
+                    groupId = it.groupId
                 )
             },
             subTodos = subTodos.map {
@@ -781,10 +782,20 @@ class TodoRepository(
                     interval = it.interval,
                     weekdays = it.weekdays,
                     monthDay = it.monthDay,
+                    monthDays = it.monthDays,
+                    months = it.months,
                     endDate = it.endDate?.toString(),
                     maxOccurrences = it.maxOccurrences,
                     anchorDate = it.anchorDate.toString(),
                     createNextOnCompletion = it.createNextOnCompletion
+                )
+            },
+            groups = groups.map {
+                TodoGroupBackupDto(
+                    id = it.id,
+                    name = it.name,
+                    color = it.color,
+                    sortOrder = it.sortOrder
                 )
             }
         )
@@ -802,6 +813,7 @@ class TodoRepository(
         val repeatRuleIdMap = backup.repeatRules.associate { it.id to UUID.randomUUID().toString() }
         val seriesIdMap =
             backup.repeatRules.associate { it.seriesId to UUID.randomUUID().toString() }
+        val groupIdMap = importTodoGroups(backup.groups)
         val importedRuleIds = mutableSetOf<String>()
         val todoIdMap = mutableMapOf<Int, Int>()
 
@@ -824,6 +836,7 @@ class TodoRepository(
 
             val mappedRepeatRuleId = todoDto.repeatRuleId?.let(repeatRuleIdMap::get)
             val mappedSeriesId = todoDto.seriesId?.let(seriesIdMap::get)
+            val mappedGroupId = todoDto.groupId?.let(groupIdMap::get)
             if (todoDto.repeatRuleId != null && mappedRepeatRuleId != null && mappedRepeatRuleId !in importedRuleIds) {
                 backup.repeatRules.firstOrNull { it.id == todoDto.repeatRuleId }?.let { ruleDto ->
                     todoDao.insertRepeatRuleForImport(
@@ -857,7 +870,8 @@ class TodoRepository(
                     seriesId = mappedSeriesId,
                     occurrenceDate = todoDto.occurrenceDate?.let(LocalDate::parse),
                     generatedFromTodoId = todoDto.generatedFromTodoId?.let(todoIdMap::get),
-                    occurrenceEditedAt = todoDto.occurrenceEditedAt?.let(LocalDateTime::parse)
+                    occurrenceEditedAt = todoDto.occurrenceEditedAt?.let(LocalDateTime::parse),
+                    groupId = mappedGroupId
                 )
             ).toInt()
             importedTodoIds += newTodoId
@@ -1057,89 +1071,32 @@ class TodoRepository(
         }
     }
 
+    private suspend fun importTodoGroups(groups: List<TodoGroupBackupDto>): Map<Int, Int> {
+        if (groups.isEmpty()) return emptyMap()
+
+        val importedIds = mutableMapOf<Int, Int>()
+        groups.sortedWith(compareBy(TodoGroupBackupDto::sortOrder, TodoGroupBackupDto::name))
+            .forEach { groupDto ->
+                val normalizedName = groupDto.name.trim()
+                if (normalizedName.isEmpty()) return@forEach
+
+                val existing = todoDao.getTodoGroupByNameSnapshot(normalizedName)
+                val resolvedId = existing?.id ?: todoDao.insertTodoGroupForImport(
+                    TodoGroup(
+                        name = normalizedName,
+                        color = groupDto.color,
+                        sortOrder = groupDto.sortOrder
+                    )
+                ).toInt()
+                importedIds[groupDto.id] = resolvedId
+            }
+
+        return importedIds
+    }
+
     private suspend fun getTodosWithSubTodosByIds(ids: List<Int>): List<TodoItemWithSubTodos> {
         return ids.chunked(SQLITE_BIND_PARAMETER_CHUNK_SIZE)
             .flatMap { todoDao.getTodosWithSubTodosByIds(it) }
-    }
-
-    private fun buildHomeTodosPagingSql(
-        sortOption: SortOption,
-        sortOrder: SortOrder,
-        isCompleted: Boolean
-    ): String {
-        return """
-            SELECT * FROM todo_items
-            ${buildHomeTodoWhereSql(isCompleted)}
-            ORDER BY ${buildHomeTodoOrderClauses(sortOption, sortOrder)}
-        """.trimIndent()
-    }
-
-    private fun buildHomeTodoIdsSql(
-        sortOption: SortOption,
-        sortOrder: SortOrder
-    ): String {
-        return """
-            SELECT id FROM todo_items
-            ${buildHomeTodoWhereSql()}
-            ORDER BY isCompleted ASC, ${buildHomeTodoOrderClauses(sortOption, sortOrder)}
-        """.trimIndent()
-    }
-
-    private fun buildHomeTodoCountSql(isCompleted: Boolean?): String {
-        return """
-            SELECT COUNT(*) FROM todo_items
-            ${buildHomeTodoWhereSql(isCompleted)}
-        """.trimIndent()
-    }
-
-    private fun buildHomeTodoWhereSql(isCompleted: Boolean? = null): String {
-        val completedClause = if (isCompleted == null) "" else "\n                AND isCompleted = ?"
-        return """
-            WHERE (? = '' OR title LIKE '%' || ? || '%' COLLATE NOCASE)$completedClause
-        """.trimIndent()
-    }
-
-    private fun homeTodoArgs(searchQuery: String, isCompleted: Boolean? = null): Array<Any> {
-        return if (isCompleted == null) {
-            arrayOf(searchQuery, searchQuery)
-        } else {
-            arrayOf(searchQuery, searchQuery, if (isCompleted) 1 else 0)
-        }
-    }
-
-    private fun buildHomeTodoOrderClauses(
-        sortOption: SortOption,
-        sortOrder: SortOrder
-    ): String {
-        val direction = if (sortOrder == SortOrder.ASCENDING) "ASC" else "DESC"
-        val baseDateExpr =
-            "CASE WHEN isCompleted = 0 THEN creationDateTime ELSE completedDateTime END"
-        val baseDateFallbackClauses = listOf(
-            "CASE WHEN $baseDateExpr IS NULL THEN 1 ELSE 0 END ASC",
-            "$baseDateExpr $direction",
-            "id $direction"
-        )
-        val orderClauses = when (sortOption) {
-            SortOption.DEFAULT -> baseDateFallbackClauses
-            SortOption.DUE_DATE -> listOf(
-                "CASE WHEN dueDate IS NULL THEN 1 ELSE 0 END ASC",
-                "dueDate $direction"
-            ) + baseDateFallbackClauses
-
-            SortOption.FLAG -> {
-                val flagDirection = if (sortOrder == SortOrder.ASCENDING) "DESC" else "ASC"
-                listOf(
-                    "CASE WHEN flag = 0 THEN 1 ELSE 0 END ASC",
-                    "flag $flagDirection"
-                ) + baseDateFallbackClauses
-            }
-
-            SortOption.TITLE -> listOf(
-                "title COLLATE NOCASE $direction"
-            ) + baseDateFallbackClauses
-        }
-
-        return orderClauses.joinToString(", ")
     }
 
     private fun RepeatRuleBackupDto.toRepeatRule(newId: String, newSeriesId: String): RepeatRule {
@@ -1150,6 +1107,8 @@ class TodoRepository(
             interval = interval,
             weekdays = weekdays,
             monthDay = monthDay,
+            monthDays = monthDays,
+            months = months,
             endDate = endDate?.let(LocalDate::parse),
             maxOccurrences = maxOccurrences,
             anchorDate = LocalDate.parse(anchorDate),

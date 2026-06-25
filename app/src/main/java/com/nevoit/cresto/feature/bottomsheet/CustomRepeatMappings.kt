@@ -34,11 +34,21 @@ fun RepeatFrequency.toCustomRepeatConfig(anchorDate: LocalDate): CustomRepeatCon
 }
 
 fun CustomRepeatConfig.toRepeatRuleConfig(): RepeatRuleConfig {
+    val repeatMonthDays = when (frequency) {
+        RepeatFrequency.Monthly -> monthDays
+        else -> emptySet()
+    }
+    val repeatMonths = when (frequency) {
+        RepeatFrequency.Yearly -> months
+        else -> emptySet()
+    }
     return RepeatRuleConfig(
         frequency = frequency,
         interval = interval,
-        weekdays = weekdays,
-        monthDay = monthDays.minOrNull(),
+        weekdays = if (frequency == RepeatFrequency.Weekly) weekdays else emptySet(),
+        monthDay = repeatMonthDays.singleOrNull(),
+        monthDays = repeatMonthDays,
+        months = repeatMonths,
         endDate = if (endMode == CustomRepeatEndMode.OnDate) endDate else null,
         maxOccurrences = if (endMode == CustomRepeatEndMode.AfterCount) maxOccurrences else null
     )
@@ -56,12 +66,17 @@ fun RepeatRule.toCustomRepeatConfig(): CustomRepeatConfig {
         maxOccurrences != null -> CustomRepeatEndMode.AfterCount
         else -> CustomRepeatEndMode.Never
     }
+    val selectedMonthDays = monthDays.toIntSet(1..31)
+        .ifEmpty { monthDay?.takeIf { it in 1..31 }?.let { setOf(it) }.orEmpty() }
+        .ifEmpty { setOf(anchorDate.dayOfMonth) }
+    val selectedMonths = months.toIntSet(1..12)
+        .ifEmpty { setOf(anchorDate.monthValue) }
     return CustomRepeatConfig(
         frequency = frequency,
         interval = interval,
         weekdays = weekdays,
-        monthDays = monthDay?.let { setOf(it) } ?: setOf(anchorDate.dayOfMonth),
-        months = setOf(anchorDate.monthValue),
+        monthDays = selectedMonthDays,
+        months = selectedMonths,
         endMode = endMode,
         endDate = endDate,
         maxOccurrences = maxOccurrences ?: 10
@@ -76,6 +91,18 @@ fun RepeatRule.isCustomRepeatRule(): Boolean {
     return interval != 1 ||
         weekdays != null ||
         monthDay != null ||
+        monthDays != null ||
+        months != null ||
         endDate != null ||
         maxOccurrences != null
+}
+
+private fun String?.toIntSet(range: IntRange): Set<Int> {
+    return this
+        ?.split(',')
+        ?.mapNotNull { value ->
+            value.trim().toIntOrNull()?.takeIf { it in range }
+        }
+        ?.toSet()
+        .orEmpty()
 }

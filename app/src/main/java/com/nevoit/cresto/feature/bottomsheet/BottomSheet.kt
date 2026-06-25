@@ -615,7 +615,8 @@ fun BottomSheet(
                     ?: repeatFrequency?.toCustomRepeatConfig(finalDate ?: LocalDate.now()),
                 showMenu = showMenu,
                 onConfirm = { config ->
-                    val presetFrequency = config.toPresetFrequency(anchorDate = finalDate ?: LocalDate.now())
+                    val anchorDate = finalDate ?: LocalDate.now()
+                    val presetFrequency = config.toPresetFrequency(anchorDate = anchorDate)
                     if (presetFrequency != null) {
                         repeatFrequency = presetFrequency
                         customRepeatConfig = null

@@ -2,15 +2,11 @@ package com.nevoit.cresto.data.todo
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.paging.PagingData
-import androidx.paging.cachedIn
 import com.nevoit.cresto.data.statistics.DailyStat
 import com.nevoit.cresto.data.statistics.TodoStat
 import com.nevoit.cresto.data.todo.calendar.CalendarSyncSummary
 import com.nevoit.cresto.data.todo.reminder.TodoAlarmScheduler
 import com.nevoit.cresto.data.utils.EventItem
-import com.nevoit.cresto.feature.settings.util.SortOption
-import com.nevoit.cresto.feature.settings.util.SortOrder
 import com.tencent.mmkv.MMKV
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -35,7 +31,8 @@ import java.time.temporal.ChronoUnit
 
 data class BottomSheetUiState(
     val isVisible: Boolean = false,
-    val initialDate: LocalDate? = null
+    val initialDate: LocalDate? = null,
+    val initialGroupId: Int? = null
 )
 
 data class BackupUiState(
@@ -85,14 +82,6 @@ data class InsightsUiState(
                 weekCompletedTotal > 0
 }
 
-data class HomeTodoCounts(
-    val totalCount: Int = 0,
-    val incompleteCount: Int = 0
-) {
-    val completedCount: Int
-        get() = (totalCount - incompleteCount).coerceAtLeast(0)
-}
-
 private data class InsightCoreCounts(
     val todayTotal: Int,
     val todayCompleted: Int,
@@ -107,14 +96,6 @@ private data class InsightWeekStats(
     val completedTrend: List<DailyStat>
 )
 
-private const val HOME_TODO_PAGE_SIZE = 30
-
-private data class HomeTodoQuery(
-    val searchQuery: String,
-    val sortOption: SortOption,
-    val sortOrder: SortOrder
-)
-
 class TodoViewModel(
     private val repository: TodoRepository,
     private val alarmScheduler: TodoAlarmScheduler
@@ -124,6 +105,28 @@ class TodoViewModel(
         started = SharingStarted.WhileSubscribed(5000),
         initialValue = emptyList()
     )
+
+    val homeGroups: StateFlow<List<TodoGroup>> = repository.todoGroups.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = emptyList()
+    )
+
+    private val _homeGroupFilter = MutableStateFlow<HomeGroupFilter>(HomeGroupFilter.All)
+    val homeGroupFilter: StateFlow<HomeGroupFilter> = _homeGroupFilter.asStateFlow()
+
+    init {
+        viewModelScope.launch {
+            homeGroups.collect { groups ->
+                val selectedFilter = _homeGroupFilter.value
+                if (selectedFilter is HomeGroupFilter.Group &&
+                    groups.none { it.id == selectedFilter.id }
+                ) {
+                    _homeGroupFilter.value = HomeGroupFilter.All
+                }
+            }
+        }
+    }
 
     fun getTodoWithSubTodos(id: Int): Flow<TodoItemWithSubTodos?> = repository.getTodoById(id)
 
@@ -159,22 +162,7 @@ class TodoViewModel(
     }
 
     fun toggleSelectAllItems() {
-        viewModelScope.launch {
-            val query = _searchQuery.value
-            val sortOption = _homeSortOption.value
-            val sortOrder = _homeSortOrder.value
-            val allHomeIds = withContext(Dispatchers.IO) {
-                repository.getHomeTodoIds(query, sortOption, sortOrder)
-            }
-            if (
-                query != _searchQuery.value ||
-                sortOption != _homeSortOption.value ||
-                sortOrder != _homeSortOrder.value
-            ) {
-                return@launch
-            }
-            toggleSelectionForIds(allHomeIds)
-        }
+        toggleSelectionForIds(homeTodos.value.map { it.todoItem.id })
     }
 
     fun toggleSelectAllItems(visibleIds: Collection<Int>) {
@@ -289,7 +277,10 @@ class TodoViewModel(
         val selectedIds = _selectedItemIds.value
         if (selectedIds.size < 2) return@launch
 
-        val orderedSelectedIds = selectedIds.toList()
+        val orderedSelectedIds = homeTodos.value
+            .map { it.todoItem.id }
+            .filter(selectedIds::contains)
+            .ifEmpty { selectedIds.toList() }
 
         if (orderedSelectedIds.isEmpty()) return@launch
 
@@ -426,12 +417,24 @@ class TodoViewModel(
     private val _bottomSheetState = MutableStateFlow(BottomSheetUiState())
     val bottomSheetState = _bottomSheetState.asStateFlow()
 
-    fun showBottomSheet(date: LocalDate? = null) {
-        _bottomSheetState.update { it.copy(isVisible = true, initialDate = date) }
+    fun showBottomSheet(date: LocalDate? = null, groupId: Int? = null) {
+        _bottomSheetState.update {
+            it.copy(
+                isVisible = true,
+                initialDate = date,
+                initialGroupId = groupId
+            )
+        }
     }
 
     fun hideBottomSheet() {
-        _bottomSheetState.update { it.copy(isVisible = false, initialDate = null) }
+        _bottomSheetState.update {
+            it.copy(
+                isVisible = false,
+                initialDate = null,
+                initialGroupId = null
+            )
+        }
     }
 
     val statistics: StateFlow<TodoStat> = combine(
@@ -660,62 +663,18 @@ class TodoViewModel(
 
     private val _searchQuery = MutableStateFlow("")
     val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
-    private val _homeSortOption = MutableStateFlow(SortOption.DEFAULT)
-    private val _homeSortOrder = MutableStateFlow(SortOrder.DESCENDING)
 
-    private val homeTodoQuery = combine(
+    val homeTodos: StateFlow<List<TodoItemWithSubTodos>> = combine(
+        allTodos,
         _searchQuery,
-        _homeSortOption,
-        _homeSortOrder
-    ) { query, sortOption, sortOrder ->
-        HomeTodoQuery(
-            searchQuery = query,
-            sortOption = sortOption,
-            sortOrder = sortOrder
-        )
-    }
-
-    @OptIn(ExperimentalCoroutinesApi::class)
-    val homeIncompleteTodos: Flow<PagingData<TodoItemWithSubTodos>> = homeTodoQuery
-        .flatMapLatest { request ->
-            repository.getHomeTodosPaged(
-                query = request.searchQuery,
-                sortOption = request.sortOption,
-                sortOrder = request.sortOrder,
-                isCompleted = false,
-                pageSize = HOME_TODO_PAGE_SIZE
-            )
-        }
-        .cachedIn(viewModelScope)
-
-    @OptIn(ExperimentalCoroutinesApi::class)
-    val homeCompletedTodos: Flow<PagingData<TodoItemWithSubTodos>> = homeTodoQuery
-        .flatMapLatest { request ->
-            repository.getHomeTodosPaged(
-                query = request.searchQuery,
-                sortOption = request.sortOption,
-                sortOrder = request.sortOrder,
-                isCompleted = true,
-                pageSize = HOME_TODO_PAGE_SIZE
-            )
-        }
-        .cachedIn(viewModelScope)
-
-    @OptIn(ExperimentalCoroutinesApi::class)
-    val homeTodoCounts: StateFlow<HomeTodoCounts> = _searchQuery.flatMapLatest { query ->
-        combine(
-            repository.getHomeTodoCount(query),
-            repository.getHomeTodoCount(query, isCompleted = false)
-        ) { totalCount, incompleteCount ->
-            HomeTodoCounts(
-                totalCount = totalCount,
-                incompleteCount = incompleteCount
-            )
-        }
+        _homeGroupFilter
+    ) { todos, query, groupFilter ->
+        val searchQuery = query.trim()
+        todos.filter { it.matchesHomeFilter(searchQuery, groupFilter) }
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
-        initialValue = HomeTodoCounts()
+        initialValue = emptyList()
     )
 
     @OptIn(ExperimentalCoroutinesApi::class)
@@ -731,13 +690,37 @@ class TodoViewModel(
         _searchQuery.value = query
     }
 
-    fun updateHomeSort(sortOption: SortOption, sortOrder: SortOrder) {
-        val isSortChanged = _homeSortOption.value != sortOption ||
-                _homeSortOrder.value != sortOrder
-        if (!isSortChanged) return
+    fun updateHomeGroupFilter(filter: HomeGroupFilter) {
+        if (_homeGroupFilter.value == filter) return
+        _homeGroupFilter.value = filter
+        clearSelections()
+    }
 
-        _homeSortOption.value = sortOption
-        _homeSortOrder.value = sortOrder
+    fun createTodoGroup(name: String, color: Int = 0) = viewModelScope.launch {
+        repository.createTodoGroup(name, color)
+    }
+
+    fun updateTodoGroup(group: TodoGroup) = viewModelScope.launch {
+        repository.updateTodoGroup(group)
+    }
+
+    fun deleteTodoGroup(group: TodoGroup) = viewModelScope.launch {
+        repository.deleteTodoGroup(group)
+    }
+
+    private fun TodoItemWithSubTodos.matchesHomeFilter(
+        searchQuery: String,
+        groupFilter: HomeGroupFilter
+    ): Boolean {
+        val todo = todoItem
+        val matchesQuery = searchQuery.isEmpty() ||
+                todo.title.contains(searchQuery, ignoreCase = true)
+        val matchesGroup = when (groupFilter) {
+            HomeGroupFilter.All -> true
+            HomeGroupFilter.Ungrouped -> todo.groupId == null
+            is HomeGroupFilter.Group -> todo.groupId == groupFilter.id
+        }
+        return matchesQuery && matchesGroup
     }
 
     private fun List<TodoItem>.reminderTodoIds(): List<Int> {

@@ -56,7 +56,7 @@ internal fun BoxScope.NavigationBar(
         ) {
             Icon(
                 painter = painterResource(id = R.drawable.ic_list),
-                contentDescription = stringResource(R.string.all_todos)
+                contentDescription = stringResource(R.string.todos)
             )
         }
         Spacer(modifier = Modifier.width(8.dp))

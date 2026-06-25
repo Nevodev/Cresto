@@ -5,11 +5,8 @@ import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
-import androidx.room.RawQuery
 import androidx.room.Transaction
 import androidx.room.Update
-import androidx.paging.PagingSource
-import androidx.sqlite.db.SupportSQLiteQuery
 import com.nevoit.cresto.data.statistics.DailyStat
 import kotlinx.coroutines.flow.Flow
 import java.time.LocalDate
@@ -50,6 +47,33 @@ interface TodoDao {
     @Query("DELETE FROM repeat_rules WHERE id = :id")
     suspend fun deleteRepeatRuleById(id: String)
 
+    @Insert(onConflict = OnConflictStrategy.ABORT)
+    suspend fun insertTodoGroup(group: TodoGroup): Long
+
+    @Insert(onConflict = OnConflictStrategy.ABORT)
+    suspend fun insertTodoGroupForImport(group: TodoGroup): Long
+
+    @Update
+    suspend fun updateTodoGroup(group: TodoGroup)
+
+    @Delete
+    suspend fun deleteTodoGroup(group: TodoGroup)
+
+    @Query("SELECT * FROM todo_groups ORDER BY sortOrder ASC, name COLLATE NOCASE ASC, id ASC")
+    fun getTodoGroups(): Flow<List<TodoGroup>>
+
+    @Query("SELECT * FROM todo_groups ORDER BY sortOrder ASC, name COLLATE NOCASE ASC, id ASC")
+    suspend fun getAllTodoGroupsSnapshot(): List<TodoGroup>
+
+    @Query("SELECT * FROM todo_groups WHERE name = :name LIMIT 1")
+    suspend fun getTodoGroupByNameSnapshot(name: String): TodoGroup?
+
+    @Query("SELECT COALESCE(MAX(sortOrder), -1) + 1 FROM todo_groups")
+    suspend fun getNextTodoGroupSortOrder(): Int
+
+    @Query("UPDATE todo_items SET groupId = NULL WHERE groupId = :groupId")
+    suspend fun clearTodoGroupId(groupId: Int)
+
     // --- New operations for SubTodoItem ---
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertSubTodo(item: SubTodoItem)
@@ -71,16 +95,6 @@ interface TodoDao {
     @Transaction
     @Query("SELECT * FROM todo_items ORDER BY dueDate IS NULL, dueDate ASC")
     fun getAllTodosWithSubTodosSortedByDueDate(): Flow<List<TodoItemWithSubTodos>>
-
-    @Transaction
-    @RawQuery(observedEntities = [TodoItem::class, SubTodoItem::class])
-    fun getHomeTodosPagingSource(query: SupportSQLiteQuery): PagingSource<Int, TodoItemWithSubTodos>
-
-    @RawQuery(observedEntities = [TodoItem::class])
-    fun getHomeTodoCount(query: SupportSQLiteQuery): Flow<Int>
-
-    @RawQuery(observedEntities = [TodoItem::class])
-    suspend fun getHomeTodoIds(query: SupportSQLiteQuery): List<Int>
 
     @Transaction
     @Query("SELECT * FROM todo_items WHERE dueDate = :date ORDER BY creationDateTime DESC")

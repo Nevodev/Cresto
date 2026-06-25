@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name">Cresto</string>
-    <string name="all_todos">待办事项</string>
+    <string name="all">全部</string>
+    <string name="ungrouped_todos">未分组</string>
     <string name="mind_flow">心流</string>
     <string name="settings">设置</string>
     <string name="cancel">取消</string>

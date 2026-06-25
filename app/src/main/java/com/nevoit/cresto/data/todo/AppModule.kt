@@ -17,6 +17,8 @@ val appModule = module {
             "todo_database"
         )
             .addMigrations(MIGRATION_25_26)
+            .addMigrations(MIGRATION_26_27)
+            .addMigrations(MIGRATION_27_28)
             .fallbackToDestructiveMigration(true)
             .build()
     }

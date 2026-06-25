@@ -93,9 +93,11 @@ import kotlinx.coroutines.launch
 fun BoxScope.HomeTopAppBar(
     menuController: (anchorBounds: Rect, items: List<GlasenseMenuItem>) -> Unit,
     menuItems: List<GlasenseMenuItem>,
+    title: String,
     isTitleVisible: Boolean,
     backdrop: Backdrop,
-    viewModel: TodoViewModel
+    viewModel: TodoViewModel,
+    newTodoGroupId: Int?
 ) {
     val density = LocalDensity.current
     val scope = rememberCoroutineScope()
@@ -136,11 +138,11 @@ fun BoxScope.HomeTopAppBar(
         if (isSelectionModeActive) stringResource(
             R.string.selected_todos,
             lastNonZeroSelected
-        ) else stringResource(R.string.all_todos)
+        ) else title
     } else if (isComposed) stringResource(
         R.string.selected_todos,
         lastNonZeroSelected
-    ) else stringResource(R.string.all_todos)
+    ) else title
 
     val darkTheme = isAppInDarkTheme()
 
@@ -305,7 +307,7 @@ fun BoxScope.HomeTopAppBar(
                 GlasenseButtonAdaptable(
                     enabled = true,
                     shape = CircleShape,
-                    onClick = { viewModel.showBottomSheet() },
+                    onClick = { viewModel.showBottomSheet(groupId = newTodoGroupId) },
                     modifier = Modifier
                         .graphicsLayer {
                             alpha = 1 - topBarAlphaAnimation.value
