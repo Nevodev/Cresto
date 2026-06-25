@@ -8,6 +8,7 @@ import androidx.room.Query
 import androidx.room.RawQuery
 import androidx.room.Transaction
 import androidx.room.Update
+import androidx.paging.PagingSource
 import androidx.sqlite.db.SupportSQLiteQuery
 import com.nevoit.cresto.data.statistics.DailyStat
 import kotlinx.coroutines.flow.Flow
@@ -73,10 +74,13 @@ interface TodoDao {
 
     @Transaction
     @RawQuery(observedEntities = [TodoItem::class, SubTodoItem::class])
-    fun getHomeTodosWithSubTodos(query: SupportSQLiteQuery): Flow<List<TodoItemWithSubTodos>>
+    fun getHomeTodosPagingSource(query: SupportSQLiteQuery): PagingSource<Int, TodoItemWithSubTodos>
 
     @RawQuery(observedEntities = [TodoItem::class])
     fun getHomeTodoCount(query: SupportSQLiteQuery): Flow<Int>
+
+    @RawQuery(observedEntities = [TodoItem::class])
+    suspend fun getHomeTodoIds(query: SupportSQLiteQuery): List<Int>
 
     @Transaction
     @Query("SELECT * FROM todo_items WHERE dueDate = :date ORDER BY creationDateTime DESC")

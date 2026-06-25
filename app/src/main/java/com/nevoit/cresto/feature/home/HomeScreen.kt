@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -28,7 +27,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -39,6 +37,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.paging.compose.collectAsLazyPagingItems
+import androidx.paging.compose.itemKey
 import com.kyant.backdrop.backdrops.layerBackdrop
 import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import com.nevoit.cresto.R
@@ -50,6 +50,7 @@ import com.nevoit.cresto.feature.settings.util.SettingsViewModel
 import com.nevoit.cresto.feature.settings.util.SortOption
 import com.nevoit.cresto.feature.settings.util.SortOrder
 import com.nevoit.cresto.theme.AppColors
+import com.nevoit.cresto.ui.components.glasense.GlasenseChipGroup
 import com.nevoit.cresto.ui.components.glasense.GlasenseMenuItem
 import com.nevoit.cresto.ui.components.glasense.GlasensePageHeader
 import com.nevoit.cresto.ui.components.glasense.isScrolledPast
@@ -80,7 +81,8 @@ fun BoxScope.HomeScreen(
         onDispose { completionSoundPlayer.release() }
     }
 
-    val homeTodosState by viewModel.homeTodos.collectAsStateWithLifecycle()
+    val incompleteTodos = viewModel.homeIncompleteTodos.collectAsLazyPagingItems()
+    val homeTodoCounts by viewModel.homeTodoCounts.collectAsStateWithLifecycle()
     val selectedItemIds by viewModel.selectedItemIds.collectAsState()
     val isSelectionModeActive by viewModel.isSelectionModeActive.collectAsState()
     val isSearchBoxOpen by viewModel.isSearchBoxOpen.collectAsState()
@@ -122,33 +124,18 @@ fun BoxScope.HomeScreen(
         viewModel.updateHomeSort(currentSortOption, currentSortOrder)
     }
 
-    val todoList = homeTodosState.todos
-    val (incompleteTodos, completeTodos) = remember(todoList) {
-        todoList.partition { !it.todoItem.isCompleted }
-    }
     var completedVisible by rememberSaveable { mutableStateOf(true) }
+    val completedTodos = if (completedVisible && homeTodoCounts.completedCount > 0) {
+        viewModel.homeCompletedTodos.collectAsLazyPagingItems()
+    } else {
+        null
+    }
 
     var showConfetti by remember { mutableStateOf(false) }
     var confettiHideJob by remember { mutableStateOf<Job?>(null) }
     var latestCheckboxTapPosition by remember { mutableStateOf(Offset.Unspecified) }
     var confettiTriggerPosition by remember { mutableStateOf(Offset.Unspecified) }
     val pendingUpdateJobs = remember { mutableStateMapOf<Int, Job>() }
-
-    val incompleteCount = incompleteTodos.size
-    LaunchedEffect(lazyListState, homeTodosState.loadedLimit, homeTodosState.hasMore) {
-        if (!homeTodosState.hasMore) return@LaunchedEffect
-
-        snapshotFlow {
-            val layoutInfo = lazyListState.layoutInfo
-            val lastVisibleIndex = layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: -1
-            val totalItemsCount = layoutInfo.totalItemsCount
-            totalItemsCount > 0 && lastVisibleIndex >= totalItemsCount - 6
-        }.collect { shouldLoadMore ->
-            if (shouldLoadMore) {
-                viewModel.loadNextHomeTodoPage()
-            }
-        }
-    }
 
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()
@@ -188,7 +175,6 @@ fun BoxScope.HomeScreen(
         modifier = Modifier.layerBackdrop(backdrop),
         tabPadding = true
     ) {
-
         if (isSearchBoxOpen) {
             item(key = "top_padding") {
                 Box(
@@ -206,11 +192,20 @@ fun BoxScope.HomeScreen(
                 )
             }
         }
+        item(key = "chips") {
+            GlasenseChipGroup(
+                items = listOf("aaa", "bbb", "ccc", "ddd"),
+                selectedItem = "aaa"
+            ) {
 
-        itemsIndexed(
-            items = incompleteTodos,
-            key = { _, item -> item.todoItem.id },
-        ) { index, item ->
+            }
+            VGap()
+        }
+        items(
+            count = incompleteTodos.itemCount,
+            key = incompleteTodos.itemKey { item -> item.todoItem.id },
+        ) { index ->
+            val item = incompleteTodos[index] ?: return@items
             var isChecked by remember(item.todoItem.id) { mutableStateOf(item.todoItem.isCompleted) }
 
             // Keep local state in sync with source of truth when there's no pending optimistic update.
@@ -257,7 +252,7 @@ fun BoxScope.HomeScreen(
                         }
                     }
 
-                    if (checked && incompleteCount == 1 && !homeTodosState.hasMore) {
+                    if (checked && homeTodoCounts.incompleteCount == 1) {
                         confettiTriggerPosition = latestCheckboxTapPosition
                         confettiHideJob?.cancel()
                         scope.launch {
@@ -290,12 +285,12 @@ fun BoxScope.HomeScreen(
                 onDelete = { viewModel.delete(item.todoItem) }
             )
 
-            if (completeTodos.isNotEmpty() || index != incompleteTodos.lastIndex) {
+            if (homeTodoCounts.completedCount > 0 || index != incompleteTodos.itemCount - 1) {
                 VGap()
             }
         }
 
-        if (completeTodos.isNotEmpty()) {
+        if (homeTodoCounts.completedCount > 0) {
             item(key = "small_title") {
                 TodoListSectionHead(
                     title = stringResource(R.string.completed),
@@ -304,11 +299,12 @@ fun BoxScope.HomeScreen(
                     completedVisible = !completedVisible
                 }
             }
-            if (completedVisible) {
-                itemsIndexed(
-                    items = completeTodos,
-                    key = { _, item -> item.todoItem.id },
-                ) { index, item ->
+            completedTodos?.let { completedItems ->
+                items(
+                    count = completedItems.itemCount,
+                    key = completedItems.itemKey { item -> item.todoItem.id },
+                ) { index ->
+                    val item = completedItems[index] ?: return@items
                     TodoListItemRow(
                         item = item,
                         isDueTodayMarkerEnabled = isDueTodayMarkerEnabled,
@@ -331,7 +327,7 @@ fun BoxScope.HomeScreen(
                         onDelete = { viewModel.delete(item.todoItem) }
                     )
 
-                    if (index != completeTodos.lastIndex) {
+                    if (index != completedItems.itemCount - 1) {
                         VGap()
                     }
                 }

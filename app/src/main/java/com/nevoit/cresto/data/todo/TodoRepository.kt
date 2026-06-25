@@ -1,6 +1,9 @@
 package com.nevoit.cresto.data.todo
 
 import androidx.room.withTransaction
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.PagingData
 import androidx.sqlite.db.SimpleSQLiteQuery
 import com.nevoit.cresto.data.statistics.DailyStat
 import com.nevoit.cresto.data.todo.backup.RepeatRuleBackupDto
@@ -15,6 +18,7 @@ import com.nevoit.cresto.feature.settings.util.SettingsManager
 import com.nevoit.cresto.feature.settings.util.SortOption
 import com.nevoit.cresto.feature.settings.util.SortOrder
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
 import kotlinx.serialization.json.Json
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -53,31 +57,53 @@ class TodoRepository(
 
     val allTodos: Flow<List<TodoItemWithSubTodos>> = todoDao.getAllTodosWithSubTodos()
 
-    fun getHomeTodos(
+    fun getHomeTodosPaged(
         query: String,
         sortOption: SortOption,
         sortOrder: SortOrder,
-        limit: Int
-    ): Flow<List<TodoItemWithSubTodos>> {
+        isCompleted: Boolean,
+        pageSize: Int
+    ): Flow<PagingData<TodoItemWithSubTodos>> {
         val searchQuery = query.trim()
-        return todoDao.getHomeTodosWithSubTodos(
-            SimpleSQLiteQuery(
-                buildHomeTodosSql(sortOption, sortOrder),
-                arrayOf<Any>(
-                    searchQuery,
-                    searchQuery,
-                    limit.coerceAtLeast(1)
+        val args = homeTodoArgs(searchQuery, isCompleted)
+        return Pager(
+            config = PagingConfig(
+                pageSize = pageSize,
+                initialLoadSize = pageSize,
+                prefetchDistance = 6,
+                enablePlaceholders = false
+            ),
+            pagingSourceFactory = {
+                todoDao.getHomeTodosPagingSource(
+                    SimpleSQLiteQuery(
+                        buildHomeTodosPagingSql(sortOption, sortOrder, isCompleted),
+                        args
+                    )
                 )
+            }
+        ).flow
+    }
+
+    suspend fun getHomeTodoIds(
+        query: String,
+        sortOption: SortOption,
+        sortOrder: SortOrder
+    ): List<Int> {
+        val searchQuery = query.trim()
+        return todoDao.getHomeTodoIds(
+            SimpleSQLiteQuery(
+                buildHomeTodoIdsSql(sortOption, sortOrder),
+                homeTodoArgs(searchQuery)
             )
         )
     }
 
-    fun getHomeTodoCount(query: String): Flow<Int> {
+    fun getHomeTodoCount(query: String, isCompleted: Boolean? = null): Flow<Int> {
         val searchQuery = query.trim()
         return todoDao.getHomeTodoCount(
             SimpleSQLiteQuery(
-                HOME_TODO_COUNT_SQL,
-                arrayOf<Any>(searchQuery, searchQuery)
+                buildHomeTodoCountSql(isCompleted),
+                homeTodoArgs(searchQuery, isCompleted)
             )
         )
     }
@@ -103,7 +129,14 @@ class TodoRepository(
     }
 
     fun getTodosByIds(ids: List<Int>): Flow<List<TodoItemWithSubTodos>> {
-        return todoDao.getTodosWithSubTodosByIdsFlow(ids)
+        val idChunks = ids.chunked(SQLITE_BIND_PARAMETER_CHUNK_SIZE)
+        return when (idChunks.size) {
+            0 -> throw IllegalArgumentException("ids must not be empty")
+            1 -> todoDao.getTodosWithSubTodosByIdsFlow(idChunks.first())
+            else -> combine(idChunks.map(todoDao::getTodosWithSubTodosByIdsFlow)) { chunkedTodos ->
+                chunkedTodos.flatMap { it }
+            }
+        }
     }
 
     suspend fun insert(
@@ -316,10 +349,10 @@ class TodoRepository(
     }
 
     suspend fun deleteByIds(ids: List<Int>) {
-        todoDao.getTodosWithSubTodosByIds(ids)
+        getTodosWithSubTodosByIds(ids)
             .map { it.todoItem }
             .forEach { deleteCalendarEventIfPresent(it) }
-        todoDao.deleteByIds(ids)
+        ids.chunked(SQLITE_BIND_PARAMETER_CHUNK_SIZE).forEach { todoDao.deleteByIds(it) }
     }
 
     suspend fun updateCompletedStatusByIds(
@@ -335,7 +368,7 @@ class TodoRepository(
             null
         }
         val result = todoDatabase.withTransaction {
-            val todosById = todoDao.getTodosWithSubTodosByIds(ids)
+            val todosById = getTodosWithSubTodosByIds(ids)
                 .associateBy { it.todoItem.id }
             val orderedTodos = ids.mapNotNull(todosById::get)
             val result = RepeatCompletionResultBuilder()
@@ -344,11 +377,13 @@ class TodoRepository(
             val simpleIds = simpleTodos.map { it.todoItem.id }
 
             if (simpleIds.isNotEmpty()) {
-                todoDao.updateCompletedStatusByIds(
-                    ids = simpleIds,
-                    isCompleted = isCompleted,
-                    completedDateTime = resolvedCompletedDateTime
-                )
+                simpleIds.chunked(SQLITE_BIND_PARAMETER_CHUNK_SIZE).forEach { chunk ->
+                    todoDao.updateCompletedStatusByIds(
+                        ids = chunk,
+                        isCompleted = isCompleted,
+                        completedDateTime = resolvedCompletedDateTime
+                    )
+                }
             }
 
             orderedTodos.forEach { itemWithSubTodos ->
@@ -383,11 +418,15 @@ class TodoRepository(
     }
 
     suspend fun getCompletedCountByIds(ids: List<Int>): Int {
-        return todoDao.getCompletedCountByIds(ids)
+        return ids.chunked(SQLITE_BIND_PARAMETER_CHUNK_SIZE)
+            .sumOf { chunk -> todoDao.getCompletedCountByIds(chunk) }
     }
 
     suspend fun updateFlagByIds(ids: List<Int>, flag: Int) {
-        todoDao.updateFlagByIds(ids, flag, LocalDateTime.now())
+        val editedAt = LocalDateTime.now()
+        ids.chunked(SQLITE_BIND_PARAMETER_CHUNK_SIZE).forEach { chunk ->
+            todoDao.updateFlagByIds(chunk, flag, editedAt)
+        }
     }
 
     suspend fun markCompletedById(
@@ -401,7 +440,7 @@ class TodoRepository(
         if (ids.isEmpty()) return emptyList()
 
         val insertedTodos = todoDatabase.withTransaction {
-            val sourceTodosById = todoDao.getTodosWithSubTodosByIds(ids)
+            val sourceTodosById = getTodosWithSubTodosByIds(ids)
                 .associateBy { it.todoItem.id }
             val orderedSourceTodos = ids.mapNotNull(sourceTodosById::get).asReversed()
             if (orderedSourceTodos.isEmpty()) return@withTransaction emptyList()
@@ -455,7 +494,7 @@ class TodoRepository(
         var sourceTodosForCalendar = emptyList<TodoItem>()
         var mergedTodoId = 0
         val mergedSubTodoCount = todoDatabase.withTransaction {
-            val sourceTodosById = todoDao.getTodosWithSubTodosByIds(ids)
+            val sourceTodosById = getTodosWithSubTodosByIds(ids)
                 .associateBy { it.todoItem.id }
             val orderedSourceTodos = ids.mapNotNull(sourceTodosById::get)
             if (orderedSourceTodos.isEmpty()) return@withTransaction 0
@@ -500,7 +539,9 @@ class TodoRepository(
                 todoDao.insertSubTodosForMerge(mergedSubTodos)
             }
 
-            todoDao.deleteByIds(orderedSourceTodos.map { it.todoItem.id })
+            orderedSourceTodos.map { it.todoItem.id }
+                .chunked(SQLITE_BIND_PARAMETER_CHUNK_SIZE)
+                .forEach { todoDao.deleteByIds(it) }
 
             mergedSubTodos.size
         }
@@ -967,7 +1008,7 @@ class TodoRepository(
     suspend fun syncTodosToCalendar(todoIds: List<Int>): CalendarSyncSummary {
         if (todoIds.isEmpty()) return CalendarSyncSummary.from(emptyList())
 
-        val todosById = todoDao.getTodosWithSubTodosByIds(todoIds)
+        val todosById = getTodosWithSubTodosByIds(todoIds)
             .associateBy { it.todoItem.id }
         val results = todoIds
             .mapNotNull(todosById::get)
@@ -1016,7 +1057,57 @@ class TodoRepository(
         }
     }
 
-    private fun buildHomeTodosSql(
+    private suspend fun getTodosWithSubTodosByIds(ids: List<Int>): List<TodoItemWithSubTodos> {
+        return ids.chunked(SQLITE_BIND_PARAMETER_CHUNK_SIZE)
+            .flatMap { todoDao.getTodosWithSubTodosByIds(it) }
+    }
+
+    private fun buildHomeTodosPagingSql(
+        sortOption: SortOption,
+        sortOrder: SortOrder,
+        isCompleted: Boolean
+    ): String {
+        return """
+            SELECT * FROM todo_items
+            ${buildHomeTodoWhereSql(isCompleted)}
+            ORDER BY ${buildHomeTodoOrderClauses(sortOption, sortOrder)}
+        """.trimIndent()
+    }
+
+    private fun buildHomeTodoIdsSql(
+        sortOption: SortOption,
+        sortOrder: SortOrder
+    ): String {
+        return """
+            SELECT id FROM todo_items
+            ${buildHomeTodoWhereSql()}
+            ORDER BY isCompleted ASC, ${buildHomeTodoOrderClauses(sortOption, sortOrder)}
+        """.trimIndent()
+    }
+
+    private fun buildHomeTodoCountSql(isCompleted: Boolean?): String {
+        return """
+            SELECT COUNT(*) FROM todo_items
+            ${buildHomeTodoWhereSql(isCompleted)}
+        """.trimIndent()
+    }
+
+    private fun buildHomeTodoWhereSql(isCompleted: Boolean? = null): String {
+        val completedClause = if (isCompleted == null) "" else "\n                AND isCompleted = ?"
+        return """
+            WHERE (? = '' OR title LIKE '%' || ? || '%' COLLATE NOCASE)$completedClause
+        """.trimIndent()
+    }
+
+    private fun homeTodoArgs(searchQuery: String, isCompleted: Boolean? = null): Array<Any> {
+        return if (isCompleted == null) {
+            arrayOf(searchQuery, searchQuery)
+        } else {
+            arrayOf(searchQuery, searchQuery, if (isCompleted) 1 else 0)
+        }
+    }
+
+    private fun buildHomeTodoOrderClauses(
         sortOption: SortOption,
         sortOrder: SortOrder
     ): String {
@@ -1048,12 +1139,7 @@ class TodoRepository(
             ) + baseDateFallbackClauses
         }
 
-        return """
-            SELECT * FROM todo_items
-            WHERE (? = '' OR title LIKE '%' || ? || '%' COLLATE NOCASE)
-            ORDER BY isCompleted ASC, ${orderClauses.joinToString(", ")}
-            LIMIT ?
-        """.trimIndent()
+        return orderClauses.joinToString(", ")
     }
 
     private fun RepeatRuleBackupDto.toRepeatRule(newId: String, newSeriesId: String): RepeatRule {
@@ -1104,9 +1190,6 @@ class TodoRepository(
     }
 
     private companion object {
-        private val HOME_TODO_COUNT_SQL = """
-            SELECT COUNT(*) FROM todo_items
-            WHERE (? = '' OR title LIKE '%' || ? || '%' COLLATE NOCASE)
-        """.trimIndent()
+        private const val SQLITE_BIND_PARAMETER_CHUNK_SIZE = 900
     }
 }
