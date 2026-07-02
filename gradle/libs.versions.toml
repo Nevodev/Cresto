@@ -11,9 +11,9 @@ kotlinxCoroutinesAndroid = "1.11.0"
 kotlinxCoroutinesCore = "1.11.0"
 kotlinxSerializationJson = "1.11.0"
 kotlinxCollectionsImmutable = "0.5.0"
-lifecycleRuntimeKtx = "2.10.0"
+lifecycleRuntimeKtx = "2.11.0"
 activityCompose = "1.13.0"
-composeBom = "2026.05.02"
+composeBom = "2026.06.00"
 mmkv = "2.4.0"
 navigationCompose = "2.9.8"
 roomRuntime = "2.8.4"
@@ -23,9 +23,11 @@ materialColorUtilities = "4.1.1"
 aboutLibraries = "15.0.1"
 shizuku = "13.1.5"
 coil = "3.5.0"
+glance = "1.2.0-rc01"
 
 
 [libraries]
+androidx-glance-appwidget = { module = "androidx.glance:glance-appwidget", version.ref = "glance" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-lifecycle-runtime-compose = { module = "androidx.lifecycle:lifecycle-runtime-compose", version.ref = "lifecycleRuntimeKtx" }
 androidx-lifecycle-runtime-ktx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "lifecycleRuntimeKtx" }

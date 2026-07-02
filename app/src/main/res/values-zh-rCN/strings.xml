@@ -347,4 +347,7 @@
     <string name="insights_days_format">%1$d 天</string>
     <string name="insights_no_pending">暂无</string>
     <string name="insights_empty_trend">还没有完成记录</string>
+    <string name="groups">分组</string>
+    <string name="recently_deleted">最近删除</string>
+    <string name="new_group">新建组</string>
 </resources>

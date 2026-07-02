@@ -88,7 +88,7 @@ class ListScope internal constructor(
     private val colors: ListColors,
     private val cornerRadius: Dp
 ) {
-    internal val horizontalPadding: Dp
+    val horizontalPadding: Dp
         get() = ListDefaults.horizontalPadding(style)
 
     private var sectionIndex = 0
@@ -96,7 +96,7 @@ class ListScope internal constructor(
     fun item(
         key: Any? = null,
         contentType: Any? = null,
-        content: @Composable () -> Unit
+        content: @Composable LazyItemScope.() -> Unit
     ) {
         lazyListScope.item(
             key = key,

@@ -112,8 +112,20 @@ class TodoViewModel(
         initialValue = emptyList()
     )
 
+    val homeGroupTodoCounts: StateFlow<Map<Int?, Int>> = repository.todoGroupCounts
+        .map { counts -> counts.associate { it.groupId to it.count } }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyMap()
+        )
+
     private val _homeGroupFilter = MutableStateFlow<HomeGroupFilter>(HomeGroupFilter.All)
     val homeGroupFilter: StateFlow<HomeGroupFilter> = _homeGroupFilter.asStateFlow()
+
+    private val _homeGroupSelectionEvents =
+        MutableSharedFlow<HomeGroupFilter>(extraBufferCapacity = 1)
+    val homeGroupSelectionEvents = _homeGroupSelectionEvents.asSharedFlow()
 
     init {
         viewModelScope.launch {
@@ -694,6 +706,11 @@ class TodoViewModel(
         if (_homeGroupFilter.value == filter) return
         _homeGroupFilter.value = filter
         clearSelections()
+    }
+
+    fun updateHomeGroupFilterFromSheet(filter: HomeGroupFilter) {
+        updateHomeGroupFilter(filter)
+        _homeGroupSelectionEvents.tryEmit(filter)
     }
 
     fun createTodoGroup(name: String, color: Int = 0) = viewModelScope.launch {

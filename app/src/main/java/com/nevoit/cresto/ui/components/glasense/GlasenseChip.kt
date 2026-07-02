@@ -14,8 +14,10 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
@@ -48,6 +50,7 @@ private const val ChipHeightSample = "Hg"
 @Composable
 fun <T> GlasenseChipGroup(
     modifier: Modifier = Modifier,
+    state: LazyListState = rememberLazyListState(),
     items: List<T>,
     selectedItem: T,
     itemLabel: (T) -> String = { it.toString() },
@@ -61,6 +64,7 @@ fun <T> GlasenseChipGroup(
     ) {
         LazyRow(
             modifier = modifier.fillMaxWidth(),
+            state = state,
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -109,7 +113,7 @@ private fun GlasenseChipItem(
         Text(
             text = text,
             color = textColor,
-            fontWeight = if (isSelected) FontWeight.Medium else FontWeight.Normal
+            fontWeight = FontWeight.Normal
         )
     }
 }

@@ -68,6 +68,7 @@ import com.nevoit.cresto.data.todo.TodoViewModel
 import com.nevoit.cresto.data.todo.calendar.TodoCalendarSyncManager
 import com.nevoit.cresto.feature.bottomsheet.BottomSheet
 import com.nevoit.cresto.feature.calendar.toToastMessage
+import com.nevoit.cresto.feature.group.GroupBottomSheet
 import com.nevoit.cresto.feature.screenextract.ScreenExtractEvents
 import com.nevoit.cresto.feature.settings.update.UpdateBottomSheet
 import com.nevoit.cresto.feature.settings.update.UpdateCheckResult
@@ -244,6 +245,9 @@ fun MainScreen() {
     }
 
     val bottomSheetState by viewModel.bottomSheetState.collectAsState()
+    val homeGroups by viewModel.homeGroups.collectAsState()
+    val homeGroupTodoCounts by viewModel.homeGroupTodoCounts.collectAsState()
+    val selectedHomeGroupFilter by viewModel.homeGroupFilter.collectAsState()
 
     var isDatePickerVisible by remember { mutableStateOf(false) }
     var dateButtonBounds by remember { mutableStateOf(Rect.Zero) }
@@ -337,6 +341,7 @@ fun MainScreen() {
 
     val newMergedTodoTitle = stringResource(R.string.new_merged_todo_title)
     var isShareSheetVisible by remember { mutableStateOf(false) }
+    var isGroupBottomSheetVisible by rememberSaveable { mutableStateOf(false) }
     val moreMenu = rememberMoreMenuItems(
         onDuplicateSelected = viewModel::duplicateSelectedItems,
         onMergeSelected = { viewModel.mergeSelectedItems(newMergedTodoTitle) },
@@ -388,7 +393,8 @@ fun MainScreen() {
                 NavContainer(
                     currentRoute = currentRoute,
                     showMenu = showMenu,
-                    viewModel = viewModel
+                    viewModel = viewModel,
+                    onOpenGroupBottomSheet = { isGroupBottomSheetVisible = true }
                 )
             }
 
@@ -672,6 +678,18 @@ fun MainScreen() {
                 TodoShareSheet(
                     todos = selectedTodos,
                     onDismiss = { isShareSheetVisible = false }
+                )
+            }
+
+            if (isGroupBottomSheetVisible) {
+                GroupBottomSheet(
+                    groups = homeGroups,
+                    groupTodoCounts = homeGroupTodoCounts,
+                    selectedFilter = selectedHomeGroupFilter,
+                    onFilterSelected = viewModel::updateHomeGroupFilterFromSheet,
+                    onCreateGroup = { name -> viewModel.createTodoGroup(name) },
+                    onDeleteGroup = viewModel::deleteTodoGroup,
+                    onDismissed = { isGroupBottomSheetVisible = false }
                 )
             }
 

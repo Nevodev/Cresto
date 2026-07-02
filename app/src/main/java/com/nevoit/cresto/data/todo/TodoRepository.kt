@@ -54,16 +54,27 @@ class TodoRepository(
 
     val todoGroups: Flow<List<TodoGroup>> = todoDao.getTodoGroups()
 
+    val todoGroupCounts: Flow<List<TodoGroupCount>> = todoDao.getTodoGroupCounts()
+
     suspend fun createTodoGroup(name: String, color: Int = 0): Long {
         val normalizedName = name.trim()
         require(normalizedName.isNotEmpty()) { "Group name must not be blank" }
-        return todoDao.insertTodoGroup(
+        todoDao.getTodoGroupByNameSnapshot(normalizedName)?.let { existing ->
+            return existing.id.toLong()
+        }
+
+        val insertedId = todoDao.insertTodoGroup(
             TodoGroup(
                 name = normalizedName,
                 color = color,
                 sortOrder = todoDao.getNextTodoGroupSortOrder()
             )
         )
+        return if (insertedId != -1L) {
+            insertedId
+        } else {
+            todoDao.getTodoGroupByNameSnapshot(normalizedName)?.id?.toLong() ?: insertedId
+        }
     }
 
     suspend fun updateTodoGroup(group: TodoGroup) {

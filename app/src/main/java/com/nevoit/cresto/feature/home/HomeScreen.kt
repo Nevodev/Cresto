@@ -28,6 +28,7 @@ import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.withFrameNanos
@@ -73,7 +74,8 @@ import kotlin.time.Duration.Companion.seconds
 @Composable
 fun BoxScope.HomeScreen(
     showMenu: (anchorBounds: Rect, items: List<GlasenseMenuItem>) -> Unit,
-    viewModel: TodoViewModel
+    viewModel: TodoViewModel,
+    onOpenGroupBottomSheet: () -> Unit
 ) {
     val settingsViewModel: SettingsViewModel = viewModel()
     val scope = rememberCoroutineScope()
@@ -131,8 +133,19 @@ fun BoxScope.HomeScreen(
     val ungroupedTodosTitle = stringResource(R.string.ungrouped_todos)
     val homeGroupNames = remember(homeGroups) { homeGroups.associate { it.id to it.name } }
     val homeGroupFilters = remember(homeGroups) {
-        listOf(HomeGroupFilter.All, HomeGroupFilter.Ungrouped) +
-                homeGroups.map { HomeGroupFilter.Group(it.id) }
+        listOf(HomeGroupFilter.All) +
+                homeGroups.map { HomeGroupFilter.Group(it.id) } +
+                HomeGroupFilter.Ungrouped
+    }
+    val chipListState = rememberLazyListState()
+    val currentHomeGroupFilters by rememberUpdatedState(homeGroupFilters)
+    LaunchedEffect(viewModel, chipListState) {
+        viewModel.homeGroupSelectionEvents.collect { selectedFilter ->
+            val targetIndex = currentHomeGroupFilters.indexOf(selectedFilter)
+            if (targetIndex >= 0) {
+                chipListState.animateScrollToItem(targetIndex)
+            }
+        }
     }
     val newTodoGroupId = (selectedHomeGroupFilter as? HomeGroupFilter.Group)?.id
 
@@ -221,12 +234,15 @@ fun BoxScope.HomeScreen(
 
         item(key = "chips") {
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .animateItem(placementSpec = Springs.crisp()),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                FolderChipButton { }
+                FolderChipButton(onClick = onOpenGroupBottomSheet)
                 HGap(8.dp)
                 GlasenseChipGroup(
+                    state = chipListState,
                     items = homeGroupFilters,
                     selectedItem = selectedHomeGroupFilter,
                     itemLabel = { filter ->

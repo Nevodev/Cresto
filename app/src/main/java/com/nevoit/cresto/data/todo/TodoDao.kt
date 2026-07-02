@@ -12,6 +12,11 @@ import kotlinx.coroutines.flow.Flow
 import java.time.LocalDate
 import java.time.LocalDateTime
 
+data class TodoGroupCount(
+    val groupId: Int?,
+    val count: Int
+)
+
 // Data Access Object (DAO) for the todo_items table.
 @Dao
 interface TodoDao {
@@ -47,7 +52,7 @@ interface TodoDao {
     @Query("DELETE FROM repeat_rules WHERE id = :id")
     suspend fun deleteRepeatRuleById(id: String)
 
-    @Insert(onConflict = OnConflictStrategy.ABORT)
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertTodoGroup(group: TodoGroup): Long
 
     @Insert(onConflict = OnConflictStrategy.ABORT)
@@ -73,6 +78,9 @@ interface TodoDao {
 
     @Query("UPDATE todo_items SET groupId = NULL WHERE groupId = :groupId")
     suspend fun clearTodoGroupId(groupId: Int)
+
+    @Query("SELECT groupId, COUNT(*) AS count FROM todo_items GROUP BY groupId")
+    fun getTodoGroupCounts(): Flow<List<TodoGroupCount>>
 
     // --- New operations for SubTodoItem ---
     @Insert(onConflict = OnConflictStrategy.REPLACE)

@@ -27,7 +27,8 @@ import kotlin.time.Duration.Companion.milliseconds
 fun BoxScope.NavContainer(
     currentRoute: String,
     showMenu: (anchorBounds: Rect, items: List<GlasenseMenuItem>) -> Unit,
-    viewModel: TodoViewModel
+    viewModel: TodoViewModel,
+    onOpenGroupBottomSheet: () -> Unit
 ) {
     val saveableStateHolder = rememberSaveableStateHolder()
 
@@ -37,7 +38,8 @@ fun BoxScope.NavContainer(
         saveableStateHolder.SaveableStateProvider(key = Screen.Home.route) {
             HomeScreen(
                 showMenu = showMenu,
-                viewModel = viewModel
+                viewModel = viewModel,
+                onOpenGroupBottomSheet = onOpenGroupBottomSheet
             )
 
         }

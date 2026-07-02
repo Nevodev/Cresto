@@ -358,4 +358,7 @@
     <string name="insights_days_format">%1$d d</string>
     <string name="insights_no_pending">None</string>
     <string name="insights_empty_trend">No completed todos yet</string>
+    <string name="groups">Groups</string>
+    <string name="recently_deleted">Recently Deleted</string>
+    <string name="new_group">New Group</string>
 </resources>
