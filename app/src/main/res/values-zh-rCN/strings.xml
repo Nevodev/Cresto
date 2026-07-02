@@ -350,4 +350,5 @@
     <string name="groups">分组</string>
     <string name="recently_deleted">最近删除</string>
     <string name="new_group">新建组</string>
+    <string name="group">分组</string>
 </resources>

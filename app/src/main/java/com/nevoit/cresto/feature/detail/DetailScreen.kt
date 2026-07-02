@@ -75,6 +75,7 @@ import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import com.kyant.shapes.Capsule
 import com.nevoit.cresto.R
 import com.nevoit.cresto.data.todo.EXTRA_DELETE_ID
+import com.nevoit.cresto.data.todo.HomeGroupFilter
 import com.nevoit.cresto.data.todo.RepeatFrequency
 import com.nevoit.cresto.data.todo.RepeatRule
 import com.nevoit.cresto.data.todo.RepeatRuleConfig
@@ -89,6 +90,7 @@ import com.nevoit.cresto.feature.bottomsheet.toCustomRepeatConfig
 import com.nevoit.cresto.feature.bottomsheet.toPresetFrequency
 import com.nevoit.cresto.feature.bottomsheet.toRepeatRuleConfig
 import com.nevoit.cresto.feature.calendar.toToastMessage
+import com.nevoit.cresto.feature.group.GroupBottomSheet
 import com.nevoit.cresto.feature.main.rememberFlagMenuItems
 import com.nevoit.cresto.feature.settings.util.SettingsViewModel
 import com.nevoit.cresto.feature.sharetodo.TodoShareSheet
@@ -158,6 +160,9 @@ fun DetailScreen(
     val repeatRule by viewModel.getRepeatRule(
         itemWithSubTodos?.todoItem?.repeatRuleId
     ).collectAsState(initial = null)
+    val homeGroups by viewModel.homeGroups.collectAsState()
+    val homeGroupTodoCounts by viewModel.homeGroupTodoCounts.collectAsState()
+    val homeGroupNames = remember(homeGroups) { homeGroups.associate { it.id to it.name } }
 
     val statusBarHeight = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
     val navigationBarHeight = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
@@ -323,6 +328,7 @@ fun DetailScreen(
     var moreButtonBounds by remember { mutableStateOf<LayoutCoordinates?>(null) }
     var dateButtonBounds by remember { mutableStateOf(Rect.Zero) }
     var isDatePickerVisible by remember { mutableStateOf(false) }
+    var isGroupBottomSheetVisible by remember { mutableStateOf(false) }
 
     val showDatePicker: (anchorBounds: Rect) -> Unit = { bounds ->
         dateButtonBounds = bounds
@@ -350,6 +356,7 @@ fun DetailScreen(
     var isCustomRepeatBottomSheetVisible by remember { mutableStateOf(false) }
 
     val noneText = stringResource(R.string.none)
+    val ungroupedTodosText = stringResource(R.string.ungrouped_todos)
     val customText = stringResource(R.string.custom)
     val repeatDailyText = stringResource(R.string.repeat_daily)
     val repeatWeeklyText = stringResource(R.string.repeat_weekly)
@@ -568,6 +575,25 @@ fun DetailScreen(
                                     }
                                     Text(
                                         text = getFlagText(selectedIndex),
+                                        fontWeight = FontWeight.Normal,
+                                        color = AppColors.content
+                                    )
+                                }
+                                VDivider()
+                                TodoConfigRow(
+                                    icon = painterResource(id = R.drawable.ic_folder),
+                                    contentDescription = stringResource(R.string.group),
+                                    title = stringResource(R.string.group),
+                                    onButtonClick = {
+                                        performPressHaptic()
+                                        isGroupBottomSheetVisible = true
+                                    }
+                                ) {
+                                    val groupName = currentItem.todoItem.groupId
+                                        ?.let(homeGroupNames::get)
+                                        ?: ungroupedTodosText
+                                    Text(
+                                        text = groupName,
                                         fontWeight = FontWeight.Normal,
                                         color = AppColors.content
                                     )
@@ -878,6 +904,31 @@ fun DetailScreen(
                 },
                 direction = PopupDirection.Down
             )
+
+            if (isGroupBottomSheetVisible) {
+                currentItem?.let { item ->
+                    GroupBottomSheet(
+                        groups = homeGroups,
+                        groupTodoCounts = homeGroupTodoCounts,
+                        selectedFilter = item.todoItem.groupId
+                            ?.let { HomeGroupFilter.Group(it) }
+                            ?: HomeGroupFilter.Ungrouped,
+                        onFilterSelected = { filter ->
+                            val groupId = when (filter) {
+                                HomeGroupFilter.All,
+                                HomeGroupFilter.Ungrouped -> null
+                                is HomeGroupFilter.Group -> filter.id
+                            }
+                            viewModel.update(item.todoItem.copy(groupId = groupId))
+                        },
+                        onCreateGroup = { name -> viewModel.createTodoGroup(name) },
+                        onDeleteGroup = viewModel::deleteTodoGroup,
+                        onDismissed = { isGroupBottomSheetVisible = false },
+                        showAllFilter = false,
+                        showRecentlyDeleted = false
+                    )
+                }
+            }
 
             if (isTimeBottomSheetVisible) {
                 DetailTimeBottomSheet(

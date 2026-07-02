@@ -78,7 +78,9 @@ fun GroupBottomSheet(
     onFilterSelected: (HomeGroupFilter) -> Unit,
     onCreateGroup: (String) -> Unit,
     onDeleteGroup: (TodoGroup) -> Unit,
-    onDismissed: () -> Unit
+    onDismissed: () -> Unit,
+    showAllFilter: Boolean = true,
+    showRecentlyDeleted: Boolean = true
 ) {
     val listState = rememberLazyListState()
     val elevatedPageBackground = AppColors.elevatedPageBackground
@@ -101,6 +103,11 @@ fun GroupBottomSheet(
     BottomSheet(
         onDismissed = onDismissed
     ) { slideOut ->
+        fun selectFilter(filter: HomeGroupFilter) {
+            onFilterSelected(filter)
+            slideOut()
+        }
+
         ListStack(
             state = listState,
             modifier = Modifier
@@ -116,17 +123,19 @@ fun GroupBottomSheet(
             contentPadding = PaddingValues(bottom = navigationBarHeight)
         ) {
             item(key = "top_padding") { VGap(72.dp) }
-            item(key = "all") {
-                GroupRow(
-                    modifier = Modifier.animateItem(placementSpec = Springs.crisp()),
-                    title = stringResource(R.string.all),
-                    trailingText = groupTodoCounts.values.sum().toString(),
-                    iconType = FolderRowIconType.TODOS,
-                    selected = selectedFilter == HomeGroupFilter.All,
-                    onClick = {
-                        onFilterSelected(HomeGroupFilter.All)
-                    })
-                VGap(8.dp)
+            if (showAllFilter) {
+                item(key = "all") {
+                    GroupRow(
+                        modifier = Modifier.animateItem(placementSpec = Springs.crisp()),
+                        title = stringResource(R.string.all),
+                        trailingText = groupTodoCounts.values.sum().toString(),
+                        iconType = FolderRowIconType.TODOS,
+                        selected = selectedFilter == HomeGroupFilter.All,
+                        onClick = {
+                            selectFilter(HomeGroupFilter.All)
+                        })
+                    VGap(8.dp)
+                }
             }
             item(key = "ungrouped") {
                 GroupRow(
@@ -136,17 +145,19 @@ fun GroupBottomSheet(
                     iconType = FolderRowIconType.FOLDER_QUESTION_MARK,
                     selected = selectedFilter == HomeGroupFilter.Ungrouped,
                     onClick = {
-                        onFilterSelected(HomeGroupFilter.Ungrouped)
+                        selectFilter(HomeGroupFilter.Ungrouped)
                     })
                 VGap(8.dp)
             }
-            item(key = "recently_deleted") {
-                GroupRow(
-                    modifier = Modifier.animateItem(placementSpec = Springs.crisp()),
-                    title = stringResource(R.string.recently_deleted),
-                    iconType = FolderRowIconType.TRASH,
-                    onClick = {})
-                VGap(8.dp)
+            if (showRecentlyDeleted) {
+                item(key = "recently_deleted") {
+                    GroupRow(
+                        modifier = Modifier.animateItem(placementSpec = Springs.crisp()),
+                        title = stringResource(R.string.recently_deleted),
+                        iconType = FolderRowIconType.TRASH,
+                        onClick = {})
+                    VGap(8.dp)
+                }
             }
             item(key = "divider") {
                 VDivider(
@@ -166,7 +177,7 @@ fun GroupBottomSheet(
                         trailingText = (groupTodoCounts[group.id] ?: 0).toString(),
                         selected = selectedFilter == HomeGroupFilter.Group(group.id),
                         onClick = {
-                            onFilterSelected(HomeGroupFilter.Group(group.id))
+                            selectFilter(HomeGroupFilter.Group(group.id))
                         },
                         onDelete = {
                             onDeleteGroup(group)
