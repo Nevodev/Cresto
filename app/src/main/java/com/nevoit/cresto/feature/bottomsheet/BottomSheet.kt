@@ -148,7 +148,7 @@ fun BottomSheet(
 
     val isImeVisible = WindowInsets.isImeVisible
 
-    val state = rememberTextFieldState()
+    val aiInputState = rememberTextFieldState()
     val viewModel: TodoViewModel = koinViewModel()
 
     val bottomSheetUiState by viewModel.bottomSheetState.collectAsState()
@@ -470,7 +470,7 @@ fun BottomSheet(
                         scaleY = scaleAnimation.value
                     },
                     isLoading = isLoading,
-                    textFieldState = state,
+                    textFieldState = aiInputState,
                     aiViewModel = aiViewModel,
                     imagePickerLauncher = imagePickerLauncher
                 )
@@ -676,6 +676,7 @@ fun BottomSheet(
                 },
                 onCreateGroup = { name -> viewModel.createTodoGroup(name) },
                 onRenameGroup = viewModel::updateTodoGroup,
+                onReorderGroups = viewModel::reorderTodoGroups,
                 onDeleteGroup = viewModel::deleteTodoGroup,
                 onDismissed = {
                     isGroupBottomSheetVisible = false

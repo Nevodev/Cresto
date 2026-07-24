@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Cresto.Widget.CheckBox" parent="">
+        <item name="android:background">@null</item>
+        <item name="android:button">@drawable/widget_checkbox_background_state</item>
+        <item name="android:foreground">@drawable/widget_checkbox_checkmark_state</item>
+        <item name="android:foregroundGravity">center</item>
+        <item name="android:gravity">center</item>
+        <item name="android:minHeight">0dp</item>
+        <item name="android:minWidth">0dp</item>
+        <item name="android:padding">0dp</item>
+    </style>
+</resources>

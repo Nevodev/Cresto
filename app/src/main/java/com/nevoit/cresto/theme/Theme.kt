@@ -79,6 +79,37 @@ private fun glasenseColorsFromScheme(scheme: ColorScheme, isDark: Boolean): Glas
     )
 }
 
+internal fun resolveAppColors(
+    context: Context,
+    isDark: Boolean,
+    dynamicColor: Boolean,
+    customPrimaryEnabled: Boolean,
+    themePrimaryColorArgb: Int
+): GlasenseColors {
+    val baseColors = if (dynamicColor) {
+        glasenseColorsFromScheme(
+            scheme = dynamicColorScheme(
+                seedColor = systemDynamicSeedColor(context),
+                isDark = isDark
+            ),
+            isDark = isDark
+        )
+    } else {
+        if (isDark) GlasenseDarkPalette else GlasenseLightPalette
+    }
+
+    val resolvedPrimary = when {
+        dynamicColor -> baseColors.primary
+        customPrimaryEnabled -> Color(themePrimaryColorArgb)
+        else -> Blue500
+    }
+
+    return baseColors.copy(
+        primary = resolvedPrimary,
+        activeTrack = if (customPrimaryEnabled) resolvedPrimary else baseColors.activeTrack
+    )
+}
+
 @Composable
 fun GlasenseTheme(
     settingsViewModel: SettingsViewModel = viewModel(),
@@ -99,28 +130,21 @@ fun GlasenseTheme(
     }
 
     val context = LocalContext.current
-    val baseGlasenseColors = if (dynamicColor) {
-        val colorScheme = remember(context, useDarkTheme) {
-            dynamicColorScheme(
-                seedColor = systemDynamicSeedColor(context),
-                isDark = useDarkTheme
-            )
-        }
-        glasenseColorsFromScheme(colorScheme, useDarkTheme)
-    } else {
-        if (useDarkTheme) GlasenseDarkPalette else GlasenseLightPalette
+    val glasenseColors = remember(
+        context,
+        useDarkTheme,
+        dynamicColor,
+        customPrimaryEnabled,
+        themePrimaryColorArgb
+    ) {
+        resolveAppColors(
+            context = context,
+            isDark = useDarkTheme,
+            dynamicColor = dynamicColor,
+            customPrimaryEnabled = customPrimaryEnabled,
+            themePrimaryColorArgb = themePrimaryColorArgb
+        )
     }
-
-    val resolvedPrimary = when {
-        dynamicColor -> baseGlasenseColors.primary
-        customPrimaryEnabled -> Color(themePrimaryColorArgb)
-        else -> Blue500
-    }
-
-    val glasenseColors = baseGlasenseColors.copy(
-        primary = resolvedPrimary,
-        activeTrack = if (customPrimaryEnabled) resolvedPrimary else baseGlasenseColors.activeTrack
-    )
 
     val glasenseSpecs = if (liquidGlass || dynamicColor) {
         GlasenseSpecsVariant

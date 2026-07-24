@@ -768,6 +768,10 @@ class TodoViewModel(
         repository.updateTodoGroup(group)
     }
 
+    fun reorderTodoGroups(orderedGroupIds: List<Int>) = viewModelScope.launch {
+        repository.reorderTodoGroups(orderedGroupIds)
+    }
+
     fun deleteTodoGroup(group: TodoGroup) = viewModelScope.launch {
         repository.deleteTodoGroup(group)
     }

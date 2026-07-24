@@ -1,0 +1,14 @@
+<set xmlns:android="http://schemas.android.com/apk/res/android">
+    <objectAnimator
+        android:duration="200"
+        android:interpolator="@interpolator/widget_checkbox_size"
+        android:propertyName="scaleX"
+        android:valueFrom="0.5"
+        android:valueTo="1" />
+    <objectAnimator
+        android:duration="200"
+        android:interpolator="@interpolator/widget_checkbox_size"
+        android:propertyName="scaleY"
+        android:valueFrom="0.5"
+        android:valueTo="1" />
+</set>

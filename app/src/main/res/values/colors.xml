@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="splash_background">#FFF3F4F6</color>
+    <color name="widget_row_divider">#33000000</color>
 </resources>

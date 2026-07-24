@@ -923,6 +923,7 @@ fun DetailScreen(
                         },
                         onCreateGroup = { name -> viewModel.createTodoGroup(name) },
                         onRenameGroup = viewModel::updateTodoGroup,
+                        onReorderGroups = viewModel::reorderTodoGroups,
                         onDeleteGroup = viewModel::deleteTodoGroup,
                         onDismissed = { isGroupBottomSheetVisible = false },
                         showAllFilter = false,

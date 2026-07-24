@@ -1,0 +1,12 @@
+<animated-vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:drawable="@drawable/widget_checkbox_background_checked">
+    <target
+        android:name="outline"
+        android:animation="@animator/widget_checkbox_outline_uncheck" />
+    <target
+        android:name="fill_group"
+        android:animation="@animator/widget_checkbox_fill_uncheck_scale" />
+    <target
+        android:name="fill"
+        android:animation="@animator/widget_checkbox_fill_uncheck_alpha" />
+</animated-vector>

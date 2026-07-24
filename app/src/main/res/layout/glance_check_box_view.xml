@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<CheckBox xmlns:android="http://schemas.android.com/apk/res/android"
+    style="@style/Cresto.Widget.CheckBox"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:tag="glanceCompoundButton"
+    android:textDirection="locale" />

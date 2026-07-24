@@ -58,8 +58,11 @@ interface TodoDao {
     @Insert(onConflict = OnConflictStrategy.ABORT)
     suspend fun insertTodoGroupForImport(group: TodoGroup): Long
 
-    @Update
-    suspend fun updateTodoGroup(group: TodoGroup)
+    @Query("UPDATE todo_groups SET name = :name, color = :color WHERE id = :groupId")
+    suspend fun updateTodoGroupDetails(groupId: Int, name: String, color: Int)
+
+    @Query("UPDATE todo_groups SET sortOrder = :sortOrder WHERE id = :groupId")
+    suspend fun updateTodoGroupSortOrder(groupId: Int, sortOrder: Int)
 
     @Delete
     suspend fun deleteTodoGroup(group: TodoGroup)

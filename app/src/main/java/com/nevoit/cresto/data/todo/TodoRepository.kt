@@ -89,7 +89,18 @@ class TodoRepository(
         val usedNames = todoDao.getAllTodoGroupsSnapshot()
             .filter { it.id != group.id }
             .mapTo(mutableSetOf()) { it.name }
-        todoDao.updateTodoGroup(group.copy(name = resolveTodoGroupName(normalizedName, usedNames)))
+        todoDao.updateTodoGroupDetails(
+            groupId = group.id,
+            name = resolveTodoGroupName(normalizedName, usedNames),
+            color = group.color
+        )
+    }
+
+    suspend fun reorderTodoGroups(orderedGroupIds: List<Int>) = todoDatabase.withTransaction {
+        val currentGroupIds = todoDao.getAllTodoGroupsSnapshot().map(TodoGroup::id)
+        resolveTodoGroupOrder(currentGroupIds, orderedGroupIds).forEachIndexed { index, groupId ->
+            todoDao.updateTodoGroupSortOrder(groupId, index)
+        }
     }
 
     suspend fun deleteTodoGroup(group: TodoGroup) {
@@ -1265,4 +1276,19 @@ internal fun resolveTodoGroupName(baseName: String, usedNames: Set<String>): Str
         if (candidate !in usedNames) return candidate
         suffix++
     }
+}
+
+internal fun resolveTodoGroupOrder(
+    currentGroupIds: List<Int>,
+    orderedGroupIds: List<Int>
+): List<Int> {
+    val currentIds = currentGroupIds.toSet()
+    val resolvedIds = LinkedHashSet<Int>(currentGroupIds.size)
+
+    orderedGroupIds.forEach { groupId ->
+        if (groupId in currentIds) resolvedIds += groupId
+    }
+    currentGroupIds.forEach(resolvedIds::add)
+
+    return resolvedIds.toList()
 }

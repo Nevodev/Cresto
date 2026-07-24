@@ -709,6 +709,7 @@ fun MainScreen() {
                     onFilterSelected = viewModel::updateHomeGroupFilterFromSheet,
                     onCreateGroup = { name -> viewModel.createTodoGroup(name) },
                     onRenameGroup = viewModel::updateTodoGroup,
+                    onReorderGroups = viewModel::reorderTodoGroups,
                     onDeleteGroup = viewModel::deleteTodoGroup,
                     onOpenRecentlyDeleted = {
                         context.startActivity(RecentlyDeletedActivity.createIntent(context))

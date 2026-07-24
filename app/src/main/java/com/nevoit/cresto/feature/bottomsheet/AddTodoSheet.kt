@@ -16,8 +16,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.input.TextFieldLineLimits
+import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
@@ -100,15 +101,15 @@ fun AddTodoSheet(
 ) {
     // State for tracking the currently selected button (due date, flag, etc.)
     var selectedButton by remember { mutableStateOf(SelectedButton.NONE) }
-    var title by remember { mutableStateOf("") }
+    val titleState = rememberTextFieldState()
     var selectedIndex by remember { mutableIntStateOf(0) }
 
     val keyboardController = LocalSoftwareKeyboardController.current
 
     val onAdd = {
-        if (title.isNotBlank()) {
+        if (titleState.text.isNotBlank()) {
             keyboardController?.hide()
-            onAddClick(title, selectedIndex, finalDate)
+            onAddClick(titleState.text.toString(), selectedIndex, finalDate)
         }
     }
 
@@ -155,17 +156,16 @@ fun AddTodoSheet(
             contentAlignment = Alignment.CenterStart
         ) {
             BasicTextField(
-                value = title,
-                onValueChange = { title = it },
+                state = titleState,
                 modifier = Modifier
                     .padding(horizontal = 16.dp, vertical = 8.dp)
                     .fillMaxWidth()
                     .focusRequester(focusRequester),
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-                keyboardActions = KeyboardActions(onDone = { onAdd() }),
+                onKeyboardAction = { onAdd() },
                 textStyle = GlasenseTheme.type.body.copy(color = AppColors.content),
                 cursorBrush = SolidColor(AppColors.primary),
-                singleLine = true
+                lineLimits = TextFieldLineLimits.SingleLine
             )
         }
         VGap()

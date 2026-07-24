@@ -1,0 +1,17 @@
+<animated-selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/widget_checkbox_background_checked_state"
+        android:drawable="@drawable/widget_checkbox_background_checked"
+        android:state_checked="true" />
+    <item
+        android:id="@+id/widget_checkbox_background_unchecked_state"
+        android:drawable="@drawable/widget_checkbox_background_unchecked" />
+    <transition
+        android:drawable="@drawable/widget_checkbox_background_to_checked"
+        android:fromId="@id/widget_checkbox_background_unchecked_state"
+        android:toId="@id/widget_checkbox_background_checked_state" />
+    <transition
+        android:drawable="@drawable/widget_checkbox_background_to_unchecked"
+        android:fromId="@id/widget_checkbox_background_checked_state"
+        android:toId="@id/widget_checkbox_background_unchecked_state" />
+</animated-selector>

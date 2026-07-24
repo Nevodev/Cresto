@@ -37,6 +37,7 @@ import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
@@ -47,6 +48,7 @@ import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import com.nevoit.cresto.R
 import com.nevoit.cresto.data.todo.HomeGroupFilter
 import com.nevoit.cresto.data.todo.TodoGroup
@@ -71,6 +73,8 @@ import com.nevoit.glasense.theme.GlasenseTheme
 import com.nevoit.glasense.theme.tokens.Springs
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
+import sh.calvin.reorderable.ReorderableItem
+import sh.calvin.reorderable.rememberReorderableLazyListState
 import androidx.compose.animation.Animatable as ColorAnimatable
 
 @Composable
@@ -82,6 +86,7 @@ fun GroupBottomSheet(
     onFilterSelected: (HomeGroupFilter) -> Unit,
     onCreateGroup: (String) -> Unit,
     onRenameGroup: (TodoGroup) -> Unit,
+    onReorderGroups: (List<Int>) -> Unit,
     onDeleteGroup: (TodoGroup) -> Unit,
     onOpenRecentlyDeleted: () -> Unit = {},
     onDismissed: () -> Unit,
@@ -89,6 +94,21 @@ fun GroupBottomSheet(
     showRecentlyDeleted: Boolean = true
 ) {
     val listState = rememberLazyListState()
+    var orderedGroups by remember { mutableStateOf(groups) }
+    var isDraggingGroup by remember { mutableStateOf(false) }
+    var pendingGroupOrder by remember { mutableStateOf<List<Int>?>(null) }
+    val hapticFeedback = LocalHapticFeedback.current
+    val reorderableListState = rememberReorderableLazyListState(listState) { from, to ->
+        val fromIndex = orderedGroups.indexOfFirst { it.id == from.key }
+        val toIndex = orderedGroups.indexOfFirst { it.id == to.key }
+        if (fromIndex == -1 || toIndex == -1 || fromIndex == toIndex) return@rememberReorderableLazyListState
+
+        orderedGroups = orderedGroups.toMutableList().apply {
+            add(toIndex, removeAt(fromIndex))
+        }
+        pendingGroupOrder = orderedGroups.map(TodoGroup::id)
+        hapticFeedback.performHapticFeedback(HapticFeedbackType.SegmentFrequentTick)
+    }
     val elevatedPageBackground = AppColors.elevatedPageBackground
     val elevatedCardBackground = AppColors.elevatedCardBackground
     val contentVariant = AppColors.contentVariant
@@ -116,6 +136,10 @@ fun GroupBottomSheet(
             triggerOnDeepSwipe = true
         )
     )
+
+    LaunchedEffect(groups) {
+        if (!isDraggingGroup) orderedGroups = groups
+    }
 
     LaunchedEffect(groups, editingGroupId) {
         val groupId = editingGroupId ?: return@LaunchedEffect
@@ -228,37 +252,55 @@ fun GroupBottomSheet(
                 )
                 VGap(8.dp)
             }
-            groups.forEach { group ->
-                item(key = "group_${group.id}") {
-                    val isEditing = editingGroupId == group.id
-                    GroupRow(
-                        swipeableState = swipeableListState,
-                        actions = actions,
-                        modifier = Modifier.animateItem(placementSpec = Springs.crisp()),
+            orderedGroups.forEach { group ->
+                item(key = group.id) {
+                    ReorderableItem(
+                        state = reorderableListState,
                         key = group.id,
-                        title = group.name,
-                        editing = isEditing,
-                        editingName = if (isEditing) editingName else group.name,
-                        onEditingNameChange = { editingName = it },
-                        trailingText = (groupTodoCounts[group.id] ?: 0).toString(),
-                        selected = selectedFilter == HomeGroupFilter.Group(group.id),
-                        onClick = {
-                            selectFilter(HomeGroupFilter.Group(group.id))
-                        },
-                        onRename = {
-                            startRename(group)
-                        },
-                        onSubmitRename = { name ->
-                            submitRename(group, name)
-                        },
-                        onCancelRename = {
-                            cancelRename(group.id)
-                        },
-                        onDelete = {
-                            onDeleteGroup(group)
-                        }
-                    )
-                    VGap(8.dp)
+                        animateItemModifier = Modifier.animateItem(placementSpec = Springs.crisp())
+                    ) {
+                        val isEditing = editingGroupId == group.id
+                        GroupRow(
+                            swipeableState = swipeableListState,
+                            actions = actions,
+                            dragHandleModifier = Modifier.longPressDraggableHandle(
+                                enabled = orderedGroups.size > 1 && !isEditing,
+                                onDragStarted = {
+                                    isDraggingGroup = true
+                                    swipeableListState.close()
+                                    hapticFeedback.performHapticFeedback(HapticFeedbackType.GestureThresholdActivate)
+                                },
+                                onDragStopped = {
+                                    isDraggingGroup = false
+                                    pendingGroupOrder?.let(onReorderGroups)
+                                    pendingGroupOrder = null
+                                }
+                            ),
+                            key = group.id,
+                            title = group.name,
+                            editing = isEditing,
+                            editingName = if (isEditing) editingName else group.name,
+                            onEditingNameChange = { editingName = it },
+                            trailingText = (groupTodoCounts[group.id] ?: 0).toString(),
+                            selected = selectedFilter == HomeGroupFilter.Group(group.id),
+                            onClick = {
+                                selectFilter(HomeGroupFilter.Group(group.id))
+                            },
+                            onRename = {
+                                startRename(group)
+                            },
+                            onSubmitRename = { name ->
+                                submitRename(group, name)
+                            },
+                            onCancelRename = {
+                                cancelRename(group.id)
+                            },
+                            onDelete = {
+                                onDeleteGroup(group)
+                            }
+                        )
+                        VGap(8.dp)
+                    }
                 }
             }
             item(key = "new_group") {
@@ -350,6 +392,7 @@ fun ListScope.GroupRow(
 @Composable
 fun ListScope.GroupRow(
     modifier: Modifier = Modifier,
+    dragHandleModifier: Modifier = Modifier,
     swipeableState: SwipeableListState,
     actions: ImmutableList<SwipeableActionButton>,
     key: Any,
@@ -431,6 +474,7 @@ fun ListScope.GroupRow(
                 .fillMaxWidth()
                 .clip(AppSpecs.cardShape)
                 .background(backgroundColor.value)
+                .then(dragHandleModifier)
                 .clickable(onClick = {
                     if (editing) {
                         focusRequester.requestFocus()

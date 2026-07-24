@@ -16,6 +16,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.input.TextFieldLineLimits
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -212,7 +213,8 @@ fun AiInputBox(
                             textStyle = GlasenseTheme.type.body.copy(
                                 color = AppColors.content
                             ),
-                            cursorBrush = SolidColor(AppColors.primary)
+                            cursorBrush = SolidColor(AppColors.primary),
+                            lineLimits = TextFieldLineLimits.SingleLine
                         )
                         if (textFieldState.text.isBlank()) {
                             Text(
@@ -236,7 +238,7 @@ fun AiInputBox(
                     contentAlignment = Alignment.Center
                 ) {
                     CustomAnimatedVisibility(
-                        visible = !textFieldState.text.isBlank(),
+                        visible = textFieldState.text.isNotBlank(),
                         enter = defaultEnterTransition,
                         exit = defaultExitTransition
                     ) {

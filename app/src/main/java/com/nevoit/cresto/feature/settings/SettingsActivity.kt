@@ -9,10 +9,14 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.LocalOverscrollFactory
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.core.view.WindowCompat
+import androidx.glance.appwidget.updateAll
+import androidx.lifecycle.lifecycleScope
+import com.nevoit.cresto.feature.widget.TodayTodoWidget
 import com.nevoit.cresto.theme.AppColors
 import com.nevoit.cresto.theme.GlasenseTheme
 import com.nevoit.glasense.core.interaction.overscroll.rememberOffsetOverscrollFactory
 import com.nevoit.glasense.theme.LocalGlasenseContentColor
+import kotlinx.coroutines.launch
 
 enum class SettingsDestination(val value: String) {
     SETTINGS("settings"),
@@ -70,5 +74,12 @@ class SettingsActivity : AppCompatActivity() {
             }
         }
         window.setBackgroundDrawable(null)
+    }
+
+    override fun onStop() {
+        super.onStop()
+        lifecycleScope.launch {
+            TodayTodoWidget.updateAll(applicationContext)
+        }
     }
 }
