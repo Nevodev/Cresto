@@ -49,6 +49,7 @@ class SettingsActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         WindowCompat.setDecorFitsSystemWindows(window, false)
         enableEdgeToEdge()
+        window.isNavigationBarContrastEnforced = false
 
         val destination = SettingsDestination.fromValue(
             intent.getStringExtra(EXTRA_SETTINGS_DESTINATION)

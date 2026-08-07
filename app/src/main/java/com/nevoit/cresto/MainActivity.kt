@@ -38,6 +38,7 @@ class MainActivity : AppCompatActivity() {
 
         WindowCompat.setDecorFitsSystemWindows(window, false)
         enableEdgeToEdge()
+        window.isNavigationBarContrastEnforced = false
 
         val isFirstRun = SettingsManager.isFirstRun
 

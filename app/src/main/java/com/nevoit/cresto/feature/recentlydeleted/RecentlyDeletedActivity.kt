@@ -24,6 +24,7 @@ class RecentlyDeletedActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         WindowCompat.setDecorFitsSystemWindows(window, false)
         enableEdgeToEdge()
+        window.isNavigationBarContrastEnforced = false
 
         setContent {
             GlasenseTheme {

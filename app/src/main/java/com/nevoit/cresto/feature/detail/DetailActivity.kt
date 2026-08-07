@@ -23,6 +23,7 @@ class DetailActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         WindowCompat.setDecorFitsSystemWindows(window, false)
         enableEdgeToEdge()
+        window.isNavigationBarContrastEnforced = false
 
         val todoId = intent.getIntExtra(EXTRA_TODO_ID, -1)
 

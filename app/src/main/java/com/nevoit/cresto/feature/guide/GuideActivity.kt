@@ -20,6 +20,7 @@ class GuideActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         WindowCompat.setDecorFitsSystemWindows(window, false)
         enableEdgeToEdge()
+        window.isNavigationBarContrastEnforced = false
         setContent {
             GlasenseTheme {
                 val overscrollFactory = rememberOffsetOverscrollFactory()
