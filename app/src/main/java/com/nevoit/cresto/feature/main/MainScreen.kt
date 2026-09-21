@@ -271,6 +271,7 @@ fun MainScreen() {
     val sharedInteractionSource = remember { MutableInteractionSource() }
 
     val isSelectionModeActive by viewModel.isSelectionModeActive.collectAsState()
+    var isImmersive by rememberSaveable { mutableStateOf(false) }
     val selectedItemCount by viewModel.selectedItemCount.collectAsState()
     val selectedTodos by viewModel.selectedTodos.collectAsState()
     val cancelText = stringResource(R.string.cancel)
@@ -304,8 +305,10 @@ fun MainScreen() {
     )
     val scope = rememberCoroutineScope()
 
+    // 选择模式或沉浸模式下，底栏（含底部渐变遮罩）整体隐藏。
+    val isTabBarHidden = isSelectionModeActive || isImmersive
     var isComposed by remember { mutableStateOf(isSelectionModeActive) }
-    var isGone by remember { mutableStateOf(isSelectionModeActive) }
+    var isGone by remember { mutableStateOf(isTabBarHidden) }
     val targetBlurRadius = with(density) {
         16.dp.toPx()
     }
@@ -314,7 +317,7 @@ fun MainScreen() {
     val bottomBarBlurAnimation =
         remember { Animatable(if (isSelectionModeActive) 0f else targetBlurRadius) }
 
-    val tabBarHideAnimation = remember { Animatable(if (isSelectionModeActive) 1f else 0f) }
+    val tabBarHideAnimation = remember { Animatable(if (isTabBarHidden) 1f else 0f) }
 
     val tabBarTotalHeight = density.run {
         (16.dp + 56.dp + 16.dp + WindowInsets.navigationBars.asPaddingValues()
@@ -325,15 +328,21 @@ fun MainScreen() {
         if (isSelectionModeActive) {
             isComposed = true
             scope.launch { bottomBarAlphaAnimation.animateTo(1f, tween(300)) }
-            scope.launch { tabBarHideAnimation.animateTo(1f, tween(300)) }
             bottomBarBlurAnimation.animateTo(0f, tween(300))
-            isGone = true
         } else {
-            isGone = false
             scope.launch { bottomBarAlphaAnimation.animateTo(0f, tween(300)) }
-            scope.launch { tabBarHideAnimation.animateTo(0f, spring(0.75f, 300f, 0.0001f)) }
             bottomBarBlurAnimation.animateTo(targetBlurRadius, tween(300))
             isComposed = false
+        }
+    }
+
+    LaunchedEffect(isTabBarHidden) {
+        if (isTabBarHidden) {
+            isGone = true
+            tabBarHideAnimation.animateTo(1f, tween(300))
+        } else {
+            isGone = false
+            tabBarHideAnimation.animateTo(0f, spring(0.75f, 300f, 0.0001f))
         }
     }
 
@@ -411,7 +420,9 @@ fun MainScreen() {
                     currentRoute = currentRoute,
                     showMenu = showMenu,
                     viewModel = viewModel,
-                    onOpenGroupBottomSheet = { isGroupBottomSheetVisible = true }
+                    onOpenGroupBottomSheet = { isGroupBottomSheetVisible = true },
+                    isImmersive = isImmersive,
+                    onImmersiveChange = { isImmersive = it }
                 )
             }
 
@@ -420,6 +431,7 @@ fun MainScreen() {
                     .fillMaxWidth()
                     .height(120.dp + navigationBarHeight)
                     .align(Alignment.BottomCenter)
+                    .graphicsLayer { alpha = 1f - tabBarHideAnimation.value }
                     .smoothGradientMask(
                         surfaceColor,
                         0f,
@@ -584,7 +596,10 @@ fun MainScreen() {
                     NavigationBar(
                         tabBarY = { tabBarHideAnimation.value * tabBarTotalHeight },
                         currentRoute = { currentRoute },
-                        onCurrentRouteChange = { currentRoute = it },
+                        onCurrentRouteChange = {
+                            currentRoute = it
+                            isImmersive = false
+                        },
                         backdrop = backdrop,
                         liquidGlass = liquidGlass
                     )

@@ -2,15 +2,19 @@ package com.nevoit.cresto.feature.home
 
 import android.app.Activity
 import android.content.Intent
+import android.content.res.Configuration
 import android.os.SystemClock
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -19,6 +23,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyItemScope
+import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
@@ -39,7 +44,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -79,7 +89,9 @@ import kotlin.time.Duration.Companion.seconds
 fun BoxScope.HomeScreen(
     showMenu: (anchorBounds: Rect, items: List<GlasenseMenuItem>) -> Unit,
     viewModel: TodoViewModel,
-    onOpenGroupBottomSheet: () -> Unit
+    onOpenGroupBottomSheet: () -> Unit,
+    isImmersive: Boolean,
+    onImmersiveChange: (Boolean) -> Unit
 ) {
     val settingsViewModel: SettingsViewModel = viewModel()
     val scope = rememberCoroutineScope()
@@ -104,6 +116,45 @@ fun BoxScope.HomeScreen(
     // val colorMode = if (MaterialTheme.colorScheme.background == Color.White) true else false
 
     val lazyListState = rememberLazyListState()
+
+    val configuration = LocalConfiguration.current
+    val useTwoColumns = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+    val hapticFeedback = LocalHapticFeedback.current
+    val pullThresholdPx = with(LocalDensity.current) { IMMERSIVE_PULL_THRESHOLD.toPx() }
+    val latestOnImmersiveChange by rememberUpdatedState(onImmersiveChange)
+
+    // 首页下拉进入沉浸模式。这里直接读手指位移（正数表示向下），不再走 nestedScroll 的位移符号判断：
+    // 那套符号约定在不同 Compose 版本里容易搞反，一旦反了手势就完全不触发。
+    // 只在列表已经位于顶部时累积位移，位移达到阈值即进入，并给一次轻震动作为反馈。
+    val immersivePullModifier = Modifier.pointerInput(
+        isImmersive,
+        isSearchBoxOpen,
+        isSelectionModeActive
+    ) {
+        if (isImmersive || isSearchBoxOpen || isSelectionModeActive) return@pointerInput
+        awaitEachGesture {
+            val down = awaitFirstDown(requireUnconsumed = false)
+            var pulledPx = 0f
+            while (true) {
+                val event = awaitPointerEvent()
+                val change = event.changes.firstOrNull { it.id == down.id } ?: break
+                if (!change.pressed) break
+                val dy = change.position.y - change.previousPosition.y
+                val isAtTop = lazyListState.firstVisibleItemIndex == 0 &&
+                        lazyListState.firstVisibleItemScrollOffset == 0
+                if (!isAtTop || dy <= 0f) {
+                    pulledPx = 0f
+                } else {
+                    pulledPx += dy
+                    if (pulledPx >= pullThresholdPx) {
+                        hapticFeedback.performHapticFeedback(HapticFeedbackType.ContextClick)
+                        latestOnImmersiveChange(true)
+                        break
+                    }
+                }
+            }
+        }
+    }
 
     val swipeListState = rememberSwipeableListState()
     LaunchedEffect(lazyListState.isScrollInProgress) {
@@ -211,6 +262,9 @@ fun BoxScope.HomeScreen(
     if (isSelectionModeActive) {
         BackHandler { viewModel.clearSelections() }
     }
+    BackHandler(enabled = isImmersive) {
+        onImmersiveChange(false)
+    }
     LaunchedEffect(isSearchBoxOpen) {
         if (isSearchBoxOpen) {
             swipeListState.close()
@@ -227,59 +281,103 @@ fun BoxScope.HomeScreen(
         )
         drawContent()
     }
+    // 沉浸模式下横屏改为两列排布。顶栏（搜索/排序/加号）、标题行与分组选择行由下面的
+    // 条件渲染隐藏，底栏由 MainScreen 统一淡出；待办列表本身仍用同一批卡片组件渲染。
+    val twoColumns = isImmersive && useTwoColumns
+    val rowContext = remember(
+        viewModel,
+        isDueTodayMarkerEnabled,
+        isOverdueMarkerEnabled,
+        selectedItemIds,
+        isSelectionModeActive,
+        interactionSource,
+        swipeListState,
+        onTodoCompleted
+    ) {
+        HomeTodoRowContext(
+            viewModel = viewModel,
+            isDueTodayMarkerEnabled = isDueTodayMarkerEnabled,
+            isOverdueMarkerEnabled = isOverdueMarkerEnabled,
+            selectedItemIds = selectedItemIds,
+            isSelectionModeActive = isSelectionModeActive,
+            overlayInteractionSource = interactionSource,
+            swipeListState = swipeListState,
+            onOpenDetail = { todoId ->
+                val intent = Intent(context, DetailActivity::class.java).apply {
+                    putExtra(EXTRA_TODO_ID, todoId)
+                }
+                launcher.launch(intent)
+            },
+            onCompleted = onTodoCompleted
+        )
+    }
+
 
     PageContent(
         state = lazyListState,
-        modifier = Modifier.layerBackdrop(backdrop),
-        tabPadding = true,
+        modifier = Modifier
+            .layerBackdrop(backdrop)
+            .then(immersivePullModifier),
+        tabPadding = !isImmersive,
         horizontalPadding = false
     ) {
-        if (isSearchBoxOpen) {
-            item(key = "top_padding") {
+        if (isImmersive) {
+            // 沉浸模式：隐藏“待办事项”标题行与分组选择行，只保留状态栏安全距离。
+            item(key = "immersive_top_padding") {
                 Box(
                     modifier = Modifier
-                        .animateItem(placementSpec = Springs.crisp())
                         .statusBarsPadding()
-                        .height(48.dp + 12.dp + 48.dp + 12.dp)
+                        .height(12.dp)
                 )
             }
         } else {
-            item(key = "title") {
-                GlasensePageHeader(
-                    modifier = Modifier
-                        .animateItem(placementSpec = Springs.crisp())
-                        .padding(horizontal = 12.dp),
-                    title = allTodosTitle
-                )
+            if (isSearchBoxOpen) {
+                item(key = "top_padding") {
+                    Box(
+                        modifier = Modifier
+                            .animateItem(placementSpec = Springs.crisp())
+                            .statusBarsPadding()
+                            .height(48.dp + 12.dp + 48.dp + 12.dp)
+                    )
+                }
+            } else {
+                item(key = "title") {
+                    GlasensePageHeader(
+                        modifier = Modifier
+                            .animateItem(placementSpec = Springs.crisp())
+                            .padding(horizontal = 12.dp),
+                        title = allTodosTitle
+                    )
+                }
             }
-        }
 
-        item(key = "chips") {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .animateItem(placementSpec = Springs.crisp()),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                HGap(12.dp)
-                FolderChipButton(onClick = onOpenGroupBottomSheet)
-                HGap(8.dp)
-                GlasenseChipGroup(
-                    state = chipListState,
-                    items = homeGroupFilters,
-                    selectedItem = selectedHomeGroupFilter,
-                    itemLabel = { filter ->
-                        when (filter) {
-                            HomeGroupFilter.All -> allFilterTitle
-                            HomeGroupFilter.Ungrouped -> ungroupedTodosTitle
-                            is HomeGroupFilter.Group -> homeGroupNames[filter.id] ?: allFilterTitle
-                        }
-                    },
-                    onItemSelected = viewModel::updateHomeGroupFilter,
-                    contentPadding = PaddingValues(end = 12.dp)
-                )
+            item(key = "chips") {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .animateItem(placementSpec = Springs.crisp()),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    HGap(12.dp)
+                    FolderChipButton(onClick = onOpenGroupBottomSheet)
+                    HGap(8.dp)
+                    GlasenseChipGroup(
+                        state = chipListState,
+                        items = homeGroupFilters,
+                        selectedItem = selectedHomeGroupFilter,
+                        itemLabel = { filter ->
+                            when (filter) {
+                                HomeGroupFilter.All -> allFilterTitle
+                                HomeGroupFilter.Ungrouped -> ungroupedTodosTitle
+                                is HomeGroupFilter.Group -> homeGroupNames[filter.id] ?: allFilterTitle
+                            }
+                        },
+                        onItemSelected = viewModel::updateHomeGroupFilter,
+                        contentPadding = PaddingValues(end = 12.dp)
+                    )
+                }
+                VGap()
             }
-            VGap()
         }
 
         if (pinnedTodos.isNotEmpty()) {
@@ -292,43 +390,12 @@ fun BoxScope.HomeScreen(
                 }
             }
             if (pinnedVisible) {
-                itemsIndexed(
-                    items = pinnedTodos,
-                    key = { _, item -> item.todoItem.id }
-                ) { index, item ->
-                    HomeTodoListItemRow(
-                        modifier = Modifier.padding(horizontal = 12.dp),
-                        item = item,
-                        isDueTodayMarkerEnabled = isDueTodayMarkerEnabled,
-                        isOverdueMarkerEnabled = isOverdueMarkerEnabled,
-                        isSelected = item.todoItem.id in selectedItemIds,
-                        isSelectionModeActive = isSelectionModeActive,
-                        overlayInteractionSource = interactionSource,
-                        swipeListState = swipeListState,
-                        onEnterSelection = { viewModel.enterSelectionMode(item.todoItem.id) },
-                        onToggleSelection = { viewModel.toggleSelection(item.todoItem.id) },
-                        onOpenDetail = {
-                            val intent = Intent(context, DetailActivity::class.java).apply {
-                                putExtra(EXTRA_TODO_ID, item.todoItem.id)
-                            }
-                            launcher.launch(intent)
-                        },
-                        onCompleted = onTodoCompleted,
-                        onCheckedChange = { isChecked ->
-                            viewModel.update(item.todoItem.copy(isCompleted = isChecked))
-                        },
-                        onTogglePinned = {
-                            viewModel.updatePinned(item.todoItem.id, !item.todoItem.isPinned)
-                        },
-                        onDelete = { viewModel.delete(item.todoItem) }
-                    )
-
-                    if (index != pinnedTodos.lastIndex ||
-                        incompleteTodos.isNotEmpty() || completeTodos.isNotEmpty()
-                    ) {
-                        VGap()
-                    }
-                }
+                homeTodoRows(
+                    todos = pinnedTodos,
+                    context = rowContext,
+                    twoColumns = twoColumns,
+                    gapAfterLast = incompleteTodos.isNotEmpty() || completeTodos.isNotEmpty()
+                )
             }
         }
 
@@ -341,41 +408,12 @@ fun BoxScope.HomeScreen(
             }
         }
 
-        itemsIndexed(
-            items = incompleteTodos,
-            key = { _, item -> item.todoItem.id },
-        ) { index, item ->
-            HomeTodoListItemRow(
-                modifier = Modifier.padding(horizontal = 12.dp),
-                item = item,
-                isDueTodayMarkerEnabled = isDueTodayMarkerEnabled,
-                isOverdueMarkerEnabled = isOverdueMarkerEnabled,
-                isSelected = item.todoItem.id in selectedItemIds,
-                isSelectionModeActive = isSelectionModeActive,
-                overlayInteractionSource = interactionSource,
-                swipeListState = swipeListState,
-                onEnterSelection = { viewModel.enterSelectionMode(item.todoItem.id) },
-                onToggleSelection = { viewModel.toggleSelection(item.todoItem.id) },
-                onOpenDetail = {
-                    val intent = Intent(context, DetailActivity::class.java).apply {
-                        putExtra(EXTRA_TODO_ID, item.todoItem.id)
-                    }
-                    launcher.launch(intent)
-                },
-                onCompleted = onTodoCompleted,
-                onCheckedChange = { isChecked ->
-                    viewModel.update(item.todoItem.copy(isCompleted = isChecked))
-                },
-                onTogglePinned = {
-                    viewModel.updatePinned(item.todoItem.id, !item.todoItem.isPinned)
-                },
-                onDelete = { viewModel.delete(item.todoItem) }
-            )
-
-            if (completeTodos.isNotEmpty() || index != incompleteTodos.lastIndex) {
-                VGap()
-            }
-        }
+        homeTodoRows(
+            todos = incompleteTodos,
+            context = rowContext,
+            twoColumns = twoColumns,
+            gapAfterLast = completeTodos.isNotEmpty()
+        )
 
         if (completeTodos.isNotEmpty()) {
             item(key = "small_title") {
@@ -387,55 +425,29 @@ fun BoxScope.HomeScreen(
                 }
             }
             if (completedVisible) {
-                itemsIndexed(
-                    items = completeTodos,
-                    key = { _, item -> item.todoItem.id },
-                ) { index, item ->
-                    HomeTodoListItemRow(
-                        modifier = Modifier.padding(horizontal = 12.dp),
-                        item = item,
-                        isDueTodayMarkerEnabled = isDueTodayMarkerEnabled,
-                        isOverdueMarkerEnabled = isOverdueMarkerEnabled,
-                        isSelected = item.todoItem.id in selectedItemIds,
-                        isSelectionModeActive = isSelectionModeActive,
-                        overlayInteractionSource = interactionSource,
-                        swipeListState = swipeListState,
-                        onEnterSelection = { viewModel.enterSelectionMode(item.todoItem.id) },
-                        onToggleSelection = { viewModel.toggleSelection(item.todoItem.id) },
-                        onOpenDetail = {
-                            val intent = Intent(context, DetailActivity::class.java).apply {
-                                putExtra(EXTRA_TODO_ID, item.todoItem.id)
-                            }
-                            launcher.launch(intent)
-                        },
-                        onCompleted = onTodoCompleted,
-                        onCheckedChange = { isChecked ->
-                            viewModel.update(item.todoItem.copy(isCompleted = isChecked))
-                        },
-                        onTogglePinned = {
-                            viewModel.updatePinned(item.todoItem.id, !item.todoItem.isPinned)
-                        },
-                        onDelete = { viewModel.delete(item.todoItem) }
-                    )
-
-                    if (index != completeTodos.lastIndex) {
-                        VGap()
-                    }
-                }
+                homeTodoRows(
+                    todos = completeTodos,
+                    context = rowContext,
+                    twoColumns = twoColumns,
+                    gapAfterLast = false
+                )
             }
         }
         paddingItem(lazyListState)
     }
     CompleteConfettiOverlay(visible = showConfetti, position = confettiTriggerPosition)
-    HomeTopAppBar(
-        menuController = showMenu,
-        menuItems = menuItemsSort,
-        title = allTodosTitle,
-        isTitleVisible = isSmallTitleVisible,
-        backdrop = backdrop,
-        viewModel = viewModel,
-        newTodoGroupId = newTodoGroupId
-    )
+    // 沉浸模式下顶栏（搜索框、排序菜单、加号）整体隐藏。
+    if (!isImmersive) {
+        HomeTopAppBar(
+            menuController = showMenu,
+            menuItems = menuItemsSort,
+            title = allTodosTitle,
+            isTitleVisible = isSmallTitleVisible,
+            backdrop = backdrop,
+            viewModel = viewModel,
+            newTodoGroupId = newTodoGroupId
+        )
+    }
 }
 
 @Composable
@@ -516,4 +528,105 @@ private fun LazyItemScope.HomeTodoListItemRow(
         onTogglePinned = onTogglePinned,
         onDelete = onDelete
     )
+}
+
+/** 首页下拉进入沉浸模式所需的拖动位移阈值。 */
+private val IMMERSIVE_PULL_THRESHOLD = 72.dp
+
+/** 首页待办行渲染所需的共享上下文，避免单列与横屏双列两种排布重复传递参数。 */
+private class HomeTodoRowContext(
+    val viewModel: TodoViewModel,
+    val isDueTodayMarkerEnabled: Boolean,
+    val isOverdueMarkerEnabled: Boolean,
+    val selectedItemIds: Set<Int>,
+    val isSelectionModeActive: Boolean,
+    val overlayInteractionSource: MutableInteractionSource,
+    val swipeListState: SwipeableListState,
+    val onOpenDetail: (Int) -> Unit,
+    val onCompleted: (Offset) -> Unit
+)
+
+@Composable
+private fun LazyItemScope.HomeTodoRow(
+    context: HomeTodoRowContext,
+    item: TodoItemWithSubTodos,
+    modifier: Modifier = Modifier
+) {
+    HomeTodoListItemRow(
+        modifier = modifier,
+        item = item,
+        isDueTodayMarkerEnabled = context.isDueTodayMarkerEnabled,
+        isOverdueMarkerEnabled = context.isOverdueMarkerEnabled,
+        isSelected = item.todoItem.id in context.selectedItemIds,
+        isSelectionModeActive = context.isSelectionModeActive,
+        overlayInteractionSource = context.overlayInteractionSource,
+        swipeListState = context.swipeListState,
+        onEnterSelection = { context.viewModel.enterSelectionMode(item.todoItem.id) },
+        onToggleSelection = { context.viewModel.toggleSelection(item.todoItem.id) },
+        onOpenDetail = { context.onOpenDetail(item.todoItem.id) },
+        onCompleted = context.onCompleted,
+        onCheckedChange = { isChecked ->
+            context.viewModel.update(item.todoItem.copy(isCompleted = isChecked))
+        },
+        onTogglePinned = {
+            context.viewModel.updatePinned(item.todoItem.id, !item.todoItem.isPinned)
+        },
+        onDelete = { context.viewModel.delete(item.todoItem) }
+    )
+}
+
+/**
+ * 发射一组待办。twoColumns 为 true 时按每行两个排布（横屏沉浸模式），
+ * 用的仍是单列时同一个行组件，所以外观与交互保持一致。
+ */
+private fun LazyListScope.homeTodoRows(
+    todos: List<TodoItemWithSubTodos>,
+    context: HomeTodoRowContext,
+    twoColumns: Boolean,
+    gapAfterLast: Boolean
+) {
+    if (!twoColumns) {
+        itemsIndexed(
+            items = todos,
+            key = { _, item -> item.todoItem.id }
+        ) { index, item ->
+            HomeTodoRow(
+                context = context,
+                item = item,
+                modifier = Modifier.padding(horizontal = 12.dp)
+            )
+            if (gapAfterLast || index != todos.lastIndex) {
+                VGap()
+            }
+        }
+        return
+    }
+
+    val rows = todos.chunked(2)
+    itemsIndexed(
+        items = rows,
+        key = { _, row -> row.first().todoItem.id }
+    ) { index, row ->
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 6.dp)
+        ) {
+            row.forEach { todo ->
+                HomeTodoRow(
+                    context = context,
+                    item = todo,
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(horizontal = 6.dp)
+                )
+            }
+            if (row.size == 1) {
+                Spacer(modifier = Modifier.weight(1f))
+            }
+        }
+        if (gapAfterLast || index != rows.lastIndex) {
+            VGap()
+        }
+    }
 }

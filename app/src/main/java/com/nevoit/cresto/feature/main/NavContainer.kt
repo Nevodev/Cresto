@@ -28,7 +28,9 @@ fun BoxScope.NavContainer(
     currentRoute: String,
     showMenu: (anchorBounds: Rect, items: List<GlasenseMenuItem>) -> Unit,
     viewModel: TodoViewModel,
-    onOpenGroupBottomSheet: () -> Unit
+    onOpenGroupBottomSheet: () -> Unit,
+    isImmersive: Boolean,
+    onImmersiveChange: (Boolean) -> Unit
 ) {
     val saveableStateHolder = rememberSaveableStateHolder()
 
@@ -39,7 +41,9 @@ fun BoxScope.NavContainer(
             HomeScreen(
                 showMenu = showMenu,
                 viewModel = viewModel,
-                onOpenGroupBottomSheet = onOpenGroupBottomSheet
+                onOpenGroupBottomSheet = onOpenGroupBottomSheet,
+                isImmersive = isImmersive,
+                onImmersiveChange = onImmersiveChange
             )
 
         }
