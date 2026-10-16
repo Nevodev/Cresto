@@ -301,8 +301,8 @@ class AiTodoExtractor {
 
         val connection = (URL(endpoint).openConnection() as HttpURLConnection).apply {
             requestMethod = "POST"
-            connectTimeout = 15_000
-            readTimeout = 30_000
+            connectTimeout = CONNECT_TIMEOUT_MILLIS
+            readTimeout = SettingsManager.aiResponseTimeoutSeconds * 1_000
             doOutput = true
             setRequestProperty("Content-Type", "application/json")
             setRequestProperty("Authorization", "Bearer $apiKey")
@@ -340,5 +340,8 @@ class AiTodoExtractor {
 
     private companion object {
         const val DEFAULT_AI_MODEL = "glm-4-flash"
+
+        /** TCP/TLS handshake budget. Not user configurable: 15s is ample even on mobile networks. */
+        const val CONNECT_TIMEOUT_MILLIS = 15_000
     }
 }

@@ -32,6 +32,7 @@ object SettingsManager {
     private const val KEY_AI_API_KEY = "ai_api_key"
     private const val KEY_AI_TEXT_MODEL = "ai_text_model"
     private const val KEY_AI_MULTIMODAL_MODEL = "ai_multimodal_model"
+    private const val KEY_AI_RESPONSE_TIMEOUT_SECONDS = "ai_response_timeout_seconds"
     private const val KEY_EASTER_EGG = "easter_egg"
     private const val KEY_SUPER_GRAPHIC_ULTRA_MODERN_GIRL = "super graphic ultra modern girl"
     private const val KEY_HAS_RETURNED_TO_TODAY_BY_TITLE = "has_returned_to_today_by_title"
@@ -73,6 +74,11 @@ object SettingsManager {
         mutableStateOf(
             mmkv.decodeString(KEY_AI_MULTIMODAL_MODEL, DEFAULT_AI_MODEL) ?: DEFAULT_AI_MODEL
         )
+    val aiResponseTimeoutSecondsState = mutableIntStateOf(
+        AiResponseTimeout.clamp(
+            mmkv.decodeInt(KEY_AI_RESPONSE_TIMEOUT_SECONDS, AiResponseTimeout.DEFAULT_SECONDS)
+        )
+    )
     val isEasterEggState = mutableStateOf(mmkv.decodeBool(KEY_EASTER_EGG, false))
     val isSuperGraphicUltraModernGirlState =
         mutableStateOf(mmkv.decodeBool(KEY_SUPER_GRAPHIC_ULTRA_MODERN_GIRL, false))
@@ -216,6 +222,22 @@ object SettingsManager {
             aiMultimodalModelState.value = value
         }
 
+    /**
+     * Maximum number of seconds to wait for the AI endpoint to answer (read timeout).
+     *
+     * Values are clamped to [MIN_AI_RESPONSE_TIMEOUT_SECONDS, MAX_AI_RESPONSE_TIMEOUT_SECONDS] on
+     * both reads and writes so that stale or corrupted data can never produce an absurd timeout.
+     */
+    var aiResponseTimeoutSeconds: Int
+        get() = AiResponseTimeout.clamp(
+            mmkv.decodeInt(KEY_AI_RESPONSE_TIMEOUT_SECONDS, AiResponseTimeout.DEFAULT_SECONDS)
+        )
+        set(value) {
+            val safe = AiResponseTimeout.clamp(value)
+            mmkv.encode(KEY_AI_RESPONSE_TIMEOUT_SECONDS, safe)
+            aiResponseTimeoutSecondsState.intValue = safe
+        }
+
     var isEasterEggEnabled: Boolean
         get() = mmkv.decodeBool(KEY_EASTER_EGG, false)
         set(value) {
@@ -283,6 +305,7 @@ object SettingsManager {
         aiApiKey = ""
         aiTextModel = DEFAULT_AI_MODEL
         aiMultimodalModel = DEFAULT_AI_MODEL
+        aiResponseTimeoutSeconds = AiResponseTimeout.DEFAULT_SECONDS
     }
 }
 
