@@ -58,7 +58,12 @@ class ScreenExtractService : Service() {
                     ScreenExtractNotifications.showSuccess(this@ScreenExtractService, count)
                 }
             } catch (e: Exception) {
-                val errorMessage = e.toScreenExtractErrorMessage(getString(R.string.extract_screen_failed))
+                val errorMessage = e.toScreenExtractErrorMessage(
+                    defaultMessage = getString(R.string.extract_screen_failed),
+                    timeoutMessage = {
+                        getString(R.string.ai_request_timeout_with_action, it)
+                    }
+                )
                 ScreenExtractNotifications.showFailure(this@ScreenExtractService, errorMessage)
             } finally {
                 isExtracting.set(false)

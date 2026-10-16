@@ -126,6 +126,10 @@
     <string name="boost_your_experience_with_intelligent_cresto_function_calling">利用Cresto智能调用，提升体验。</string>
     <string name="text_processing_model">文本处理模型</string>
     <string name="multimodal_model">多模态模型</string>
+    <string name="ai_response_timeout">响应超时</string>
+    <string name="ai_response_timeout_seconds">%d 秒</string>
+    <string name="ai_response_timeout_hint">等待 AI 响应的最长时间，每张图片单独计时。模型或网络较慢时可适当调大。</string>
+    <string name="ai_request_timeout_with_action">AI 请求超时（已等待 %1$d 秒）。可在 设置 > AI 中调大响应超时后重试。</string>
     <string name="save">保存</string>
     <string name="save_settings">保存设置</string>
     <string name="saved">已保存</string>

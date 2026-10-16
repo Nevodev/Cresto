@@ -1,5 +1,6 @@
 package com.nevoit.cresto.feature.settings.util
 
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
@@ -10,6 +11,7 @@ class AISettingsViewModel : ViewModel() {
     val apiKey = mutableStateOf(SettingsManager.aiApiKey)
     val textModel = mutableStateOf(SettingsManager.aiTextModel)
     val multimodalModel = mutableStateOf(SettingsManager.aiMultimodalModel)
+    val responseTimeoutSeconds = mutableIntStateOf(SettingsManager.aiResponseTimeoutSeconds)
     val lastSavedAt = mutableLongStateOf(0L)
 
     fun onApiUrlChanged(value: String) {
@@ -32,12 +34,18 @@ class AISettingsViewModel : ViewModel() {
         saveSettingsIfChanged()
     }
 
+    fun onResponseTimeoutChanged(value: Int) {
+        responseTimeoutSeconds.intValue = value
+        saveSettingsIfChanged()
+    }
+
     fun restoreDefaults() {
         SettingsManager.resetAiSettingsToDefaults()
         apiUrl.value = SettingsManager.aiApiUrl
         apiKey.value = SettingsManager.aiApiKey
         textModel.value = SettingsManager.aiTextModel
         multimodalModel.value = SettingsManager.aiMultimodalModel
+        responseTimeoutSeconds.intValue = SettingsManager.aiResponseTimeoutSeconds
         lastSavedAt.longValue = System.currentTimeMillis()
     }
 
@@ -51,6 +59,7 @@ class AISettingsViewModel : ViewModel() {
         SettingsManager.aiApiKey = newApiKey
         SettingsManager.aiTextModel = newTextModel
         SettingsManager.aiMultimodalModel = newMultimodalModel
+        SettingsManager.aiResponseTimeoutSeconds = responseTimeoutSeconds.intValue
         lastSavedAt.longValue = System.currentTimeMillis()
     }
 
@@ -59,12 +68,14 @@ class AISettingsViewModel : ViewModel() {
         val newApiKey = apiKey.value.trim()
         val newTextModel = textModel.value.trim()
         val newMultimodalModel = multimodalModel.value.trim()
+        val newResponseTimeout = responseTimeoutSeconds.intValue
 
         if (
             newApiUrl == SettingsManager.aiApiUrl &&
             newApiKey == SettingsManager.aiApiKey &&
             newTextModel == SettingsManager.aiTextModel &&
-            newMultimodalModel == SettingsManager.aiMultimodalModel
+            newMultimodalModel == SettingsManager.aiMultimodalModel &&
+            newResponseTimeout == SettingsManager.aiResponseTimeoutSeconds
         ) {
             return
         }

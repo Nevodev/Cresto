@@ -76,7 +76,12 @@ class ShareExtractService : Service() {
                     ShareExtractNotifications.showSuccess(this@ShareExtractService, count)
                 }
             } catch (e: Exception) {
-                val errorMessage = e.toScreenExtractErrorMessage(getString(R.string.share_extract_failed))
+                val errorMessage = e.toScreenExtractErrorMessage(
+                    defaultMessage = getString(R.string.share_extract_failed),
+                    timeoutMessage = {
+                        getString(R.string.ai_request_timeout_with_action, it)
+                    }
+                )
                 ShareExtractNotifications.showFailure(this@ShareExtractService, errorMessage)
             } finally {
                 isExtracting.set(false)

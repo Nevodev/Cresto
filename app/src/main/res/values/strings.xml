@@ -126,6 +126,10 @@
     <string name="url" translatable="false">URL</string>
     <string name="text_processing_model">Text Processing Model</string>
     <string name="multimodal_model">Multimodal Model</string>
+    <string name="ai_response_timeout">Response Timeout</string>
+    <string name="ai_response_timeout_seconds">%d s</string>
+    <string name="ai_response_timeout_hint">Maximum time to wait for an AI reply. Each image is timed separately. Increase it if your model or network is slow.</string>
+    <string name="ai_request_timeout_with_action">AI request timed out after %1$d s. Increase the response timeout in Settings &gt; AI and try again.</string>
     <string name="model" translatable="false">Model</string>
     <string name="save">Save</string>
     <string name="save_settings">Save Settings</string>

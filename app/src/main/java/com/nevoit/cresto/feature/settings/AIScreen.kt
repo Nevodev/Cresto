@@ -35,14 +35,17 @@ import com.kyant.backdrop.backdrops.layerBackdrop
 import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import com.nevoit.cresto.R
 import com.nevoit.cresto.feature.settings.util.AISettingsViewModel
+import com.nevoit.cresto.feature.settings.util.AiResponseTimeout
 import com.nevoit.cresto.theme.AppButtonColors
 import com.nevoit.cresto.theme.AppColors
 import com.nevoit.cresto.theme.AppSpecs
 import com.nevoit.cresto.theme.harmonize
 import com.nevoit.cresto.ui.components.glasense.GlasenseButton
+import com.nevoit.cresto.ui.components.glasense.GlasenseChipGroup
 import com.nevoit.cresto.ui.components.glasense.GlasenseDynamicSmallTitle
 import com.nevoit.cresto.ui.components.glasense.isScrolledPast
 import com.nevoit.cresto.ui.components.packed.ConfigInfoHeader
+import com.nevoit.cresto.ui.components.packed.ConfigStepperRow
 import com.nevoit.cresto.ui.components.packed.ConfigTextField
 import com.nevoit.cresto.ui.components.packed.TopBarSpacer
 import com.nevoit.glasense.component.ListStack
@@ -83,6 +86,16 @@ fun AIScreen(aiSettingsViewModel: AISettingsViewModel = viewModel()) {
     val apiKey by aiSettingsViewModel.apiKey
     val textModel by aiSettingsViewModel.textModel
     val multimodalModel by aiSettingsViewModel.multimodalModel
+    val responseTimeoutSeconds by aiSettingsViewModel.responseTimeoutSeconds
+
+    // Quick response timeout presets. The labels are resolved here, in composable scope, because
+    // GlasenseChipGroup's itemLabel is a plain (non-composable) lambda.
+    val presetSeconds = AiResponseTimeout.PRESET_SECONDS
+    val timeoutPresetLabels = listOf(
+        stringResource(R.string.ai_response_timeout_seconds, presetSeconds[0]),
+        stringResource(R.string.ai_response_timeout_seconds, presetSeconds[1]),
+        stringResource(R.string.ai_response_timeout_seconds, presetSeconds[2])
+    )
 
     val navigationBarHeight = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
 
@@ -185,6 +198,34 @@ fun AIScreen(aiSettingsViewModel: AISettingsViewModel = viewModel()) {
                         keyboardType = KeyboardType.Text,
                         imeAction = ImeAction.Done
                     )
+                )
+                VGap(24.dp)
+            }
+            item {
+                ConfigStepperRow(
+                    modifier = Modifier.padding(horizontal = 12.dp),
+                    title = stringResource(R.string.ai_response_timeout),
+                    backgroundColor = hierarchicalSurfaceColor,
+                    value = responseTimeoutSeconds,
+                    onValueChange = aiSettingsViewModel::onResponseTimeoutChanged,
+                    minValue = AiResponseTimeout.MIN_SECONDS,
+                    maxValue = AiResponseTimeout.MAX_SECONDS,
+                    step = AiResponseTimeout.STEP_SECONDS,
+                    valueLabel = { stringResource(R.string.ai_response_timeout_seconds, it) },
+                    hint = stringResource(R.string.ai_response_timeout_hint)
+                )
+                VGap(12.dp)
+            }
+            item {
+                GlasenseChipGroup(
+                    modifier = Modifier.padding(horizontal = 12.dp),
+                    items = presetSeconds,
+                    selectedItem = responseTimeoutSeconds,
+                    itemLabel = { seconds ->
+                        val index = presetSeconds.indexOf(seconds)
+                        if (index >= 0) timeoutPresetLabels[index] else seconds.toString()
+                    },
+                    onItemSelected = aiSettingsViewModel::onResponseTimeoutChanged
                 )
                 VGap(24.dp)
             }
