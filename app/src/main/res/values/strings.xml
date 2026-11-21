@@ -138,6 +138,8 @@
     <string name="custom_primary_color">Custom Primary Color</string>
     <string name="use_dynamic_color_scheme">Use Dynamic Color Scheme</string>
     <string name="lite_mode">Lite Mode</string>
+    <string name="continuous_transitions">Continuous transitions</string>
+    <string name="continuous_transitions_description">Expand task cards into details and return to the original card. When disabled, pages slide in and out.</string>
     <string name="design">Design</string>
     <string name="liquid_glass" translatable="false">Liquid Glass</string>
     <string name="clear">Clear</string>

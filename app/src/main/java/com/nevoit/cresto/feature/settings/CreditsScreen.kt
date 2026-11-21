@@ -1,6 +1,5 @@
 package com.nevoit.cresto.feature.settings
 
-import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -31,6 +30,7 @@ import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import com.mikepenz.aboutlibraries.entity.Library
 import com.mikepenz.aboutlibraries.ui.compose.android.produceLibraries
 import com.nevoit.cresto.R
+import com.nevoit.cresto.navigation.rememberAppBack
 import com.nevoit.cresto.theme.AppButtonColors
 import com.nevoit.cresto.theme.AppColors
 import com.nevoit.cresto.theme.AppSpecs
@@ -50,7 +50,7 @@ import com.nevoit.glasense.theme.tokens.Slate500
 
 @Composable
 fun CreditsScreen() {
-    val activity = LocalActivity.current
+    val onBack = rememberAppBack()
     val uriHandler = LocalUriHandler.current
 
     val statusBarHeight = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
@@ -125,7 +125,7 @@ fun CreditsScreen() {
         GlasenseButton(
             enabled = true,
             shape = CircleShape,
-            onClick = { activity?.finish() },
+            onClick = onBack,
             modifier = Modifier
                 .padding(top = statusBarHeight, start = 12.dp)
                 .size(48.dp)

@@ -18,8 +18,6 @@ import com.kyant.backdrop.backdrops.LayerBackdrop
 import com.kyant.backdrop.drawBackdrop
 import com.kyant.backdrop.effects.blur
 import com.kyant.backdrop.effects.effect
-import com.kyant.backdrop.highlight.Highlight
-import com.kyant.backdrop.highlight.HighlightStyle
 import com.kyant.backdrop.shadow.Shadow
 import com.kyant.shapes.Capsule
 import com.nevoit.cresto.theme.AppColors
@@ -85,13 +83,7 @@ fun GlasenseNavigationButton(
                     )
                 },
                 innerShadow = null,
-                highlight = {
-                    if (liquidGlass) Highlight.Default.copy(
-                        style = HighlightStyle.Default(
-                            angle = 90f
-                        )
-                    ) else null
-                },
+                highlight = null,
                 effects = {
                     padding = 32f.dp.toPx() * 2
                     if (!isActive) {

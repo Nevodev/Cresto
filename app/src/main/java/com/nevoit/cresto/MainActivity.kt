@@ -10,7 +10,7 @@ import androidx.core.view.WindowCompat
 import androidx.glance.appwidget.updateAll
 import androidx.lifecycle.lifecycleScope
 import com.nevoit.cresto.feature.guide.GuideActivity
-import com.nevoit.cresto.feature.main.MainScreen
+import com.nevoit.cresto.navigation.AppNavigationHost
 import com.nevoit.cresto.feature.screenextract.ScreenExtractEvents
 import com.nevoit.cresto.feature.settings.util.SettingsManager
 import com.nevoit.cresto.feature.widget.TodayTodoWidget
@@ -46,7 +46,7 @@ class MainActivity : AppCompatActivity() {
 
         setContent {
             GlasenseTheme {
-                MainScreen()
+                AppNavigationHost()
             }
         }
         clearBackground()

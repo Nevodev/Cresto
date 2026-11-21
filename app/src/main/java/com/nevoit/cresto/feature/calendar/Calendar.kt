@@ -16,6 +16,9 @@ import androidx.compose.runtime.Stable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
@@ -60,23 +63,30 @@ fun MonthlyPagerCalendar(
 
     val pageCount = 1000
     val initialPage = pageCount / 2
+    val baseMonthValue = rememberSaveable { YearMonth.from(initialDate).toString() }
+    val baseMonth = remember(baseMonthValue) { YearMonth.parse(baseMonthValue) }
+    var lastSelectedDate by rememberSaveable { mutableStateOf(selectedDate.toString()) }
 
     val pagerState = rememberPagerState(
-        initialPage = initialPage,
+        initialPage = (initialPage + (selectedDate.year - baseMonth.year) * 12 +
+                selectedDate.monthValue - baseMonth.monthValue).coerceIn(0, pageCount - 1),
         pageCount = { pageCount }
     )
 
     LaunchedEffect(selectedDate) {
+        // Restoring a page must preserve a browsed month even when selection is in another month.
+        if (lastSelectedDate == selectedDate.toString()) return@LaunchedEffect
+        lastSelectedDate = selectedDate.toString()
         val targetMonth = YearMonth.from(selectedDate)
         val currentMonthOffset = pagerState.currentPage - initialPage
         val currentDisplayMonth =
-            YearMonth.from(initialDate).plusMonths(currentMonthOffset.toLong())
+            baseMonth.plusMonths(currentMonthOffset.toLong())
 
         if (targetMonth != currentDisplayMonth) {
             val monthDifference = (targetMonth.year - currentDisplayMonth.year) * 12 +
                     (targetMonth.monthValue - currentDisplayMonth.monthValue)
             pagerState.animateScrollToPage(
-                page = pagerState.currentPage + monthDifference,
+                page = (pagerState.currentPage + monthDifference).coerceIn(0, pageCount - 1),
                 animationSpec = Springs.smooth(durationMillis = 300)
             )
         }
@@ -87,7 +97,7 @@ fun MonthlyPagerCalendar(
             .distinctUntilChanged()
             .collect { page ->
                 val monthOffset = page - initialPage
-                val newDisplayMonth = YearMonth.from(initialDate).plusMonths(monthOffset.toLong())
+                val newDisplayMonth = baseMonth.plusMonths(monthOffset.toLong())
                 onMonthChanged(newDisplayMonth)
             }
     }
@@ -96,7 +106,7 @@ fun MonthlyPagerCalendar(
         derivedStateOf {
             val currentMonthOffset = pagerState.currentPage - initialPage
             val currentDisplayMonth =
-                YearMonth.from(initialDate).plusMonths(currentMonthOffset.toLong())
+                baseMonth.plusMonths(currentMonthOffset.toLong())
 
             calculateRowIndex(currentDisplayMonth, selectedDate)
         }
@@ -136,7 +146,7 @@ fun MonthlyPagerCalendar(
             pageSpacing = 12.dp * 2
         ) { page ->
             val monthOffset = page - initialPage
-            val pageMonth = YearMonth.from(initialDate).plusMonths(monthOffset.toLong())
+            val pageMonth = baseMonth.plusMonths(monthOffset.toLong())
 
             MonthGrid(
                 yearMonth = pageMonth,

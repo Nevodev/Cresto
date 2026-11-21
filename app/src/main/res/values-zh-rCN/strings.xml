@@ -137,6 +137,8 @@
     <string name="custom_primary_color">自定义主题色</string>
     <string name="use_dynamic_color_scheme">使用动态配色</string>
     <string name="lite_mode">轻量模式</string>
+    <string name="continuous_transitions">一镜到底动画</string>
+    <string name="continuous_transitions_description">从任务卡片展开详情，返回时收回原卡片。关闭后使用普通侧滑转场。</string>
     <string name="design">设计</string>
     <string name="clear">清除</string>
     <string name="reset">重置</string>

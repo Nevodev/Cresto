@@ -67,7 +67,8 @@ import com.nevoit.cresto.data.todo.calendar.TodoCalendarSyncManager
 import com.nevoit.cresto.feature.bottomsheet.BottomSheet
 import com.nevoit.cresto.feature.calendar.toToastMessage
 import com.nevoit.cresto.feature.group.GroupBottomSheet
-import com.nevoit.cresto.feature.recentlydeleted.RecentlyDeletedActivity
+import com.nevoit.cresto.navigation.AppDestination
+import com.nevoit.cresto.navigation.LocalAppNavigation
 import com.nevoit.cresto.feature.screenextract.ScreenExtractEvents
 import com.nevoit.cresto.feature.settings.update.UpdateBottomSheet
 import com.nevoit.cresto.feature.settings.update.UpdateCheckResult
@@ -110,9 +111,10 @@ sealed class Screen(val route: String) {
 
 
 @Composable
-fun MainScreen() {
+fun MainScreen(viewModel: TodoViewModel = koinViewModel()) {
     val lifecycleOwner = LocalLifecycleOwner.current
     val context = LocalContext.current
+    val navigation = LocalAppNavigation.current
 
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
@@ -138,6 +140,11 @@ fun MainScreen() {
 
     val surfaceColor = AppColors.pageBackground
     var currentRoute by rememberSaveable { mutableStateOf(Screen.Home.route) }
+    fun changeRoute(route: String) {
+        if (currentRoute == route) return
+        navigation.finishExitAnimations()
+        currentRoute = route
+    }
     val settingsViewModel: SettingsViewModel = viewModel()
 
     val liquidGlass by settingsViewModel.isLiquidGlass
@@ -211,7 +218,6 @@ fun MainScreen() {
 
     val density = LocalDensity.current
 
-    val viewModel: TodoViewModel = koinViewModel()
     val requirePermission = stringResource(R.string.calendar_sync_permission_required)
     val calendarPermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestMultiplePermissions()
@@ -354,7 +360,7 @@ fun MainScreen() {
     var flagButtonBounds by remember { mutableStateOf<LayoutCoordinates?>(null) }
 
     BackHandler(enabled = currentRoute != Screen.Home.route) {
-        currentRoute = Screen.Home.route
+        changeRoute(Screen.Home.route)
     }
 
     val superBackdrop = rememberLayerBackdrop {
@@ -584,7 +590,7 @@ fun MainScreen() {
                     NavigationBar(
                         tabBarY = { tabBarHideAnimation.value * tabBarTotalHeight },
                         currentRoute = { currentRoute },
-                        onCurrentRouteChange = { currentRoute = it },
+                        onCurrentRouteChange = ::changeRoute,
                         backdrop = backdrop,
                         liquidGlass = liquidGlass
                     )
@@ -660,7 +666,8 @@ fun MainScreen() {
                     onReorderGroups = viewModel::reorderTodoGroups,
                     onDeleteGroup = viewModel::deleteTodoGroup,
                     onOpenRecentlyDeleted = {
-                        context.startActivity(RecentlyDeletedActivity.createIntent(context))
+                        isGroupBottomSheetVisible = false
+                        navigation.navigate(AppDestination.RecentlyDeleted)
                     },
                     onDismissed = { isGroupBottomSheetVisible = false }
                 )

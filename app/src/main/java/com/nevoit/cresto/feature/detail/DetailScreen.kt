@@ -74,7 +74,10 @@ import com.kyant.backdrop.backdrops.layerBackdrop
 import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import com.kyant.shapes.Capsule
 import com.nevoit.cresto.R
+import com.nevoit.cresto.navigation.rememberAppBack
+import com.nevoit.cresto.navigation.ReportNavigationReady
 import com.nevoit.cresto.data.todo.EXTRA_DELETE_ID
+import com.nevoit.cresto.data.todo.TodoDetailData
 import com.nevoit.cresto.data.todo.HomeGroupFilter
 import com.nevoit.cresto.data.todo.RepeatFrequency
 import com.nevoit.cresto.data.todo.RepeatRule
@@ -141,6 +144,7 @@ import com.nevoit.glasense.theme.local.LocalContentColor
 import com.nevoit.glasense.theme.tokens.Springs
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.StateFlow
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
@@ -150,18 +154,21 @@ import kotlin.time.Duration.Companion.minutes
 @Composable
 fun DetailScreen(
     todoId: Int,
-    viewModel: TodoViewModel = viewModel()
+    viewModel: TodoViewModel = viewModel(),
+    onDelete: ((Int) -> Unit)? = null,
+    detailState: StateFlow<TodoDetailData?> = viewModel.getTodoDetail(todoId),
 ) {
     val scope = rememberCoroutineScope()
 
     val activity = LocalActivity.current
-    val itemWithSubTodos by viewModel.getTodoWithSubTodos(todoId).collectAsState(initial = null)
+    val onBack = rememberAppBack()
+    val detailData by detailState.collectAsState()
+    ReportNavigationReady(ready = detailData != null)
+    val itemWithSubTodos = detailData?.item
     val currentItem = itemWithSubTodos
-    val repeatRule by viewModel.getRepeatRule(
-        itemWithSubTodos?.todoItem?.repeatRuleId
-    ).collectAsState(initial = null)
-    val homeGroups by viewModel.homeGroups.collectAsState()
-    val homeGroupTodoCounts by viewModel.homeGroupTodoCounts.collectAsState()
+    val repeatRule = detailData?.repeatRule
+    val homeGroups = detailData?.groups.orEmpty()
+    val homeGroupTodoCounts = detailData?.groupCounts.orEmpty()
     val homeGroupNames = remember(homeGroups) { homeGroups.associate { it.id to it.name } }
 
     val statusBarHeight = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
@@ -199,10 +206,10 @@ fun DetailScreen(
 
     var isInitialized by remember { mutableStateOf(false) }
     if (itemWithSubTodos != null && !isInitialized) {
-        finalDate = itemWithSubTodos?.todoItem?.dueDate
-        selectedIndex = itemWithSubTodos?.todoItem?.flag ?: 0
-        title = itemWithSubTodos?.todoItem?.title ?: ""
-        notesText = itemWithSubTodos?.todoItem?.notes ?: ""
+        finalDate = itemWithSubTodos.todoItem.dueDate
+        selectedIndex = itemWithSubTodos.todoItem.flag
+        title = itemWithSubTodos.todoItem.title
+        notesText = itemWithSubTodos.todoItem.notes
         isInitialized = true
     }
 
@@ -237,11 +244,15 @@ fun DetailScreen(
             stringResource(R.string.delete),
             icon = painterResource(R.drawable.ic_trash),
             onClick = {
-                val resultIntent = Intent().apply {
-                    putExtra(EXTRA_DELETE_ID, todoId)
+                if (onDelete != null) {
+                    onDelete(todoId)
+                } else {
+                    val resultIntent = Intent().apply {
+                        putExtra(EXTRA_DELETE_ID, todoId)
+                    }
+                    activity?.setResult(Activity.RESULT_OK, resultIntent)
+                    activity?.finish()
                 }
-                activity?.setResult(Activity.RESULT_OK, resultIntent)
-                activity?.finish()
             },
             isPrimary = true,
             isDestructive = true
@@ -311,7 +322,7 @@ fun DetailScreen(
             scope.launch {
                 delay(200.milliseconds)
                 viewModel.duplicateById(todoId).join()
-                activity?.finish()
+                onBack()
             }
         },
         onAddToCalendarSelected = {
@@ -425,11 +436,11 @@ fun DetailScreen(
 
     LaunchedEffect(itemWithSubTodos) {
         if (itemWithSubTodos != null) {
-            finalDate = itemWithSubTodos?.todoItem?.dueDate
-            selectedIndex = itemWithSubTodos?.todoItem?.flag ?: 0
-            title = itemWithSubTodos?.todoItem?.title ?: ""
-            if (notesText.isEmpty() && !itemWithSubTodos?.todoItem?.notes.isNullOrEmpty()) {
-                notesText = itemWithSubTodos?.todoItem?.notes ?: ""
+            finalDate = itemWithSubTodos.todoItem.dueDate
+            selectedIndex = itemWithSubTodos.todoItem.flag
+            title = itemWithSubTodos.todoItem.title
+            if (notesText.isEmpty() && itemWithSubTodos.todoItem.notes.isNotEmpty()) {
+                notesText = itemWithSubTodos.todoItem.notes
             }
         }
     }
@@ -771,7 +782,7 @@ fun DetailScreen(
             GlasenseButton(
                 enabled = true,
                 shape = CircleShape,
-                onClick = { activity?.finish() }, // Closes the current activity, navigating back
+                onClick = onBack,
                 modifier = Modifier
                     .padding(top = statusBarHeight, start = 12.dp)
                     .size(48.dp)

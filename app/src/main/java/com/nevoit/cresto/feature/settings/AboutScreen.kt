@@ -3,7 +3,6 @@ package com.nevoit.cresto.feature.settings
 import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
 import android.widget.Toast
-import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -65,6 +64,7 @@ import com.kyant.backdrop.backdrops.layerBackdrop
 import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import com.kyant.shapes.Capsule
 import com.nevoit.cresto.R
+import com.nevoit.cresto.navigation.rememberAppBack
 import com.nevoit.cresto.feature.settings.update.UpdateBottomSheet
 import com.nevoit.cresto.feature.settings.update.UpdateCheckResult
 import com.nevoit.cresto.feature.settings.update.UpdateChecker
@@ -114,7 +114,7 @@ import kotlin.time.Duration.Companion.seconds
 @Composable
 fun AboutScreen(settingsViewModel: SettingsViewModel = viewModel()) {
     // Get the current activity instance to allow finishing the screen
-    val activity = LocalActivity.current
+    val onBack = rememberAppBack()
 
     // Calculate the height of the status bar to adjust layout
     val statusBarHeight = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
@@ -450,7 +450,7 @@ fun AboutScreen(settingsViewModel: SettingsViewModel = viewModel()) {
         GlasenseButton(
             enabled = true,
             shape = CircleShape,
-            onClick = { activity?.finish() }, // Closes the current activity, navigating back
+            onClick = onBack,
             modifier = Modifier
                 .padding(top = statusBarHeight, start = 12.dp)
                 .size(48.dp)

@@ -7,3 +7,11 @@ plugins {
     alias(libs.plugins.ksp) apply false
     alias(libs.plugins.aboutLibraries) apply false
 }
+
+subprojects {
+    configurations.configureEach {
+        // Backdrop's transitive shapes dependency is supplied by the local fork.
+        exclude(group = "io.github.kyant0", module = "shapes")
+        exclude(group = "io.github.kyant0", module = "shapes-android")
+    }
+}

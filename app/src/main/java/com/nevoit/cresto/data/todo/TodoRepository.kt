@@ -122,6 +122,13 @@ class TodoRepository(
         return todoDao.getTodoWithSubTodosById(id)
     }
 
+    fun getTodoDetail(id: Int): Flow<TodoDetailData> = observeTodoDetail(
+        todo = getTodoById(id),
+        groups = todoGroups,
+        groupCounts = todoGroupCounts,
+        repeatRule = ::getRepeatRuleById,
+    )
+
     fun getRepeatRuleById(id: String): Flow<RepeatRule?> {
         return todoDao.getRepeatRuleById(id)
     }

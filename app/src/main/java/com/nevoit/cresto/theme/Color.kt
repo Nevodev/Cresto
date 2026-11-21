@@ -8,7 +8,7 @@ import androidx.compose.ui.graphics.toArgb
 import com.materialkolor.blend.Blend
 import com.materialkolor.dynamiccolor.ColorSpec
 import com.materialkolor.hct.Hct
-import com.materialkolor.scheme.DynamicScheme
+import com.materialkolor.dynamiccolor.DynamicScheme
 import com.materialkolor.scheme.SchemeTonalSpot
 import com.nevoit.glasense.theme.tokens.Blue500
 import com.nevoit.glasense.theme.tokens.Gray500

@@ -1,6 +1,5 @@
 package com.nevoit.cresto.feature.settings
 
-import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.background
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
@@ -25,13 +24,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.kyant.backdrop.backdrops.layerBackdrop
 import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import com.nevoit.cresto.R
+import com.nevoit.cresto.navigation.AppDestination
+import com.nevoit.cresto.navigation.LocalAppNavigation
+import com.nevoit.cresto.navigation.rememberAppBack
 import com.nevoit.cresto.theme.AppButtonColors
 import com.nevoit.cresto.theme.AppColors
 import com.nevoit.cresto.theme.harmonize
@@ -61,8 +62,8 @@ fun SettingsScreen() {
 
     val isSmallTitleVisible by lazyListState.isScrolledPast(statusBarHeight + 24.dp)
 
-    val context = LocalContext.current
-    val activity = LocalActivity.current
+    val navigation = LocalAppNavigation.current
+    val onBack = rememberAppBack()
 
     val backgroundColor = AppColors.pageBackground
     val backdrop = rememberLayerBackdrop {
@@ -101,9 +102,7 @@ fun SettingsScreen() {
                             title = stringResource(R.string.ai),
                             enableGlow = true,
                             onClick = {
-                                context.startActivity(
-                                    SettingsActivity.createIntent(context, SettingsDestination.AI)
-                                )
+                                navigation.navigate(AppDestination.Settings(SettingsDestination.AI))
                             }
                         )
                     }
@@ -118,11 +117,8 @@ fun SettingsScreen() {
                             icon = painterResource(R.drawable.ic_twotone_image),
                             title = stringResource(R.string.appearance),
                             onClick = {
-                                context.startActivity(
-                                    SettingsActivity.createIntent(
-                                        context,
-                                        SettingsDestination.APPEARANCE
-                                    )
+                                navigation.navigate(
+                                    AppDestination.Settings(SettingsDestination.APPEARANCE),
                                 )
                             }
                         )
@@ -132,11 +128,8 @@ fun SettingsScreen() {
                             icon = painterResource(R.drawable.ic_twotone_storage),
                             title = stringResource(R.string.data_storage),
                             onClick = {
-                                context.startActivity(
-                                    SettingsActivity.createIntent(
-                                        context,
-                                        SettingsDestination.DATA_STORAGE
-                                    )
+                                navigation.navigate(
+                                    AppDestination.Settings(SettingsDestination.DATA_STORAGE),
                                 )
                             }
                         )
@@ -146,11 +139,8 @@ fun SettingsScreen() {
                             icon = painterResource(R.drawable.ic_twotone_gear),
                             title = stringResource(R.string.general),
                             onClick = {
-                                context.startActivity(
-                                    SettingsActivity.createIntent(
-                                        context,
-                                        SettingsDestination.GENERAL
-                                    )
+                                navigation.navigate(
+                                    AppDestination.Settings(SettingsDestination.GENERAL),
                                 )
                             }
                         )
@@ -163,9 +153,7 @@ fun SettingsScreen() {
                     AboutEntryItem(
                         icon = painterResource(R.drawable.cresto),
                         onClick = {
-                            context.startActivity(
-                                SettingsActivity.createIntent(context, SettingsDestination.ABOUT)
-                            )
+                            navigation.navigate(AppDestination.Settings(SettingsDestination.ABOUT))
                         }
                     )
                 }
@@ -178,9 +166,7 @@ fun SettingsScreen() {
                         icon = painterResource(R.drawable.ic_twotone_info),
                         title = stringResource(R.string.credits),
                         onClick = {
-                            context.startActivity(
-                                SettingsActivity.createIntent(context, SettingsDestination.CREDITS)
-                            )
+                            navigation.navigate(AppDestination.Settings(SettingsDestination.CREDITS))
                         }
                     )
                 }
@@ -206,9 +192,7 @@ fun SettingsScreen() {
             GlasenseButtonToolBar(
                 enabled = true,
                 shape = CircleShape,
-                onClick = {
-                    activity?.finish()
-                },
+                onClick = onBack,
                 modifier = Modifier
                     .align(Alignment.TopStart)
                     .size(48.dp),

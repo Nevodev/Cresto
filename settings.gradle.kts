@@ -26,3 +26,4 @@ rootProject.name = "Cresto"
 include(":app")
 include(":glasense-ui")
 include(":glasense-ui-demo")
+include(":shapes")

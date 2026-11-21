@@ -1,11 +1,7 @@
 package com.nevoit.cresto.feature.home
 
-import android.app.Activity
-import android.content.Intent
 import android.os.SystemClock
 import androidx.activity.compose.BackHandler
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
@@ -47,15 +43,13 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.kyant.backdrop.backdrops.layerBackdrop
 import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import com.nevoit.cresto.R
-import com.nevoit.cresto.data.todo.EXTRA_TODO_ID
 import com.nevoit.cresto.data.todo.HomeGroupFilter
 import com.nevoit.cresto.data.todo.TodoItemWithSubTodos
 import com.nevoit.cresto.data.todo.TodoViewModel
-import com.nevoit.cresto.feature.detail.DetailActivity
-import com.nevoit.cresto.feature.settings.util.SettingsManager
+import com.nevoit.cresto.navigation.AppDestination
+import com.nevoit.cresto.navigation.LocalAppNavigation
+import com.nevoit.cresto.navigation.NavigationCaller
 import com.nevoit.cresto.feature.settings.util.SettingsViewModel
-import com.nevoit.cresto.feature.settings.util.SortOption
-import com.nevoit.cresto.feature.settings.util.SortOrder
 import com.nevoit.cresto.theme.AppColors
 import com.nevoit.cresto.ui.components.glasense.FolderChipButton
 import com.nevoit.cresto.ui.components.glasense.GlasenseChipGroup
@@ -84,6 +78,7 @@ fun BoxScope.HomeScreen(
     val settingsViewModel: SettingsViewModel = viewModel()
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
+    val navigation = LocalAppNavigation.current
     val completionSoundPlayer = remember(context) { HomeCompletionSoundPlayer(context) }
     var lastCompletionSoundAtMs by remember { mutableLongStateOf(0L) }
     val completionSoundThrottleMs = 200L
@@ -92,7 +87,7 @@ fun BoxScope.HomeScreen(
         onDispose { completionSoundPlayer.release() }
     }
 
-    val homeTodos by viewModel.homeTodos.collectAsStateWithLifecycle()
+    val homeSections by viewModel.homeSections.collectAsStateWithLifecycle()
     val homeGroups by viewModel.homeGroups.collectAsStateWithLifecycle()
     val selectedHomeGroupFilter by viewModel.homeGroupFilter.collectAsStateWithLifecycle()
     val selectedItemIds by viewModel.selectedItemIds.collectAsState()
@@ -121,17 +116,9 @@ fun BoxScope.HomeScreen(
     val interactionSource = remember { MutableInteractionSource() }
     val menuItemsSort = rememberSortMenuItems()
 
-    val sortOptionOrdinal by SettingsManager.sortOptionState
-    val sortOrderOrdinal by SettingsManager.sortOrderState
     val isDueTodayMarkerEnabled by settingsViewModel.isDueTodayMarker
     val isOverdueMarkerEnabled by settingsViewModel.isOverdueMarker
 
-    val currentSortOption = remember(sortOptionOrdinal) {
-        SortOption.entries.getOrElse(sortOptionOrdinal) { SortOption.DEFAULT }
-    }
-    val currentSortOrder = remember(sortOrderOrdinal) {
-        SortOrder.entries.getOrElse(sortOrderOrdinal) { SortOrder.DESCENDING }
-    }
     val allFilterTitle = stringResource(R.string.all)
     val allTodosTitle = stringResource(R.string.todos)
     val ungroupedTodosTitle = stringResource(R.string.ungrouped_todos)
@@ -153,18 +140,8 @@ fun BoxScope.HomeScreen(
     }
     val newTodoGroupId = (selectedHomeGroupFilter as? HomeGroupFilter.Group)?.id
 
-    val (pinnedTodos, incompleteTodos, completeTodos) = remember(
-        homeTodos,
-        currentSortOption,
-        currentSortOrder
-    ) {
-        buildHomeTodoSections(
-            list = homeTodos,
-            option = currentSortOption,
-            order = currentSortOrder
-        )
-    }
-    val incompleteTodoCount = homeTodos.count { !it.todoItem.isCompleted }
+    val (pinnedTodos, incompleteTodos, completeTodos) = homeSections
+    val incompleteTodoCount = incompleteTodos.size + pinnedTodos.count { !it.todoItem.isCompleted }
     var pinnedVisible by rememberSaveable { mutableStateOf(true) }
     var completedVisible by rememberSaveable { mutableStateOf(true) }
 
@@ -195,19 +172,6 @@ fun BoxScope.HomeScreen(
         }
     }
 
-    val launcher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.StartActivityForResult()
-    ) { result ->
-        if (result.resultCode == Activity.RESULT_OK) {
-            val deleteId = result.data?.getIntExtra("extra_delete_id", -1) ?: -1
-            if (deleteId != -1) {
-                scope.launch {
-                    delay(300.milliseconds)
-                    viewModel.deleteById(deleteId)
-                }
-            }
-        }
-    }
     if (isSelectionModeActive) {
         BackHandler { viewModel.clearSelections() }
     }
@@ -307,11 +271,8 @@ fun BoxScope.HomeScreen(
                         swipeListState = swipeListState,
                         onEnterSelection = { viewModel.enterSelectionMode(item.todoItem.id) },
                         onToggleSelection = { viewModel.toggleSelection(item.todoItem.id) },
-                        onOpenDetail = {
-                            val intent = Intent(context, DetailActivity::class.java).apply {
-                                putExtra(EXTRA_TODO_ID, item.todoItem.id)
-                            }
-                            launcher.launch(intent)
+                        onOpenDetail = { caller ->
+                            navigation.navigate(AppDestination.Detail(item.todoItem.id), caller)
                         },
                         onCompleted = onTodoCompleted,
                         onCheckedChange = { isChecked ->
@@ -356,11 +317,8 @@ fun BoxScope.HomeScreen(
                 swipeListState = swipeListState,
                 onEnterSelection = { viewModel.enterSelectionMode(item.todoItem.id) },
                 onToggleSelection = { viewModel.toggleSelection(item.todoItem.id) },
-                onOpenDetail = {
-                    val intent = Intent(context, DetailActivity::class.java).apply {
-                        putExtra(EXTRA_TODO_ID, item.todoItem.id)
-                    }
-                    launcher.launch(intent)
+                onOpenDetail = { caller ->
+                    navigation.navigate(AppDestination.Detail(item.todoItem.id), caller)
                 },
                 onCompleted = onTodoCompleted,
                 onCheckedChange = { isChecked ->
@@ -402,11 +360,8 @@ fun BoxScope.HomeScreen(
                         swipeListState = swipeListState,
                         onEnterSelection = { viewModel.enterSelectionMode(item.todoItem.id) },
                         onToggleSelection = { viewModel.toggleSelection(item.todoItem.id) },
-                        onOpenDetail = {
-                            val intent = Intent(context, DetailActivity::class.java).apply {
-                                putExtra(EXTRA_TODO_ID, item.todoItem.id)
-                            }
-                            launcher.launch(intent)
+                        onOpenDetail = { caller ->
+                            navigation.navigate(AppDestination.Detail(item.todoItem.id), caller)
                         },
                         onCompleted = onTodoCompleted,
                         onCheckedChange = { isChecked ->
@@ -450,7 +405,7 @@ private fun LazyItemScope.HomeTodoListItemRow(
     swipeListState: SwipeableListState,
     onEnterSelection: () -> Unit,
     onToggleSelection: () -> Unit,
-    onOpenDetail: () -> Unit,
+    onOpenDetail: (NavigationCaller) -> Unit,
     onCompleted: (Offset) -> Unit,
     onCheckedChange: (Boolean) -> Unit,
     onTogglePinned: () -> Unit,

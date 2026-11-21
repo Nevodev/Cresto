@@ -10,6 +10,8 @@ import androidx.core.view.WindowCompat
 import androidx.glance.appwidget.updateAll
 import androidx.lifecycle.lifecycleScope
 import com.nevoit.cresto.feature.widget.TodayTodoWidget
+import com.nevoit.cresto.navigation.AppDestination
+import com.nevoit.cresto.navigation.AppNavigationHost
 import com.nevoit.cresto.theme.GlasenseTheme
 import com.nevoit.glasense.core.utility.clearBackground
 import kotlinx.coroutines.launch
@@ -53,15 +55,7 @@ class SettingsActivity : AppCompatActivity() {
 
         setContent {
             GlasenseTheme {
-                when (destination) {
-                    SettingsDestination.SETTINGS -> SettingsScreen()
-                    SettingsDestination.APPEARANCE -> AppearanceScreen()
-                    SettingsDestination.AI -> AIScreen()
-                    SettingsDestination.DATA_STORAGE -> DataStorageScreen()
-                    SettingsDestination.GENERAL -> GeneralScreen()
-                    SettingsDestination.ABOUT -> AboutScreen()
-                    SettingsDestination.CREDITS -> CreditsScreen()
-                }
+                AppNavigationHost(root = AppDestination.Settings(destination))
             }
         }
         clearBackground()

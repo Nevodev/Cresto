@@ -2,6 +2,12 @@
 
 This project includes material from third-party projects.
 
+## Shapes
+
+- Repository: https://github.com/Kyant0/Shapes
+- License: Apache-2.0 (see `shapes/LICENSE`)
+- Notes: The local `shapes` module contains the fork used by Cirro.
+
 ## Tailwind CSS Colors
 
 - Name: tailwindcss

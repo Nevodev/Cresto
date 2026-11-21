@@ -39,7 +39,6 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawOutline
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.lerp
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
@@ -64,8 +63,8 @@ import com.nevoit.cresto.data.todo.PressureSource
 import com.nevoit.cresto.data.todo.TodoViewModel
 import com.nevoit.cresto.data.todo.calculatePressureIndex
 import com.nevoit.cresto.data.todo.pressureLevelOf
-import com.nevoit.cresto.feature.settings.SettingsActivity
-import com.nevoit.cresto.feature.settings.SettingsDestination
+import com.nevoit.cresto.navigation.AppDestination
+import com.nevoit.cresto.navigation.LocalAppNavigation
 import com.nevoit.cresto.theme.AppButtonColors
 import com.nevoit.cresto.theme.AppColors
 import com.nevoit.cresto.ui.components.glasense.GlasenseButtonToolBar
@@ -95,7 +94,7 @@ fun BoxScope.InsightsScreen(viewModel: TodoViewModel) {
 
     val isSmallTitleVisible by lazyListState.isScrolledPast(statusBarHeight + 24.dp)
 
-    val context = LocalContext.current
+    val navigation = LocalAppNavigation.current
     val insights by viewModel.insights.collectAsStateWithLifecycle()
 
     val backgroundColor = AppColors.pageBackground
@@ -161,9 +160,7 @@ fun BoxScope.InsightsScreen(viewModel: TodoViewModel) {
             enabled = true,
             shape = CircleShape,
             onClick = {
-                context.startActivity(
-                    SettingsActivity.createIntent(context, SettingsDestination.SETTINGS)
-                )
+                navigation.navigate(AppDestination.Settings())
             },
             modifier = Modifier
                 .align(Alignment.TopEnd)

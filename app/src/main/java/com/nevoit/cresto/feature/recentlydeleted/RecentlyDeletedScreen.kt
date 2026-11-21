@@ -1,7 +1,6 @@
 package com.nevoit.cresto.feature.recentlydeleted
 
 import androidx.activity.compose.BackHandler
-import androidx.activity.compose.LocalActivity
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.animateDpAsState
@@ -58,6 +57,7 @@ import com.kyant.backdrop.highlight.Highlight
 import com.kyant.backdrop.highlight.HighlightStyle
 import com.kyant.shapes.Capsule
 import com.nevoit.cresto.R
+import com.nevoit.cresto.navigation.rememberAppBack
 import com.nevoit.cresto.data.todo.TodoViewModel
 import com.nevoit.cresto.feature.home.TodoListSectionHead
 import com.nevoit.cresto.theme.AppButtonColors
@@ -85,7 +85,7 @@ import java.time.temporal.ChronoUnit
 
 @Composable
 fun RecentlyDeletedScreen(viewModel: TodoViewModel) {
-    val activity = LocalActivity.current
+    val onBack = rememberAppBack()
     val todos by viewModel.recentlyDeletedTodos.collectAsStateWithLifecycle()
     val selectedItemIds by viewModel.selectedItemIds.collectAsStateWithLifecycle()
     val selectedItemCount by viewModel.selectedItemCount.collectAsStateWithLifecycle()
@@ -365,7 +365,7 @@ fun RecentlyDeletedScreen(viewModel: TodoViewModel) {
                 GlasenseButtonToolBar(
                     enabled = true,
                     shape = CircleShape,
-                    onClick = { activity?.finish() },
+                    onClick = onBack,
                     modifier = Modifier
                         .graphicsLayer {
                             alpha = 1f - topBarAlphaAnimation.value

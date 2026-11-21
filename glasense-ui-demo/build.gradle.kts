@@ -1,3 +1,4 @@
+import com.android.build.api.dsl.ApplicationExtension
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
@@ -5,11 +6,13 @@ plugins {
     alias(libs.plugins.kotlin.compose)
 }
 
+evaluationDependsOn(":app")
+val appAndroid = project(":app").extensions.getByType<ApplicationExtension>()
+
 android {
     namespace = "com.nevoit.glasensedemo"
-    compileSdk {
-        version = release(37)
-    }
+    compileSdk = appAndroid.compileSdk
+    compileSdkMinor = appAndroid.compileSdkMinor
 
     defaultConfig {
         applicationId = "com.nevoit.glasensedemo"

@@ -1,10 +1,6 @@
 package com.nevoit.cresto.feature.calendar
 
-import android.app.Activity
-import android.content.Intent
 import androidx.activity.compose.BackHandler
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.CubicBezierEasing
 import androidx.compose.animation.core.EaseInQuad
@@ -56,7 +52,6 @@ import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInWindow
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
@@ -75,9 +70,10 @@ import com.kyant.backdrop.effects.blur
 import com.kyant.backdrop.effects.runtimeShaderEffect
 import com.kyant.shapes.Capsule
 import com.nevoit.cresto.R
-import com.nevoit.cresto.data.todo.EXTRA_TODO_ID
 import com.nevoit.cresto.data.todo.TodoViewModel
-import com.nevoit.cresto.feature.detail.DetailActivity
+import com.nevoit.cresto.navigation.AppDestination
+import com.nevoit.cresto.navigation.LocalAppNavigation
+import com.nevoit.cresto.navigation.ReportNavigationReady
 import com.nevoit.cresto.feature.home.TodoListItemRow
 import com.nevoit.cresto.feature.settings.util.SettingsViewModel
 import com.nevoit.cresto.theme.AppButtonColors
@@ -107,11 +103,10 @@ import java.time.LocalDate
 import java.time.YearMonth
 import java.time.format.DateTimeFormatter
 import java.util.Locale
-import kotlin.math.abs
 
 
 @Composable
-fun CalendarScreen() {
+fun CalendarScreen(viewModel: TodoViewModel = viewModel()) {
     val lazyListState = rememberLazyListState()
 
     val localDateSaver = Saver<LocalDate, String>(
@@ -132,14 +127,15 @@ fun CalendarScreen() {
         )
     }
 
-    val viewModel: TodoViewModel = viewModel()
     val settingsViewModel: SettingsViewModel = viewModel()
+    val navigation = LocalAppNavigation.current
 
     val datesWithTodo by viewModel.datesWithTodo.collectAsStateWithLifecycle()
 
-    val todosForSelectedDate by remember(selectedDate) {
+    val todosForSelectedDate by remember(viewModel, selectedDate) {
         viewModel.getTodosByDate(selectedDate)
-    }.collectAsStateWithLifecycle(initialValue = null)
+    }.collectAsStateWithLifecycle()
+    ReportNavigationReady(ready = todosForSelectedDate != null)
 
     val isOverdueMarkerEnabled by settingsViewModel.isOverdueMarker
 
@@ -164,30 +160,21 @@ fun CalendarScreen() {
         BackHandler { viewModel.clearSelections() }
     }
 
-    val context = LocalContext.current
-    val launcher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.StartActivityForResult()
-    ) { result ->
-        if (result.resultCode == Activity.RESULT_OK) {
-            val deleteId = result.data?.getIntExtra("extra_delete_id", -1) ?: -1
-            if (deleteId != -1) {
-                viewModel.deleteById(deleteId)
-            }
-        }
-    }
 
     val metrics = rememberCalendarMetrics()
-    var calendarOffsetPx by remember(metrics.maxCollapseOffsetPx) { mutableFloatStateOf(-metrics.maxCollapseOffsetPx) }
+    var calendarCollapseFraction by rememberSaveable { mutableFloatStateOf(1f) }
 
-    val nestedScrollConnection = remember {
+    val nestedScrollConnection = remember(metrics.maxCollapseOffsetPx) {
         object : NestedScrollConnection {
             override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
                 val delta = available.y
+                val calendarOffsetPx = -calendarCollapseFraction * metrics.maxCollapseOffsetPx
                 if (delta < 0 && calendarOffsetPx > -metrics.maxCollapseOffsetPx) {
                     val oldOffset = calendarOffsetPx
-                    calendarOffsetPx =
+                    val newOffset =
                         (calendarOffsetPx + delta).coerceIn(-metrics.maxCollapseOffsetPx, 0f)
-                    return Offset(0f, calendarOffsetPx - oldOffset)
+                    calendarCollapseFraction = -newOffset / metrics.maxCollapseOffsetPx
+                    return Offset(0f, newOffset - oldOffset)
                 }
                 return Offset.Zero
             }
@@ -198,11 +185,13 @@ fun CalendarScreen() {
                 source: NestedScrollSource
             ): Offset {
                 val delta = available.y
+                val calendarOffsetPx = -calendarCollapseFraction * metrics.maxCollapseOffsetPx
                 if (delta > 0 && calendarOffsetPx < 0f) {
                     val oldOffset = calendarOffsetPx
-                    calendarOffsetPx =
+                    val newOffset =
                         (calendarOffsetPx + delta).coerceIn(-metrics.maxCollapseOffsetPx, 0f)
-                    return Offset(0f, calendarOffsetPx - oldOffset)
+                    calendarCollapseFraction = -newOffset / metrics.maxCollapseOffsetPx
+                    return Offset(0f, newOffset - oldOffset)
                 }
                 return Offset.Zero
             }
@@ -218,7 +207,7 @@ fun CalendarScreen() {
 
     val isBlurVisible by remember {
         derivedStateOf {
-            lazyListState.canScrollBackward && calendarOffsetPx <= -metrics.maxCollapseOffsetPx || calendarOffsetPx > -metrics.maxCollapseOffsetPx && lazyListState.canScrollBackward
+            lazyListState.canScrollBackward
         }
     }
 
@@ -339,11 +328,8 @@ fun CalendarScreen() {
                         swipeListState = swipeListState,
                         onEnterSelection = { viewModel.enterSelectionMode(item.todoItem.id) },
                         onToggleSelection = { viewModel.toggleSelection(item.todoItem.id) },
-                        onOpenDetail = {
-                            val intent = Intent(context, DetailActivity::class.java).apply {
-                                putExtra(EXTRA_TODO_ID, item.todoItem.id)
-                            }
-                            launcher.launch(intent)
+                        onOpenDetail = { caller ->
+                            navigation.navigate(AppDestination.Detail(item.todoItem.id), caller)
                         },
                         onDelete = { viewModel.delete(item.todoItem) },
                         onCheckboxTapPosition = { }
@@ -427,7 +413,7 @@ return mix(content.eval(coord) * blurAlpha, tint * tintAlpha, tintIntensity);
                     selectedDate = it
                 },
                 onMonthChanged = { displayMonth = it },
-                collapseFractionProvider = { abs(calendarOffsetPx) / metrics.maxCollapseOffsetPx }
+                collapseFractionProvider = { calendarCollapseFraction }
             )
             Spacer(Modifier.height(8.dp))
         }

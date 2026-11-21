@@ -1,13 +1,17 @@
+import com.android.build.api.dsl.ApplicationExtension
+
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.compose)
 }
 
+evaluationDependsOn(":app")
+val appAndroid = project(":app").extensions.getByType<ApplicationExtension>()
+
 android {
     namespace = "com.nevoit.glasense"
-    compileSdk {
-        version = release(37)
-    }
+    compileSdk = appAndroid.compileSdk
+    compileSdkMinor = appAndroid.compileSdkMinor
 
     defaultConfig {
         minSdk = 30
@@ -43,6 +47,6 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
 
-    implementation(libs.shapes)
+    implementation(project(":shapes"))
     implementation(libs.backdrop)
 }

@@ -1,5 +1,6 @@
 package com.nevoit.cresto.data.todo
 
+import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.nevoit.cresto.data.statistics.DailyStat
@@ -7,6 +8,11 @@ import com.nevoit.cresto.data.statistics.TodoStat
 import com.nevoit.cresto.data.todo.calendar.CalendarSyncSummary
 import com.nevoit.cresto.data.todo.reminder.TodoAlarmScheduler
 import com.nevoit.cresto.data.utils.EventItem
+import com.nevoit.cresto.feature.home.HomeTodoSections
+import com.nevoit.cresto.feature.home.buildHomeTodoSections
+import com.nevoit.cresto.feature.settings.util.SettingsManager
+import com.nevoit.cresto.feature.settings.util.SortOption
+import com.nevoit.cresto.feature.settings.util.SortOrder
 import com.tencent.mmkv.MMKV
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -20,6 +26,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
@@ -154,6 +161,11 @@ class TodoViewModel(
     }
 
     fun getTodoWithSubTodos(id: Int): Flow<TodoItemWithSubTodos?> = repository.getTodoById(id)
+
+    private val detailQuery = RetainedQuery(viewModelScope, repository::getTodoDetail)
+    private val calendarQuery = RetainedQuery(viewModelScope, repository::getTodosByDate)
+
+    fun getTodoDetail(id: Int): StateFlow<TodoDetailData?> = detailQuery.stateFor(id)
 
     fun getRepeatRule(id: String?): Flow<RepeatRule?> {
         return id?.let(repository::getRepeatRuleById) ?: flowOf(null)
@@ -711,8 +723,22 @@ class TodoViewModel(
         todos.filter { it.matchesHomeFilter(searchQuery, groupFilter) }
     }.stateIn(
         scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(5000),
+        started = SharingStarted.Lazily,
         initialValue = emptyList()
+    )
+
+    val homeSections: StateFlow<HomeTodoSections> = combine(
+        homeTodos,
+        snapshotFlow {
+            SortOption.entries.getOrElse(SettingsManager.sortOptionState.value) { SortOption.DEFAULT } to
+                    SortOrder.entries.getOrElse(SettingsManager.sortOrderState.value) { SortOrder.DESCENDING }
+        },
+    ) { todos, (option, order) ->
+        buildHomeTodoSections(todos, option, order)
+    }.flowOn(Dispatchers.Default).stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.Lazily,
+        initialValue = HomeTodoSections(emptyList(), emptyList(), emptyList()),
     )
 
     @OptIn(ExperimentalCoroutinesApi::class)
@@ -799,9 +825,7 @@ class TodoViewModel(
         return reminderMode != null
     }
 
-    fun getTodosByDate(date: LocalDate): Flow<List<TodoItemWithSubTodos>> {
-        return repository.getTodosByDate(date)
-    }
+    fun getTodosByDate(date: LocalDate): StateFlow<List<TodoItemWithSubTodos>?> = calendarQuery.stateFor(date)
 
     val datesWithTodo: StateFlow<Set<LocalDate>> = repository.getDatesWithTodo()
         .map { it.toSet() }

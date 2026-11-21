@@ -12,6 +12,7 @@
             <option value="$PROJECT_DIR$/app" />
             <option value="$PROJECT_DIR$/glasense-ui" />
             <option value="$PROJECT_DIR$/glasense-ui-demo" />
+            <option value="$PROJECT_DIR$/shapes" />
           </set>
         </option>
       </GradleProjectSettings>

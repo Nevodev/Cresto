@@ -2,7 +2,6 @@
 package com.nevoit.cresto.feature.settings
 
 // Import necessary libraries and components
-import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.LocalOverscrollFactory
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -15,7 +14,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBars
@@ -24,16 +22,12 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -42,18 +36,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.hapticfeedback.HapticFeedbackType
-import androidx.compose.ui.layout.boundsInWindow
-import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.platform.LocalHapticFeedback
-import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -63,7 +50,9 @@ import coil3.compose.AsyncImage
 import com.kyant.backdrop.backdrops.layerBackdrop
 import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import com.kyant.shapes.RoundedRectangle
+import com.kyant.shapes.Capsule
 import com.nevoit.cresto.R
+import com.nevoit.cresto.navigation.rememberAppBack
 import com.nevoit.cresto.feature.settings.util.AppIconManager
 import com.nevoit.cresto.feature.settings.util.SettingsViewModel
 import com.nevoit.cresto.theme.AppButtonColors
@@ -72,14 +61,12 @@ import com.nevoit.cresto.theme.AppSpecs
 import com.nevoit.cresto.theme.harmonize
 import com.nevoit.cresto.ui.components.glasense.GlasenseButton
 import com.nevoit.cresto.ui.components.glasense.GlasenseDynamicSmallTitle
-import com.nevoit.cresto.ui.components.glasense.GlasenseModalTopBar
-import com.nevoit.cresto.ui.components.glasense.GlasensePopup
-import com.nevoit.cresto.ui.components.glasense.PopupDirection
-import com.nevoit.cresto.ui.components.glasense.PopupState
 import com.nevoit.cresto.ui.components.glasense.isScrolledPast
 import com.nevoit.cresto.ui.components.packed.ColorModeSelector
 import com.nevoit.cresto.ui.components.packed.ConfigInfoHeader
 import com.nevoit.cresto.ui.components.packed.TopBarSpacer
+import com.nevoit.cresto.ui.components.popup.popupCaller
+import com.nevoit.cresto.ui.components.popup.rememberPopupCaller
 import com.nevoit.cresto.util.supportsRuntimeShaderEffect
 import com.nevoit.glasense.component.ListStack
 import com.nevoit.glasense.core.component.Icon
@@ -87,28 +74,12 @@ import com.nevoit.glasense.core.component.Text
 import com.nevoit.glasense.core.component.VGap
 import com.nevoit.glasense.core.interaction.DimIndication
 import com.nevoit.glasense.core.interaction.overscroll.rememberOffsetOverscrollFactory
-import com.nevoit.glasense.theme.tokens.Amber500
 import com.nevoit.glasense.theme.tokens.Blue500
-import com.nevoit.glasense.theme.tokens.Cyan500
-import com.nevoit.glasense.theme.tokens.Emerald500
-import com.nevoit.glasense.theme.tokens.Fuchsia500
-import com.nevoit.glasense.theme.tokens.Green500
-import com.nevoit.glasense.theme.tokens.Indigo500
-import com.nevoit.glasense.theme.tokens.Lime500
-import com.nevoit.glasense.theme.tokens.Orange500
-import com.nevoit.glasense.theme.tokens.Pink500
-import com.nevoit.glasense.theme.tokens.Purple500
-import com.nevoit.glasense.theme.tokens.Red500
-import com.nevoit.glasense.theme.tokens.Rose500
-import com.nevoit.glasense.theme.tokens.Sky500
-import com.nevoit.glasense.theme.tokens.Teal500
-import com.nevoit.glasense.theme.tokens.Violet500
-import com.nevoit.glasense.theme.tokens.Yellow500
 
 @Composable
 fun AppearanceScreen(settingsViewModel: SettingsViewModel = viewModel()) {
     // Get the current activity instance to allow finishing the screen
-    val activity = LocalActivity.current
+    val onBack = rememberAppBack()
     val context = LocalContext.current
 
     // Calculate the height of the status bar to adjust layout
@@ -131,6 +102,7 @@ fun AppearanceScreen(settingsViewModel: SettingsViewModel = viewModel()) {
     var isUseDynamicColorScheme by settingsViewModel.isUseDynamicColor
     var isLiteMode by settingsViewModel.isLiteMode
     var isLiquidGlass by settingsViewModel.isLiquidGlass
+    val isContinuousTransitionsEnabled by settingsViewModel.isContinuousTransitionsEnabled
     val currentMode by settingsViewModel.colorMode
     val currentThemePrimaryColor by settingsViewModel.themePrimaryColor
     val currentAppIcon by settingsViewModel.appIcon
@@ -138,9 +110,8 @@ fun AppearanceScreen(settingsViewModel: SettingsViewModel = viewModel()) {
     val appIconEntries = AppIconManager.AppIcon.entries
 
     var showColorPicker by remember { mutableStateOf(false) }
-    var pendingThemePrimaryColor by remember { mutableIntStateOf(currentThemePrimaryColor) }
-    var latestColorPickerTriggerBounds by remember { mutableStateOf<Rect?>(null) }
-    var popupAnchorBounds by remember { mutableStateOf(Rect.Zero) }
+    val colorSwatchShape = remember { Capsule() }
+    val colorCaller = rememberPopupCaller(shape = remember { RoundedRectangle(14.dp) })
 
     val overscrollFactory = rememberOffsetOverscrollFactory()
 
@@ -198,10 +169,8 @@ fun AppearanceScreen(settingsViewModel: SettingsViewModel = viewModel()) {
                     trailing = {
                         Box(
                             modifier = Modifier
-                                .size(28.dp)
-                                .onGloballyPositioned {
-                                    latestColorPickerTriggerBounds = it.boundsInWindow()
-                                }
+                                .size(32.dp)
+                                .popupCaller(colorCaller)
                                 .drawBehind {
                                     drawCircle(
                                         color = scrim,
@@ -216,13 +185,10 @@ fun AppearanceScreen(settingsViewModel: SettingsViewModel = viewModel()) {
                                 .clickable(
                                     enabled = !isUseDynamicColorScheme,
                                     interactionSource = remember { MutableInteractionSource() },
-                                    indication = DimIndication(shape = CircleShape)
+                                    indication = DimIndication(shape = colorSwatchShape)
                                 ) {
-                                    // Snapshot clicked trigger bounds to anchor popup animation/placement.
-                                    popupAnchorBounds =
-                                        latestColorPickerTriggerBounds ?: Rect.Zero
-                                    pendingThemePrimaryColor = currentThemePrimaryColor
-                                    showColorPicker = !showColorPicker
+                                    colorCaller.open()
+                                    showColorPicker = true
                                 }
                         )
                     },
@@ -260,6 +226,14 @@ fun AppearanceScreen(settingsViewModel: SettingsViewModel = viewModel()) {
                         onCheckedChange = { settingsViewModel.onLiquidGlassChanged(it) }) {
                         Text(stringResource(R.string.liquid_glass))
                     }
+                }
+            }
+            Section(footer = { stringResource(R.string.continuous_transitions_description) }) {
+                CustomSwitchRow(
+                    checked = isContinuousTransitionsEnabled,
+                    onCheckedChange = settingsViewModel::onContinuousTransitionsChanged,
+                ) {
+                    Text(stringResource(R.string.continuous_transitions))
                 }
             }
             NoPaddingSection(header = { stringResource(R.string.app_icon) }) {
@@ -304,7 +278,7 @@ fun AppearanceScreen(settingsViewModel: SettingsViewModel = viewModel()) {
         GlasenseButton(
             enabled = true,
             shape = CircleShape,
-            onClick = { activity?.finish() }, // Closes the current activity, navigating back
+            onClick = onBack,
             modifier = Modifier
                 .padding(top = statusBarHeight, start = 12.dp)
                 .size(48.dp)
@@ -317,97 +291,13 @@ fun AppearanceScreen(settingsViewModel: SettingsViewModel = viewModel()) {
                 modifier = Modifier.width(32.dp)
             )
         }
-        GlasensePopup(
-            popupState = PopupState(
-                isVisible = showColorPicker,
-                anchorBounds = popupAnchorBounds
-            ),
-            onDismiss = {
-                pendingThemePrimaryColor = currentThemePrimaryColor
-                showColorPicker = false
-            },
-            width = LocalWindowInfo.current.containerDpSize.width - 24.dp,
-            popupMargin = 12.dp,
-            anchorGap = 12.dp,
-            direction = PopupDirection.Up
-        ) {
-            GlasenseModalTopBar(
-                leading = {
-                    Action(
-                        icon = painterResource(id = R.drawable.ic_cross),
-                        contentDescription = stringResource(R.string.cancel),
-                        onClick = {
-                            pendingThemePrimaryColor = currentThemePrimaryColor
-                            showColorPicker = false
-                        }
-                    )
-                },
-                title = stringResource(R.string.custom_primary_color),
-                trailing = {
-                    Action(
-                        icon = painterResource(id = R.drawable.ic_checkmark),
-                        contentDescription = stringResource(R.string.done),
-                        onClick = {
-                            if (pendingThemePrimaryColor != currentThemePrimaryColor) {
-                                settingsViewModel.onThemePrimaryColorChanged(
-                                    pendingThemePrimaryColor
-                                )
-                            }
-                            showColorPicker = false
-                        },
-                        colors = AppButtonColors.primary()
-                            .copy(containerColor = Color(pendingThemePrimaryColor)),
-                        highlight = true
-                    )
-                }
+        if (showColorPicker) {
+            ThemeColorPickerPopup(
+                caller = colorCaller,
+                current = currentThemePrimaryColor,
+                onPick = settingsViewModel::onThemePrimaryColorChanged,
+                onDismissed = { showColorPicker = false },
             )
-            VGap()
-            val hapticController = LocalHapticFeedback.current
-
-            val colorList = remember {
-                listOf(
-                    Rose500, Red500, Orange500, Amber500,
-                    Yellow500, Lime500, Green500, Emerald500,
-                    Teal500, Cyan500, Sky500, Blue500,
-                    Indigo500, Violet500, Purple500, Fuchsia500,
-                    Pink500,
-                )
-            }
-
-            LazyVerticalGrid(
-                columns = GridCells.Adaptive(minSize = 32.dp),
-                contentPadding = PaddingValues(0.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                itemsIndexed(
-                    items = colorList,
-                    key = { index, color -> "${index}_${color.toArgb()}" }) { _, color ->
-                    val isSelected = color.toArgb() == pendingThemePrimaryColor
-                    Box(
-                        modifier = Modifier
-                            .aspectRatio(1f)
-                            .clip(CircleShape)
-                            .clickable(
-                                interactionSource = remember { MutableInteractionSource() },
-                                indication = DimIndication()
-                            ) {
-                                hapticController.performHapticFeedback(HapticFeedbackType.ContextClick)
-                                pendingThemePrimaryColor = color.toArgb()
-                            }
-                            .background(color = color)
-                            .drawBehind {
-                                if (isSelected) {
-                                    drawCircle(
-                                        color = Color.White.copy(alpha = .6f),
-                                        radius = size.minDimension / 4
-                                    )
-                                }
-                            }
-                    )
-                }
-            }
         }
     }
 }

@@ -20,6 +20,7 @@ object SettingsManager {
     private const val KEY_USE_DYNAMIC_COLOR = "use_dynamic_color_enabled"
     private const val KEY_LITE_MODE = "lite_mode_enabled"
     private const val KEY_LIQUID_GLASS = "liquid_glass_enabled"
+    private const val KEY_CONTINUOUS_TRANSITIONS = "continuous_transitions_enabled"
     private const val KEY_COLOR_MODE = "color_mode"
     private const val KEY_IS_FIRST_RUN = "is_first_run"
     private const val KEY_SORT_OPTION = "sort_option"
@@ -55,6 +56,8 @@ object SettingsManager {
     val isUseDynamicColorState = mutableStateOf(mmkv.decodeBool(KEY_USE_DYNAMIC_COLOR, false))
     val isLiteModeState = mutableStateOf(mmkv.decodeBool(KEY_LITE_MODE, false))
     val isLiquidGlassState = mutableStateOf(mmkv.decodeBool(KEY_LIQUID_GLASS, false))
+    val isContinuousTransitionsEnabledState =
+        mutableStateOf(mmkv.decodeBool(KEY_CONTINUOUS_TRANSITIONS, true))
     val sortOptionState =
         mutableIntStateOf(mmkv.decodeInt(KEY_SORT_OPTION, SortOption.DEFAULT.ordinal))
     val sortOrderState =
@@ -121,6 +124,13 @@ object SettingsManager {
         set(value) {
             mmkv.encode(KEY_LIQUID_GLASS, value)
             isLiquidGlassState.value = value
+        }
+
+    var isContinuousTransitionsEnabled: Boolean
+        get() = mmkv.decodeBool(KEY_CONTINUOUS_TRANSITIONS, true)
+        set(value) {
+            mmkv.encode(KEY_CONTINUOUS_TRANSITIONS, value)
+            isContinuousTransitionsEnabledState.value = value
         }
 
     var colorMode: Int

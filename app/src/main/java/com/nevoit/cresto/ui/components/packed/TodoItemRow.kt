@@ -112,6 +112,7 @@ fun TodoItemRow(
     modifier: Modifier,
     backgroundColor: Color,
     checkboxEnabled: Boolean = true,
+    cardModifier: Modifier = Modifier,
 ) {
     val completedTaskCount = remember(item.subTodos) { item.subTodos.count { it.isCompleted } }
     val totalTaskCount = item.subTodos.size
@@ -135,6 +136,7 @@ fun TodoItemRow(
 
     Row(
         modifier = Modifier
+            .then(cardModifier)
             .defaultMinSize(minHeight = 68.dp)
             .fillMaxWidth()
             .background(
@@ -682,7 +684,8 @@ fun SwipeableTodoItem(
     onCheckedChange: (Boolean) -> Unit,
     onCheckboxTapPosition: (Offset) -> Unit = {},
     checkboxEnabled: Boolean = true,
-    onTogglePinned: (() -> Unit)? = null
+    onTogglePinned: (() -> Unit)? = null,
+    cardModifier: Modifier = Modifier,
 ) {
     val leftActions = if (onTogglePinned != null) {
         persistentListOf(
@@ -735,7 +738,8 @@ fun SwipeableTodoItem(
             onCheckedChange = onCheckedChange,
             onCheckboxTapPosition = onCheckboxTapPosition,
             modifier = modifier,
-            checkboxEnabled = checkboxEnabled
+            checkboxEnabled = checkboxEnabled,
+            cardModifier = cardModifier,
         )
     }
 }

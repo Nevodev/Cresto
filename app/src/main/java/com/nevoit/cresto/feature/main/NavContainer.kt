@@ -1,27 +1,14 @@
 package com.nevoit.cresto.feature.main
 
-import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.CubicBezierEasing
-import androidx.compose.animation.core.EaseOutExpo
-import androidx.compose.animation.core.tween
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveableStateHolder
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Rect
-import androidx.compose.ui.graphics.graphicsLayer
 import com.nevoit.cresto.data.todo.TodoViewModel
 import com.nevoit.cresto.feature.calendar.CalendarScreen
 import com.nevoit.cresto.feature.home.HomeScreen
 import com.nevoit.cresto.feature.insights.InsightsScreen
+import com.nevoit.cresto.navigation.CrossfadeNavContainer
 import com.nevoit.cresto.ui.components.glasense.GlasenseMenuItem
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-import kotlin.time.Duration.Companion.milliseconds
 
 @Composable
 fun BoxScope.NavContainer(
@@ -30,79 +17,18 @@ fun BoxScope.NavContainer(
     viewModel: TodoViewModel,
     onOpenGroupBottomSheet: () -> Unit
 ) {
-    val saveableStateHolder = rememberSaveableStateHolder()
-
-    ManualAnimatedVisibility(
-        visible = currentRoute == Screen.Home.route
-    ) {
-        saveableStateHolder.SaveableStateProvider(key = Screen.Home.route) {
-            HomeScreen(
+    CrossfadeNavContainer(
+        destination = currentRoute,
+        destinations = listOf(Screen.Home.route, Screen.Star.route, Screen.Settings.route),
+    ) { route ->
+        when (route) {
+            Screen.Home.route -> HomeScreen(
                 showMenu = showMenu,
                 viewModel = viewModel,
                 onOpenGroupBottomSheet = onOpenGroupBottomSheet
             )
-
-        }
-    }
-
-    ManualAnimatedVisibility(
-        visible = currentRoute == Screen.Star.route
-    ) {
-        saveableStateHolder.SaveableStateProvider(key = Screen.Star.route) {
-            //MindFlowScreen(viewModel)
-            CalendarScreen()
-        }
-    }
-
-    ManualAnimatedVisibility(
-        visible = currentRoute == Screen.Settings.route
-    ) {
-        saveableStateHolder.SaveableStateProvider(key = Screen.Settings.route) {
-            //SettingsScreen()
-            InsightsScreen(viewModel = viewModel)
-        }
-    }
-}
-
-@Composable
-private fun ManualAnimatedVisibility(
-    visible: Boolean,
-    content: @Composable () -> Unit
-) {
-    val alpha = remember { Animatable(if (visible) 1f else 0f, 0.000001f) }
-    val scale = remember { Animatable(if (visible) 1f else 0.95f, 0.000001f) }
-
-    LaunchedEffect(visible) {
-        if (visible) {
-            launch {
-                delay(100.milliseconds)
-                alpha.animateTo(1f, tween(200))
-            }
-            launch {
-                delay(100.milliseconds)
-                scale.animateTo(1f, tween(400, easing = EaseOutExpo))
-            }
-        } else {
-            launch {
-                alpha.animateTo(0f, tween(200))
-            }
-            launch {
-                scale.animateTo(0.95f, tween(600, easing = CubicBezierEasing(.2f, .2f, .0f, 1f)))
-            }
-        }
-    }
-
-    if (visible || alpha.value > 0f) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .graphicsLayer {
-                    this.alpha = alpha.value
-                    scaleX = scale.value
-                    scaleY = scale.value
-                }
-        ) {
-            content()
+            Screen.Star.route -> CalendarScreen(viewModel = viewModel)
+            Screen.Settings.route -> InsightsScreen(viewModel = viewModel)
         }
     }
 }

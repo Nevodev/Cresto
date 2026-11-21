@@ -35,6 +35,9 @@ import androidx.compose.ui.zIndex
 import com.kyant.shapes.RoundedRectangle
 import com.nevoit.cresto.R
 import com.nevoit.cresto.data.todo.TodoItemWithSubTodos
+import com.nevoit.cresto.navigation.NavigationCaller
+import com.nevoit.cresto.navigation.navigationCaller
+import com.nevoit.cresto.navigation.rememberNavigationCaller
 import com.nevoit.cresto.theme.AppColors
 import com.nevoit.cresto.theme.AppSpecs
 import com.nevoit.cresto.ui.components.glasense.SwipeableListState
@@ -58,7 +61,7 @@ fun LazyItemScope.TodoListItemRow(
     swipeListState: SwipeableListState,
     onEnterSelection: () -> Unit,
     onToggleSelection: () -> Unit,
-    onOpenDetail: () -> Unit,
+    onOpenDetail: (NavigationCaller) -> Unit,
     onCheckedChange: (Boolean) -> Unit,
     onDelete: () -> Unit,
     onCheckboxTapPosition: ((Offset) -> Unit)? = null,
@@ -68,6 +71,8 @@ fun LazyItemScope.TodoListItemRow(
     val rowInteractionSource = remember { MutableInteractionSource() }
     val selectionOutline = AppColors.primary
     val cardCorner = AppSpecs.cardCorner
+    val caller =
+        rememberNavigationCaller(RoundedRectangle(cardCorner), AppColors.cardBackground, item.todoItem.id)
 
     LaunchedEffect(isSelected) {
         if (isSelected) {
@@ -80,24 +85,6 @@ fun LazyItemScope.TodoListItemRow(
     Box(
         modifier = modifier
             .animateItem(placementSpec = Springs.crisp())
-            .combinedClickable(
-                interactionSource = rowInteractionSource,
-                indication = DimIndication(shape = AppSpecs.cardShape),
-                onLongClick = {
-                    if (!isSelectionModeActive) {
-                        onEnterSelection()
-                    } else {
-                        onToggleSelection()
-                    }
-                },
-                onClick = {
-                    if (isSelectionModeActive) {
-                        onToggleSelection()
-                    } else {
-                        onOpenDetail()
-                    }
-                }
-            )
     ) {
         SwipeableTodoItem(
             item = item,
@@ -107,6 +94,26 @@ fun LazyItemScope.TodoListItemRow(
             onCheckboxTapPosition = onCheckboxTapPosition ?: {},
             onCheckedChange = onCheckedChange,
             onDelete = onDelete,
+            cardModifier = Modifier
+                .navigationCaller(caller, clipContent = false)
+                .combinedClickable(
+                    interactionSource = rowInteractionSource,
+                    indication = DimIndication(shape = AppSpecs.cardShape),
+                    onLongClick = {
+                        if (!isSelectionModeActive) {
+                            onEnterSelection()
+                        } else {
+                            onToggleSelection()
+                        }
+                    },
+                    onClick = {
+                        if (isSelectionModeActive) {
+                            onToggleSelection()
+                        } else {
+                            onOpenDetail(caller)
+                        }
+                    }
+                ),
             modifier = Modifier.drawBehind {
                 if (alpha.value > 0) {
                     val outline = RoundedRectangle(cardCorner - 3.dp / 2).createOutline(

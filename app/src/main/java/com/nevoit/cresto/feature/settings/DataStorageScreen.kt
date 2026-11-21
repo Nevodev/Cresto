@@ -2,7 +2,6 @@ package com.nevoit.cresto.feature.settings
 
 import android.provider.OpenableColumns
 import android.text.format.Formatter
-import androidx.activity.compose.LocalActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
@@ -53,6 +52,7 @@ import com.kyant.backdrop.backdrops.layerBackdrop
 import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import com.kyant.shapes.Capsule
 import com.nevoit.cresto.R
+import com.nevoit.cresto.navigation.rememberAppBack
 import com.nevoit.cresto.data.todo.DuplicatePolicy
 import com.nevoit.cresto.data.todo.TodoViewModel
 import com.nevoit.cresto.theme.AppButtonColors
@@ -89,7 +89,7 @@ fun DataStorageScreen() {
     val viewModel: TodoViewModel = koinViewModel()
 
     // Get the current activity instance to allow finishing the screen
-    val activity = LocalActivity.current
+    val onBack = rememberAppBack()
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
 
@@ -194,7 +194,7 @@ fun DataStorageScreen() {
                     viewModel.clearAllData()
                 }
                 dismissDialog()
-                activity?.finish()
+                onBack()
             },
             isPrimary = true,
             isDestructive = true
@@ -563,7 +563,7 @@ fun DataStorageScreen() {
     GlasenseButton(
         enabled = true,
         shape = CircleShape,
-        onClick = { activity?.finish() }, // Closes the current activity, navigating back
+        onClick = onBack,
         modifier = Modifier
             .padding(top = statusBarHeight, start = 12.dp)
             .size(48.dp),

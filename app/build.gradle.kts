@@ -46,7 +46,9 @@ check(!hasSigningProperties || isSigningConfigured) {
 android {
     namespace = "com.nevoit.cresto"
     compileSdk {
-        version = release(37)
+        version = release(37) {
+            minorApiLevel = 2
+        }
     }
 
     defaultConfig {
@@ -115,7 +117,7 @@ configurations.configureEach {
 }
 
 base {
-    archivesName.set(vCodeProvider.map { "cresto-alpha$it" })
+    archivesName.set(vCodeProvider.map { "cresto-$it" })
 }
 
 kotlin {
@@ -159,10 +161,9 @@ dependencies {
     implementation(libs.kotlinx.coroutines.core)
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.kotlinx.collections.immutable)
-    implementation(libs.androidx.navigation.compose)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.mmkv)
-    implementation(libs.shapes)
+    implementation(project(":shapes"))
     implementation(libs.backdrop)
     implementation(libs.confetti.kit)
     implementation(libs.material.color.utilities)
